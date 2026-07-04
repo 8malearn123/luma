@@ -3,6 +3,16 @@
   const S = window.LUMA_SCREENS = window.LUMA_SCREENS || {};
   const avc = n=>`<span class="avx">${n.charAt(0)}</span>`;
 
+  /* team members added from the UI persist across reloads */
+  const TEAM=[
+    {n:'رهف العتيبي',role:'المالكة · خبيرة رئيسية',today:4,c:'gold'},
+    {n:'أمل السبيعي',role:'مساعدة خبيرة',today:3,c:'soft'},
+    {n:'نورة الحارثي',role:'مساعدة + استقبال',today:2,c:'soft'},
+  ];
+  const TEAM_KEY='luma_expert_team';
+  try{(JSON.parse(localStorage.getItem(TEAM_KEY))||[]).forEach(t=>{if(t&&t.n&&!TEAM.some(x=>x.n===t.n))TEAM.push(t);});}catch(e){}
+  function saveTeam(){try{localStorage.setItem(TEAM_KEY,JSON.stringify(TEAM.filter(t=>t.custom)));}catch(e){}}
+
   const TOOLCHIPS = [
     ['waitlist','قائمة الانتظار','calendar'],
     ['memberships','الاشتراكات','loyalty'],
@@ -48,14 +58,9 @@
         G.map(g=>`<div class="trow"><div class="gi">${icon('users',20)}</div><div class="ti"><div class="n">${g.t}</div><div class="s">${g.d} · ${g.ppl} أشخاص</div></div><div class="amt">${g.total} ر.س</div><span class="badge ${g.stc}">${g.st}</span></div>`).join(''));
     },
     staff(){
-      const T=[
-        {n:'رهف العتيبي',role:'المالكة · خبيرة رئيسية',today:4,c:'gold'},
-        {n:'أمل السبيعي',role:'مساعدة خبيرة',today:3,c:'soft'},
-        {n:'نورة الحارثي',role:'مساعدة + استقبال',today:2,c:'soft'},
-      ];
       return panel('الطاقم','أضيفي مساعداتكِ، وزّعي المواعيد، وتابعي أداء الفريق.',
-        `<button class="btn btn-gold">+ دعوة عضوة</button>`,
-        `<div class="cards3">${T.map(t=>`<div class="staffc"><div class="av big">${avc(t.n).replace('avx','avi')}</div><div class="sn">${t.n}</div><div class="sr">${t.role}</div><div class="sb"><span>مواعيد اليوم</span><b>${t.today}</b></div></div>`).join('')}</div>`);
+        `<button class="btn btn-gold" onclick="__adv.addStaff()">+ إضافة عضوة</button>`,
+        `<div class="cards3">${TEAM.map(t=>`<div class="staffc"><div class="av big">${avc(t.n).replace('avx','avi')}</div><div class="sn">${t.n}</div><div class="sr">${t.role}</div><div class="sb"><span>مواعيد اليوم</span><b>${t.today}</b></div></div>`).join('')}</div>`);
     },
     inventory(){
       const I=[
@@ -171,7 +176,34 @@
 <div id="adv-body"></div>`;
     },
     init(){
-      window.__adv = { go(t,el){ if(el){document.querySelectorAll('.adv-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');} document.getElementById('adv-body').innerHTML = (TOOLS[t]||(()=> ''))(); } };
+      window.__adv = {
+        go(t,el){ if(el){document.querySelectorAll('.adv-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');} document.getElementById('adv-body').innerHTML = (TOOLS[t]||(()=> ''))(); },
+        addStaff(){
+          const roles=['مساعدة خبيرة','مساعدة + استقبال','خبيرة','استقبال'];
+          const body=`
+            <div class="lux-lead">أدخلي بيانات العضوة الجديدة — ستظهر مباشرة ضمن بطاقات الطاقم.</div>
+            <div class="lux-f"><label>اسم العضوة</label><input name="name" placeholder="مثال: لينا الدوسري"/></div>
+            <div class="lux-two">
+              <div class="lux-f"><label>الدور</label><select name="role">${roles.map(r=>`<option>${r}</option>`).join('')}</select></div>
+              <div class="lux-f"><label>الدوام</label><select name="shift"><option>دوام كامل</option><option>دوام جزئي</option></select></div>
+            </div>
+            <div class="lux-f"><label>رقم الجوال (اختياري)</label><input name="phone" dir="ltr" style="text-align:right" placeholder="05xxxxxxxx"/></div>
+            <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">إضافة العضوة</button></div>`;
+          LUX.modal('إضافة عضوة جديدة',body,{onMount(ov,close){
+            ov.querySelector('[data-c]').onclick=close;
+            ov.querySelector('[data-ok]').onclick=()=>{
+              const name=ov.querySelector('[name=name]');
+              if(!name.value.trim()){name.style.borderColor='#c0566a';name.focus();return;}
+              const phone=ov.querySelector('[name=phone]').value.trim();
+              if(phone&&!/^0?5\d{8}$/.test(phone.replace(/[\s-]/g,''))){const p=ov.querySelector('[name=phone]');p.style.borderColor='#c0566a';p.focus();LUX.toast('رقم الجوال غير صحيح — مثال: 0551234567','err');return;}
+              TEAM.push({n:name.value.trim(),role:ov.querySelector('[name=role]').value,
+                shift:ov.querySelector('[name=shift]').value,phone,today:0,c:'soft',custom:true});
+              saveTeam();close();window.__adv.go('staff');
+              LUX.toast('تمت إضافة '+name.value.trim()+' إلى الطاقم ✓','ok');
+            };
+          }});
+        }
+      };
       window.__adv.go('waitlist', document.querySelector('.adv-chip'));
     }
   };
