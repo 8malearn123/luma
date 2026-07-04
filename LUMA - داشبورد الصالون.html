@@ -296,25 +296,33 @@ SCREENS.staff=()=>{
 };
 
 /* ── CLIENTS ── */
+const CLIENTS=[
+  {n:'نوف العتيبي',v:14,sp:'9,200',last:'قبل ٣ أيام',staff:'أمل',tag:'VIP',tc:'gold'},
+  {n:'سارة الأحمدي',v:9,sp:'4,100',last:'اليوم',staff:'نورة',tag:'متكررة',tc:'green'},
+  {n:'لطيفة المطيري',v:11,sp:'7,600',last:'قبل يومين',staff:'ريم',tag:'VIP',tc:'gold'},
+  {n:'هند الشمري',v:6,sp:'3,300',last:'قبل أسبوع',staff:'سارة',tag:'متكررة',tc:'green'},
+  {n:'وعد الزهراني',v:3,sp:'1,500',last:'اليوم',staff:'سارة',tag:'جديدة',tc:'soft'},
+  {n:'منيرة الدوسري',v:8,sp:'5,900',last:'غداً',staff:'نورة',tag:'متكررة',tc:'green'},
+];
+/* clients added from the UI persist across reloads */
+const CLIENT_KEY='luma_salon_clients';
+try{(JSON.parse(localStorage.getItem(CLIENT_KEY))||[]).forEach(c=>{if(c&&c.n&&!CLIENTS.some(x=>x.n===c.n))CLIENTS.unshift(c);});}catch(e){}
+function saveClients(){try{localStorage.setItem(CLIENT_KEY,JSON.stringify(CLIENTS.filter(c=>c.custom)));}catch(e){}}
+const CLIENTS_BASE_TOTAL=312-6; /* the sample table shows 6 of the base 312 */
+
 SCREENS.clients=()=>{
-  const C=[
-    {n:'نوف العتيبي',v:14,sp:'9,200',last:'قبل ٣ أيام',staff:'أمل',tag:'VIP',tc:'gold'},
-    {n:'سارة الأحمدي',v:9,sp:'4,100',last:'اليوم',staff:'نورة',tag:'متكررة',tc:'green'},
-    {n:'لطيفة المطيري',v:11,sp:'7,600',last:'قبل يومين',staff:'ريم',tag:'VIP',tc:'gold'},
-    {n:'هند الشمري',v:6,sp:'3,300',last:'قبل أسبوع',staff:'سارة',tag:'متكررة',tc:'green'},
-    {n:'وعد الزهراني',v:3,sp:'1,500',last:'اليوم',staff:'سارة',tag:'جديدة',tc:'soft'},
-    {n:'منيرة الدوسري',v:8,sp:'5,900',last:'غداً',staff:'نورة',tag:'متكررة',tc:'green'},
-  ];
+  const C=CLIENTS;
+  const total=CLIENTS_BASE_TOTAL+CLIENTS.length;
   return `
   <style>.ctab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.cth,.ctr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 40px;gap:12px;align-items:center;padding:14px 20px}.cth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.ctr{border-bottom:1px solid var(--line-soft)}.ctr:last-child{border-bottom:none}.ctr:hover{background:var(--surface2)}.cnm{display:flex;align-items:center;gap:11px}.cnm .av{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px}.cc{font-size:13px;color:var(--cream)}.cc .num{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr}@media(max-width:1080px){.cth{display:none}.ctr{grid-template-columns:1fr auto}.ctr .hide{display:none}}</style>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><button class="btn btn-gold">+ عميلة جديدة</button></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><button class="btn btn-gold" onclick="SALON.addClient()">+ عميلة جديدة</button></div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
-    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div><div class="delta">▲ 8</div></div><div class="val">312</div><div class="k">إجمالي العملاء</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div><div class="delta">▲ 8</div></div><div class="val">${total}</div><div class="k">إجمالي العملاء</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">68<span class="u">%</span></div><div class="k">عميلات متكررات</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">486<span class="u">ر.س</span></div><div class="k">متوسط إنفاق العميلة</div></div>
   </div>
   <div class="ctab"><div class="cth"><span>العميلة</span><span>الزيارات</span><span>الإنفاق</span><span>آخر زيارة</span><span>الموظفة المفضّلة</span><span></span></div>
-  ${C.map(c=>`<div class="ctr"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span></div></div><div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${c.sp}</span> ر.س</div><div class="cc hide">${c.last}</div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`).join('')}
+  ${C.map(c=>`<div class="ctr"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span>${c.phone?` <span style="font-size:11px;color:var(--muted);direction:ltr;display:inline-block;margin-right:6px">${c.phone}</span>`:''}</div></div><div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${c.sp}</span> ر.س</div><div class="cc hide">${c.last}</div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`).join('')}
   </div>`;
 };
 
@@ -575,6 +583,33 @@ const SALON={
           color,custom:true});
         saveStaff();close();SALON.go('staff');
         LUX.toast('تمت إضافة '+name.value.trim()+' إلى الطاقم ✓','ok');
+      };
+    }});
+  },
+  addClient(){
+    const body=`
+      <div class="lux-lead">أدخلي بيانات العميلة الجديدة — ستظهر مباشرة في قاعدة عملاء الصالون.</div>
+      <div class="lux-f"><label>اسم العميلة</label><input name="name" placeholder="مثال: جوري السالم"/></div>
+      <div class="lux-f"><label>رقم الجوال</label><input name="phone" dir="ltr" style="text-align:right" placeholder="05xxxxxxxx"/></div>
+      <div class="lux-two">
+        <div class="lux-f"><label>الموظفة المفضّلة</label><select name="staff"><option>بدون تفضيل</option>${STAFF.map(s=>`<option>${s.n}</option>`).join('')}</select></div>
+        <div class="lux-f"><label>كيف عرفت الصالون؟</label><select name="src"><option>زيارة مباشرة</option><option>سوق لوما</option><option>توصية صديقة</option><option>إنستقرام</option><option>أخرى</option></select></div>
+      </div>
+      <div class="lux-f"><label>ملاحظات (اختياري)</label><textarea name="notes" rows="2" placeholder="حساسية، تفضيلات، مناسبة قادمة…"></textarea></div>
+      <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">إضافة العميلة</button></div>`;
+    LUX.modal('إضافة عميلة جديدة',body,{onMount(ov,close){
+      ov.querySelector('[data-c]').onclick=close;
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const name=ov.querySelector('[name=name]');
+        if(!name.value.trim()){name.style.borderColor='#c0566a';name.focus();return;}
+        const phone=ov.querySelector('[name=phone]').value.trim();
+        if(phone&&!/^0?5\d{8}$/.test(phone.replace(/[\s-]/g,''))){const p=ov.querySelector('[name=phone]');p.style.borderColor='#c0566a';p.focus();LUX.toast('رقم الجوال غير صحيح — مثال: 0551234567','err');return;}
+        const staff=ov.querySelector('[name=staff]').value;
+        CLIENTS.unshift({n:name.value.trim(),v:0,sp:'0',last:'—',staff:staff==='بدون تفضيل'?'—':staff,
+          tag:'جديدة',tc:'soft',phone,src:ov.querySelector('[name=src]').value,
+          notes:ov.querySelector('[name=notes]').value.trim(),custom:true});
+        saveClients();close();SALON.go('clients');
+        LUX.toast('تمت إضافة '+name.value.trim()+' إلى قاعدة العملاء ✓','ok');
       };
     }});
   }
