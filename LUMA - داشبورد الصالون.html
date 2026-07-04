@@ -131,6 +131,11 @@ const STAFF=[
   {id:'nora',n:'نورة',role:'بشرة',color:'#7d9bc0'},
   {id:'reem',n:'ريم',role:'أظافر',color:'#6fa86a'},
 ];
+/* staff added from the UI persist across reloads */
+const STAFF_KEY='luma_salon_staff';
+try{(JSON.parse(localStorage.getItem(STAFF_KEY))||[]).forEach(s=>{if(s&&s.id&&!STAFF.some(x=>x.id===s.id))STAFF.push(s);});}catch(e){}
+function saveStaff(){try{localStorage.setItem(STAFF_KEY,JSON.stringify(STAFF.filter(s=>s.custom)));}catch(e){}}
+const STAFF_COLORS=['#c98ab6','#8ac9b8','#9b8ac9','#c97f6f','#6fb0c9','#b8c96f'];
 const START_HOUR=10, SLOTS=20, ROW_H=44; /* 10:00 → 20:00, 30-min slots */
 function slotLabel(i){const t=START_HOUR*60+i*30;let h=Math.floor(t/60),m=t%60;const ap=h>=12?'م':'ص';let h12=h>12?h-12:h;return `${h12}:${m===0?'00':'30'} ${ap}`;}
 /* appts: {staff, start(slot index), dur(slots), client, service, st} */
@@ -270,7 +275,7 @@ function gridLines(){let g='';for(let i=1;i<SLOTS;i++)g+=`<div class="gl" style=
 SCREENS.staff=()=>{
   const rows=STAFF.map(s=>{const cnt=APPTS.filter(a=>a.staff===s.id).length;const rev=cnt*380;return `<div class="card" style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
     <span style="width:52px;height:52px;border-radius:50%;background:var(--surface3);border:1px solid ${s.color};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:${s.color};font-size:22px">${s.n.charAt(0)}</span>
-    <div style="flex:1"><div style="font-size:16px;color:var(--white);font-weight:600">${s.n}</div><div style="font-size:12.5px;color:var(--gold-pale)">${s.role} · دوام كامل</div></div>
+    <div style="flex:1"><div style="font-size:16px;color:var(--white);font-weight:600">${s.n}</div><div style="font-size:12.5px;color:var(--gold-pale)">${s.role} · ${s.shift||'دوام كامل'}</div></div>
     <div style="text-align:center"><div class="num" style="font-size:22px;color:var(--white)">${cnt}</div><div style="font-size:11px;color:var(--muted)">مواعيد اليوم</div></div>
     <div style="text-align:center"><div class="num" style="font-size:22px;color:var(--gold-light)">${rev.toLocaleString('en')}</div><div style="font-size:11px;color:var(--muted)">دخل اليوم (ر.س)</div></div>
     <div style="text-align:center"><div style="color:var(--gold-light);font-size:14px">★ 4.9</div><div style="font-size:11px;color:var(--muted)">التقييم</div></div>
@@ -278,11 +283,11 @@ SCREENS.staff=()=>{
   </div>`;}).join('');
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-    <div><div style="font-weight:600;font-size:19px;color:var(--white)">طاقم الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">٤ موظفات · جميعهن على رأس العمل اليوم</div></div>
-    <button class="btn btn-gold">+ إضافة موظفة</button>
+    <div><div style="font-weight:600;font-size:19px;color:var(--white)">طاقم الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${STAFF.length} موظفات · جميعهن على رأس العمل اليوم</div></div>
+    <button class="btn btn-gold" onclick="SALON.addStaff()">+ إضافة موظفة</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
-    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('staff',19)}</div></div><div class="val">4</div><div class="k">إجمالي الطاقم</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('staff',19)}</div></div><div class="val">${STAFF.length}</div><div class="k">إجمالي الطاقم</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">25<span class="u">%</span></div><div class="k">متوسط نسبة العمولة</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">4.9<span class="u">/5</span></div><div class="k">متوسط تقييم الطاقم</div></div>
   </div>
@@ -547,6 +552,31 @@ const SALON={
     if(SCREENS[id])host.innerHTML=SCREENS[id]();
     else host.innerHTML=`<div class="empty-screen"><div class="ico">${icon(it.icon,30)}</div><h3>${it.label}</h3><p>هذه الشاشة ضمن المراحل القادمة. القائمة ولوحة الحجوزات تعمل بالكامل.</p></div>`;
     window.scrollTo({top:0});
+  },
+  addStaff(){
+    const roles=['مكياج','شعر','بشرة','أظافر','رموش','سبا'];
+    const body=`
+      <div class="lux-lead">أدخلي بيانات الموظفة الجديدة — ستظهر مباشرة في قائمة الطاقم وفي لوحة الحجوزات.</div>
+      <div class="lux-f"><label>اسم الموظفة</label><input name="name" placeholder="مثال: لينا"/></div>
+      <div class="lux-two">
+        <div class="lux-f"><label>التخصص</label><select name="role">${roles.map(r=>`<option>${r}</option>`).join('')}</select></div>
+        <div class="lux-f"><label>الدوام</label><select name="shift"><option>دوام كامل</option><option>دوام جزئي</option></select></div>
+      </div>
+      <div class="lux-f"><label>رقم الجوال (اختياري)</label><input name="phone" dir="ltr" style="text-align:right" placeholder="05xxxxxxxx"/></div>
+      <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">إضافة الموظفة</button></div>`;
+    LUX.modal('إضافة موظفة جديدة',body,{onMount(ov,close){
+      ov.querySelector('[data-c]').onclick=close;
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const name=ov.querySelector('[name=name]');
+        if(!name.value.trim()){name.style.borderColor='#c0566a';name.focus();return;}
+        const color=STAFF_COLORS[STAFF.filter(s=>s.custom).length%STAFF_COLORS.length];
+        STAFF.push({id:'s'+Date.now(),n:name.value.trim(),role:ov.querySelector('[name=role]').value,
+          shift:ov.querySelector('[name=shift]').value,phone:ov.querySelector('[name=phone]').value.trim(),
+          color,custom:true});
+        saveStaff();close();SALON.go('staff');
+        LUX.toast('تمت إضافة '+name.value.trim()+' إلى الطاقم ✓','ok');
+      };
+    }});
   }
 };
 window.SALON=SALON;
