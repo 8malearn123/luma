@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LUMA — المتجر · اكتشفي خبيرتكِ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0e0d11; --bg2:#0b0a0d; --panel:#141319; --panel2:#19181e; --panel3:#1b1a21;
+    --gold:#937842; --gold-light:#caa85f; --gold-pale:#e3c98f; --gold-deep:#7c6335;
+    --white:#f6f2ec; --cream:#f0ebe0; --muted:#7c7783; --muted-deep:#4f4c57; --line:#1e1d24; --blue:#7d9bc0;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--white);font-family:'Cairo',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.2em;text-transform:uppercase;direction:ltr;}
+  .gold-fill{background:linear-gradient(120deg,#dbbd81,#caa85f 30%,#937842 55%,#caa85f 80%,#dbbd81);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;}
+  ::selection{background:var(--gold);color:#fff;} a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1320px;margin:0 auto;padding:0 40px;}
+  @media(max-width:680px){.wrap{padding:0 20px;}}
+  .btn{font-family:'Cairo',sans-serif;font-weight:500;font-size:14px;padding:11px 26px;border-radius:2px;cursor:pointer;border:none;transition:all .3s;white-space:nowrap;}
+  .btn-ghost{background:transparent;border:1px solid var(--gold-deep);color:var(--gold-light);} .btn-ghost:hover{background:rgba(147,115,53,0.12);border-color:var(--gold-light);}
+  .btn-gold{background:linear-gradient(120deg,#dbbd81,#caa85f 45%,#937842);color:#0e0d11;} .btn-gold:hover{filter:brightness(1.08);}
+
+  .nav{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(11,10,8,0.9);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--line);}
+  .nav .brand{font-family:'Bodoni Moda',serif;font-weight:400;font-size:24px;letter-spacing:0.26em;color:var(--gold-light);direction:ltr;display:flex;align-items:center;gap:9px;}
+  .nav .brand .home{font-family:'Cairo',sans-serif;font-size:11px;letter-spacing:0;color:var(--muted);border:0.5px solid var(--line);border-radius:20px;padding:3px 10px;transition:all .25s;}
+  .nav .brand:hover .home{color:var(--gold-light);border-color:var(--gold-deep);}
+  .nav .links{display:flex;gap:26px;align-items:center;}
+  .nav .links a{font-size:14px;color:var(--cream);transition:color .25s;} .nav .links a:hover,.nav .links a.active{color:var(--gold-light);}
+  @media(max-width:820px){.nav .links{display:none;}.nav{padding:14px 20px;}}
+
+  .mhead{position:relative;padding:46px 0 30px;overflow:hidden;border-bottom:0.5px solid var(--line);}
+  .mhead .lattice{position:absolute;inset:0;opacity:0.2;}
+  .mhead .glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 100% at 80% 0%,rgba(147,115,53,0.12),transparent 60%);}
+  .mhead-inner{position:relative;z-index:2;}
+  .crumb{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--muted);direction:ltr;margin-bottom:14px;}
+  .crumb a{color:var(--gold-pale);} .crumb a:hover{color:var(--gold-light);}
+  .mhead .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.22em;color:var(--gold);direction:ltr;margin-bottom:14px;}
+  .mhead h1{font-family:'Cairo',sans-serif;font-weight:600;font-size:clamp(28px,4.2vw,46px);line-height:1.15;color:var(--white);}
+  .mhead h1 .em{font-family:'Bodoni Moda',serif;font-style:italic;font-weight:400;direction:ltr;}
+  .mhead p{font-size:15.5px;color:var(--gold-pale);margin-top:13px;max-width:54ch;}
+
+  /* ===== shop layout: sidebar + results ===== */
+  .shop{display:grid;grid-template-columns:272px 1fr;gap:28px;align-items:start;padding:28px 0 80px;}
+  @media(max-width:980px){.shop{grid-template-columns:1fr;}}
+
+  /* sidebar */
+  .filters{position:sticky;top:82px;background:linear-gradient(168deg,var(--panel2),var(--panel));border:0.5px solid var(--line);border-radius:12px;overflow:hidden;}
+  .filt-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:0.5px solid var(--line);}
+  .filt-head .t{font-family:'Cairo',sans-serif;font-weight:600;font-size:16px;color:var(--white);display:flex;align-items:center;gap:9px;}
+  .filt-head .t .ic{color:var(--gold-light);display:flex;}
+  .filt-head .reset{font-size:12.5px;color:var(--gold-pale);cursor:pointer;transition:color .2s;margin-right:auto;margin-left:6px;}
+  .filt-head .reset:hover{color:var(--gold-light);}
+  .filt-x{display:none;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;}
+
+  .fgroup{padding:18px 20px;border-bottom:0.5px solid var(--line);}
+  .fgroup:last-child{border-bottom:none;}
+  .fgroup .ft{font-size:12px;color:var(--gold);font-weight:600;letter-spacing:0.02em;margin-bottom:12px;}
+  .fopt{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--cream);transition:background .2s,color .2s;}
+  .fopt:hover{background:var(--panel3);}
+  .fopt.on{background:rgba(147,115,53,0.12);color:var(--gold-light);}
+  .fopt .rb{width:16px;height:16px;border-radius:50%;border:1px solid var(--gold-deep);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .2s;}
+  .fopt.on .rb{border-color:var(--gold-light);}
+  .fopt.on .rb::after{content:'';width:8px;height:8px;border-radius:50%;background:linear-gradient(120deg,#dbbd81,#937842);}
+  .fopt .ico{color:var(--gold-deep);display:flex;}
+  .fopt.on .ico{color:var(--gold-light);}
+  .fopt .lb{flex:1;}
+  .fopt .cnt{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);background:var(--panel3);padding:1px 8px;border-radius:20px;direction:ltr;}
+  .fopt.on .cnt{background:var(--gold-deep);color:#0e0d11;}
+
+  /* price slider */
+  .price-val{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+  .price-val .lab{font-size:13px;color:var(--muted);}
+  .price-val .v{font-family:'Bodoni Moda',serif;font-size:22px;color:var(--gold-light);direction:ltr;}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--panel3);outline:none;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(120deg,#dbbd81,#937842);border:2px solid var(--bg);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(120deg,#dbbd81,#937842);border:2px solid var(--bg);cursor:pointer;}
+  .price-ends{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted-deep);direction:ltr;margin-top:7px;}
+
+  /* mobile drawer */
+  .filt-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;opacity:0;transition:opacity .3s;}
+  .filt-bg.open{opacity:1;}
+  @media(max-width:980px){
+    .filters{position:fixed;top:0;right:0;bottom:0;width:310px;max-width:88vw;border-radius:0;z-index:90;transform:translateX(105%);transition:transform .35s;overflow-y:auto;}
+    .filters.open{transform:none;}
+    .filt-x{display:block;}
+    .filt-bg{display:block;pointer-events:none;}
+    .filt-bg.open{pointer-events:auto;}
+  }
+
+  /* results column */
+  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .filt-toggle{display:none;align-items:center;gap:8px;background:var(--panel);border:0.5px solid var(--gold-deep);color:var(--gold-light);font-family:'Cairo',sans-serif;font-size:14px;padding:12px 18px;border-radius:8px;cursor:pointer;}
+  @media(max-width:980px){.filt-toggle{display:flex;}}
+  .search-field{flex:1;min-width:200px;display:flex;align-items:center;gap:11px;background:var(--panel);border:0.5px solid var(--line);border-radius:8px;padding:0 16px;transition:border-color .3s;}
+  .search-field:focus-within{border-color:var(--gold-deep);}
+  .search-field .ic{color:var(--gold);} .search-field input{flex:1;background:none;border:none;outline:none;color:var(--white);font-family:'Cairo',sans-serif;font-size:14.5px;padding:13px 0;} .search-field input::placeholder{color:var(--muted);}
+  .sortsel{background:var(--panel);border:0.5px solid var(--line);color:var(--white);font-family:'Cairo',sans-serif;font-size:13.5px;padding:13px 16px;border-radius:8px;cursor:pointer;outline:none;}
+
+  .reshead{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;}
+  .reshead .count{font-size:14.5px;color:var(--gold-pale);} .reshead .count b{color:var(--gold-light);font-family:'Bodoni Moda',serif;font-size:21px;margin:0 5px;direction:ltr;display:inline-block;}
+  .activetags{display:flex;gap:8px;flex-wrap:wrap;}
+  .atag{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--gold-light);background:rgba(147,115,53,0.12);border:0.5px solid var(--gold-deep);padding:5px 12px;border-radius:30px;cursor:pointer;transition:background .2s;}
+  .atag:hover{background:rgba(147,115,53,0.22);} .atag .x{font-size:13px;color:var(--gold-pale);}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media(max-width:1200px){.grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:980px){.grid{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:880px){.grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr;}}
+  .card{position:relative;border:0.5px solid var(--line);background:linear-gradient(168deg,var(--panel2),var(--panel));border-radius:8px;overflow:hidden;cursor:pointer;transition:border-color .35s,transform .35s,box-shadow .35s;display:flex;flex-direction:column;text-align:right;}
+  .card:hover{border-color:var(--gold-deep);transform:translateY(-5px);box-shadow:0 22px 50px rgba(0,0,0,0.45);}
+  .card.salon{border-color:rgba(125,155,192,0.22);}
+  .card.salon:hover{border-color:var(--blue);}
+  .card .cover{position:relative;height:160px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:0.5px solid var(--line);}
+  .card .cover .pat{position:absolute;inset:0;opacity:0.5;}
+  .card .cover .mono-lg{position:relative;font-family:'Bodoni Moda',serif;font-size:66px;color:var(--gold);direction:ltr;opacity:0.85;}
+  .card.salon .cover .logo{position:relative;z-index:2;width:60px;height:60px;border-radius:15px;background:linear-gradient(140deg,#1c2630,#10141a);border:1px solid var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:27px;color:var(--blue);}
+  .card .ptag{position:absolute;top:13px;right:13px;z-index:3;font-size:11px;padding:5px 11px;border-radius:30px;display:flex;align-items:center;gap:5px;backdrop-filter:blur(8px);}
+  .card .ptag.expert{background:rgba(147,115,53,0.18);border:0.5px solid var(--gold-deep);color:var(--gold-light);}
+  .card .ptag.salon{background:rgba(125,155,192,0.16);border:0.5px solid var(--blue);color:var(--blue);}
+  .card .fav{position:absolute;top:13px;left:13px;width:33px;height:33px;border-radius:50%;background:rgba(11,10,8,0.6);backdrop-filter:blur(8px);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-pale);font-size:15px;z-index:3;cursor:pointer;transition:all .25s;}
+  .card .fav.on{color:#e0566a;}
+  .card .body{padding:17px 19px 19px;display:flex;flex-direction:column;gap:3px;flex:1;}
+  .card .nm{font-family:'Cairo',sans-serif;font-weight:600;font-size:16.5px;color:var(--white);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .card .role{font-size:13px;color:var(--gold-pale);}
+  .card .loc{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:2px;}
+  .card .facts{display:flex;gap:8px;flex-wrap:wrap;margin:11px 0 2px;}
+  .card .facts span{font-size:11px;color:var(--blue);border:0.5px solid rgba(125,155,192,0.3);padding:4px 10px;border-radius:6px;}
+  .card .tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;}
+  .card .tags span{font-size:11.5px;color:var(--gold-pale);border:0.5px solid var(--line);padding:4px 11px;border-radius:20px;}
+  .card .foot{margin-top:auto;padding-top:15px;border-top:0.5px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .card .rating{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--cream);} .card .rating .star{color:var(--gold-light);} .card .rating .cnt{color:var(--muted);font-size:12px;}
+  .card .price{text-align:left;} .card .price .from{font-size:11px;color:var(--muted);} .card .price .v{font-family:'Bodoni Moda',serif;font-size:23px;color:var(--gold-light);direction:ltr;line-height:1;} .card .price .v .u{font-family:'Cairo',sans-serif;font-size:11px;color:var(--muted);}
+  .empty{grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--muted);} .empty .ic{font-size:38px;color:var(--gold-deep);} .empty .t{font-size:17px;color:var(--gold-pale);margin-top:14px;} .empty .s{font-size:13.5px;color:var(--muted);margin-top:6px;}
+
+  footer{padding:40px;border-top:0.5px solid var(--line);background:var(--bg2);text-align:center;} footer .ar{font-size:12px;color:var(--muted-deep);}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="lat" width="84" height="84" patternUnits="userSpaceOnUse"><g fill="none" stroke="#937842" stroke-width="1"><circle cx="0" cy="0" r="42"/><circle cx="84" cy="0" r="42"/><circle cx="0" cy="84" r="42"/><circle cx="84" cy="84" r="42"/><circle cx="42" cy="42" r="42"/></g></pattern>
+</defs></svg>
+
+<nav class="nav">
+  <a class="brand" href="index.html" title="العودة للرئيسية">LUMA <span class="home">→ الرئيسية</span></a>
+  <div class="links">
+    <a href="index.html">الرئيسية</a>
+    <a href="LUMA - سوق لوما.html">سوق لوما</a>
+    <a href="#" class="active">المتجر</a>
+    <a href="وثيقة الباقات والأسعار - LUMA.html">الباقات</a>
+  </div>
+  <a class="btn btn-ghost" href="login.html">تسجيل الدخول</a>
+</nav>
+
+<header class="mhead">
+  <div class="lattice"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+  <div class="glow"></div>
+  <div class="wrap mhead-inner">
+    <div class="crumb"><a href="LUMA - سوق لوما.html">سوق لوما</a> / المتجر</div>
+    <div class="eyebrow">THE MARKETPLACE · المتجر</div>
+    <h1>اكتشفي <span class="em">خبيرتكِ</span> أو صالونكِ المثالي.</h1>
+    <p>كل المزوّدات في مكان واحد — استخدمي شريط الفلترة لاختيار النوع والتخصص والمدينة، ثم احجزي بثقة.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="shop">
+
+    <!-- ===== SIDEBAR FILTERS ===== -->
+    <aside class="filters" id="filters">
+      <div class="filt-head">
+        <span class="t"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg></span> الفلترة</span>
+        <span class="reset" onclick="resetFilters()">مسح الكل</span>
+        <button class="filt-x" onclick="closeFilters()" aria-label="إغلاق">×</button>
+      </div>
+
+      <div class="fgroup">
+        <div class="ft">نوع المزوّدة</div>
+        <div id="g-type"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="ft">التخصّص</div>
+        <div id="g-cat"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="ft">المدينة</div>
+        <div id="g-city"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="ft">التقييم</div>
+        <div id="g-rating"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="ft">السعر الأقصى</div>
+        <div class="price-val"><span class="lab">حتى</span><span class="v" id="pmax-val">—</span></div>
+        <input type="range" id="pmax" oninput="setPrice(this.value)" />
+        <div class="price-ends"><span id="pmin-end">0</span><span id="pmax-end">0</span></div>
+      </div>
+    </aside>
+    <div class="filt-bg" id="filtBg" onclick="closeFilters()"></div>
+
+    <!-- ===== RESULTS ===== -->
+    <div class="results">
+      <div class="toolbar">
+        <button class="filt-toggle" onclick="openFilters()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg> الفلترة</button>
+        <div class="search-field"><span class="ic">⌕</span><input id="q" placeholder="ابحثي عن خبيرة، صالون، خدمة، أو مدينة…" /></div>
+        <select class="sortsel" id="sort" onchange="render()">
+          <option value="rec">الأكثر ملاءمة</option>
+          <option value="rating">الأعلى تقييماً</option>
+          <option value="reviews">الأكثر طلباً</option>
+          <option value="price-asc">السعر: الأقل</option>
+          <option value="price-desc">السعر: الأعلى</option>
+        </select>
+      </div>
+
+      <div class="reshead">
+        <div class="count"><b id="rcount">0</b> نتيجة</div>
+        <div class="activetags" id="activetags"></div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer><span class="ar">جميع الحقوق محفوظة لشركة قمة كود · المتجر</span></footer>
+
+<script>
+const DATA=[
+  // خبيرات مستقلات
+  {type:'expert',n:'رهف العتيبي',role:'خبيرة مكياج',city:'جدة',rating:4.9,reviews:213,price:350,verified:true,cat:'مكياج',tags:['عرائس','سهرات']},
+  {type:'expert',n:'لمياء الزهراني',role:'أخصائية بشرة',city:'الرياض',rating:5.0,reviews:98,price:280,verified:true,cat:'بشرة',tags:['هيدرافيشل']},
+  {type:'expert',n:'نورة القحطاني',role:'مصففة شعر',city:'جازان',rating:4.8,reviews:156,price:220,verified:true,cat:'شعر',tags:['تسريحات','صبغات']},
+  {type:'expert',n:'دانة الشهري',role:'خبيرة مكياج',city:'الرياض',rating:4.7,reviews:187,price:420,verified:true,cat:'مكياج',tags:['ناعم','خليجي']},
+  {type:'expert',n:'جواهر الدوسري',role:'فنانة أظافر',city:'جدة',rating:4.9,reviews:142,price:160,verified:true,cat:'أظافر',tags:['جل','رسم فني']},
+  {type:'expert',n:'سارة الغامدي',role:'مصورة بورتريه',city:'مكة',rating:4.8,reviews:76,price:600,verified:true,cat:'تصوير',tags:['نسائي','مناسبات']},
+  {type:'expert',n:'ريم العنزي',role:'فنية رموش',city:'الدمام',rating:5.0,reviews:121,price:190,verified:true,cat:'رموش',tags:['كلاسيك','حجم روسي']},
+  {type:'expert',n:'وجدان الحربي',role:'خبيرة شعر',city:'جدة',rating:4.9,reviews:203,price:300,verified:true,cat:'شعر',tags:['كيراتين','قص']},
+  {type:'expert',n:'أمل السبيعي',role:'خبيرة مكياج',city:'الدمام',rating:4.7,reviews:134,price:380,verified:true,cat:'مكياج',tags:['سهرات','تخرّج']},
+  // صوالين
+  {type:'salon',n:'صالون لمسة',role:'صالون متكامل',city:'جدة · الشاطئ',rating:4.9,reviews:512,price:200,verified:true,cat:'متكامل',branches:2,staff:4,tags:['مكياج','شعر','بشرة']},
+  {type:'salon',n:'مركز إشراقة',role:'مركز عناية بالبشرة',city:'الرياض · العليا',rating:4.8,reviews:389,price:280,verified:true,cat:'بشرة',branches:1,staff:6,tags:['ليزر','هيدرافيشل']},
+  {type:'salon',n:'صالون رؤى',role:'صالون نسائي شامل',city:'جدة · الروضة',rating:4.9,reviews:431,price:220,verified:true,cat:'متكامل',branches:3,staff:9,tags:['عرائس','سبا']},
+  {type:'salon',n:'مركز لازوردي',role:'سبا ومركز تجميل',city:'الرياض',rating:5.0,reviews:178,price:350,verified:true,cat:'سبا',branches:2,staff:7,tags:['مساج','عناية']},
+  {type:'salon',n:'استوديو نون',role:'صالون شعر ومكياج',city:'الدمام',rating:4.7,reviews:264,price:180,verified:true,cat:'شعر',branches:1,staff:5,tags:['صبغات','تسريحات']},
+  {type:'salon',n:'صالون ضي',role:'صالون أظافر وعناية',city:'مكة',rating:4.6,reviews:142,price:150,verified:false,cat:'أظافر',branches:1,staff:3,tags:['منيكير','تركيب']},
+];
+
+const cityOf=c=>c.split('·')[0].trim();
+const PRICES=DATA.map(d=>d.price);
+const PMIN=Math.min(...PRICES), PMAX=Math.max(...PRICES);
+
+const TYPES=[
+  {v:'all',lb:'الكل',ic:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>'},
+  {v:'expert',lb:'خبيرات مستقلات',ic:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>'},
+  {v:'salon',lb:'صوالين',ic:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l2-5h14l2 5M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg>'},
+];
+const CATS=['الكل','مكياج','بشرة','شعر','أظافر','رموش','تصوير','سبا','متكامل'];
+const CITIES=['الكل',...[...new Set(DATA.map(d=>cityOf(d.city)))]];
+const RATINGS=[{v:0,lb:'الكل'},{v:4.5,lb:'4.5 فأعلى'},{v:4.8,lb:'4.8 فأعلى'},{v:5,lb:'5.0 فقط'}];
+
+let state={type:'all',cat:'الكل',city:'الكل',minRating:0,maxPrice:PMAX,fav:new Set()};
+
+// preset filter from ?type=
+try{const p=new URLSearchParams(location.search).get('type');if(p==='expert'||p==='salon')state.type=p;}catch(e){}
+
+function countBy(pred){return DATA.filter(pred).length;}
+
+function buildSidebar(){
+  document.getElementById('g-type').innerHTML=TYPES.map(t=>{
+    const cnt=t.v==='all'?DATA.length:countBy(d=>d.type===t.v);
+    return `<div class="fopt ${state.type===t.v?'on':''}" onclick="setType('${t.v}')"><span class="ico">${t.ic}</span><span class="lb">${t.lb}</span><span class="cnt">${cnt}</span></div>`;
+  }).join('');
+  document.getElementById('g-cat').innerHTML=CATS.map(c=>{
+    const cnt=c==='الكل'?countBy(d=>state.type==='all'||d.type===state.type):countBy(d=>(state.type==='all'||d.type===state.type)&&d.cat===c);
+    return `<div class="fopt ${state.cat===c?'on':''}" onclick="setCat('${c}')"><span class="rb"></span><span class="lb">${c}</span><span class="cnt">${cnt}</span></div>`;
+  }).join('');
+  document.getElementById('g-city').innerHTML=CITIES.map(c=>{
+    const cnt=c==='الكل'?countBy(d=>state.type==='all'||d.type===state.type):countBy(d=>(state.type==='all'||d.type===state.type)&&cityOf(d.city)===c);
+    return `<div class="fopt ${state.city===c?'on':''}" onclick="setCity('${c}')"><span class="rb"></span><span class="lb">${c}</span><span class="cnt">${cnt}</span></div>`;
+  }).join('');
+  document.getElementById('g-rating').innerHTML=RATINGS.map(r=>`<div class="fopt ${state.minRating===r.v?'on':''}" onclick="setRating(${r.v})"><span class="rb"></span><span class="lb">${r.lb}</span></div>`).join('');
+  const sl=document.getElementById('pmax');
+  sl.min=PMIN;sl.max=PMAX;sl.step=10;sl.value=state.maxPrice;
+  document.getElementById('pmin-end').textContent=PMIN+' ر.س';
+  document.getElementById('pmax-end').textContent=PMAX+' ر.س';
+  document.getElementById('pmax-val').textContent=(state.maxPrice>=PMAX?PMAX:state.maxPrice)+' ر.س';
+}
+
+function setType(t){state.type=t;state.cat='الكل';state.city='الكل';buildSidebar();render();}
+function setCat(c){state.cat=c;buildSidebar();render();}
+function setCity(c){state.city=c;buildSidebar();render();}
+function setRating(r){state.minRating=r;buildSidebar();render();}
+function setPrice(v){state.maxPrice=+v;document.getElementById('pmax-val').textContent=(+v>=PMAX?PMAX:+v)+' ر.س';render();}
+function resetFilters(){state={type:'all',cat:'الكل',city:'الكل',minRating:0,maxPrice:PMAX,fav:state.fav};document.getElementById('q').value='';buildSidebar();render();}
+function toggleFav(k,ev){ev.preventDefault();ev.stopPropagation();if(state.fav.has(k))state.fav.delete(k);else state.fav.add(k);render();}
+
+function openFilters(){document.getElementById('filters').classList.add('open');document.getElementById('filtBg').classList.add('open');}
+function closeFilters(){document.getElementById('filters').classList.remove('open');document.getElementById('filtBg').classList.remove('open');}
+
+function activeTags(){
+  const tags=[];
+  if(state.type!=='all')tags.push({lb:TYPES.find(t=>t.v===state.type).lb,clear:()=>setType('all')});
+  if(state.cat!=='الكل')tags.push({lb:state.cat,clear:()=>setCat('الكل')});
+  if(state.city!=='الكل')tags.push({lb:state.city,clear:()=>setCity('الكل')});
+  if(state.minRating>0)tags.push({lb:'★ '+RATINGS.find(r=>r.v===state.minRating).lb,clear:()=>setRating(0)});
+  if(state.maxPrice<PMAX)tags.push({lb:'حتى '+state.maxPrice+' ر.س',clear:()=>setPrice(PMAX)});
+  window.__clr=tags.map(t=>t.clear);
+  document.getElementById('activetags').innerHTML=tags.map((t,i)=>`<span class="atag" onclick="__clr[${i}]()">${t.lb} <span class="x">×</span></span>`).join('');
+}
+
+function render(){
+  const q=document.getElementById('q').value.trim();
+  let list=DATA.filter(e=>{
+    if(state.type!=='all'&&e.type!==state.type)return false;
+    if(state.cat!=='الكل'&&e.cat!==state.cat)return false;
+    if(state.city!=='الكل'&&cityOf(e.city)!==state.city)return false;
+    if(e.rating<state.minRating)return false;
+    if(e.price>state.maxPrice)return false;
+    if(q){const hay=e.n+e.role+e.city+e.tags.join(' ');if(!hay.includes(q))return false;}
+    return true;
+  });
+  const sort=document.getElementById('sort').value;
+  if(sort==='rating')list.sort((a,b)=>b.rating-a.rating);
+  else if(sort==='reviews')list.sort((a,b)=>b.reviews-a.reviews);
+  else if(sort==='price-asc')list.sort((a,b)=>a.price-b.price);
+  else if(sort==='price-desc')list.sort((a,b)=>b.price-a.price);
+  else list.sort((a,b)=>(b.rating*b.reviews)-(a.rating*a.reviews));
+  document.getElementById('rcount').textContent=list.length;
+  activeTags();
+  const grid=document.getElementById('grid');
+  if(!list.length){grid.innerHTML=`<div class="empty"><div class="ic">⌕</div><div class="t">لا توجد نتائج مطابقة</div><div class="s">جرّبي تعديل الفلاتر أو مسحها.</div></div>`;return;}
+  grid.innerHTML=list.map(e=>{
+    const k=e.type+'|'+e.n;
+    const link='LUMA - تجربة العميلة.html?name='+encodeURIComponent(e.n)+'&role='+encodeURIComponent(e.type==='salon'?('صالون · '+e.cat):e.role)+'&city='+encodeURIComponent(e.city)+'&type='+e.type;
+    const isSalon=e.type==='salon';
+    return `<a class="card ${isSalon?'salon':''}" href="${link}">
+      <div class="cover">
+        <div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+        ${isSalon?`<span class="logo">${e.n.replace('صالون ','').replace('مركز ','').replace('استوديو ','').charAt(0)}</span>`:`<span class="mono-lg">${e.n.charAt(0)}</span>`}
+        <span class="fav ${state.fav.has(k)?'on':''}" onclick="toggleFav('${k}',event)">${state.fav.has(k)?'♥':'♡'}</span>
+        <span class="ptag ${isSalon?'salon':'expert'}">${isSalon?'⬢ صالون':'◆ خبيرة مستقلة'}</span>
+      </div>
+      <div class="body">
+        <div class="nm">${e.n}</div>
+        <div class="role">${e.role}</div>
+        <div class="loc">⌖ ${e.city}</div>
+        ${isSalon?`<div class="facts"><span>⬢ ${e.branches} ${e.branches===1?'فرع':'فروع'}</span><span>● ${e.staff} خبيرات</span></div>`:''}
+        <div class="tags">${e.tags.map(t=>`<span>${t}</span>`).join('')}</div>
+        <div class="foot">
+          <div class="rating"><span class="star">★</span> ${e.rating.toFixed(1)} <span class="cnt">(${e.reviews})</span></div>
+          <div class="price"><div class="from">${isSalon?'خدمات تبدأ من':'يبدأ من'}</div><div class="v">${e.price} <span class="u">ر.س</span></div></div>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+buildSidebar();
+render();
+document.getElementById('q').addEventListener('input',render);
+</script>
+</body>
+</html>

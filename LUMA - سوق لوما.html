@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>سوق لوما — اختاري وجهتكِ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0e0d11; --bg2:#0b0a0d; --panel:#141319; --panel2:#19181e; --panel3:#1b1a21;
+    --gold:#937842; --gold-light:#caa85f; --gold-bright:#dbbd81; --gold-pale:#e3c98f; --gold-deep:#7c6335;
+    --white:#f6f2ec; --cream:#f0ebe0; --muted:#7c7783; --muted-deep:#4f4c57; --line:#1e1d24;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--white);font-family:'Cairo',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--gold);color:#fff;}
+  .gold-fill{background:linear-gradient(120deg,#dbbd81,#caa85f 30%,#937842 55%,#caa85f 80%,#dbbd81);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 40px;width:100%;}
+  @media(max-width:680px){.wrap{padding:0 22px;}}
+  .btn{font-family:'Cairo',sans-serif;font-weight:500;font-size:14px;padding:11px 26px;border-radius:3px;cursor:pointer;border:none;transition:all .3s;white-space:nowrap;}
+  .btn-ghost{background:transparent;border:1px solid var(--gold-deep);color:var(--gold-light);}
+  .btn-ghost:hover{background:rgba(147,115,53,0.12);border-color:var(--gold-light);}
+
+  .nav{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(11,10,8,0.9);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--line);}
+  .nav .brand a{display:inline-flex;align-items:center;gap:9px;font-family:'Bodoni Moda',serif;font-weight:400;font-size:24px;letter-spacing:0.26em;color:var(--gold-light);direction:ltr;transition:color .25s;}
+  .nav .brand a:hover{color:var(--gold-bright);}
+  .nav .brand .home{font-family:'Cairo',sans-serif;font-size:12px;letter-spacing:0;color:var(--muted);font-weight:400;}
+  .nav .links{display:flex;gap:28px;align-items:center;}
+  .nav .links a{font-size:14px;color:var(--cream);transition:color .25s;}
+  .nav .links a:hover,.nav .links a.active{color:var(--gold-light);}
+  @media(max-width:820px){.nav .links{display:none;}.nav{padding:14px 20px;}}
+
+  .head{position:relative;text-align:center;padding:64px 0 44px;overflow:hidden;}
+  .head .lattice{position:absolute;inset:0;opacity:0.18;}
+  .head .glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(147,115,53,0.14),transparent 60%);}
+  .head .inner{position:relative;z-index:2;}
+  .head .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;color:var(--gold);direction:ltr;margin-bottom:18px;}
+  .head h1{font-family:'Bodoni Moda',serif;font-weight:400;font-size:clamp(40px,7vw,72px);letter-spacing:0.16em;direction:ltr;line-height:1;}
+  .head p{font-size:clamp(15px,2vw,18px);color:var(--gold-pale);margin-top:18px;max-width:54ch;margin-inline:auto;line-height:1.9;}
+
+  .gates{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;padding:20px 0 28px;max-width:920px;margin:0 auto;width:100%;}
+  @media(max-width:880px){.gates{grid-template-columns:1fr;max-width:520px;}}
+  .gate{position:relative;border:0.5px solid var(--line);background:linear-gradient(168deg,var(--panel2),var(--panel));border-radius:10px;overflow:hidden;padding:0;display:flex;flex-direction:column;cursor:pointer;transition:border-color .4s,transform .4s,box-shadow .4s;min-height:420px;}
+  .gate:hover{border-color:var(--gold-deep);transform:translateY(-6px);box-shadow:0 28px 60px rgba(0,0,0,0.5);}
+  .gate.salon:hover{border-color:#3d5a80;}
+  .gate .cover{position:relative;height:200px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:0.5px solid var(--line);}
+  .gate .cover .pat{position:absolute;inset:0;opacity:0.5;}
+  .gate .cover .ic{position:relative;z-index:2;width:78px;height:78px;border-radius:50%;border:1px solid var(--gold-deep);background:rgba(11,10,8,0.5);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
+  .gate.salon .cover .ic{border-color:#3d5a80;color:#9bbbe0;}
+  .gate .body{padding:30px 30px 30px;display:flex;flex-direction:column;flex:1;}
+  .gate .kicker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--gold);direction:ltr;}
+  .gate.salon .kicker{color:#9bbbe0;}
+  .gate h2{font-family:'Cairo',sans-serif;font-weight:600;font-size:26px;color:var(--white);margin-top:10px;}
+  .gate .desc{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.8;flex:1;}
+  .gate .meta{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold-pale);direction:ltr;margin:16px 0;}
+  .gate .go{display:flex;align-items:center;gap:10px;color:var(--gold-light);font-size:14.5px;font-weight:500;}
+  .gate.salon .go{color:#9bbbe0;}
+  .gate .go .arr{transition:transform .3s;}
+  .gate:hover .go .arr{transform:translateX(-6px);}
+
+  .note{max-width:920px;margin:0 auto 90px;width:100%;display:flex;align-items:flex-start;gap:14px;padding:20px 24px;border:0.5px solid var(--line);border-radius:10px;background:linear-gradient(168deg,var(--panel2),var(--panel));}
+  .note .ic{flex-shrink:0;width:42px;height:42px;border-radius:10px;border:0.5px solid var(--gold-deep);background:rgba(147,115,53,0.12);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
+  .note .tx .t{font-size:15px;color:var(--white);font-weight:600;}
+  .note .tx .d{font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.8;}
+
+  footer{padding:34px;border-top:0.5px solid var(--line);background:var(--bg2);text-align:center;}
+  footer .ar{font-size:12px;color:var(--muted-deep);}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="lat" width="84" height="84" patternUnits="userSpaceOnUse"><g fill="none" stroke="#937842" stroke-width="1"><circle cx="0" cy="0" r="42"/><circle cx="84" cy="0" r="42"/><circle cx="0" cy="84" r="42"/><circle cx="84" cy="84" r="42"/><circle cx="42" cy="42" r="42"/></g></pattern>
+</defs></svg>
+
+<nav class="nav">
+  <div class="brand"><a href="index.html" title="العودة للرئيسية">LUMA <span class="home">→ الرئيسية</span></a></div>
+  <div class="links">
+    <a href="index.html">الرئيسية</a>
+    <a href="#" class="active">سوق لوما</a>
+    <a href="وثيقة الباقات والأسعار - LUMA.html">الباقات</a>
+    <a href="index.html#experts">انضمي</a>
+  </div>
+  <a class="btn btn-ghost" href="login.html">تسجيل الدخول</a>
+</nav>
+
+<header class="head">
+  <div class="lattice"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+  <div class="glow"></div>
+  <div class="wrap inner">
+    <div class="eyebrow">LUMA MARKETPLACE</div>
+    <h1 class="gold-fill">سوق لوما</h1>
+    <p>اختاري وجهتكِ: خبيرة تجميل مستقلة أو صالون متكامل — كلها موثّقة وبمستوى واحد. والمنتجات تجدينها داخل صفحة كل خبيرة أو صالون.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="gates">
+
+    <a class="gate" href="LUMA - المتجر.html?type=expert">
+      <div class="cover">
+        <div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+        <div class="ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></div>
+      </div>
+      <div class="body">
+        <div class="kicker">◆ FREELANCERS</div>
+        <h2>الفنانات المستقلات</h2>
+        <div class="desc">خبيرات تجميل ومصوّرات يعملن بشكل مستقل — احجزي موعدكِ مباشرة مع الخبيرة، وتصفّحي منتجاتها داخل صفحتها.</div>
+        <div class="meta">164 خبيرة موثّقة</div>
+        <div class="go"><span class="arr">←</span> تصفّحي الفنانات</div>
+      </div>
+    </a>
+
+    <a class="gate salon" href="LUMA - المتجر.html?type=salon">
+      <div class="cover">
+        <div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+        <div class="ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l2-5h14l2 5M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg></div>
+      </div>
+      <div class="body">
+        <div class="kicker">⬢ SALONS</div>
+        <h2>الصوالين والمراكز</h2>
+        <div class="desc">صوالين ومراكز تجميل معتمدة بعدة خبيرات وفروع — احجزي واختاري الموظفة والفرع، وتصفّحي منتجاتها داخل صفحتها.</div>
+        <div class="meta">38 صالون معتمد</div>
+        <div class="go"><span class="arr">←</span> تصفّحي الصوالين</div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="note">
+    <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13a1 1 0 01-1 1H6a1 1 0 01-1-1z"/><path d="M9 7a3 3 0 016 0"/></svg></div>
+    <div class="tx">
+      <div class="t">المنتجات تُعرض داخل صفحة كل مزوّدة</div>
+      <div class="d">لا يوجد متجر منتجات مركزي في لوما — كل خبيرة أو صالون مسؤولة عن عرض وإدارة منتجاتها الخاصة داخل صفحتها، لتبقى الجودة والمسؤولية على عاتق المزوّدة نفسها.</div>
+    </div>
+  </div>
+</div>
+
+<footer><span class="ar">جميع الحقوق محفوظة لشركة قمة كود · سوق لوما</span></footer>
+</body>
+</html>

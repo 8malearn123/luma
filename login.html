@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LUMA — تسجيل الدخول</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#16151b; --bg2:#100f13; --panel:#1b1a20; --panel2:#201f26;
+    --gold:#9c8047; --gold-light:#ccab64; --gold-bright:#dbbd81; --gold-pale:#e6ce95; --gold-deep:#846a38;
+    --white:#f6f2ec; --cream:#ece6da; --muted:#86818d; --muted-deep:#58545f; --line:#26242d; --green:#6fa86a;
+  }
+  body{background:linear-gradient(176deg,#1b1a21,#131217 34%,#0c0b0e);color:var(--white);font-family:'Cairo',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--gold);color:#fff;}
+  .word{font-family:'Bodoni Moda',serif;font-weight:300;letter-spacing:0.24em;direction:ltr;}
+  .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.2em;text-transform:uppercase;direction:ltr;}
+  .gold-fill{background:linear-gradient(120deg,#dbbd81,#caa85f 30%,#937842 55%,#caa85f 80%,#dbbd81);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;}
+
+  .layout{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
+  @media(max-width:880px){.layout{grid-template-columns:1fr;}.brandside{display:none;}}
+
+  /* brand side */
+  .brandside{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:60px 56px;border-left:0.5px solid var(--line);background:radial-gradient(ellipse 80% 70% at 30% 30%,rgba(147,115,53,0.14),transparent 60%);}
+  .brandside .lattice{position:absolute;inset:0;opacity:0.3;}
+  .brandside .inner{position:relative;z-index:2;}
+  .brandside .wm{font-size:64px;color:var(--gold-light);}
+  .brandside .sep{display:flex;align-items:center;gap:16px;color:var(--gold);font-size:13px;margin:26px 0;}
+  .brandside .sep .l{width:54px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+  .brandside h2{font-family:'Cairo',sans-serif;font-weight:600;font-size:30px;line-height:1.35;color:var(--white);max-width:18ch;}
+  .brandside h2 .em{font-family:'Bodoni Moda',serif;font-style:italic;font-weight:400;direction:ltr;color:var(--gold-light);}
+  .brandside p{font-size:15px;color:var(--gold-pale);margin-top:18px;max-width:40ch;line-height:1.9;}
+  .brandside .feats{margin-top:32px;display:flex;flex-direction:column;gap:14px;}
+  .brandside .feats .f{display:flex;align-items:center;gap:13px;font-size:14px;color:var(--cream);}
+  .brandside .feats .f .d{color:var(--gold);font-size:9px;}
+
+  /* form side */
+  .formside{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 28px;}
+  .formwrap{width:100%;max-width:410px;}
+  .formwrap .topbrand{text-align:center;margin-bottom:30px;}
+  .formwrap .topbrand .b{font-family:'Bodoni Moda',serif;font-size:30px;letter-spacing:0.28em;color:var(--gold-light);direction:ltr;}
+  .formwrap .topbrand .s{font-size:13px;color:var(--muted);margin-top:8px;}
+  .formwrap h1{font-family:'Cairo',sans-serif;font-weight:600;font-size:24px;color:var(--white);margin-bottom:6px;}
+  .formwrap .lead{font-size:13.5px;color:var(--gold-pale);margin-bottom:24px;display:flex;align-items:center;gap:8px;}
+  .formwrap .lead .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(111,168,106,0.18);flex-shrink:0;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;color:var(--gold-pale);font-weight:500;margin-bottom:8px;}
+  .field input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:14px 16px;color:var(--white);font-family:'Cairo',sans-serif;font-size:14.5px;font-weight:300;outline:none;transition:border-color .25s;}
+  .field input:focus{border-color:var(--gold-deep);}
+  .field input::placeholder{color:var(--muted-deep);}
+  .field .pwwrap{position:relative;}
+  .field .pwwrap .eye{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;}
+
+  .rowx{display:flex;align-items:center;justify-content:space-between;margin:4px 0 22px;}
+  .remember{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--cream);cursor:pointer;}
+  .remember .box{width:18px;height:18px;border:1px solid var(--gold-deep);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#131217;transition:background .2s;}
+  .remember.on .box{background:var(--gold-light);border-color:var(--gold-light);}
+  .remember .box .ck{opacity:0;}
+  .remember.on .box .ck{opacity:1;}
+  .forgot{font-size:13px;color:var(--gold-light);cursor:pointer;}
+  .forgot:hover{color:var(--gold-bright);}
+
+  .btn{width:100%;font-family:'Cairo',sans-serif;font-weight:600;font-size:15px;padding:15px;border-radius:6px;cursor:pointer;border:none;transition:all .25s;}
+  .btn-gold{background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);color:#131217;}
+  .btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px);}
+
+  /* demo accounts */
+  .demo{margin-top:26px;padding-top:22px;border-top:0.5px solid var(--line);}
+  .demo .dt{font-size:12.5px;color:var(--gold);font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .demo .ds{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.7;}
+  .demo .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media(max-width:430px){.demo .dgrid{grid-template-columns:1fr;}}
+  .dacc{text-align:right;border:0.5px solid var(--line);background:var(--panel);border-radius:9px;padding:13px 14px;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;gap:5px;}
+  .dacc:hover{border-color:var(--gold-deep);background:var(--panel2);transform:translateY(-2px);}
+  .dacc .r{font-size:13.5px;color:var(--white);font-weight:500;display:flex;align-items:center;gap:8px;}
+  .dacc .r .i{color:var(--gold-light);display:flex;}
+  .dacc .e{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);direction:ltr;}
+  .dacc .go{font-size:11.5px;color:var(--gold-pale);display:flex;align-items:center;gap:5px;}
+
+  .signup{text-align:center;margin-top:24px;font-size:13.5px;color:var(--muted);}
+  .signup a{color:var(--gold-light);font-weight:500;}
+  .signup a:hover{color:var(--gold-bright);}
+  .backhome{position:fixed;top:22px;right:26px;font-size:13px;color:var(--gold-pale);z-index:5;}
+  .backhome:hover{color:var(--gold-light);}
+  @media(max-width:880px){.backhome{color:var(--gold-light);}}
+</style>
+</head>
+<body>
+<a class="backhome" href="index.html">→ العودة للرئيسية</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="lat" width="90" height="90" patternUnits="userSpaceOnUse"><g fill="none" stroke="#937842" stroke-width="1"><circle cx="0" cy="0" r="45"/><circle cx="90" cy="0" r="45"/><circle cx="0" cy="90" r="45"/><circle cx="90" cy="90" r="45"/><circle cx="45" cy="45" r="45"/></g></pattern>
+</defs></svg>
+
+<div class="layout">
+  <!-- BRAND SIDE -->
+  <div class="brandside">
+    <div class="lattice"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+    <div class="inner">
+      <div class="word wm gold-fill">LUMA</div>
+      <div class="sep"><span class="l"></span><span>◆</span><span class="l" style="transform:scaleX(-1)"></span></div>
+      <h2>دخول واحد إلى <span class="em">لوما</span></h2>
+      <p>سجّلي دخولكِ ببياناتكِ، والنظام يتعرّف تلقائيًا على نوع حسابكِ ويوجّهكِ إلى لوحتكِ الصحيحة — عميلة، خبيرة، صالون، أو إدارة.</p>
+      <div class="feats">
+        <div class="f"><span class="d">◆</span> دخول موحّد بلا اختيار نوع الحساب</div>
+        <div class="f"><span class="d">◆</span> توجيه ذكي إلى اللوحة المناسبة</div>
+        <div class="f"><span class="d">◆</span> دخول آمن وموثّق</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM SIDE -->
+  <div class="formside">
+    <div class="formwrap">
+      <div class="topbrand">
+        <div class="b">LUMA</div>
+        <div class="s">منصة الخبيرات المحترفات</div>
+      </div>
+
+      <h1>تسجيل الدخول</h1>
+      <div class="lead"><span class="dot"></span> دخول موحّد — النظام يكتشف نوع حسابكِ تلقائيًا.</div>
+
+      <form onsubmit="return doLogin(event)">
+        <div class="field">
+          <label>البريد الإلكتروني أو الجوال</label>
+          <input type="text" id="identifier" placeholder="name@example.com" dir="ltr" style="text-align:right" />
+        </div>
+        <div class="field">
+          <label>كلمة المرور</label>
+          <div class="pwwrap">
+            <input type="password" id="pw" placeholder="••••••••" dir="ltr" style="text-align:right" />
+            <button type="button" class="eye" onclick="togglePw(this)" aria-label="إظهار كلمة المرور">◉</button>
+          </div>
+        </div>
+        <div class="rowx">
+          <div class="remember on" id="remember" onclick="this.classList.toggle('on')"><span class="box"><span class="ck">✓</span></span> تذكّرني</div>
+          <span class="forgot" onclick="alert('سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدكِ.')">نسيتِ كلمة المرور؟</span>
+        </div>
+        <button class="btn btn-gold" type="submit">دخول</button>
+      </form>
+
+      <!-- DEMO ACCOUNTS -->
+      <div class="demo">
+        <div class="dt">◆ حسابات تجريبية (ديمو)</div>
+        <div class="ds">اضغطي على أي حساب للدخول مباشرة إلى لوحته. كلمة المرور للجميع: <b style="color:var(--gold-pale)">123456</b></div>
+        <div class="dgrid">
+          <div class="dacc" onclick="quick('client')">
+            <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></span> عميلة</div>
+            <div class="e">client@luma.sa</div>
+            <div class="go">دخول لوحة العميلة ←</div>
+          </div>
+          <div class="dacc" onclick="quick('expert')">
+            <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l2.4 6.9H22l-6 4.6 2.3 7L12 16.9 5.7 20.5 8 13.5l-6-4.6h7.6z"/></svg></span> خبيرة</div>
+            <div class="e">expert@luma.sa</div>
+            <div class="go">دخول لوحة الخبيرة ←</div>
+          </div>
+          <div class="dacc" onclick="quick('salon')">
+            <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l2-5h14l2 5M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg></span> صالون</div>
+            <div class="e">salon@luma.sa</div>
+            <div class="go">دخول لوحة الصالون ←</div>
+          </div>
+          <div class="dacc" onclick="quick('admin')">
+            <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg></span> الإدارة</div>
+            <div class="e">admin@luma.sa</div>
+            <div class="go">دخول لوحة الأدمن ←</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="signup">ليس لديكِ حساب؟ <a href="index.html#experts">أنشئي حسابكِ</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DEST={
+    client:'LUMA - داشبورد العميلة.html',
+    expert:'LUMA - داشبورد الخبيرة.html',
+    salon :'LUMA - داشبورد الصالون.html',
+    admin :'LUMA - إدارة لوما (الأدمن).html'
+  };
+  /* known demo accounts — the system recognises the role from the account itself */
+  const ACCOUNTS={
+    'client@luma.sa':'client', '0500000001':'client',
+    'expert@luma.sa':'expert', '0500000002':'expert',
+    'salon@luma.sa' :'salon',  '0500000003':'salon',
+    'admin@luma.sa' :'admin',  '0500000004':'admin'
+  };
+
+  /* auto-detect the account type from the identifier */
+  function resolveRole(id){
+    const k=(id||'').trim().toLowerCase().replace(/\s/g,'');
+    if(ACCOUNTS[k])return ACCOUNTS[k];
+    if(/admin|admin|ادمن|إدارة|اداره/.test(k))return 'admin';
+    if(/salon|صالون|مركز|markaz/.test(k))return 'salon';
+    if(/expert|studio|خبير|استوديو/.test(k))return 'expert';
+    return 'client';
+  }
+
+  function togglePw(btn){ const i=document.getElementById('pw'); i.type=i.type==='password'?'text':'password'; btn.style.color=i.type==='text'?'#ccab64':''; }
+
+  function doLogin(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    const id=document.getElementById('identifier').value;
+    if(!id.trim()){ document.getElementById('identifier').focus(); return false; }
+    const role=resolveRole(id);
+    window.location.href=DEST[role];
+    return false;
+  }
+
+  /* demo quick login */
+  const DEMO_EMAIL={client:'client@luma.sa',expert:'expert@luma.sa',salon:'salon@luma.sa',admin:'admin@luma.sa'};
+  function quick(role){
+    document.getElementById('identifier').value=DEMO_EMAIL[role];
+    document.getElementById('pw').value='123456';
+    window.location.href=DEST[role];
+  }
+</script>
+</body>
+</html>

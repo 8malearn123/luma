@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LUMA — وثيقة الباقات والأسعار</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500&family=El+Messiri:wght@400;500;600;700&family=Cairo:wght@200;300;400;500;600&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#16151b; --charcoal:#0e0d11; --warm-black:#141210; --panel:#1b1a20; --panel2:#201f26;
+    --gold:#9c8047; --gold-light:#ccab64; --gold-pale:#e6ce95; --gold-deep:#846a38;
+    --off-white:#f6f2ec; --cream:#ece6da; --text:#f6f2ec; --muted:#86818d; --muted2:#9c948b;
+    --line:#26242d; --border:#2a2825;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;font-weight:300;line-height:1.75;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  .messiri{font-family:'El Messiri',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.16em;text-transform:uppercase;direction:ltr;}
+  .word{font-family:'Bodoni Moda',serif;font-weight:300;letter-spacing:0.2em;direction:ltr;line-height:0.92;white-space:nowrap;}
+  .gold-fill{background:linear-gradient(135deg,#dbbd81 0%,#caa85f 28%,#937842 50%,#caa85f 72%,#dbbd81 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;}
+  ::selection{background:var(--gold);color:#fff;}
+  a{color:inherit;text-decoration:none;}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 44px;}
+  @media(max-width:640px){.wrap{padding:0 22px;}}
+
+  /* sticky top */
+  .top{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;
+    padding:16px 44px;background:rgba(10,9,8,0.82);backdrop-filter:blur(16px);border-bottom:0.5px solid var(--line);}
+  .top .mk{font-family:'Bodoni Moda',serif;font-weight:400;font-size:22px;letter-spacing:0.24em;color:var(--gold-light);direction:ltr;}
+  .top nav{display:flex;gap:26px;align-items:center;}
+  .top nav a{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);direction:ltr;transition:color .25s;}
+  .top nav a:hover{color:var(--gold-light);}
+  @media(max-width:860px){.top nav{display:none;}}
+
+  /* hero */
+  .hero{position:relative;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;
+    padding:48px 44px 44px;overflow:hidden;border-bottom:0.5px solid var(--line);}
+  .hero .pattern-bg{position:absolute;inset:0;opacity:0.42;}
+  .hero .gloom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 44%,rgba(10,9,8,0.05) 0%,var(--bg) 68%);}
+  .hero-meta{position:relative;z-index:2;display:flex;justify-content:space-between;font-size:10px;color:var(--gold-pale);}
+  .hero-meta .c{display:flex;flex-direction:column;gap:4px;}
+  .hero-meta .c .l{color:var(--muted);}
+  .hero-center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:24px;}
+  .hero-center .word{font-size:clamp(70px,15vw,168px);letter-spacing:0.22em;}
+  .hero-center .star-row{display:flex;align-items:center;gap:16px;color:var(--gold);font-size:13px;}
+  .hero-center .star-row .ln{width:42px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+  .hero-center .doc-ttl{font-family:'El Messiri',serif;font-weight:600;font-size:clamp(22px,3.4vw,34px);color:var(--off-white);}
+  .hero-center .doc-sub{font-family:'Cairo',sans-serif;font-weight:300;font-size:clamp(13px,1.6vw,16px);color:var(--gold-pale);letter-spacing:0.04em;}
+  .hero-tiers{position:relative;z-index:2;display:flex;justify-content:center;gap:0;margin-top:14px;flex-wrap:wrap;}
+  .hero-tiers .ht{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 38px;border-left:0.5px solid var(--line);}
+  .hero-tiers .ht:first-child{border-left:none;}
+  .hero-tiers .ht .nm{font-family:'El Messiri',serif;font-weight:600;font-size:21px;color:var(--off-white);}
+  .hero-tiers .ht .pr{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;color:var(--gold-light);direction:ltr;}
+  @media(max-width:640px){.hero-tiers .ht{padding:10px 22px;}}
+  .hero-foot{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:end;font-size:10px;color:var(--gold-pale);}
+  .scroll-cue{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:3;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.2em;color:var(--muted);direction:ltr;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .scroll-cue .dot{width:1px;height:34px;background:linear-gradient(180deg,var(--gold),transparent);animation:cue 2.4s ease-in-out infinite;}
+  @keyframes cue{0%,100%{opacity:.3;transform:scaleY(.6);}50%{opacity:1;transform:scaleY(1);}}
+
+  /* section scaffold */
+  .section{padding:clamp(72px,11vh,128px) 0;border-bottom:0.5px solid var(--line);}
+  .sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:60px;gap:20px;}
+  .sec-head .idx{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.2em;color:var(--gold);direction:ltr;white-space:nowrap;}
+  .sec-head .ttl{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;flex:1;}
+  .sec-head .ttl .ar{font-family:'El Messiri',serif;font-weight:600;font-size:clamp(24px,3.4vw,38px);color:var(--text);}
+  .sec-head .ttl .lat{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-light);direction:ltr;}
+  .sec-head .marker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;color:var(--muted);direction:ltr;white-space:nowrap;}
+  @media(max-width:640px){.sec-head .idx,.sec-head .marker{display:none;}}
+
+  .sub-head{display:flex;align-items:baseline;gap:16px;margin:60px 0 26px;}
+  .sub-head .n{font-family:'El Messiri',serif;font-weight:600;font-size:20px;color:var(--gold-pale);white-space:nowrap;}
+  .sub-head .lat{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);direction:ltr;white-space:nowrap;}
+  .sub-head .ln{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold));opacity:0.4;}
+
+  /* VISION */
+  .vision-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:54px;align-items:center;}
+  @media(max-width:840px){.vision-grid{grid-template-columns:1fr;gap:38px;}}
+  .vision-lead{font-family:'El Messiri',serif;font-weight:500;font-size:clamp(26px,3.6vw,42px);line-height:1.45;color:var(--off-white);}
+  .vision-lead em{font-style:normal;}
+  .vision-lead .hl{color:var(--gold-light);}
+  .vision-body{font-size:clamp(15px,1.7vw,18px);color:var(--muted2);line-height:1.95;max-width:46ch;}
+  .vision-body strong{color:var(--gold-pale);font-weight:400;}
+  .quote-aside{border-right:1px solid var(--gold-deep);padding:6px 26px 6px 0;}
+  .quote-aside .q{font-family:'El Messiri',serif;font-weight:500;font-size:22px;color:var(--off-white);line-height:1.6;}
+  .quote-aside .a{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;color:var(--muted);margin-top:14px;direction:ltr;}
+
+  /* PHILOSOPHY band */
+  .philo{position:relative;border:0.5px solid var(--line);background:radial-gradient(ellipse at 50% 50%,#141210,#0a0908 74%);overflow:hidden;padding:clamp(54px,8vw,96px) 40px;text-align:center;}
+  .philo .pat{position:absolute;inset:0;opacity:0.16;}
+  .philo .inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:22px;}
+  .philo .kicker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;color:var(--gold);direction:ltr;}
+  .philo .big{font-family:'Bodoni Moda',serif;font-weight:300;font-style:italic;font-size:clamp(40px,8vw,86px);direction:ltr;line-height:1;}
+  .philo .ar{font-family:'El Messiri',serif;font-weight:500;font-size:clamp(20px,2.6vw,28px);color:var(--off-white);}
+  .philo .desc{font-size:15px;color:var(--muted2);max-width:52ch;line-height:1.9;}
+
+  /* color tokens */
+  .ident-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px;}
+  @media(max-width:640px){.ident-grid{grid-template-columns:1fr;}}
+  .sw{border:0.5px solid var(--line);overflow:hidden;}
+  .sw .chip{height:128px;display:flex;align-items:flex-end;justify-content:space-between;padding:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;direction:ltr;}
+  .sw .info{padding:15px 16px;background:var(--panel);border-top:0.5px solid var(--line);}
+  .sw .info .ar{font-family:'El Messiri',serif;font-weight:500;font-size:15px;}
+  .sw .info .use{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+  /* naming story */
+  .names-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media(max-width:760px){.names-row{grid-template-columns:1fr;}}
+  .name-card{border:0.5px solid var(--line);background:var(--panel);padding:34px 30px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;}
+  .name-card .step{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--gold);direction:ltr;}
+  .name-card .nm{font-family:'El Messiri',serif;font-weight:700;font-size:34px;color:var(--off-white);}
+  .name-card .mean{font-size:14.5px;color:var(--muted2);line-height:1.8;}
+  .name-card .phase{margin-top:auto;padding-top:16px;font-family:'El Messiri',serif;font-size:14px;color:var(--gold-pale);border-top:0.5px solid var(--line);}
+  .names-thread{text-align:center;margin-top:28px;font-family:'El Messiri',serif;font-size:clamp(16px,2vw,20px);color:var(--muted2);line-height:1.7;}
+  .names-thread .hl{color:var(--gold-light);}
+
+  /* platform slot */
+  .platform-frame{border:0.5px solid var(--border);background:var(--panel);padding:14px;}
+  .platform-frame .bar{display:flex;align-items:center;gap:8px;padding:8px 10px 14px;}
+  .platform-frame .bar i{width:9px;height:9px;border-radius:50%;background:var(--border);display:block;}
+  .platform-frame .bar .u{flex:1;margin-right:14px;height:22px;border:0.5px solid var(--line);border-radius:5px;display:flex;align-items:center;padding:0 12px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);direction:ltr;}
+
+  /* packages overview pillars */
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media(max-width:760px){.pillars{grid-template-columns:1fr;}}
+  .pillar{position:relative;border:0.5px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:40px 32px 34px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;overflow:hidden;transition:border-color .3s,transform .3s;}
+  .pillar:hover{border-color:var(--gold-deep);transform:translateY(-4px);}
+  .pillar .glow{position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:140%;height:60%;background:radial-gradient(ellipse,rgba(147,115,53,0.16),transparent 70%);pointer-events:none;}
+  .pillar .tier{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;color:var(--gold);direction:ltr;position:relative;}
+  .pillar .nm{font-family:'El Messiri',serif;font-weight:700;font-size:42px;color:var(--off-white);position:relative;line-height:1;}
+  .pillar .mean{font-family:'El Messiri',serif;font-size:15px;color:var(--gold-pale);position:relative;}
+  .pillar .pr{position:relative;display:flex;align-items:baseline;gap:6px;justify-content:center;margin-top:6px;}
+  .pillar .pr .num{font-family:'Bodoni Moda',serif;font-weight:400;font-size:56px;direction:ltr;line-height:1;}
+  .pillar .pr .unit{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);direction:ltr;}
+  .pillar .meta{position:relative;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--muted);direction:ltr;border-top:0.5px solid var(--line);padding-top:14px;width:100%;}
+
+  /* PACKAGE detail */
+  .pkg{padding:clamp(64px,9vh,112px) 0;border-bottom:0.5px solid var(--line);position:relative;}
+  .pkg-head{display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end;margin-bottom:46px;padding-bottom:30px;border-bottom:0.5px solid var(--line);}
+  @media(max-width:760px){.pkg-head{grid-template-columns:1fr;align-items:start;gap:22px;}}
+  .pkg-id{display:flex;flex-direction:column;gap:10px;}
+  .pkg-id .tier{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--gold);direction:ltr;}
+  .pkg-id .nm{font-family:'El Messiri',serif;font-weight:700;font-size:clamp(48px,8vw,84px);color:var(--off-white);line-height:0.95;}
+  .pkg-id .mean{font-family:'El Messiri',serif;font-weight:400;font-size:clamp(16px,2.2vw,21px);color:var(--gold-pale);}
+  .pkg-price{direction:rtl;text-align:left;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+  @media(max-width:760px){.pkg-price{align-items:flex-start;text-align:right;}}
+  .pkg-price .main{display:flex;align-items:baseline;gap:8px;direction:ltr;}
+  .pkg-price .main .n{font-family:'Bodoni Moda',serif;font-weight:400;font-size:clamp(64px,11vw,104px);line-height:0.86;}
+  .pkg-price .main .u{font-family:'Cairo',sans-serif;font-size:12px;color:var(--muted);}
+  .pkg-price .alt{font-family:'Cairo',sans-serif;font-size:12px;letter-spacing:0;color:var(--gold-light);}
+  .pkg-price .comm{font-family:'Cairo',sans-serif;font-size:12px;letter-spacing:0;color:var(--muted2);}
+
+  .pkg-quote{font-family:'El Messiri',serif;font-weight:500;font-size:clamp(20px,2.8vw,30px);color:var(--off-white);line-height:1.5;text-align:center;max-width:24ch;margin:0 auto 12px;}
+  .pkg-quote .mark{color:var(--gold);}
+  .pkg-tag{text-align:center;font-size:15px;color:var(--muted2);max-width:54ch;margin:0 auto 50px;line-height:1.9;}
+
+  .pkg-body{display:grid;grid-template-columns:1.5fr 1fr;gap:46px;}
+  @media(max-width:860px){.pkg-body{grid-template-columns:1fr;gap:40px;}}
+
+  .feat-list{display:grid;grid-template-columns:1fr 1fr;gap:2px 30px;}
+  @media(max-width:560px){.feat-list{grid-template-columns:1fr;}}
+  .feat{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:0.5px solid var(--line);font-size:14.5px;color:var(--off-white);line-height:1.5;}
+  .feat .d{color:var(--gold);font-size:9px;margin-top:7px;flex-shrink:0;}
+  .feat.inherit{color:var(--gold-pale);}
+  .feat.inherit .d{color:var(--gold-light);}
+
+  .pkg-side{display:flex;flex-direction:column;gap:26px;}
+  .limits{border:0.5px solid var(--line);background:var(--panel);}
+  .limits .lh{padding:14px 20px;border-bottom:0.5px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--gold-light);direction:ltr;display:flex;justify-content:space-between;}
+  .limits .lr{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:0.5px solid var(--line);font-size:14px;}
+  .limits .lr:last-child{border-bottom:none;}
+  .limits .lr .k{color:var(--muted2);}
+  .limits .lr .v{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--off-white);direction:ltr;}
+  .limits .lr .v.inf{font-size:20px;color:var(--gold-light);line-height:1;}
+
+  .persona{border:0.5px solid var(--line);background:var(--panel);padding:22px 22px;}
+  .persona .ph{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--gold-light);direction:ltr;margin-bottom:14px;}
+  .persona .pt{font-family:'El Messiri',serif;font-size:16px;color:var(--off-white);margin-bottom:12px;}
+  .persona .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .persona .chips span{font-size:11.5px;color:var(--gold-pale);border:0.5px solid var(--border);padding:4px 11px;border-radius:30px;direction:ltr;}
+
+  .trigger{display:flex;align-items:flex-start;gap:14px;border-top:1px solid var(--gold-deep);padding:22px 0 0;margin-top:6px;}
+  .trigger .ic{font-family:'IBM Plex Mono',monospace;font-size:18px;color:var(--gold);direction:ltr;line-height:1;}
+  .trigger .tx{font-size:13.5px;color:var(--muted2);line-height:1.75;}
+  .trigger .tx b{color:var(--gold-pale);font-weight:400;}
+
+  /* COMPARISON TABLE */
+  .ctable{width:100%;border-collapse:collapse;border:0.5px solid var(--line);}
+  .ctable thead th{position:sticky;top:53px;background:#0c0a09;z-index:5;}
+  .ctable th,.ctable td{padding:14px 18px;border-bottom:0.5px solid var(--line);text-align:center;}
+  .ctable th:first-child,.ctable td:first-child{text-align:right;border-left:0.5px solid var(--line);width:38%;}
+  .ctable .feat-name{font-size:14px;color:var(--off-white);}
+  .ctable thead .colh{display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 0;}
+  .ctable thead .colh .nm{font-family:'El Messiri',serif;font-weight:700;font-size:21px;color:var(--off-white);}
+  .ctable thead .colh .pr{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-light);direction:ltr;}
+  .ctable tbody tr:hover{background:rgba(147,115,53,0.05);}
+  .ctable .val{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--off-white);direction:ltr;}
+  .ctable .yes{color:var(--gold-light);font-size:16px;}
+  .ctable .no{color:#3a3631;font-size:14px;}
+  .ctable .inf{color:var(--gold-light);font-size:18px;}
+  .ctable .grouprow td{background:#0d0b0a;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--gold);text-align:right;direction:rtl;padding:10px 18px;}
+  .ctable-scroll{overflow-x:auto;}
+  .ctable-scroll .ctable{min-width:620px;}
+  .founding-note{margin-top:26px;border:0.5px solid var(--gold-deep);background:linear-gradient(120deg,rgba(122,95,42,0.14),rgba(147,115,53,0.04));padding:24px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}
+  .founding-note .lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;color:var(--gold-light);direction:ltr;}
+  .founding-note .txt{font-family:'El Messiri',serif;font-size:18px;color:var(--off-white);}
+  .founding-note .txt b{color:var(--gold-light);font-weight:700;}
+
+  /* JOURNEY */
+  .journey{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:18px;align-items:stretch;}
+  @media(max-width:760px){.journey{grid-template-columns:1fr;}.journey .arrow{transform:rotate(90deg);justify-self:center;}}
+  .jstep{border:0.5px solid var(--line);background:var(--panel);padding:28px 24px;display:flex;flex-direction:column;gap:8px;}
+  .jstep .nm{font-family:'El Messiri',serif;font-weight:700;font-size:30px;color:var(--off-white);}
+  .jstep .pr{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-light);direction:ltr;margin-bottom:8px;}
+  .jstep .role{font-family:'El Messiri',serif;font-size:14px;color:var(--gold-pale);}
+  .jstep ul{list-style:none;display:flex;flex-direction:column;gap:5px;margin-top:8px;}
+  .jstep ul li{font-size:12.5px;color:var(--muted2);direction:ltr;text-align:right;}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:22px;direction:ltr;}
+
+  /* upgrade triggers */
+  .trig-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px;}
+  @media(max-width:760px){.trig-grid{grid-template-columns:1fr;}}
+  .trig-card{border:0.5px solid var(--line);background:var(--panel);padding:30px 28px;display:flex;flex-direction:column;gap:16px;}
+  .trig-card .th{display:flex;align-items:baseline;justify-content:space-between;border-bottom:0.5px solid var(--line);padding-bottom:14px;}
+  .trig-card .th .from{font-family:'El Messiri',serif;font-size:14px;color:var(--muted);}
+  .trig-card .th .to{font-family:'El Messiri',serif;font-weight:700;font-size:22px;color:var(--gold-light);}
+  .trig-card .th .ar-arrow{color:var(--gold);font-size:16px;}
+  .trig-card ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
+  .trig-card ul li{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:var(--muted2);line-height:1.7;}
+  .trig-card ul li .d{color:var(--gold);font-size:8px;margin-top:8px;flex-shrink:0;}
+  .trig-card .msg{font-family:'El Messiri',serif;font-size:15px;color:var(--off-white);background:rgba(147,115,53,0.07);border-right:2px solid var(--gold);padding:12px 16px;}
+  .proration{margin-top:24px;text-align:center;font-size:14px;color:var(--muted2);line-height:1.9;}
+  .proration b{color:var(--gold-pale);font-weight:400;}
+
+  /* CLOSING */
+  .closing{position:relative;padding:clamp(80px,13vh,150px) 44px;text-align:center;overflow:hidden;background:radial-gradient(ellipse at 50% 30%,#141210,#0a0908 72%);border-bottom:0.5px solid var(--line);}
+  .closing .pat{position:absolute;inset:0;opacity:0.2;}
+  .closing .inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:18px;}
+  .closing .kick{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;color:var(--gold);direction:ltr;}
+  .closing .big{font-family:'El Messiri',serif;font-weight:700;font-size:clamp(38px,7vw,76px);color:var(--off-white);line-height:1.05;}
+  .closing .sub{font-size:clamp(15px,1.8vw,18px);color:var(--muted2);max-width:50ch;line-height:1.9;}
+  .closing-stats{display:flex;justify-content:center;gap:0;margin-top:30px;flex-wrap:wrap;}
+  .closing-stats .st{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 clamp(26px,5vw,54px);border-left:0.5px solid var(--line);}
+  .closing-stats .st:first-child{border-left:none;}
+  .closing-stats .st .num{font-family:'Bodoni Moda',serif;font-weight:400;font-size:clamp(48px,8vw,76px);line-height:1;direction:ltr;}
+  .closing-stats .st .lbl{font-family:'El Messiri',serif;font-size:14px;color:var(--gold-pale);}
+  .closing-stats .st .cap{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.12em;color:var(--muted);direction:ltr;}
+
+  /* approval / add slot */
+  .approval{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:54px;}
+  @media(max-width:760px){.approval{grid-template-columns:1fr;}}
+  .approval-card{border:0.5px dashed var(--border);background:var(--panel);padding:30px 28px;display:flex;flex-direction:column;gap:14px;min-height:200px;}
+  .approval-card .ph{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;color:var(--gold);direction:ltr;}
+  .approval-card .hint{font-size:13px;color:var(--muted);line-height:1.8;}
+  .approval-card .sign-line{margin-top:auto;height:1px;background:var(--border);}
+  .approval-card .sign-cap{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.12em;color:var(--muted);direction:ltr;}
+
+  /* add-here placeholder */
+  .addslot{border:0.5px dashed var(--gold-deep);background:repeating-linear-gradient(45deg,rgba(147,115,53,0.03),rgba(147,115,53,0.03) 10px,transparent 10px,transparent 20px);padding:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;min-height:150px;}
+  .addslot .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--gold);direction:ltr;}
+  .addslot .desc{font-size:13px;color:var(--muted);max-width:40ch;line-height:1.7;}
+  .addslot .plus{width:34px;height:34px;border:1px solid var(--gold-deep);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-size:18px;}
+
+  image-slot{--is-bg:#0d0b0a;}
+
+  /* footer */
+  .foot{padding:80px 44px;text-align:center;background:var(--bg);}
+  .foot .word{font-size:56px;}
+  .foot .tag{font-family:'El Messiri',serif;font-weight:400;font-size:14px;color:var(--gold-pale);margin-top:14px;}
+  .foot .ref{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-top:22px;direction:ltr;}
+
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s ease,transform .8s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;}.scroll-cue .dot{animation:none;}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="lattice" width="84" height="84" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#937842" stroke-width="1">
+        <circle cx="0" cy="0" r="42"/><circle cx="84" cy="0" r="42"/><circle cx="0" cy="84" r="42"/><circle cx="84" cy="84" r="42"/><circle cx="42" cy="42" r="42"/>
+      </g>
+      <g fill="#937842"><circle cx="42" cy="42" r="2.2"/><circle cx="0" cy="0" r="2.2"/><circle cx="84" cy="0" r="2.2"/><circle cx="0" cy="84" r="2.2"/><circle cx="84" cy="84" r="2.2"/></g>
+    </pattern>
+    <pattern id="latticeSparse" width="150" height="150" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#937842" stroke-width="0.8"><circle cx="0" cy="0" r="75"/><circle cx="150" cy="0" r="75"/><circle cx="0" cy="150" r="75"/><circle cx="150" cy="150" r="75"/><circle cx="75" cy="75" r="75"/></g>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="top">
+  <div class="mk">LUMA</div>
+</div>
+
+<!-- COVER -->
+<section class="hero" data-screen-label="00 Cover">
+  <div class="pattern-bg"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lattice)"/></svg></div>
+  <div class="gloom"></div>
+  <div class="hero-meta">
+    <div class="c"><span class="l mono">Document</span><span class="mono">Pricing & Tiers</span></div>
+    <div class="c" style="text-align:center"><span class="l">الجهة</span><span class="messiri">قمة كود</span></div>
+    <div class="c" style="text-align:left"><span class="l mono">Status</span><span class="mono">Final Approval</span></div>
+  </div>
+  <div class="hero-center">
+    <div class="word gold-fill">LUMA</div>
+    <div class="star-row"><span class="ln"></span><span>◆</span><span class="ln" style="transform:scaleX(-1)"></span></div>
+    <div>
+      <div class="doc-ttl">وثيقة الباقات والأسعار</div>
+      <div class="doc-sub">ملف تعريفي شامل · طلب الاعتماد النهائي — للشريك التشغيلي</div>
+    </div>
+    <div class="hero-tiers">
+      <div class="ht"><span class="nm">سَناء</span><span class="pr">199 ر.س</span></div>
+      <div class="ht"><span class="nm">وَهَج</span><span class="pr">399 ر.س</span></div>
+      <div class="ht"><span class="nm">فَرِيد</span><span class="pr">799 ر.س</span></div>
+    </div>
+  </div>
+  <div class="hero-foot">
+    <span class="mono">LMA — PRC — 001</span>
+    <span class="messiri" style="color:var(--gold-pale)">منصة السيرة المهنية للخبيرات</span>
+    <span class="mono">2026 · KSA</span>
+  </div>
+  <div class="scroll-cue"><span>SCROLL</span><span class="dot"></span></div>
+</section>
+
+<div class="wrap">
+
+  <!-- 01 VISION -->
+  <section class="section" id="vision" style="border-bottom:0.5px solid var(--line)" data-screen-label="01 Vision">
+    <div class="sec-head">
+      <span class="idx">§ 01</span>
+      <span class="ttl"><span class="ar">الرؤية</span><span class="lat">The Vision</span></span>
+      <span class="marker">WHY LUMA</span>
+    </div>
+    <div class="vision-grid reveal">
+      <div class="vision-lead">
+        لوما ليست مجرد <em>منصة حجوزات.</em><br/>
+        هي المكان الذي تتحول فيه الخبيرة من <span class="hl">رقم في واتساب</span> إلى علامة تجارية مستقلة لها حضورٌ وهويةٌ وعملاءٌ أوفياء.
+      </div>
+      <div class="quote-aside">
+        <div class="q">«أنتِ أكبر من واتساب.»</div>
+        <div class="a">BRAND VOICE — 01</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 PHILOSOPHY -->
+  <section class="section" style="border-bottom:0.5px solid var(--line)" data-screen-label="02 Philosophy">
+    <div class="sec-head">
+      <span class="idx">§ 02</span>
+      <span class="ttl"><span class="ar">فلسفة التصميم</span><span class="lat">Design Philosophy</span></span>
+      <span class="marker">QUIET LUXURY</span>
+    </div>
+    <div class="philo reveal">
+      <div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lattice)"/></svg></div>
+      <div class="inner">
+        <div class="kicker">— THE PRINCIPLE —</div>
+        <div class="big gold-fill">Quiet Luxury</div>
+        <div class="ar">الفخامة الصامتة</div>
+        <div class="desc">كل تفصيل في المنصة يعكس مستوى عملاء خبيراتنا. بدون ضجيج، بدون اختصارات — فقط احترافية حقيقية.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 IDENTITY -->
+  <section class="section" style="border-bottom:0.5px solid var(--line)" data-screen-label="03 Identity">
+    <div class="sec-head">
+      <span class="idx">§ 03</span>
+      <span class="ttl"><span class="ar">الهوية البصرية</span><span class="lat">Visual Identity</span></span>
+      <span class="marker">03 CORE TONES</span>
+    </div>
+    <div class="ident-grid reveal" id="colors"></div>
+
+    <div class="sub-head"><span class="n">قصة الأسماء</span><span class="lat">The Naming Story</span><span class="ln"></span></div>
+    <div class="names-row reveal" id="names"></div>
+    <div class="names-thread reveal">من الشرارة الأولى، إلى الاشتعال الكامل، إلى الندرة التي لا تُضاهى — <span class="hl">الأسماء تحكي قصة واحدة</span>، وهي رحلة كل خبيرة تختار لوما.</div>
+  </section>
+
+  <!-- 04 PLATFORM -->
+  <section class="section" style="border-bottom:0.5px solid var(--line)" data-screen-label="04 Platform">
+    <div class="sec-head">
+      <span class="idx">§ 04</span>
+      <span class="ttl"><span class="ar">المنصة</span><span class="lat">The Platform</span></span>
+      <span class="marker">A GLANCE</span>
+    </div>
+    <div class="platform-frame reveal">
+      <div class="bar"><i></i><i></i><i></i><span class="u">luma.sa / studio</span></div>
+      <image-slot id="platform-shot" style="width:100%;height:clamp(300px,46vw,560px);display:block" shape="rect" fit="cover" placeholder="أضف هنا — لقطة من صفحة الاستوديو على المنصة"></image-slot>
+    </div>
+  </section>
+
+  <!-- 05 PACKAGES OVERVIEW -->
+  <section class="section" id="packages" style="border-bottom:0.5px solid var(--line)" data-screen-label="05 Packages">
+    <div class="sec-head">
+      <span class="idx">§ 05</span>
+      <span class="ttl"><span class="ar">الباقات الثلاث</span><span class="lat">The Three Tiers</span></span>
+      <span class="marker">SANA · WAHAJ · FAREED</span>
+    </div>
+    <div class="pillars reveal" id="pillars"></div>
+  </section>
+
+  <!-- PACKAGE DETAILS injected here -->
+  <div id="pkg-details"></div>
+
+  <!-- COMPARISON -->
+  <section class="section" id="compare" style="border-bottom:0.5px solid var(--line)" data-screen-label="06 Comparison">
+    <div class="sec-head">
+      <span class="idx">§ 06</span>
+      <span class="ttl"><span class="ar">جدول المقارنة الكامل</span><span class="lat">Full Comparison</span></span>
+      <span class="marker">ALL FEATURES</span>
+    </div>
+    <div class="ctable-scroll reveal">
+      <table class="ctable" id="ctable"></table>
+    </div>
+    <div class="founding-note reveal">
+      <span class="lbl">FOUNDING OFFER · عرض التأسيس</span>
+      <span class="txt">باقة <b>وَهَج بـ 299 ر.س</b> — السعر مثبّت 6 أشهر كاملة، لأول 30 مشتركة فقط.</span>
+    </div>
+  </section>
+
+  <!-- JOURNEY -->
+  <section class="section" id="journey" style="border-bottom:0.5px solid var(--line)" data-screen-label="07 Journey">
+    <div class="sec-head">
+      <span class="idx">§ 07</span>
+      <span class="ttl"><span class="ar">رحلة العميلة</span><span class="lat">The Client Journey</span></span>
+      <span class="marker">SANA → FAREED</span>
+    </div>
+    <div class="journey reveal" id="journey-row"></div>
+
+    <div class="sub-head"><span class="n">محفزات الترقية التلقائية</span><span class="lat">Auto Upgrade Triggers</span><span class="ln"></span></div>
+    <div class="trig-grid reveal" id="triggers"></div>
+    <div class="proration reveal">الترقية محسوبة بنظام <b>Proration</b> — تدفع فرق الأيام المتبقية فقط، لا شهراً كاملاً.</div>
+  </section>
+
+</div>
+
+<!-- CLOSING -->
+<section class="closing" id="launch" data-screen-label="08 Launch">
+  <div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lattice)"/></svg></div>
+  <div class="inner">
+    <div class="kick">— READY TO LAUNCH —</div>
+    <div class="big">جاهزون للإطلاق</div>
+    <div class="sub">نطلب اعتمادكم النهائي على هيكل الباقات لنبدأ تطوير صفحة التسعير على المنصة فوراً.</div>
+    <div class="closing-stats">
+      <div class="st"><span class="num gold-fill">30</span><span class="lbl">مشتركة</span><span class="cap">هدف الشهر الأول</span></div>
+      <div class="st"><span class="num gold-fill">3</span><span class="lbl">باقات متكاملة</span><span class="cap">SANA · WAHAJ · FAREED</span></div>
+      <div class="st"><span class="num gold-fill">2</span><span class="lbl">الشهر الثاني</span><span class="cap">موعد التعادل</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- APPROVAL -->
+<div class="wrap">
+  <section class="section" style="border:none;padding-top:clamp(60px,9vh,100px)" data-screen-label="09 Approval">
+    <div class="sec-head">
+      <span class="idx">§ 09</span>
+      <span class="ttl"><span class="ar">الاعتماد والإضافات</span><span class="lat">Approval & Notes</span></span>
+      <span class="marker">PARTNER</span>
+    </div>
+    <div class="addslot reveal" style="margin-bottom:24px">
+      <span class="plus">+</span>
+      <span class="tag">أضف هنا — قسم خاص بك</span>
+      <span class="desc">مساحة جاهزة لإضافة أي بند تريده: شروط تجارية، جدول زمني للتطوير، ملاحظات على باقة معينة، أو أي بيانات إضافية.</span>
+    </div>
+    <div class="approval">
+      <div class="approval-card reveal">
+        <span class="ph">PARTNER NOTE · ملاحظة الشريك التشغيلي</span>
+        <span class="hint">اكتب هنا ملاحظاتك أو تعديلاتك المقترحة على الأسعار أو الحدود أو المميزات قبل الاعتماد.</span>
+        <div class="sign-line"></div>
+        <span class="sign-cap">SIGNATURE · التوقيع &nbsp;·&nbsp; DATE · التاريخ</span>
+      </div>
+      <div class="approval-card reveal">
+        <span class="ph">DECISION · القرار</span>
+        <span class="hint">□ اعتماد الهيكل كما هو &nbsp;&nbsp; □ اعتماد مع تعديلات &nbsp;&nbsp; □ يحتاج مراجعة</span>
+        <div class="sign-line"></div>
+        <span class="sign-cap">APPROVED BY · المعتمِد &nbsp;·&nbsp; قمة كود</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer class="foot">
+  <div class="word gold-fill">LUMA</div>
+  <div class="tag">— نُضيء الفرص من خلال التصميم —</div>
+  <div class="ref">قمة كود · المملكة العربية السعودية · LMA—PRC—001 · 2026</div>
+</footer>
+
+<script src="image-slot.js"></script>
+<script>
+/* ── COLORS ── */
+const COLORS=[
+  {hex:'#0e0d11',fg:'#c9b896',ar:'الأسود العميق',en:'Deep Charcoal · الخلفية الأساسية'},
+  {hex:'#937842',fg:'#ffffff',ar:'الذهبي المعدني',en:'Metallic Gold · الشعار والبروز'},
+  {hex:'#f6f2ec',fg:'#2a2825',ar:'الأبيض المعتدل',en:'Off-White · الأسطح الفاتحة'},
+];
+document.getElementById('colors').innerHTML=COLORS.map(c=>`
+  <div class="sw"><div class="chip" style="background:${c.hex};color:${c.fg}"><span>${c.hex}</span><span>◆</span></div>
+  <div class="info"><div class="ar">${c.ar}</div><div class="use">${c.en}</div></div></div>`).join('');
+
+/* ── NAMES ── */
+const NAMES=[
+  {step:'I · البداية',nm:'سَناء',mean:'الرفعة والبريق في البدايات — الشرارة الأولى.',phase:'من الشرارة الأولى'},
+  {step:'II · النمو',nm:'وَهَج',mean:'الضوء الذي يملأ الفضاء — الاشتعال الكامل.',phase:'إلى الاشتعال الكامل'},
+  {step:'III · القمة',nm:'فَرِيد',mean:'لا مثيل له في صنعته — الندرة التي لا تُضاهى.',phase:'إلى الندرة التي لا تُضاهى'},
+];
+document.getElementById('names').innerHTML=NAMES.map(n=>`
+  <div class="name-card"><span class="step">${n.step}</span><span class="nm">${n.nm}</span>
+  <span class="mean">${n.mean}</span><span class="phase">${n.phase}</span></div>`).join('');
+
+/* ── PACKAGE DATA ── */
+const PKGS=[
+  {
+    tier:'TIER I · الباقة الأولى', nm:'سَناء', mean:'الرفعة والبريق في البدايات',
+    price:'199', alt:'أو 990 ر.س / 6 أشهر — وفّري 15%', comm:'عمولة الحجوزات: 12%',
+    quote:'كل استوديو فاخر بدأ بخطوتها الأولى',
+    tag:'لمن تبني حضورها بثقة وتريد أدوات احترافية حقيقية من اليوم الأول. بدون تعقيد، بدون ضوضاء — فقط احترافية حقيقية.',
+    feats:[
+      'صفحة استوديو احترافية بـ URL خاص',
+      'نظام حجز ذكي + تقويم + منع التعارض',
+      'دفع مسبق — Apple Pay + mada',
+      'معرض أعمال (20 صورة)',
+      'العقد الرقمي + سياسة الإلغاء',
+      'رابط QR للحجز السريع',
+      'لوحة التحكم الأساسية',
+      'تقرير مالي شهري PDF',
+      'التقييمات والمراجعات',
+    ],
+    inheritFrom:null,
+    limits:[['الحجوزات / شهر','40'],['صور المعرض','20'],['قاعدة العملاء','150'],['باقات الخدمة','5'],['المستخدمون','1']],
+    personaTitle:'خبيرة مبتدئة أو في طور الانطلاق',
+    chips:['10K–1K متابع','5–8 حجوزات / شهر','تعمل منفردة'],
+    trigger:'<b>محفّز الترقية لوهج:</b> وصلت 32 حجزة/شهر، أو كسرت حد الصور، أو طلبت واتساب تلقائي.',
+  },
+  {
+    tier:'TIER II · الباقة الثانية', nm:'وَهَج', mean:'الضوء الذي يملأ الفضاء',
+    price:'399', alt:'أو 1,990 ر.س / 6 أشهر — وفّري 17%', comm:'عمولة الحجوزات: 10%',
+    quote:'لمّا وصل عملك للمستوى الذي يستحق أدوات بمستواه',
+    tag:'منظومة متكاملة — واتساب تلقائي، تحليلات موقع، كوبونات. كل شيء يعمل وأنتِ تركّزين على إبداعك.',
+    feats:[
+      'معرض غير محدود + مقارنة قبل/بعد',
+      'واتساب تلقائي (6 قوالب جاهزة)',
+      'كوبونات خصم + عروض Flash',
+      'اشتراكات العملاء (Memberships)',
+      'بطاقات الإهداء',
+      'ربط Google Calendar',
+      'تحليلات الموقع المتقدمة',
+      'نموذج استقبال ذكي',
+      'لوحة تحكم العميل',
+      'قائمة الانتظار',
+    ],
+    inheritFrom:'سَناء',
+    limits:[['الحجوزات / شهر','∞'],['صور المعرض','∞'],['قاعدة العملاء','∞'],['باقات الخدمة','∞'],['المستخدمون','1']],
+    personaTitle:'خبيرة نشطة في نمو',
+    chips:['100K–10K متابع','15–30 حجزة / شهر','تفكر في التوسّع'],
+    trigger:'<b>محفّز الترقية لفريد:</b> احتاجت مساعدة، أو بدأت تعمل في أعراس، أو أرادت برنامج ولاء لعملائها.',
+  },
+  {
+    tier:'TIER III · الباقة الثالثة', nm:'فَرِيد', mean:'لا مثيل له في صنعته',
+    price:'799', alt:'أو 3,990 ر.س / 6 أشهر — وفّري 17% · سنوياً 7,190 ر.س', comm:'عمولة الحجوزات: 8%',
+    quote:'ليس مجرد خبيرة — للاستوديو الذي صار علامة',
+    tag:'نظام استوديو حقيقي بذكاء اصطناعي وتحليلات مقارنة. لمن وصلت للقمة ولا تقبل بأقل من فريد.',
+    feats:[
+      'برنامج الولاء (نقاط + استبدال)',
+      'حجوزات جماعية (أعراس + مناسبات)',
+      'إدارة الطاقم (مساعدات + أدوار)',
+      'مخزون المستلزمات + تنبيه النفاد',
+      'تتبّع المصاريف + صافي الربح',
+      'مساعد AI كامل (كتابة + صور)',
+      'بيع منتجات رقمية وفيزيائية',
+      'تقارير أداء مقارنة (Benchmarking)',
+      'API للمطورين + Webhooks',
+      'مدير حساب مخصص',
+    ],
+    inheritFrom:'وَهَج',
+    limits:[['الحجوزات / شهر','∞'],['صور المعرض','∞'],['قاعدة العملاء','∞'],['باقات الخدمة','∞'],['المستخدمون','3 طاقم']],
+    personaTitle:'استوديو محترف أو خبيرة كبرى',
+    chips:['+50K متابع','+30 حجزة / شهر','عندها فريق'],
+    trigger:'<b>القمة — لا ترقية بعدها.</b> متاح الاشتراك السنوي بـ 7,190 ر.س.',
+  },
+];
+
+/* ── PILLARS OVERVIEW ── */
+const PILLAR_META=['أدوات احترافية من اليوم الأول','منظومة متكاملة تعمل عنكِ','نظام استوديو بذكاء اصطناعي'];
+document.getElementById('pillars').innerHTML=PKGS.map((p,i)=>`
+  <a class="pillar" href="#pkg-${i}">
+    <div class="glow"></div>
+    <span class="tier">${p.tier.split(' · ')[0]}</span>
+    <span class="nm">${p.nm}</span>
+    <span class="mean">${p.mean}</span>
+    <div class="pr"><span class="num gold-fill">${p.price}</span><span class="unit">ر.س / شهر</span></div>
+    <span class="meta">${PILLAR_META[i]}</span>
+  </a>`).join('');
+
+document.getElementById('pkg-details').innerHTML=PKGS.map((p,i)=>{
+  const inheritFeat = p.inheritFrom ? `<div class="feat inherit"><span class="d">◆</span><span>كل مميزات ${p.inheritFrom} +</span></div>` : '';
+  const feats = inheritFeat + p.feats.map(f=>`<div class="feat"><span class="d">◆</span><span>${f}</span></div>`).join('');
+  const limits = p.limits.map(l=>`<div class="lr"><span class="k">${l[0]}</span><span class="v ${l[1]==='∞'?'inf':''}">${l[1]}</span></div>`).join('');
+  const chips = p.chips.map(c=>`<span>${c}</span>`).join('');
+  return `<section class="pkg wrap-inner reveal" id="pkg-${i}" data-screen-label="Package ${p.nm}">
+    <div class="wrap">
+      <div class="pkg-head">
+        <div class="pkg-id">
+          <span class="tier">${p.tier}</span>
+          <span class="nm">${p.nm}</span>
+          <span class="mean">${p.mean}</span>
+        </div>
+        <div class="pkg-price">
+          <div class="main"><span class="n gold-fill">${p.price}</span><span class="u">ر.س / شهر</span></div>
+          <span class="alt">${p.alt}</span>
+          <span class="comm">${p.comm}</span>
+        </div>
+      </div>
+      <div class="pkg-quote"><span class="mark">«</span>${p.quote}<span class="mark">»</span></div>
+      <div class="pkg-tag">${p.tag}</div>
+      <div class="pkg-body">
+        <div>
+          <div class="sub-head" style="margin-top:0"><span class="n">المميزات الرئيسية</span><span class="lat">Key Features</span><span class="ln"></span></div>
+          <div class="feat-list">${feats}</div>
+        </div>
+        <div class="pkg-side">
+          <div class="limits">
+            <div class="lh"><span>USAGE LIMITS</span><span>حدود الاستخدام</span></div>
+            ${limits}
+          </div>
+          <div class="persona">
+            <div class="ph">TARGET PERSONA · العميلة المستهدفة</div>
+            <div class="pt">${p.personaTitle}</div>
+            <div class="chips">${chips}</div>
+          </div>
+          <div class="trigger"><span class="ic">↑</span><span class="tx">${p.trigger}</span></div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}).join('');
+
+/* ── COMPARISON TABLE ── */
+const HEAD=[['سَناء','199 ر.س'],['وَهَج','399 ر.س'],['فَرِيد','799 ر.س']];
+const ROWS=[
+  {g:'الأساسيات'},
+  ['السعر نصف السنوي','990 ر.س','1,990 ر.س','3,990 ر.س'],
+  ['عمولة الحجوزات','12%','10%','8%'],
+  ['صفحة الاستوديو',1,1,1],
+  ['التقويم + الحجز الذكي',1,1,1],
+  ['الدفع المسبق (mada + Apple Pay)',1,1,1],
+  ['الحجوزات / شهر','40','∞','∞'],
+  ['صور المعرض','20','∞','∞'],
+  ['سياسة الإلغاء + العقد الرقمي',1,1,1],
+  ['التقييمات والمراجعات',1,1,1],
+  ['تقرير مالي شهري PDF',1,1,1],
+  {g:'النمو — تبدأ من وَهَج'},
+  ['واتساب تلقائي',0,1,1],
+  ['عروض Flash + كوبونات',0,1,1],
+  ['ربط Google Calendar',0,1,1],
+  ['تحليلات الموقع',0,1,1],
+  ['بطاقات إهداء + اشتراكات العملاء',0,1,1],
+  {g:'القمة — حصرية فَرِيد'},
+  ['برنامج الولاء',0,0,1],
+  ['الحجوزات الجماعية (أعراس)',0,0,1],
+  ['إدارة الطاقم',0,0,1],
+  ['مساعد AI كامل',0,0,1],
+  ['تتبّع المصاريف + مخزون',0,0,1],
+  ['API + Webhooks',0,0,1],
+  ['مدير حساب مخصص',0,0,1],
+  ['المستخدمون','1','1','3 طاقم'],
+];
+const cell=v=>{
+  if(v===1)return '<td><span class="yes">✓</span></td>';
+  if(v===0)return '<td><span class="no">—</span></td>';
+  if(v==='∞')return '<td><span class="inf">∞</span></td>';
+  return `<td><span class="val">${v}</span></td>`;
+};
+let html=`<thead><tr><th></th>${HEAD.map(h=>`<th><div class="colh"><span class="nm">${h[0]}</span><span class="pr">${h[1]}</span></div></th>`).join('')}</tr></thead><tbody>`;
+ROWS.forEach(r=>{
+  if(r.g){html+=`<tr class="grouprow"><td colspan="4">${r.g}</td></tr>`;return;}
+  html+=`<tr><td class="feat-name">${r[0]}</td>${cell(r[1])}${cell(r[2])}${cell(r[3])}</tr>`;
+});
+html+='</tbody>';
+document.getElementById('ctable').innerHTML=html;
+
+/* ── JOURNEY ── */
+const JOURNEY=[
+  {nm:'سَناء',pr:'199 ر.س / شهر',role:'خبيرة في طور الانطلاق',li:['10K–1K متابع','5–8 حجوزات / شهر','تعمل منفردة']},
+  {nm:'وَهَج',pr:'399 ر.س / شهر',role:'خبيرة نشطة في نمو',li:['100K–10K متابع','15–30 حجزة / شهر','تفكر في التوسّع']},
+  {nm:'فَرِيد',pr:'799 ر.س / شهر',role:'استوديو متكامل',li:['+50K متابع','+30 حجزة / شهر','عندها فريق']},
+];
+document.getElementById('journey-row').innerHTML=JOURNEY.map((j,i)=>{
+  const card=`<div class="jstep"><span class="nm">${j.nm}</span><span class="pr">${j.pr}</span><span class="role">${j.role}</span><ul>${j.li.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  const arrow=i<JOURNEY.length-1?`<div class="arrow">←</div>`:'';
+  return card+arrow;
+}).join('');
+
+/* ── TRIGGERS ── */
+const TRIGGERS=[
+  {from:'من سَناء',to:'إلى وَهَج',items:['وصلت 32 حجزة/شهر (80% من الحد)','كسرت حد الـ 20 صورة','طلبت واتساب تلقائي'],msg:'«عملك أكبر من سناء — اكتشفي وهج.»'},
+  {from:'من وَهَج',to:'إلى فَرِيد',items:['احتاجت إضافة مساعدة','بدأت تتعامل مع أعراس وحجوزات جماعية','أرادت برنامج ولاء لعملائها المتكررين'],msg:'«استوديوك يستحق نظاماً كاملاً — انتقلي إلى فريد.»'},
+];
+document.getElementById('triggers').innerHTML=TRIGGERS.map(t=>`
+  <div class="trig-card">
+    <div class="th"><span class="from">${t.from}</span><span class="ar-arrow">←</span><span class="to">${t.to}</span></div>
+    <ul>${t.items.map(i=>`<li><span class="d">◆</span><span>${i}</span></li>`).join('')}</ul>
+    <div class="msg">${t.msg}</div>
+  </div>`).join('');
+
+/* ── reveal on scroll ── */
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

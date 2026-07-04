@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LUMA — إدارة المنصة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#131217; --surface:#18171d; --surface2:#1b1a21; --surface3:#201f26;
+    --gold:#9c8047; --gold-light:#ccab64; --gold-bright:#dbbd81; --gold-pale:#e6ce95; --gold-deep:#846a38;
+    --white:#f6f2ec; --cream:#ece6da; --muted:#86818d; --muted-deep:#58545f;
+    --line:#26242d; --line-soft:#1e1d24;
+    --green:#6fa86a; --green-bg:rgba(111,168,106,0.12);
+    --red:#c2705f; --red-bg:rgba(194,112,95,0.12); --blue:#6f93b8;
+    --sidebar-w:262px;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--white);font-family:'Cairo',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:'Bodoni Moda',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.14em;direction:ltr;}
+  .gold-fill{background:linear-gradient(120deg,#dbbd81,#ccab64 35%,#9c8047);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  ::selection{background:var(--gold);color:#131217;}
+  a{color:inherit;text-decoration:none;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:6px;border:2px solid var(--bg);}
+  ::-webkit-scrollbar-thumb:hover{background:var(--gold-deep);}
+  .app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{background:linear-gradient(190deg,#1c160f,#120d08);border-left:1px solid var(--line);height:100vh;position:sticky;top:0;display:flex;flex-direction:column;}
+  .sb-head{padding:26px 24px 24px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;text-align:center;}
+  .sb-head .brand{font-family:'Bodoni Moda',serif;font-weight:500;font-size:26px;letter-spacing:0.3em;color:var(--white);direction:ltr;}
+  .sb-head .badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;color:var(--gold-light);border:0.5px solid var(--gold-deep);border-radius:20px;padding:5px 11px;direction:ltr;display:flex;align-items:center;gap:6px;}
+  .sb-nav{flex:1;overflow-y:auto;padding:18px 14px;}
+  .nav-item{display:flex;align-items:center;gap:14px;padding:13px 14px;border-radius:10px;cursor:pointer;color:var(--cream);font-size:15px;font-weight:300;transition:background .2s,color .2s;position:relative;margin-bottom:3px;}
+  .nav-item .ico{width:21px;height:21px;flex-shrink:0;color:var(--muted);transition:color .2s;display:flex;align-items:center;justify-content:center;}
+  .nav-item .lbl{flex:1;}
+  .nav-item .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-light);opacity:0;transition:opacity .2s;}
+  .nav-item:hover{background:var(--surface);color:var(--white);}
+  .nav-item:hover .ico{color:var(--gold-pale);}
+  .nav-item.active{background:linear-gradient(100deg,rgba(156,124,58,0.18),rgba(156,124,58,0.05));color:var(--gold-light);font-weight:500;}
+  .nav-item.active .ico{color:var(--gold-light);}
+  .nav-item.active .dot{opacity:1;}
+  .nav-item.active::before{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--gold-light);border-radius:3px;}
+  .sb-foot{padding:16px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:11px;}
+  .sb-foot .av{width:40px;height:40px;border-radius:11px;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-family:'Bodoni Moda',serif;font-size:18px;}
+  .sb-foot .nm b{font-size:13px;color:var(--white);font-weight:600;display:block;}
+  .sb-foot .nm span{font-size:11px;color:var(--muted);}
+
+  /* MAIN */
+  .main{min-width:0;display:flex;flex-direction:column;}
+  .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:20px;padding:16px 34px;background:rgba(23,18,13,0.82);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);}
+  .topbar .pg{display:flex;flex-direction:column;gap:1px;}
+  .topbar .pg .crumb{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:var(--gold);direction:ltr;text-transform:uppercase;}
+  .topbar .pg h1{font-family:'Cairo',sans-serif;font-weight:600;font-size:21px;color:var(--white);}
+  .topbar .search{margin-right:auto;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 15px;width:300px;max-width:32vw;transition:border-color .25s;}
+  .topbar .search:focus-within{border-color:var(--gold-deep);}
+  .topbar .search input{flex:1;background:none;border:none;outline:none;color:var(--white);font-family:'Cairo',sans-serif;font-size:13.5px;padding:11px 0;}
+  .topbar .search input::placeholder{color:var(--muted-deep);}
+  .topbar .ic-btn{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--gold-pale);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;position:relative;}
+  .topbar .ic-btn:hover{border-color:var(--gold-deep);color:var(--gold-light);}
+  .topbar .ic-btn .pip{position:absolute;top:9px;left:11px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--surface);}
+  @media(max-width:980px){.topbar .search{display:none;}}
+  .screen{padding:34px;max-width:1500px;width:100%;}
+
+  /* shared components */
+  .sec-label{display:flex;align-items:center;gap:12px;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:0.02em;margin-bottom:18px;}
+  .sec-label .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);}
+  .sec-label .more{font-size:12px;font-weight:400;color:var(--muted);cursor:pointer;}
+  .sec-label .more:hover{color:var(--gold-light);}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;}
+  .stat{position:relative;background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;overflow:hidden;transition:border-color .3s,transform .3s;}
+  .stat:hover{border-color:var(--gold-deep);transform:translateY(-3px);}
+  .stat .glow{position:absolute;top:-40%;left:-10%;width:55%;height:80%;background:radial-gradient(ellipse,rgba(156,124,58,0.14),transparent 70%);pointer-events:none;}
+  .stat .top{display:flex;align-items:center;justify-content:space-between;position:relative;}
+  .stat .top .ico{width:40px;height:40px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
+  .stat .top .delta{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 9px;border-radius:20px;direction:ltr;display:flex;align-items:center;gap:4px;}
+  .stat .delta.up{color:var(--green);background:var(--green-bg);}
+  .stat .delta.down{color:var(--red);background:var(--red-bg);}
+  .stat .val{font-family:'Bodoni Moda',serif;font-weight:500;font-size:40px;color:var(--white);direction:ltr;line-height:1;margin-top:18px;display:flex;align-items:baseline;gap:7px;}
+  .stat .val .u{font-family:'Cairo',sans-serif;font-size:14px;color:var(--muted);font-weight:300;}
+  .stat .k{font-size:13.5px;color:var(--gold-pale);margin-top:8px;}
+  .badge{font-size:11.5px;padding:5px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+  .badge.gold{color:var(--gold-light);background:rgba(156,124,58,0.14);border:0.5px solid var(--gold-deep);}
+  .badge.green{color:var(--green);background:var(--green-bg);}
+  .badge.red{color:var(--red);background:var(--red-bg);}
+  .badge.soft{color:var(--muted);background:var(--surface3);}
+  .btn{font-family:'Cairo',sans-serif;font-weight:500;font-size:13.5px;padding:11px 22px;border-radius:9px;cursor:pointer;border:none;transition:all .25s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;}
+  .btn-gold{background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);color:#131217;}
+  .btn-gold:hover{filter:brightness(1.07);}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--cream);}
+  .btn-ghost:hover{border-color:var(--gold-deep);color:var(--gold-light);}
+  .empty-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:90px 20px;gap:18px;}
+  .empty-screen .ico{width:74px;height:74px;border-radius:50%;border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
+  .empty-screen h3{font-family:'Cairo',sans-serif;font-weight:600;font-size:22px;color:var(--white);}
+  .empty-screen p{font-size:14px;color:var(--muted);max-width:42ch;line-height:1.8;}
+  .fade-in{animation:fade .5s ease both;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  @media(prefers-reduced-motion:reduce){.fade-in{animation:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-head">
+      <a class="brand" href="index.html" title="العودة للرئيسية" style="text-decoration:none;cursor:pointer">LUMA</a>
+    </div>
+    <nav class="sb-nav" id="sb-nav"></nav>
+    <div class="sb-foot">
+      <div class="av">ق</div>
+      <div class="nm"><b>قمة كود</b><span>مدير المنصة</span></div>
+      <a class="logout" href="login.html" title="تسجيل الخروج" style="margin-right:auto;display:flex;align-items:center;gap:7px;color:var(--gold-pale);font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;text-decoration:none;transition:all .2s" onmouseover="this.style.borderColor='var(--gold-deep)';this.style.color='var(--gold-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--gold-pale)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> خروج</a>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="pg"><span class="crumb" id="tb-crumb">PLATFORM</span><h1 id="tb-title">نظرة عامة</h1></div>
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--gold)"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input placeholder="ابحث عن مزوّد، حجز، عملية…" />
+      </div>
+      <button class="ic-btn" title="الإشعارات"><span class="pip"></span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></button>
+    </header>
+    <div class="screen fade-in" id="screen"></div>
+  </div>
+</div>
+
+<script>
+const IC = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  report:'<path d="M7 3h7l5 5v12a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7h-5M21 7v5"/>',
+  users:'<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.2a3.4 3.4 0 010 6M21.5 20a6.5 6.5 0 00-4-6"/>',
+  calendar:'<rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16 14h2"/>',
+  commission:'<path d="M12 2l2 4 4 1-3 3 .6 4.4L12 16l-3.6 2.4L9 14 6 11l4-1z"/><path d="M5 21l2-3M19 21l-2-3"/>',
+  pulse:'<path d="M2 12h4l2-6 4 14 3-9 2 1h5"/>',
+  box:'<path d="M12 2l8 4.5v9L12 20l-8-4.5v-9z"/><path d="M12 2v18M4 6.5l8 4.5 8-4.5"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M5 5l2 2M17 17l2 2M2 12h3M19 12h3M5 19l2-2M17 7l2-2"/>',
+  star:'<path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>',
+};
+function icon(name,size=21){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${IC[name]||''}</svg>`;}
+window.icon=icon;
+
+const NAV = [
+  {id:'overview', label:'نظرة عامة', icon:'grid', crumb:'PLATFORM'},
+  {id:'analytics', label:'التحليلات', icon:'trend', crumb:'PLATFORM'},
+  {id:'providers', label:'مزوّدو الخدمة', icon:'users', crumb:'PLATFORM'},
+  {id:'bookings', label:'الحجوزات', icon:'calendar', crumb:'PLATFORM'},
+  {id:'payments', label:'المدفوعات', icon:'wallet', crumb:'FINANCE'},
+  {id:'commissions', label:'العمولات', icon:'commission', crumb:'FINANCE'},
+  {id:'marketers', label:'المسوّقون', icon:'pulse', crumb:'GROWTH'},
+  {id:'plans', label:'الباقات', icon:'box', crumb:'PLATFORM'},
+  {id:'reports', label:'التقارير', icon:'report', crumb:'PLATFORM'},
+  {id:'settings', label:'الإعدادات', icon:'gear', crumb:'SYSTEM'},
+];
+const NAV_FLAT={}; NAV.forEach(n=>NAV_FLAT[n.id]=n);
+document.getElementById('sb-nav').innerHTML = NAV.map(it=>`<div class="nav-item" data-id="${it.id}" onclick="ADMIN.go('${it.id}')"><span class="ico">${icon(it.icon,20)}</span><span class="lbl">${it.label}</span><span class="dot"></span></div>`).join('');
+
+window.LUMA_ADMIN = window.LUMA_ADMIN || {};
+const ADMIN = {
+  current:null,
+  go(id){
+    const it=NAV_FLAT[id]; if(!it) return;
+    this.current=id; location.hash=id;
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.id===id));
+    document.getElementById('tb-crumb').textContent=it.crumb;
+    document.getElementById('tb-title').textContent=it.label;
+    const host=document.getElementById('screen');
+    host.classList.remove('fade-in'); void host.offsetWidth; host.classList.add('fade-in');
+    const scr=window.LUMA_ADMIN[id];
+    if(scr){ host.innerHTML=scr.render?scr.render():''; if(scr.init) scr.init(host); }
+    else { host.innerHTML=`<div class="empty-screen"><div class="ico">${icon(it.icon,30)}</div><h3>${it.label}</h3><p>هذه الشاشة قيد البناء ضمن المراحل القادمة. القائمة والتنقل يعملان بالكامل.</p></div>`; }
+    window.scrollTo({top:0});
+  }
+};
+window.ADMIN=ADMIN;
+</script>
+<script src="admin-overview.js"></script>
+<script src="admin-screens1.js"></script>
+<script src="admin-screens2.js"></script>
+<script src="admin-screens3.js"></script>
+<script>
+addEventListener('DOMContentLoaded',()=>{const s=(location.hash||'').replace('#','')||'overview';ADMIN.go(NAV_FLAT[s]?s:'overview');});
+if(document.readyState!=='loading'){const s=(location.hash||'').replace('#','')||'overview';ADMIN.go(NAV_FLAT[s]?s:'overview');}
+</script>
+<script src="luma-ui.js"></script>
+</body>
+</html>

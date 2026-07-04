@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LUMA — داشبورد الصالون</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#131217; --surface:#18171d; --surface2:#1b1a21; --surface3:#201f26;
+    --gold:#9c8047; --gold-light:#ccab64; --gold-bright:#dbbd81; --gold-pale:#e6ce95; --gold-deep:#846a38;
+    --white:#f6f2ec; --cream:#ece6da; --muted:#86818d; --muted-deep:#58545f;
+    --line:#26242d; --line-soft:#1e1d24;
+    --green:#6fa86a; --green-bg:rgba(111,168,106,0.12); --red:#c2705f; --rose:#d98a93; --blue:#6f93b8;
+    --sidebar-w:262px;
+  }
+  body{background:var(--bg);color:var(--white);font-family:'Cairo',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:'Bodoni Moda',serif;} .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.14em;direction:ltr;}
+  .num{font-family:'Bodoni Moda',serif;font-weight:500;direction:ltr;}
+  .gold-fill{background:linear-gradient(120deg,#dbbd81,#ccab64 35%,#9c8047);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  ::selection{background:var(--gold);color:#131217;} a{color:inherit;text-decoration:none;}
+  ::-webkit-scrollbar{width:9px;height:9px;}::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:6px;border:2px solid var(--bg);}::-webkit-scrollbar-thumb:hover{background:var(--gold-deep);}
+  .app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;}
+
+  .sidebar{background:linear-gradient(190deg,#1c160f,#120d08);border-left:1px solid var(--line);height:100vh;position:sticky;top:0;display:flex;flex-direction:column;}
+  .sb-head{padding:24px;border-bottom:1px solid var(--line-soft);}
+  .sb-head .brand{font-family:'Bodoni Moda',serif;font-weight:500;font-size:25px;letter-spacing:0.28em;color:var(--gold-light);direction:ltr;}
+  .sb-head .salon{display:flex;align-items:center;gap:10px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 11px;}
+  .sb-head .salon .lg{width:34px;height:34px;border-radius:9px;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-family:'Bodoni Moda',serif;font-size:16px;}
+  .sb-head .salon .nm b{font-size:13px;color:var(--white);font-weight:600;display:block;} .sb-head .salon .nm span{font-size:10.5px;color:var(--muted);}
+  .sb-nav{flex:1;overflow-y:auto;padding:16px 14px;}
+  .nav-item{display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:10px;cursor:pointer;color:var(--cream);font-size:14.5px;transition:background .2s,color .2s;position:relative;margin-bottom:2px;}
+  .nav-item .ico{width:20px;height:20px;color:var(--muted);transition:color .2s;display:flex;}
+  .nav-item .lbl{flex:1;} .nav-item .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-light);opacity:0;}
+  .nav-item:hover{background:var(--surface);color:var(--white);} .nav-item:hover .ico{color:var(--gold-pale);}
+  .nav-item.active{background:linear-gradient(100deg,rgba(156,124,58,0.18),rgba(156,124,58,0.05));color:var(--gold-light);font-weight:500;}
+  .nav-item.active .ico{color:var(--gold-light);} .nav-item.active .dot{opacity:1;}
+  .nav-item.active::before{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold-light);border-radius:3px;}
+
+  .main{min-width:0;display:flex;flex-direction:column;}
+  .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:18px;padding:16px 30px;background:rgba(23,18,13,0.85);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);}
+  .topbar .pg .crumb{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:var(--gold);direction:ltr;}
+  .topbar .pg h1{font-family:'Cairo',sans-serif;font-weight:600;font-size:20px;color:var(--white);}
+  .topbar .right{margin-right:auto;display:flex;align-items:center;gap:12px;}
+  .topbar .me{display:flex;align-items:center;gap:10px;} .topbar .me .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-family:'Bodoni Moda',serif;font-size:17px;}
+  .topbar .me .nm b{font-size:13px;color:var(--white);font-weight:600;display:block;} .topbar .me .nm span{font-size:11px;color:var(--muted);}
+  .screen{padding:30px;max-width:1560px;width:100%;}
+
+  .sec-label{display:flex;align-items:center;gap:12px;font-size:12px;font-weight:600;color:var(--gold);margin-bottom:16px;}
+  .sec-label .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);}
+  .sec-label .more{font-size:12px;font-weight:400;color:var(--muted);cursor:pointer;} .sec-label .more:hover{color:var(--gold-light);}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;}
+  .stat{position:relative;background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:20px;overflow:hidden;transition:border-color .3s,transform .3s;}
+  .stat:hover{border-color:var(--gold-deep);transform:translateY(-3px);}
+  .stat .glow{position:absolute;top:-40%;left:-10%;width:55%;height:80%;background:radial-gradient(ellipse,rgba(156,124,58,0.14),transparent 70%);}
+  .stat .top{display:flex;align-items:center;justify-content:space-between;position:relative;}
+  .stat .top .ico{width:38px;height:38px;border-radius:10px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
+  .stat .top .delta{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 9px;border-radius:20px;direction:ltr;color:var(--green);background:var(--green-bg);}
+  .stat .val{font-family:'Bodoni Moda',serif;font-weight:500;font-size:38px;color:var(--white);direction:ltr;line-height:1;margin-top:16px;display:flex;align-items:baseline;gap:6px;}
+  .stat .val .u{font-family:'Cairo',sans-serif;font-size:13px;color:var(--muted);} .stat .k{font-size:13px;color:var(--gold-pale);margin-top:7px;}
+  .badge{font-size:11px;padding:4px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .badge.gold{color:var(--gold-light);background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);}
+  .badge.green{color:var(--green);background:var(--green-bg);} .badge.soft{color:var(--muted);background:var(--surface3);}
+  .btn{font-family:'Cairo',sans-serif;font-weight:500;font-size:13.5px;padding:11px 20px;border-radius:9px;cursor:pointer;border:none;transition:all .25s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;}
+  .btn-gold{background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);color:#131217;} .btn-gold:hover{filter:brightness(1.07);}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--cream);} .btn-ghost:hover{border-color:var(--gold-deep);color:var(--gold-light);}
+  .empty-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 20px;gap:16px;}
+  .empty-screen .ico{width:70px;height:70px;border-radius:50%;border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
+  .empty-screen h3{font-weight:600;font-size:21px;color:var(--white);} .empty-screen p{font-size:14px;color:var(--muted);max-width:42ch;line-height:1.8;}
+  .fade-in{animation:fade .5s ease both;}@keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  @media(prefers-reduced-motion:reduce){.fade-in{animation:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-head">
+      <a class="brand" href="index.html" title="العودة للرئيسية" style="text-decoration:none;cursor:pointer">LUMA</a>
+      <div class="salon"><span class="lg">ل</span><span class="nm"><b>صالون لمسة</b><span>جدة · حي الشاطئ</span></span></div>
+    </div>
+    <nav class="sb-nav" id="sb-nav"></nav>
+    <div style="margin-top:auto;padding:14px;border-top:1px solid var(--line-soft)">
+      <a href="login.html" title="تسجيل الخروج" style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--gold-pale);font-size:13px;border:1px solid var(--line);border-radius:10px;padding:10px;text-decoration:none" onmouseover="this.style.borderColor='var(--gold-deep)';this.style.color='var(--gold-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--gold-pale)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="pg"><span class="crumb" id="tb-crumb">SALON</span><h1 id="tb-title">نظرة عامة</h1></div>
+      <div class="right">
+        <button class="btn btn-gold" onclick="SALON.go('board')">+ حجز جديد</button>
+        <div class="me"><div class="av">ل</div><div class="nm"><b>لمى المالكي</b><span>مديرة الصالون</span></div></div>
+      </div>
+    </header>
+    <div class="screen fade-in" id="screen"></div>
+  </div>
+</div>
+
+<script>
+const IC={
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  board:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18"/>',
+  staff:'<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.2a3.4 3.4 0 010 6M21.5 20a6.5 6.5 0 00-4-6"/>',
+  users:'<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.2a3.4 3.4 0 010 6M21.5 20a6.5 6.5 0 00-4-6"/>',
+  scissors:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.5 8L20 18M8.5 16L20 6"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16 14h2"/>',
+  chart:'<path d="M4 20V4M4 20h16"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/>',
+  pin:'<path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M5 5l2 2M17 17l2 2M2 12h3M19 12h3M5 19l2-2M17 7l2-2"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  walk:'<circle cx="13" cy="4" r="2"/><path d="M9 21l2-7-3-2 1-4 4 2 2 3M11 14l-2 7M14 13l2 4"/>',
+  star:'<path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/>',
+  chair:'<path d="M6 19v-7a3 3 0 013-3h6a3 3 0 013 3v7M6 14h12M8 19v2M16 19v2"/>',
+  bag:'<path d="M6 7h12l1 13a1 1 0 01-1 1H6a1 1 0 01-1-1z"/><path d="M9 7a3 3 0 016 0"/>',
+  ticket:'<path d="M3 9a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 01-2 2H5a2 2 0 01-2-2 2 2 0 000-4z"/><path d="M14 7v10" stroke-dasharray="1 2"/>',
+  invoice:'<path d="M6 2h9l4 4v15l-2.2-1.4L14.6 21l-2.6-1.5L9.4 21 7.2 19.6 5 21V4a2 2 0 012-2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  mega:'<path d="M3 11v3a1 1 0 001 1h2l8 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M16 9a3 3 0 010 6M18.5 6.5a6 6 0 010 11"/>',
+  boxes:'<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+};
+const icon=(n,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
+window.icon=icon;
+
+/* ── STAFF + APPOINTMENTS (booking board core) ── */
+const STAFF=[
+  {id:'amal',n:'أمل',role:'مكياج',color:'#ccab64'},
+  {id:'sara',n:'سارة',role:'شعر',color:'#d98a93'},
+  {id:'nora',n:'نورة',role:'بشرة',color:'#7d9bc0'},
+  {id:'reem',n:'ريم',role:'أظافر',color:'#6fa86a'},
+];
+const START_HOUR=10, SLOTS=20, ROW_H=44; /* 10:00 → 20:00, 30-min slots */
+function slotLabel(i){const t=START_HOUR*60+i*30;let h=Math.floor(t/60),m=t%60;const ap=h>=12?'م':'ص';let h12=h>12?h-12:h;return `${h12}:${m===0?'00':'30'} ${ap}`;}
+/* appts: {staff, start(slot index), dur(slots), client, service, st} */
+const APPTS=[
+  {staff:'amal',start:0,dur:2,client:'نوف العتيبي',service:'مكياج سهرة',st:'confirmed'},
+  {staff:'amal',start:4,dur:4,client:'دانة السالم',service:'مكياج عروس',st:'confirmed'},
+  {staff:'amal',start:10,dur:2,client:'ريم القحطاني',service:'مكياج ناعم',st:'pending'},
+  {staff:'sara',start:1,dur:3,client:'لمياء الحربي',service:'صبغة + قص',st:'confirmed'},
+  {staff:'sara',start:6,dur:2,client:'هند الشمري',service:'تسريحة',st:'confirmed'},
+  {staff:'sara',start:12,dur:4,client:'وعد الزهراني',service:'كيراتين',st:'confirmed'},
+  {staff:'nora',start:0,dur:3,client:'سارة الأحمدي',service:'هيدرافيشل',st:'confirmed'},
+  {staff:'nora',start:5,dur:2,client:'منيرة الدوسري',service:'تنظيف بشرة',st:'pending'},
+  {staff:'nora',start:9,dur:2,client:'أمل السبيعي',service:'تقشير',st:'confirmed'},
+  {staff:'reem',start:2,dur:2,client:'جواهر الشهري',service:'منيكير جل',st:'confirmed'},
+  {staff:'reem',start:5,dur:3,client:'لطيفة المطيري',service:'منيكير + بديكير',st:'confirmed'},
+  {staff:'reem',start:11,dur:2,client:'عبير الغامدي',service:'تركيب أظافر',st:'walkin'},
+];
+const ST_STYLE={confirmed:{bg:'rgba(111,168,106,0.16)',bd:'#6fa86a',lb:'مؤكد'},pending:{bg:'rgba(205,172,80,0.16)',bd:'#ccab64',lb:'بانتظار الدفع'},walkin:{bg:'rgba(125,155,192,0.16)',bd:'#7d9bc0',lb:'حضور مباشر'}};
+
+const SCREENS={};
+
+SCREENS.overview=()=>{
+  const onDuty=STAFF.length;
+  const todayCount=APPTS.length;
+  const revenue='6,840';
+  /* 7-day upcoming: confirmed + cancelled */
+  const WEEK=[['الثلاثاء',9,0],['الأربعاء',9,1],['الخميس',12,0],['الجمعة',9,0],['السبت',1,0],['الأحد',3,0],['الإثنين',1,0]];
+  const SALES=[['16',9],['17',11.5],['18',14],['19',10.4],['20',16],['21',12.6],['22',6.8]];
+  const APVAL=[['16',5.4],['17',6.8],['18',5.1],['19',9.2],['20',11.4],['21',9.1],['22',4.2]];
+  function apptBars(){
+    const W=540,H=230,pad={t:18,r:8,b:34,l:30},iw=W-pad.l-pad.r,ih=H-pad.t-pad.b,max=12,step=iw/WEEK.length,bw=Math.min(30,step*0.42);
+    let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1"/><text x="${pad.l-6}" y="${y+4}" fill="#58545f" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
+    let bars=WEEK.map((d,i)=>{const x=pad.l+i*step+(step-bw)/2;const hc=(d[1]/max)*ih,hx=(d[2]/max)*ih;const yC=pad.t+ih-hc,yX=yC-hx;return `<g><rect x="${x}" y="${yC}" width="${bw}" height="${hc}" rx="3" fill="url(#abg)"/>${d[2]?`<rect x="${x}" y="${yX}" width="${bw}" height="${hx}" rx="3" fill="#c2705f"/>`:''}<text x="${x+bw/2}" y="${H-14}" fill="#86818d" font-size="9.5" font-family="Cairo" text-anchor="middle">${d[0]}</text></g>`;}).join('');
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs><linearGradient id="abg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dbbd81"/><stop offset="1" stop-color="#9c8047"/></linearGradient></defs>${grid}${bars}</svg>`;
+  }
+  function salesLines(){
+    const W=540,H=230,pad={t:18,r:10,b:30,l:38},iw=W-pad.l-pad.r,ih=H-pad.t-pad.b,max=28,step=iw/(SALES.length-1);
+    const toPts=arr=>arr.map((d,i)=>[pad.l+i*step,pad.t+ih-(d[1]/max)*ih]);
+    const p1=toPts(SALES),p2=toPts(APVAL);
+    const path=p=>p.map((q,i)=>`${i?'L':'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' ');
+    let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1"/><text x="${pad.l-6}" y="${y+4}" fill="#58545f" font-size="9" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}k</text>`;}
+    const dots=(p,c)=>p.map(q=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="2.6" fill="${c}"/>`).join('');
+    const labels=SALES.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="9.5" font-family="Cairo" text-anchor="middle">${d[0]}</text>`).join('');
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">${grid}<path d="${path(p2)}" fill="none" stroke="#6fa86a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="${path(p1)}" fill="none" stroke="#ccab64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots(p2,'#6fa86a')}${dots(p1,'#ccab64')}${labels}</svg>`;
+  }
+  const STATS=[
+    {ic:'board',k:'حجوزات اليوم',v:todayCount,u:'',d:'+4'},
+    {ic:'wallet',k:'دخل اليوم المتوقع',v:revenue,u:'ر.س',d:'+12%'},
+    {ic:'staff',k:'موظفات على رأس العمل',v:onDuty,u:`/ ${STAFF.length}`,d:''},
+    {ic:'chair',k:'إشغال الكراسي',v:'82',u:'%',d:'+6%'},
+  ];
+  const staffRows=STAFF.map(s=>{const cnt=APPTS.filter(a=>a.staff===s.id).length;return `<div style="display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--line-soft)"><span style="width:38px;height:38px;border-radius:50%;background:var(--surface3);border:1px solid ${s.color};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:${s.color};font-size:16px">${s.n.charAt(0)}</span><div style="flex:1"><div style="font-size:14px;color:var(--white);font-weight:500">${s.n}</div><div style="font-size:12px;color:var(--muted)">${s.role}</div></div><span class="badge soft">${cnt} مواعيد</span><span class="badge green">متاحة</span></div>`;}).join('');
+  const next=APPTS.slice().sort((a,b)=>a.start-b.start).slice(0,5).map(a=>{const s=STAFF.find(x=>x.id===a.staff);return `<div style="display:flex;align-items:center;gap:13px;padding:12px 0;border-bottom:1px solid var(--line-soft)"><div class="mono" style="font-size:12.5px;color:var(--gold-light);min-width:60px;text-align:center">${slotLabel(a.start)}</div><div style="width:1px;height:30px;background:var(--line)"></div><div style="flex:1"><div style="font-size:13.5px;color:var(--white);font-weight:500">${a.client}</div><div style="font-size:11.5px;color:var(--muted)">${a.service} · مع ${s.n}</div></div><span class="badge ${a.st==='pending'?'gold':'green'}">${ST_STYLE[a.st].lb}</span></div>`;}).join('');
+  return `
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px">
+    <div><div style="font-weight:600;font-size:25px;color:var(--white)">صباح الخير، صالون لمسة <span style="color:var(--gold-light)">✦</span></div>
+    <div style="font-size:13.5px;color:var(--gold-pale);margin-top:2px"><b style="color:var(--white)">${todayCount} موعد</b> اليوم موزّعة على ${STAFF.length} موظفات.</div></div>
+    <button class="btn btn-ghost" onclick="SALON.go('board')">${icon('board',16)} لوحة الحجوزات</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+    ${STATS.map(s=>`<div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon(s.ic,19)}</div>${s.d?`<div class="delta">▲ ${s.d}</div>`:''}</div><div class="val">${s.v}${s.u?`<span class="u">${s.u}</span>`:''}</div><div class="k">${s.k}</div></div>`).join('')}
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start">
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px"><div><div style="font-weight:600;font-size:16px;color:var(--white)">المواعيد القادمة</div><div style="font-size:12px;color:var(--muted)">الأيام السبعة القادمة</div></div><div style="text-align:left"><div class="num" style="font-size:26px;color:var(--white)">45</div><div style="font-size:11px;color:var(--gold-pale)">محجوز</div></div></div>
+      <div style="display:flex;gap:16px;margin:4px 0 8px;font-size:11.5px"><span style="color:var(--muted)">مؤكد <b style="color:var(--white)">44</b></span><span style="color:var(--muted)">ملغى <b style="color:var(--red)">1</b></span></div>
+      ${apptBars()}
+      <div style="display:flex;gap:18px;justify-content:flex-end;margin-top:4px;font-size:11px"><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:10px;border-radius:3px;background:#ccab64"></span>مؤكد</span><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:10px;border-radius:3px;background:#c2705f"></span>ملغى</span></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px"><div><div style="font-weight:600;font-size:16px;color:var(--white)">المبيعات الأخيرة</div><div style="font-size:12px;color:var(--muted)">آخر ٧ أيام · بالألف ر.س</div></div><div style="text-align:left"><div class="num gold-fill" style="font-size:24px">128,025</div><div style="font-size:11px;color:var(--gold-pale)">إجمالي المبيعات (ر.س)</div></div></div>
+      ${salesLines()}
+      <div style="display:flex;gap:18px;justify-content:flex-end;margin-top:4px;font-size:11px"><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:3px;border-radius:3px;background:#ccab64"></span>المبيعات</span><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:3px;border-radius:3px;background:#6fa86a"></span>قيمة المواعيد</span></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start">
+    <div class="card"><div class="sec-label">المواعيد القادمة اليوم <span class="ln"></span><span class="more" onclick="SALON.go('board')">اللوحة الكاملة ←</span></div>${next}</div>
+    <div class="card"><div class="sec-label">الطاقم اليوم <span class="ln"></span><span class="more" onclick="SALON.go('staff')">إدارة ←</span></div>${staffRows}</div>
+  </div>`;
+};
+
+/* ── THE BOOKING BOARD: staff columns × time rows ── */
+SCREENS.board=()=>{
+  const colTracks=STAFF.map(s=>{
+    const blocks=APPTS.filter(a=>a.staff===s.id).map(a=>{
+      const st=ST_STYLE[a.st];
+      const top=a.start*ROW_H+2, h=a.dur*ROW_H-4;
+      return `<div class="appt" style="top:${top}px;height:${h}px;background:${st.bg};border-color:${st.bd}">
+        <div class="ap-t">${slotLabel(a.start)}</div>
+        <div class="ap-c">${a.client}</div>
+        <div class="ap-s">${a.service}</div>
+      </div>`;
+    }).join('');
+    return `<div class="col"><div class="col-track" style="height:${SLOTS*ROW_H}px">${gridLines()}${blocks}</div></div>`;
+  }).join('');
+  const heads=STAFF.map(s=>`<div class="col-h"><span class="ch-av" style="border-color:${s.color};color:${s.color}">${s.n.charAt(0)}</span><div><div class="ch-n">${s.n}</div><div class="ch-r">${s.role}</div></div></div>`).join('');
+  const timeCol=Array.from({length:SLOTS}).map((_,i)=>`<div class="tl" style="height:${ROW_H}px">${i%2===0?slotLabel(i):''}</div>`).join('');
+  return `
+  <style>
+    .bd-top{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+    .date-pill{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 16px;}
+    .date-pill .nav{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);color:var(--gold-pale);cursor:pointer;}
+    .date-pill .dt{font-size:14px;color:var(--white);font-weight:600;} .date-pill .dt span{font-size:11.5px;color:var(--muted);font-weight:300;margin-right:6px;}
+    .legend{display:flex;gap:16px;flex-wrap:wrap;margin-right:auto;}
+    .legend .lg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--cream);} .legend .lg .sw{width:11px;height:11px;border-radius:3px;border:1px solid;}
+    .board{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+    .board-head{display:grid;grid-template-columns:66px repeat(${STAFF.length},1fr);border-bottom:1px solid var(--line);background:var(--surface2);}
+    .board-head .corner{border-left:1px solid var(--line);}
+    .col-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-left:1px solid var(--line);}
+    .col-h:last-child{border-left:none;}
+    .col-h .ch-av{width:34px;height:34px;border-radius:50%;background:var(--surface3);border:1px solid;display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:15px;}
+    .col-h .ch-n{font-size:14px;color:var(--white);font-weight:600;} .col-h .ch-r{font-size:11.5px;color:var(--muted);}
+    .board-body{display:grid;grid-template-columns:66px repeat(${STAFF.length},1fr);max-height:calc(100vh - 280px);overflow-y:auto;}
+    .timecol{border-left:1px solid var(--line);}
+    .tl{display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--muted-deep);direction:ltr;border-bottom:1px solid var(--line-soft);}
+    .col{position:relative;border-left:1px solid var(--line);} .col:last-child{border-left:none;}
+    .col-track{position:relative;}
+    .gl{position:absolute;left:0;right:0;border-bottom:1px solid var(--line-soft);}
+    .appt{position:absolute;left:5px;right:5px;border-radius:8px;border:1px solid;border-right-width:3px;padding:7px 9px;overflow:hidden;cursor:pointer;transition:transform .15s;}
+    .appt:hover{transform:scale(1.015);z-index:5;}
+    .appt .ap-t{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-pale);direction:ltr;}
+    .appt .ap-c{font-size:12.5px;color:var(--white);font-weight:600;margin-top:1px;} .appt .ap-s{font-size:11px;color:var(--cream);opacity:0.85;margin-top:1px;}
+  </style>
+  <div class="bd-top">
+    <div class="date-pill"><button class="nav">›</button><div class="dt">اليوم <span>الأحد ٢١ يونيو</span></div><button class="nav">‹</button></div>
+    <button class="btn btn-ghost">${icon('walk',16)} حضور مباشر</button>
+    <div class="legend">${Object.keys(ST_STYLE).map(k=>`<span class="lg"><span class="sw" style="background:${ST_STYLE[k].bg};border-color:${ST_STYLE[k].bd}"></span>${ST_STYLE[k].lb}</span>`).join('')}</div>
+  </div>
+  <div class="board">
+    <div class="board-head"><div class="corner"></div>${heads}</div>
+    <div class="board-body"><div class="timecol">${timeCol}</div>${colTracks}</div>
+  </div>`;
+};
+function gridLines(){let g='';for(let i=1;i<SLOTS;i++)g+=`<div class="gl" style="top:${i*ROW_H}px"></div>`;return g;}
+
+/* ── STAFF management ── */
+SCREENS.staff=()=>{
+  const rows=STAFF.map(s=>{const cnt=APPTS.filter(a=>a.staff===s.id).length;const rev=cnt*380;return `<div class="card" style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+    <span style="width:52px;height:52px;border-radius:50%;background:var(--surface3);border:1px solid ${s.color};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:${s.color};font-size:22px">${s.n.charAt(0)}</span>
+    <div style="flex:1"><div style="font-size:16px;color:var(--white);font-weight:600">${s.n}</div><div style="font-size:12.5px;color:var(--gold-pale)">${s.role} · دوام كامل</div></div>
+    <div style="text-align:center"><div class="num" style="font-size:22px;color:var(--white)">${cnt}</div><div style="font-size:11px;color:var(--muted)">مواعيد اليوم</div></div>
+    <div style="text-align:center"><div class="num" style="font-size:22px;color:var(--gold-light)">${rev.toLocaleString('en')}</div><div style="font-size:11px;color:var(--muted)">دخل اليوم (ر.س)</div></div>
+    <div style="text-align:center"><div style="color:var(--gold-light);font-size:14px">★ 4.9</div><div style="font-size:11px;color:var(--muted)">التقييم</div></div>
+    <button class="btn btn-ghost" style="padding:8px 16px">الجدول</button>
+  </div>`;}).join('');
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <div><div style="font-weight:600;font-size:19px;color:var(--white)">طاقم الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">٤ موظفات · جميعهن على رأس العمل اليوم</div></div>
+    <button class="btn btn-gold">+ إضافة موظفة</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('staff',19)}</div></div><div class="val">4</div><div class="k">إجمالي الطاقم</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">25<span class="u">%</span></div><div class="k">متوسط نسبة العمولة</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">4.9<span class="u">/5</span></div><div class="k">متوسط تقييم الطاقم</div></div>
+  </div>
+  <div class="sec-label">الموظفات <span class="ln"></span></div>
+  ${rows}`;
+};
+
+/* ── CLIENTS ── */
+SCREENS.clients=()=>{
+  const C=[
+    {n:'نوف العتيبي',v:14,sp:'9,200',last:'قبل ٣ أيام',staff:'أمل',tag:'VIP',tc:'gold'},
+    {n:'سارة الأحمدي',v:9,sp:'4,100',last:'اليوم',staff:'نورة',tag:'متكررة',tc:'green'},
+    {n:'لطيفة المطيري',v:11,sp:'7,600',last:'قبل يومين',staff:'ريم',tag:'VIP',tc:'gold'},
+    {n:'هند الشمري',v:6,sp:'3,300',last:'قبل أسبوع',staff:'سارة',tag:'متكررة',tc:'green'},
+    {n:'وعد الزهراني',v:3,sp:'1,500',last:'اليوم',staff:'سارة',tag:'جديدة',tc:'soft'},
+    {n:'منيرة الدوسري',v:8,sp:'5,900',last:'غداً',staff:'نورة',tag:'متكررة',tc:'green'},
+  ];
+  return `
+  <style>.ctab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.cth,.ctr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 40px;gap:12px;align-items:center;padding:14px 20px}.cth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.ctr{border-bottom:1px solid var(--line-soft)}.ctr:last-child{border-bottom:none}.ctr:hover{background:var(--surface2)}.cnm{display:flex;align-items:center;gap:11px}.cnm .av{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px}.cc{font-size:13px;color:var(--cream)}.cc .num{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr}@media(max-width:1080px){.cth{display:none}.ctr{grid-template-columns:1fr auto}.ctr .hide{display:none}}</style>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><button class="btn btn-gold">+ عميلة جديدة</button></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div><div class="delta">▲ 8</div></div><div class="val">312</div><div class="k">إجمالي العملاء</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">68<span class="u">%</span></div><div class="k">عميلات متكررات</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">486<span class="u">ر.س</span></div><div class="k">متوسط إنفاق العميلة</div></div>
+  </div>
+  <div class="ctab"><div class="cth"><span>العميلة</span><span>الزيارات</span><span>الإنفاق</span><span>آخر زيارة</span><span>الموظفة المفضّلة</span><span></span></div>
+  ${C.map(c=>`<div class="ctr"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span></div></div><div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${c.sp}</span> ر.س</div><div class="cc hide">${c.last}</div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`).join('')}
+  </div>`;
+};
+
+/* ── SERVICES ── */
+SCREENS.services=()=>{
+  const GROUPS=[
+    {g:'مكياج',items:[['مكياج عروس كامل','١٢٠ د','850','أمل'],['مكياج سهرة','٦٠ د','350','أمل'],['مكياج ناعم','٤٥ د','250','أمل']]},
+    {g:'شعر',items:[['صبغة كاملة','١٢٠ د','550','سارة'],['قص وتصفيف','٤٥ د','200','سارة'],['كيراتين','١٨٠ د','700','سارة']]},
+    {g:'بشرة',items:[['هيدرافيشل','٧٥ د','480','نورة'],['تنظيف عميق','٦٠ د','320','نورة']]},
+    {g:'أظافر',items:[['منيكير جل','٦٠ د','160','ريم'],['تركيب أظافر','٩٠ د','220','ريم']]},
+  ];
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">خدمات الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">١١ خدمة عبر ٤ أقسام</div></div><button class="btn btn-gold">+ خدمة جديدة</button></div>
+  ${GROUPS.map(gr=>`<div class="sec-label">${gr.g} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${gr.items.map(s=>`<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px"><div style="width:42px;height:42px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div><div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]} · تُقدّم بواسطة ${s[3]}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:Cairo;font-size:11px;color:var(--muted)">ر.س</span></div><button class="btn btn-ghost" style="padding:8px 14px">تحرير</button></div>`).join('')}</div>`).join('')}`;
+};
+
+/* ── PRODUCTS (retail — products being sold) ── */
+SCREENS.products=()=>{
+  const P=[
+    {n:'سيروم ترطيب',c:'عناية',price:180,sold:42,q:24,sc:'green'},
+    {n:'طلاء أظافر — مجموعة',c:'أظافر',price:210,sold:38,q:15,sc:'green'},
+    {n:'زيت شعر مغذّي',c:'شعر',price:120,sold:31,q:30,sc:'green'},
+    {n:'مثبّت مكياج',c:'مكياج',price:130,sold:27,q:18,sc:'green'},
+    {n:'كريم أساس',c:'مكياج',price:150,sold:19,q:8,sc:'gold'},
+    {n:'ماسك بشرة',c:'عناية',price:95,sold:14,q:3,sc:'gold'},
+  ];
+  const totUnits=P.reduce((s,p)=>s+p.sold,0);
+  const totRev=P.reduce((s,p)=>s+p.sold*p.price,0);
+  const best=P.slice().sort((a,b)=>b.sold-a.sold)[0];
+  const maxSold=Math.max(...P.map(p=>p.sold));
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">المنتجات المُباعة</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">بيع التجزئة للعميلات · أداء المبيعات هذا الشهر</div></div><button class="btn btn-gold">+ منتج جديد</button></div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px">
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('bag',19)}</div></div><div class="val">38</div><div class="k">منتج معروض</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('board',19)}</div><div class="delta">▲ 9%</div></div><div class="val">${totUnits}</div><div class="k">وحدة مباعة هذا الشهر</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div><div class="delta">▲ 14%</div></div><div class="val">${totRev.toLocaleString('en')}<span class="u">ر.س</span></div><div class="k">إيراد المنتجات</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val" style="font-size:24px">${best.n}</div><div class="k">الأكثر مبيعاً (${best.sold} وحدة)</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start">
+    <div>
+      <div class="sec-label">المنتجات <span class="ln"></span></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">${P.map(p=>`<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('bag',22)}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`).join('')}</div>
+    </div>
+    <div class="card"><div class="sec-label">الأكثر مبيعاً <span class="ln"></span></div>${P.slice().sort((a,b)=>b.sold-a.sold).map((p,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${i<P.length-1?'border-bottom:1px solid var(--line-soft)':''}"><span style="font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-deep);width:20px;direction:ltr">${i+1}</span><div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--white);font-weight:500">${p.n}</div><div class="bar" style="height:6px;background:var(--surface3);border-radius:10px;overflow:hidden;margin-top:5px"><span style="display:block;height:100%;width:${p.sold/maxSold*100}%;background:linear-gradient(90deg,#9c8047,#dbbd81);border-radius:10px"></span></div></div><span class="num" style="font-family:'Bodoni Moda',serif;font-size:17px;color:var(--gold-light);direction:ltr">${p.sold}</span></div>`).join('')}</div>
+  </div>`;
+};
+
+/* ── SUBSCRIPTIONS ── */
+SCREENS.subscriptions=()=>{
+  const PK=[
+    {n:'باقة الجمال الشهرية',p:'600',per:'شهرياً',subs:24,benefits:['جلستان شهرياً','خصم ١٥٪ على المنتجات','أولوية الحجز']},
+    {n:'باقة العناية الفصلية',p:'1,500',per:'كل ٣ أشهر',subs:12,benefits:['٦ جلسات','خصم ٢٠٪','هدية فصلية']},
+    {n:'باقة العروس',p:'2,200',per:'لمرة واحدة',subs:7,benefits:['تجربة + يوم العرس','جلسة عناية','تصوير']},
+  ];
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">اشتراكات العملاء</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">٤٣ مشتركة · إيراد متكرر ٢١٬٤٠٠ ر.س شهرياً</div></div><button class="btn btn-gold">+ باقة اشتراك</button></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">${PK.map(p=>`<div class="card" style="display:flex;flex-direction:column"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div><div style="font-size:16px;color:var(--white);font-weight:600">${p.n}</div><div style="font-size:12px;color:var(--gold-pale);margin-top:2px">${p.subs} مشتركة نشطة</div></div><div style="width:46px;height:27px;border-radius:20px;background:linear-gradient(120deg,#dbbd81,#9c8047);position:relative"><span style="position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff"></span></div></div><div style="display:flex;align-items:baseline;gap:6px;margin:14px 0"><span class="num" style="font-size:36px;color:var(--gold-light)">${p.p}</span><span style="font-size:12px;color:var(--muted)">ر.س / ${p.per}</span></div><ul style="list-style:none;display:flex;flex-direction:column;gap:9px;padding-top:14px;border-top:1px solid var(--line-soft)">${p.benefits.map(b=>`<li style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--cream)"><span style="color:var(--gold);font-size:8px">◆</span>${b}</li>`).join('')}</ul></div>`).join('')}</div>
+  <div class="card" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between;border-color:var(--gold-deep)"><div style="font-size:14px;color:var(--gold-pale)">إجمالي الإيراد المتكرر الشهري من الاشتراكات</div><div class="num gold-fill" style="font-size:28px">21,400 ر.س</div></div>`;
+};
+
+/* ── FINANCE ── */
+SCREENS.finance=()=>{
+  const BYSTAFF=[['أمل',38,'#ccab64'],['سارة',30,'#d98a93'],['نورة',20,'#7d9bc0'],['ريم',12,'#6fa86a']];
+  const TX=[['دخل خدمات اليوم','+6,840','in'],['مبيعات منتجات','+1,200','in'],['اشتراكات','+2,400','in'],['رواتب وعمولات','−4,800','out'],['إيجار ومصاريف','−1,900','out']];
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">مالية الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">صورة شاملة للإيرادات والمصاريف وصافي الربح</div></div><button class="btn btn-ghost">${icon('wallet',15)} تقرير شهري</button></div>
+  <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:14px;align-items:center;margin-bottom:22px">
+    <div class="card" style="text-align:center"><div style="font-size:13px;color:var(--gold-pale)">الإيرادات</div><div class="num gold-fill" style="font-size:38px;margin:6px 0">52,400</div><div style="font-size:11px;color:var(--muted)">ر.س هذا الشهر</div></div>
+    <div style="font-family:'Bodoni Moda',serif;font-size:24px;color:var(--gold-deep);text-align:center">−</div>
+    <div class="card" style="text-align:center"><div style="font-size:13px;color:var(--gold-pale)">المصاريف</div><div class="num" style="font-size:38px;color:var(--red);margin:6px 0">21,300</div><div style="font-size:11px;color:var(--muted)">ر.س هذا الشهر</div></div>
+    <div style="font-family:'Bodoni Moda',serif;font-size:24px;color:var(--gold-deep);text-align:center">=</div>
+    <div class="card" style="text-align:center;border-color:var(--gold-deep)"><div style="font-size:13px;color:var(--gold-pale)">صافي الربح</div><div class="num gold-fill" style="font-size:38px;margin:6px 0">31,100</div><div style="font-size:11px;color:var(--muted)">ر.س</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+    <div class="card"><div class="sec-label">الإيراد حسب الموظفة <span class="ln"></span></div>${BYSTAFF.map(s=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0"><span style="font-size:13.5px;color:var(--cream);width:60px">${s[0]}</span><div style="flex:1;height:9px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:${s[1]/38*100}%;background:${s[2]};border-radius:10px"></span></div><span class="mono" style="font-size:12px;color:var(--gold-pale);width:34px;text-align:left">${s[1]}%</span></div>`).join('')}</div>
+    <div class="card"><div class="sec-label">حركة اليوم <span class="ln"></span></div>${TX.map((t,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;${i<TX.length-1?'border-bottom:1px solid var(--line-soft)':''}"><span style="font-size:13.5px;color:var(--white)">${t[0]}</span><span class="num" style="font-size:17px;color:${t[2]==='in'?'var(--green)':'var(--red)'}">${t[1]} ر.س</span></div>`).join('')}</div>
+  </div>`;
+};
+
+/* ── BRANCHES ── */
+SCREENS.branches=()=>{
+  const B=[
+    {n:'فرع الشاطئ',c:'جدة · حي الشاطئ',staff:4,chairs:6,st:'رئيسي',sc:'gold',rev:'52,400'},
+    {n:'فرع الروضة',c:'جدة · حي الروضة',staff:3,chairs:4,st:'نشط',sc:'green',rev:'34,100'},
+  ];
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">فروع الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">فرعان · إدارة موحّدة</div></div><button class="btn btn-gold">+ إضافة فرع</button></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">${B.map(b=>`<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="display:flex;align-items:center;gap:13px"><div style="width:48px;height:48px;border-radius:13px;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('pin',22)}</div><div><div style="font-size:16px;color:var(--white);font-weight:600">${b.n}</div><div style="font-size:12.5px;color:var(--muted)">${b.c}</div></div></div><span class="badge ${b.sc}">${b.st}</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line-soft);text-align:center"><div><div class="num" style="font-size:22px;color:var(--white)">${b.staff}</div><div style="font-size:11px;color:var(--muted)">موظفات</div></div><div><div class="num" style="font-size:22px;color:var(--white)">${b.chairs}</div><div style="font-size:11px;color:var(--muted)">كراسي</div></div><div><div class="num" style="font-size:22px;color:var(--gold-light)">${b.rev}</div><div style="font-size:11px;color:var(--muted)">دخل شهري</div></div></div><button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:16px">إدارة الفرع</button></div>`).join('')}</div>`;
+};
+
+/* ── SETTINGS ── */
+SCREENS.settings=()=>{
+  const HOURS=[['السبت — الخميس','10:00 ص — 10:00 م'],['الجمعة','2:00 م — 11:00 م']];
+  const TOG=[['الحجز الإلكتروني','السماح للعميلات بالحجز عبر لوما',true],['الدفع المسبق','طلب عربون لتأكيد الموعد',true],['الحضور المباشر','إتاحة إضافة حجوزات فورية',true],['تذكير واتساب','تذكير تلقائي قبل الموعد',true]];
+  return `
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:18px"><div class="sec-label">إعدادات الحجز <span class="ln"></span></div>${TOG.map((t,i)=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 0;${i<TOG.length-1?'border-bottom:1px solid var(--line-soft)':''}"><div style="flex:1"><div style="font-size:14.5px;color:var(--white);font-weight:500">${t[0]}</div><div style="font-size:12.5px;color:var(--muted)">${t[1]}</div></div><div style="width:46px;height:27px;border-radius:20px;background:linear-gradient(120deg,#dbbd81,#9c8047);position:relative"><span style="position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff"></span></div></div>`).join('')}</div>
+      <div class="card"><div class="sec-label">ساعات العمل <span class="ln"></span></div>${HOURS.map((h,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;${i<HOURS.length-1?'border-bottom:1px solid var(--line-soft)':''}"><span style="font-size:14px;color:var(--white)">${h[0]}</span><span class="mono" style="font-size:12.5px;color:var(--gold-pale)">${h[1]}</span></div>`).join('')}</div>
+    </div>
+    <div class="card"><div class="sec-label">معلومات الصالون <span class="ln"></span></div>
+      ${[['اسم الصالون','صالون لمسة'],['الفرع الرئيسي','جدة · حي الشاطئ'],['عدد الكراسي','٦ كراسي'],['بوابة الدفع','mada + Apple Pay']].map(r=>`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"><label style="font-size:12.5px;color:var(--gold-pale)">${r[0]}</label><input value="${r[1]}" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Cairo',sans-serif;font-size:14px;outline:none"/></div>`).join('')}
+      <button class="btn btn-gold" style="margin-top:4px">حفظ الإعدادات</button>
+    </div>
+  </div>`;
+};
+
+/* ── INVOICES (POS / sales bills) ── */
+SCREENS.invoices=()=>{
+  const INV=[
+    {id:'INV-2041',cl:'نوف العتيبي',items:'مكياج سهرة + سيروم',staff:'أمل',total:530,pay:'mada',st:'مدفوعة',sc:'green',when:'اليوم · 2:14 م'},
+    {id:'INV-2040',cl:'سارة الأحمدي',items:'هيدرافيشل',staff:'نورة',total:480,pay:'Apple Pay',st:'مدفوعة',sc:'green',when:'اليوم · 12:30 م'},
+    {id:'INV-2039',cl:'ريم الزهراني',items:'مكياج ناعم',staff:'أمل',total:250,pay:'—',st:'غير مدفوعة',sc:'gold',when:'اليوم · 11:00 ص'},
+    {id:'INV-2038',cl:'جواهر الشهري',items:'منيكير جل + طلاء',staff:'ريم',total:370,pay:'نقدًا',st:'مدفوعة',sc:'green',when:'أمس'},
+    {id:'INV-2037',cl:'لمياء الحربي',items:'صبغة + قص',staff:'سارة',total:750,pay:'mada',st:'مدفوعة',sc:'green',when:'أمس'},
+    {id:'INV-2036',cl:'منيرة الدوسري',items:'تنظيف بشرة',staff:'نورة',total:320,pay:'مستردّة',st:'مستردّة',sc:'soft',when:'قبل يومين'},
+  ];
+  return `
+  <style>.itab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.ith,.itr{display:grid;grid-template-columns:0.9fr 1.4fr 1.4fr 0.8fr 0.9fr 1fr 0.9fr;gap:12px;align-items:center;padding:14px 20px}.ith{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.itr{border-bottom:1px solid var(--line-soft);transition:background .2s;cursor:pointer}.itr:last-child{border-bottom:none}.itr:hover{background:var(--surface2)}.itr .id{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold-light);direction:ltr}.itr .c{font-size:13.5px;color:var(--white);font-weight:500}.itr .m{font-size:12.5px;color:var(--cream)}.itr .tot{font-family:'Bodoni Moda',serif;font-size:18px;color:var(--white);direction:ltr}.itr .when{font-size:11.5px;color:var(--muted)}@media(max-width:1080px){.ith{display:none}.itr{grid-template-columns:1fr auto}.itr .hide{display:none}}</style>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">الفواتير البيعية</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">فواتير الخدمات والمنتجات والمدفوعات</div></div><button class="btn btn-gold">+ فاتورة جديدة</button></div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px">
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('invoice',19)}</div><div class="delta">▲ 18</div></div><div class="val">142</div><div class="k">فواتير الشهر</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div><div class="delta">▲ 12%</div></div><div class="val">52,400<span class="u">ر.س</span></div><div class="k">إجمالي المفوتر</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('clock',19)}</div></div><div class="val">3</div><div class="k">فواتير غير مدفوعة</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">369<span class="u">ر.س</span></div><div class="k">متوسط قيمة الفاتورة</div></div>
+  </div>
+  <div class="itab"><div class="ith"><span>رقم الفاتورة</span><span>العميلة</span><span>البنود</span><span>الموظفة</span><span>الطريقة</span><span>الحالة</span><span>الإجمالي</span></div>
+  ${INV.map(v=>`<div class="itr"><span class="id">${v.id}</span><span class="c">${v.cl}</span><span class="m hide">${v.items}</span><span class="m hide">${v.staff}</span><span class="m hide">${v.pay}</span><span class="hide"><span class="badge ${v.sc}">${v.st}</span></span><span class="tot">${v.total} ر.س</span></div>`).join('')}
+  </div>`;
+};
+
+/* ── MARKETING ── */
+SCREENS.marketing=()=>{
+  const CAMP=[
+    {n:'خصم الصيف ٢٠٪',type:'كوبون',code:'SUMMER20',used:48,rev:'12,400',st:'نشط',sc:'green'},
+    {n:'عرض العروس',type:'باقة',code:'BRIDE',used:14,rev:'29,800',st:'نشط',sc:'green'},
+    {n:'جمعة بيضاء',type:'خصم فلاش',code:'FRIDAY',used:32,rev:'8,600',st:'منتهٍ',sc:'soft'},
+  ];
+  const CH=[['المتجر (لوما)',44,'#ccab64'],['انستقرام',30,'#d98a93'],['واتساب',16,'#6fa86a'],['إحالات',10,'#7d9bc0']];
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">تسويق الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">الحملات والعروض وقنوات الوصول</div></div><button class="btn btn-gold">+ حملة جديدة</button></div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px">
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('mega',19)}</div></div><div class="val">3</div><div class="k">حملات نشطة</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div><div class="delta">▲ 22%</div></div><div class="val">94</div><div class="k">عميلات جدد هذا الشهر</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">50,800<span class="u">ر.س</span></div><div class="k">إيراد من الحملات</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">4.9<span class="u">/5</span></div><div class="k">سمعة الصالون</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start">
+    <div>
+      <div class="sec-label">الحملات والعروض <span class="ln"></span></div>
+      ${CAMP.map(c=>`<div class="card" style="display:flex;align-items:center;gap:15px;margin-bottom:11px;padding:16px 18px"><div style="width:44px;height:44px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('mega',20)}</div><div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${c.n}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${c.type} · <span style="font-family:'IBM Plex Mono',monospace;color:var(--gold-pale);direction:ltr">${c.code}</span></div></div><div style="text-align:center"><div class="num" style="font-size:18px;color:var(--white)">${c.used}</div><div style="font-size:10.5px;color:var(--muted)">استخدام</div></div><div style="text-align:center"><div class="num" style="font-size:18px;color:var(--gold-light)">${c.rev}</div><div style="font-size:10.5px;color:var(--muted)">ر.س إيراد</div></div><span class="badge ${c.sc}">${c.st}</span></div>`).join('')}
+    </div>
+    <div class="card"><div class="sec-label">قنوات الوصول <span class="ln"></span></div>${CH.map(c=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 0"><span style="font-size:13px;color:var(--cream);width:108px">${c[0]}</span><div style="flex:1;height:9px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:${c[1]/44*100}%;background:${c[2]};border-radius:10px"></span></div><span class="mono" style="font-size:12px;color:var(--gold-pale);width:34px;text-align:left">${c[1]}%</span></div>`).join('')}
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:11px;background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('users',19)}</div><div><div style="font-size:13.5px;color:var(--white);font-weight:600">برنامج الإحالة</div><div style="font-size:12px;color:var(--muted)">٢٨ عميلة دعت 39 صديقة</div></div></div>
+    </div>
+  </div>`;
+};
+
+/* ── INVENTORY (المخزون + إضافة) ── */
+window.INVENTORY=[
+  {n:'كريم أساس — درجات',cat:'مكياج',q:8,min:10,cost:90,sup:'مورّد الجمال'},
+  {n:'رموش صناعية',cat:'مكياج',q:6,min:10,cost:25,sup:'لاش برو'},
+  {n:'صبغة شعر — بنّي',cat:'شعر',q:18,min:8,cost:55,sup:'كلر لاين'},
+  {n:'زيت كيراتين',cat:'شعر',q:4,min:6,cost:120,sup:'كلر لاين'},
+  {n:'محلول هيدرافيشل',cat:'بشرة',q:22,min:8,cost:140,sup:'سكن كير'},
+  {n:'جل أظافر — ألوان',cat:'أظافر',q:30,min:12,cost:18,sup:'نيل بار'},
+  {n:'مثبّت مكياج (سبراي)',cat:'مكياج',q:3,min:8,cost:60,sup:'مورّد الجمال'},
+];
+function invStatus(it){if(it.q<=Math.ceil(it.min*0.4))return['يحتاج طلب','gold'];if(it.q<it.min)return['منخفض','gold'];return['متوفر','green'];}
+window.SALON_INV={
+  open(){document.getElementById('inv-modal').style.display='flex';},
+  close(){document.getElementById('inv-modal').style.display='none';},
+  add(){
+    const g=id=>document.getElementById(id).value.trim();
+    const n=g('iv-n');if(!n){document.getElementById('iv-n').focus();return;}
+    window.INVENTORY.unshift({n,cat:g('iv-cat')||'عام',q:+g('iv-q')||0,min:+g('iv-min')||5,cost:+g('iv-cost')||0,sup:g('iv-sup')||'—'});
+    this.close();SALON.go('inventory');
+  }
+};
+SCREENS.inventory=()=>{
+  const items=window.INVENTORY;
+  const low=items.filter(i=>i.q<i.min).length;
+  const value=items.reduce((s,i)=>s+i.q*i.cost,0);
+  return `
+  <style>.ivtab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.ivh,.ivr{display:grid;grid-template-columns:2fr 1fr 0.9fr 0.9fr 1fr 1.1fr;gap:12px;align-items:center;padding:14px 20px}.ivh{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.ivr{border-bottom:1px solid var(--line-soft)}.ivr:last-child{border-bottom:none}.ivr:hover{background:var(--surface2)}.ivr .nm{font-size:14px;color:var(--white);font-weight:500}.ivr .num{font-family:'Bodoni Moda',serif;font-size:18px;color:var(--white);direction:ltr}.ivr .num.warn{color:var(--gold-light)}.ivr .mut{font-size:13px;color:var(--cream)}.bar{height:6px;background:var(--surface3);border-radius:10px;overflow:hidden;margin-top:5px}.bar span{display:block;height:100%;border-radius:10px}@media(max-width:1080px){.ivh{display:none}.ivr{grid-template-columns:1fr auto}.ivr .hide{display:none}}
+  .modal{display:none;position:fixed;inset:0;z-index:90;background:rgba(8,6,4,0.7);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+  .sheet{width:480px;max-width:92vw;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
+  .sheet h3{font-size:18px;color:var(--white);font-weight:600;margin-bottom:4px}.sheet .sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+  .frow{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.frow label{font-size:12.5px;color:var(--gold-pale)}.fin{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Cairo',sans-serif;font-size:14px;outline:none}.fin:focus{border-color:var(--gold-deep)}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}</style>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">مخزون الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">المستلزمات وتنبيهات النفاد</div></div><button class="btn btn-gold" onclick="SALON_INV.open()">${icon('plus',16)} إضافة للمخزون</button></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('boxes',19)}</div></div><div class="val">${items.length}</div><div class="k">أصناف في المخزون</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('clock',19)}</div>${low?`<div class="delta" style="color:var(--gold-light);background:rgba(156,124,58,0.16)">⚠ ${low}</div>`:''}</div><div class="val">${low}</div><div class="k">أصناف تحت الحد الأدنى</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">${value.toLocaleString('en')}<span class="u">ر.س</span></div><div class="k">قيمة المخزون</div></div>
+  </div>
+  <div class="ivtab"><div class="ivh"><span>الصنف</span><span>القسم</span><span>المتوفر</span><span>الحد الأدنى</span><span>المورّد</span><span>الحالة</span></div>
+  ${items.map(it=>{const[lb,sc]=invStatus(it);const pct=Math.min(100,it.q/(it.min*1.6)*100);const col=sc==='green'?'#6fa86a':'#ccab64';return `<div class="ivr"><div><div class="nm">${it.n}</div><div class="bar hide"><span style="width:${pct}%;background:${col}"></span></div></div><span class="mut hide">${it.cat}</span><span class="num ${it.q<it.min?'warn':''}">${it.q}</span><span class="num mut hide" style="color:var(--muted)">${it.min}</span><span class="mut hide">${it.sup}</span><span><span class="badge ${sc}">${lb}</span></span></div>`;}).join('')}
+  </div>
+  <div class="modal" id="inv-modal" onclick="if(event.target===this)SALON_INV.close()">
+    <div class="sheet">
+      <h3>إضافة صنف للمخزون</h3><div class="sub">املأي بيانات الصنف الجديد</div>
+      <div class="frow"><label>اسم الصنف</label><input class="fin" id="iv-n" placeholder="مثالًا: كريم أساس"/></div>
+      <div class="two"><div class="frow"><label>القسم</label><input class="fin" id="iv-cat" placeholder="مكياج / شعر..."/></div><div class="frow"><label>المورّد</label><input class="fin" id="iv-sup" placeholder="اسم المورّد"/></div></div>
+      <div class="two"><div class="frow"><label>الكمية المتوفرة</label><input class="fin" id="iv-q" type="number" placeholder="0"/></div><div class="frow"><label>الحد الأدنى</label><input class="fin" id="iv-min" type="number" placeholder="5"/></div></div>
+      <div class="frow"><label>تكلفة الوحدة (ر.س)</label><input class="fin" id="iv-cost" type="number" placeholder="0"/></div>
+      <div style="display:flex;gap:12px;margin-top:8px"><button class="btn btn-gold" style="flex:1;justify-content:center" onclick="SALON_INV.add()">إضافة</button><button class="btn btn-ghost" onclick="SALON_INV.close()">إلغاء</button></div>
+    </div>
+  </div>`;
+};
+
+const NAV=[
+  {id:'overview',label:'نظرة عامة',icon:'grid',crumb:'SALON'},
+  {id:'board',label:'لوحة الحجوزات',icon:'board',crumb:'SALON'},
+  {id:'staff',label:'الطاقم',icon:'staff',crumb:'SALON'},
+  {id:'clients',label:'العملاء',icon:'users',crumb:'SALON'},
+  {id:'services',label:'الخدمات',icon:'scissors',crumb:'SALON'},
+  {id:'products',label:'المنتجات',icon:'bag',crumb:'SALON'},
+  {id:'inventory',label:'المخزون',icon:'boxes',crumb:'SALON'},
+  {id:'subscriptions',label:'الاشتراكات',icon:'ticket',crumb:'SALON'},
+  {id:'invoices',label:'الفواتير البيعية',icon:'invoice',crumb:'FINANCE'},
+  {id:'marketing',label:'التسويق',icon:'mega',crumb:'GROWTH'},
+  {id:'finance',label:'المالية',icon:'wallet',crumb:'FINANCE'},
+  {id:'branches',label:'الفروع',icon:'pin',crumb:'SALON'},
+  {id:'settings',label:'الإعدادات',icon:'gear',crumb:'SYSTEM'},
+];
+const NAV_FLAT={};NAV.forEach(n=>NAV_FLAT[n.id]=n);
+document.getElementById('sb-nav').innerHTML=NAV.map(it=>`<div class="nav-item" data-id="${it.id}" onclick="SALON.go('${it.id}')"><span class="ico">${icon(it.icon,20)}</span><span class="lbl">${it.label}</span><span class="dot"></span></div>`).join('');
+
+const SALON={
+  go(id){
+    const it=NAV_FLAT[id];if(!it)return;location.hash=id;
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.id===id));
+    document.getElementById('tb-crumb').textContent=it.crumb;document.getElementById('tb-title').textContent=it.label;
+    const host=document.getElementById('screen');host.classList.remove('fade-in');void host.offsetWidth;host.classList.add('fade-in');
+    if(SCREENS[id])host.innerHTML=SCREENS[id]();
+    else host.innerHTML=`<div class="empty-screen"><div class="ico">${icon(it.icon,30)}</div><h3>${it.label}</h3><p>هذه الشاشة ضمن المراحل القادمة. القائمة ولوحة الحجوزات تعمل بالكامل.</p></div>`;
+    window.scrollTo({top:0});
+  }
+};
+window.SALON=SALON;
+const start=(location.hash||'').replace('#','')||'overview';SALON.go(NAV_FLAT[start]?start:'overview');
+</script>
+<script src="luma-ui.js"></script>
+</body>
+</html>
