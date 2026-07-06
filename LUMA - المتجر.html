@@ -431,19 +431,43 @@ function svTab(t){
 function allRevs(){return [...loadJ(revKey(SV.n)),...(SEED_REVIEWS[SV.n]||[])];}
 function renderRevs(){
   const list=allRevs();
-  document.getElementById('sv-revlist').innerHTML=list.map(r=>`<div class="sv-review"><div class="rv-top"><span class="rv-av">${esc(r.n).charAt(0)}</span><div style="flex:1"><div class="rv-n">${esc(r.n)}</div><div class="rv-d">${esc(r.d)}</div></div><span class="rv-stars">${'★'.repeat(r.r)}${'☆'.repeat(5-r.r)}</span></div><div class="rv-t">${esc(r.t)}</div></div>`).join('')||'<div style="color:var(--muted);font-size:13.5px;padding:16px 0">لا توجد تعليقات بعد — كوني أول من يقيّم!</div>';
+  document.getElementById('sv-revlist').innerHTML=list.map(r=>`<div class="sv-review"><div class="rv-top"><span class="rv-av">${esc(r.n).charAt(0)}</span><div style="flex:1"><div class="rv-n">${esc(r.n)}</div><div class="rv-d">${esc(r.d)}</div></div><span class="rv-stars">${'★'.repeat(r.r)}${'☆'.repeat(5-r.r)}</span></div><div class="rv-t">${esc(r.t)}</div>${r.img?`<img class="rv-img" src="${r.img}" alt="صورة التعليق" onclick="zoomImg(this.src)"/>`:''}</div>`).join('')||'<div style="color:var(--muted);font-size:13.5px;padding:16px 0">لا توجد تعليقات بعد — كوني أول من يقيّم!</div>';
 }
-let pickedStars=5;
+let pickedStars=5,pickedImg=null;
 function pickStars(n){pickedStars=n;document.querySelectorAll('#sv-stars span').forEach((s,i)=>s.classList.toggle('on',i<n));}
+function pickImage(inp){
+  const f=inp.files&&inp.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{const im=new Image();im.onload=()=>{
+    /* downscale to keep localStorage small */
+    const MAX=900,sc=Math.min(1,MAX/Math.max(im.width,im.height));
+    const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+    cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+    pickedImg=cv.toDataURL('image/jpeg',0.72);
+    document.getElementById('rv-thumb').src=pickedImg;
+    document.getElementById('rv-preview').style.display='inline-flex';
+  };im.src=rd.result;};
+  rd.readAsDataURL(f);inp.value='';
+}
+function clearImage(){pickedImg=null;document.getElementById('rv-preview').style.display='none';document.getElementById('rv-thumb').src='';}
 function addReview(){
   const nm=document.getElementById('rv-name'),tx=document.getElementById('rv-text');
   if(!nm.value.trim()){nm.style.borderColor='#c0566a';nm.focus();return;}
   if(!tx.value.trim()){tx.style.borderColor='#c0566a';tx.focus();return;}
   const mine=loadJ(revKey(SV.n));
-  mine.unshift({n:nm.value.trim(),r:pickedStars,t:tx.value.trim(),d:'الآن'});
-  saveJ(revKey(SV.n),mine);
-  nm.value='';tx.value='';pickStars(5);renderRevs();
+  const rec={n:nm.value.trim(),r:pickedStars,t:tx.value.trim(),d:'الآن'};
+  if(pickedImg)rec.img=pickedImg;
+  mine.unshift(rec);
+  try{saveJ(revKey(SV.n),mine);}catch(e){}
+  nm.value='';tx.value='';pickStars(5);clearImage();renderRevs();
 }
+function zoomImg(src){
+  const z=document.createElement('div');z.className='rv-zoom';
+  z.innerHTML='<img src="'+src+'" alt=""/>';
+  z.onclick=()=>z.remove();
+  document.body.appendChild(z);
+}
+window.pickImage=pickImage;window.clearImage=clearImage;window.zoomImg=zoomImg;
 function renderChat(){
   const msgs=loadJ(chatKey(SV.n));
   const th=document.getElementById('sv-thread');
@@ -494,6 +518,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSalon();});
 #sv-stars span{font-size:22px;color:var(--muted-deep);cursor:pointer;transition:color .15s;}
 #sv-stars span.on{color:var(--gold-light);}
 .rv-send{width:100%;background:linear-gradient(120deg,#dbbd81,#caa85f 45%,#937842);border:none;color:#0e0d11;font-family:inherit;font-weight:700;font-size:14px;padding:11px;border-radius:8px;cursor:pointer;}
+.rv-imgrow{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.rv-addimg{background:transparent;border:1px dashed var(--gold-deep);color:var(--gold-light);font-family:inherit;font-size:13px;padding:9px 16px;border-radius:8px;cursor:pointer;transition:all .2s;}
+.rv-addimg:hover{background:rgba(147,115,53,0.1);}
+.rv-preview{position:relative;display:inline-flex;}
+.rv-preview img{width:52px;height:52px;object-fit:cover;border-radius:9px;border:1px solid var(--gold-deep);}
+.rv-rmimg{position:absolute;top:-7px;left:-7px;width:20px;height:20px;border-radius:50%;background:#b14a5c;border:none;color:#fff;font-size:13px;line-height:1;cursor:pointer;}
+.rv-img{display:block;margin-top:10px;max-width:180px;max-height:130px;object-fit:cover;border-radius:10px;border:1px solid var(--line);cursor:zoom-in;transition:filter .2s;}
+.rv-img:hover{filter:brightness(1.08);}
+.rv-zoom{position:fixed;inset:0;z-index:9200;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:26px;cursor:zoom-out;}
+.rv-zoom img{max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.6);}
 #sv-thread{height:250px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px;}
 .msg{max-width:78%;padding:9px 14px;border-radius:13px;font-size:13.5px;line-height:1.7;}
 .msg.them{align-self:flex-start;background:var(--panel3);color:var(--cream);border:1px solid var(--line);border-bottom-right-radius:4px;}
@@ -524,6 +558,11 @@ html[data-theme="light"] .sview{background:rgba(59,47,43,.35);}
         <div id="sv-stars" onclick="void 0"><span class="on" onclick="pickStars(1)">★</span><span class="on" onclick="pickStars(2)">★</span><span class="on" onclick="pickStars(3)">★</span><span class="on" onclick="pickStars(4)">★</span><span class="on" onclick="pickStars(5)">★</span></div>
         <input id="rv-name" placeholder="اسمك"/>
         <textarea id="rv-text" rows="2" placeholder="شاركينا تجربتك مع الصالون…"></textarea>
+        <input type="file" id="rv-file" accept="image/*" style="display:none" onchange="pickImage(this)"/>
+        <div class="rv-imgrow">
+          <button type="button" class="rv-addimg" onclick="document.getElementById('rv-file').click()">📷 إضافة صورة</button>
+          <span class="rv-preview" id="rv-preview" style="display:none"><img id="rv-thumb" alt=""/><button type="button" class="rv-rmimg" onclick="clearImage()">×</button></span>
+        </div>
         <button class="rv-send" onclick="addReview()">نشر التعليق</button>
       </div>
     </div>
