@@ -216,8 +216,9 @@
       <div class="toolbar">
         <button class="filt-toggle" onclick="openFilters()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg> الفلترة</button>
         <div class="search-field"><span class="ic">⌕</span><input id="q" placeholder="ابحثي عن خبيرة، صالون، خدمة، أو مدينة…" /></div>
-        <select class="sortsel" id="sort" onchange="render()">
+        <select class="sortsel" id="sort" onchange="onSortChange()">
           <option value="rec">الأكثر ملاءمة</option>
+          <option value="near">📍 الأقرب لكِ</option>
           <option value="rating">الأعلى تقييماً</option>
           <option value="reviews">الأكثر طلباً</option>
           <option value="price-asc">السعر: الأقل</option>
@@ -261,6 +262,28 @@ const DATA=[
 ];
 
 const cityOf=c=>c.split('·')[0].trim();
+
+/* ── nearest-branch sort: city coordinates + geolocation ── */
+const CITY_COORDS={'جدة':[21.543,39.173],'الرياض':[24.713,46.675],'جازان':[17.006,42.596],'مكة':[21.389,39.858],'الدمام':[26.420,50.088]};
+let userLoc=null,locBusy=false;
+function distKm(a,b){const R=6371,dLa=(b[0]-a[0])*Math.PI/180,dLo=(b[1]-a[1])*Math.PI/180;const la1=a[0]*Math.PI/180,la2=b[0]*Math.PI/180;const h=Math.sin(dLa/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+function provDist(e){const c=CITY_COORDS[cityOf(e.city)];return c&&userLoc?distKm(userLoc,c):Infinity;}
+function fmtDist(km){if(!isFinite(km))return'';return km<1?'أقل من كم':'يبعد ~'+Math.round(km)+' كم';}
+function onSortChange(){
+  const sel=document.getElementById('sort');
+  if(sel.value==='near'&&!userLoc){
+    if(locBusy)return;
+    if(!navigator.geolocation){alert('متصفحك لا يدعم تحديد الموقع');sel.value='rec';render();return;}
+    locBusy=true;
+    navigator.geolocation.getCurrentPosition(
+      p=>{locBusy=false;userLoc=[p.coords.latitude,p.coords.longitude];render();},
+      ()=>{locBusy=false;alert('لعرض الأقرب لكِ، فعّلي إذن الموقع من المتصفح ثم أعيدي المحاولة.');sel.value='rec';render();},
+      {timeout:9000,maximumAge:600000});
+    return;
+  }
+  render();
+}
+window.onSortChange=onSortChange;
 const PRICES=DATA.map(d=>d.price);
 const PMIN=Math.min(...PRICES), PMAX=Math.max(...PRICES);
 
@@ -339,6 +362,7 @@ function render(){
   else if(sort==='reviews')list.sort((a,b)=>b.reviews-a.reviews);
   else if(sort==='price-asc')list.sort((a,b)=>a.price-b.price);
   else if(sort==='price-desc')list.sort((a,b)=>b.price-a.price);
+  else if(sort==='near'&&userLoc)list.sort((a,b)=>provDist(a)-provDist(b));
   else list.sort((a,b)=>(b.rating*b.reviews)-(a.rating*a.reviews));
   document.getElementById('rcount').textContent=list.length;
   activeTags();
@@ -358,7 +382,7 @@ function render(){
       <div class="body">
         <div class="nm">${e.n}</div>
         <div class="role">${e.role}</div>
-        <div class="loc">⌖ ${e.city}</div>
+        <div class="loc">⌖ ${e.city}${userLoc&&isFinite(provDist(e))?` <span style="color:var(--gold-light)">· ${fmtDist(provDist(e))}</span>`:''}</div>
         ${isSalon?`<div class="facts"><span>⬢ ${e.branches} ${e.branches===1?'فرع':'فروع'}</span><span>● ${e.staff} خبيرات</span></div>`:''}
         <div class="tags">${e.tags.map(t=>`<span>${t}</span>`).join('')}</div>
         <div class="foot">
