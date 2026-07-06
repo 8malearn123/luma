@@ -348,10 +348,10 @@ function render(){
     const k=e.type+'|'+e.n;
     const link='LUMA - تجربة العميلة.html?name='+encodeURIComponent(e.n)+'&role='+encodeURIComponent(e.type==='salon'?('صالون · '+e.cat):e.role)+'&city='+encodeURIComponent(e.city)+'&type='+e.type;
     const isSalon=e.type==='salon';
-    return `<a class="card ${isSalon?'salon':''}" href="${link}">
-      <div class="cover">
+    return `<a class="card ${isSalon?'salon':''}" href="${link}" ${isSalon?`onclick="openSalon('${e.n}',event)"`:''}>
+      <div class="cover" ${isSalon?`style="background:${salonHue(e.n).cover}"`:''}>
         <div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
-        ${isSalon?`<span class="logo">${e.n.replace('صالون ','').replace('مركز ','').replace('استوديو ','').charAt(0)}</span>`:`<span class="mono-lg">${e.n.charAt(0)}</span>`}
+        ${isSalon?`<span class="logo" style="border-color:${salonHue(e.n).ac};color:${salonHue(e.n).ac}">${e.n.replace('صالون ','').replace('مركز ','').replace('استوديو ','').charAt(0)}</span>`:`<span class="mono-lg">${e.n.charAt(0)}</span>`}
         <span class="fav ${state.fav.has(k)?'on':''}" onclick="toggleFav('${k}',event)">${state.fav.has(k)?'♥':'♡'}</span>
         <span class="ptag ${isSalon?'salon':'expert'}">${isSalon?'⬢ صالون':'◆ خبيرة مستقلة'}</span>
       </div>
@@ -370,10 +370,172 @@ function render(){
   }).join('');
 }
 
+/* ═══════════ salon detail: photo + reviews + chat ═══════════ */
+const HUES=[
+  {cover:'linear-gradient(150deg,#233043,#141c28)',ac:'#8fb3dd'},
+  {cover:'linear-gradient(150deg,#3a2b33,#221820)',ac:'#dd9aab'},
+  {cover:'linear-gradient(150deg,#2b3a2e,#17221a)',ac:'#9ccf9a'},
+  {cover:'linear-gradient(150deg,#3d3324,#241d12)',ac:'#d9b878'},
+  {cover:'linear-gradient(150deg,#33283d,#1e1726)',ac:'#b39add'},
+  {cover:'linear-gradient(150deg,#3d2a24,#241713)',ac:'#dd9f8a'},
+  {cover:'linear-gradient(150deg,#24383d,#122023)',ac:'#8accd6'},
+];
+function salonHue(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))>>>0;return HUES[h%HUES.length];}
+window.salonHue=salonHue;
+
 buildSidebar();
 render();
 document.getElementById('q').addEventListener('input',render);
+
+const SEED_REVIEWS={
+  'صالون لمسة':[{n:'نوف العتيبي',r:5,t:'تجربة راقية من الاستقبال للنتيجة — مكياج السهرة كان أجمل من توقعي.',d:'قبل 3 أيام'},{n:'هند الشمري',r:5,t:'التزام بالمواعيد ونظافة المكان ممتازة. أنصح بأمل لمكياج العرايس.',d:'قبل أسبوع'},{n:'وعد الزهراني',r:4,t:'الخدمة جميلة والأسعار مناسبة، فقط الحجز يمتلئ بسرعة نهاية الأسبوع.',d:'قبل أسبوعين'}],
+  'مركز إشراقة':[{n:'لمى الحربي',r:5,t:'جلسة الهيدرافيشل غيّرت بشرتي فعلياً. المكان هادئ وفخم.',d:'قبل يومين'},{n:'دانة السالم',r:5,t:'أخصائيات محترفات ويشرحون كل خطوة قبل ما يسوونها.',d:'قبل 5 أيام'},{n:'ريم القحطاني',r:4,t:'الليزر ممتاز والنتائج واضحة من أول جلسة.',d:'قبل شهر'}],
+  'صالون رؤى':[{n:'جواهر الشهري',r:5,t:'أفضل صالون جربته في جدة — باقة العروس كانت متكاملة فعلاً.',d:'قبل 4 أيام'},{n:'سارة الأحمدي',r:5,t:'السبا عندهم مستوى فنادق. أعشق تفاصيلهم الصغيرة.',d:'قبل أسبوع'},{n:'منيرة الدوسري',r:4,t:'فريق كبير ومنظم، وتقدرين تحجزين أكثر من خدمة بنفس الوقت.',d:'قبل 3 أسابيع'}],
+  'مركز لازوردي':[{n:'أريج المالكي',r:5,t:'المساج والعناية هنا تجربة ملكية بمعنى الكلمة.',d:'قبل يوم'},{n:'شهد الغامدي',r:5,t:'حجزت يوم كامل سبا وكان يستاهل كل ريال.',d:'قبل أسبوع'},{n:'رنا العمري',r:5,t:'هدوء ونظافة واهتمام — ما شاء الله عليهم.',d:'قبل أسبوعين'}],
+  'استوديو نون':[{n:'عبير الغامدي',r:5,t:'صبغة الشعر طلعت بالضبط مثل الصورة اللي وريتهم إياها!',d:'قبل 3 أيام'},{n:'لطيفة المطيري',r:4,t:'تسريحات مناسبات جميلة وسعرها منطقي.',d:'قبل 10 أيام'},{n:'هيا الشمري',r:5,t:'خبيرات الشعر عندهم فنانات بمعنى الكلمة.',d:'قبل شهر'}],
+  'صالون ضي':[{n:'مها العسيري',r:5,t:'تركيب الأظافر دقيق وثابت لأسابيع. أرجع لهم دايماً.',d:'قبل يومين'},{n:'نورة السبيعي',r:4,t:'منيكير الجل ممتاز والألوان اختياراتهم واسعة.',d:'قبل أسبوع'},{n:'أمجاد الزهراني',r:4,t:'مكان مريح وتعاملهم لطيف جداً.',d:'قبل أسبوعين'}],
+  'الجوهرة سبأ':[{n:'فاطمة عريشي',r:5,t:'أخيراً صالون بهذا المستوى في صبيا! مكياج العروس كان ولا أروع.',d:'قبل يومين'},{n:'أسماء حكمي',r:5,t:'تعامل راقٍ وأسعار مناسبة — فخر لمنطقة جازان.',d:'قبل أسبوع'},{n:'مريم النعمي',r:4,t:'حجزت تسريحة وشعري طلع تحفة. حي المحمدية صار له عنوان جمال.',d:'قبل أسبوعين'}],
+};
+const CHAT_REPLIES=['أهلاً وسهلاً بكِ 🌸 كيف نقدر نخدمك؟','متوفر لدينا مواعيد هذا الأسبوع — أي يوم يناسبك؟','أكيد! تقدرين تشوفين كل خدماتنا وأسعارنا من زر «احجزي الآن».','سعدنا بتواصلك! فريقنا بيرد عليك بالتفصيل خلال دقائق.'];
+
+const revKey=n=>'luma_reviews_'+n, chatKey=n=>'luma_chat_'+n;
+const loadJ=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
+const saveJ=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let SV=null;
+
+function openSalon(name,ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  SV=DATA.find(d=>d.type==='salon'&&d.n===name);if(!SV)return;
+  const hue=salonHue(name);
+  const link='LUMA - تجربة العميلة.html?name='+encodeURIComponent(SV.n)+'&role='+encodeURIComponent('صالون · '+SV.cat)+'&city='+encodeURIComponent(SV.city)+'&type=salon';
+  document.getElementById('sv-cover').style.background=hue.cover;
+  document.getElementById('sv-logo').style.borderColor=hue.ac;
+  document.getElementById('sv-logo').style.color=hue.ac;
+  document.getElementById('sv-logo').textContent=name.replace('صالون ','').replace('مركز ','').replace('استوديو ','').charAt(0);
+  document.getElementById('sv-name').textContent=SV.n;
+  document.getElementById('sv-role').textContent=SV.role+' · ⌖ '+SV.city;
+  document.getElementById('sv-rate').innerHTML='★ '+SV.rating.toFixed(1)+' <span style="color:var(--muted);font-size:12px">('+SV.reviews+' تقييم)</span>';
+  document.getElementById('sv-book').setAttribute('href',link);
+  svTab('rev');
+  renderRevs();renderChat();
+  const ov=document.getElementById('sview');ov.style.display='flex';requestAnimationFrame(()=>ov.classList.add('show'));
+}
+function closeSalon(){const ov=document.getElementById('sview');ov.classList.remove('show');setTimeout(()=>ov.style.display='none',250);}
+function svTab(t){
+  document.querySelectorAll('.sv-tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  document.getElementById('sv-rev').style.display=t==='rev'?'':'none';
+  document.getElementById('sv-chat').style.display=t==='chat'?'':'none';
+  if(t==='chat'){const th=document.getElementById('sv-thread');th.scrollTop=th.scrollHeight;}
+}
+function allRevs(){return [...loadJ(revKey(SV.n)),...(SEED_REVIEWS[SV.n]||[])];}
+function renderRevs(){
+  const list=allRevs();
+  document.getElementById('sv-revlist').innerHTML=list.map(r=>`<div class="sv-review"><div class="rv-top"><span class="rv-av">${esc(r.n).charAt(0)}</span><div style="flex:1"><div class="rv-n">${esc(r.n)}</div><div class="rv-d">${esc(r.d)}</div></div><span class="rv-stars">${'★'.repeat(r.r)}${'☆'.repeat(5-r.r)}</span></div><div class="rv-t">${esc(r.t)}</div></div>`).join('')||'<div style="color:var(--muted);font-size:13.5px;padding:16px 0">لا توجد تعليقات بعد — كوني أول من يقيّم!</div>';
+}
+let pickedStars=5;
+function pickStars(n){pickedStars=n;document.querySelectorAll('#sv-stars span').forEach((s,i)=>s.classList.toggle('on',i<n));}
+function addReview(){
+  const nm=document.getElementById('rv-name'),tx=document.getElementById('rv-text');
+  if(!nm.value.trim()){nm.style.borderColor='#c0566a';nm.focus();return;}
+  if(!tx.value.trim()){tx.style.borderColor='#c0566a';tx.focus();return;}
+  const mine=loadJ(revKey(SV.n));
+  mine.unshift({n:nm.value.trim(),r:pickedStars,t:tx.value.trim(),d:'الآن'});
+  saveJ(revKey(SV.n),mine);
+  nm.value='';tx.value='';pickStars(5);renderRevs();
+}
+function renderChat(){
+  const msgs=loadJ(chatKey(SV.n));
+  const th=document.getElementById('sv-thread');
+  th.innerHTML=msgs.length?msgs.map(m=>`<div class="msg ${m.me?'me':'them'}">${esc(m.t)}</div>`).join(''):`<div class="msg them">أهلاً بكِ في ${esc(SV.n)} 👋 اسألينا عن أي خدمة أو موعد.</div>`;
+  th.scrollTop=th.scrollHeight;
+}
+function sendChat(){
+  const inp=document.getElementById('sv-msg');const t=inp.value.trim();if(!t)return;
+  const msgs=loadJ(chatKey(SV.n));msgs.push({me:1,t});saveJ(chatKey(SV.n),msgs);inp.value='';renderChat();
+  const salon=SV.n;
+  setTimeout(()=>{const m2=loadJ(chatKey(salon));m2.push({me:0,t:CHAT_REPLIES[Math.min(m2.filter(x=>!x.me).length,CHAT_REPLIES.length-1)]});saveJ(chatKey(salon),m2);if(SV&&SV.n===salon)renderChat();},900);
+}
+window.openSalon=openSalon;window.closeSalon=closeSalon;window.svTab=svTab;window.pickStars=pickStars;window.addReview=addReview;window.sendChat=sendChat;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSalon();});
 </script>
+
+<style>
+.sview{display:none;position:fixed;inset:0;z-index:8800;background:rgba(0,0,0,.62);align-items:center;justify-content:center;padding:18px;opacity:0;transition:opacity .25s;}
+.sview.show{opacity:1;}
+.sv-panel{background:linear-gradient(168deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;width:520px;max-width:100%;max-height:92vh;overflow-y:auto;transform:translateY(12px);transition:transform .25s;}
+.sview.show .sv-panel{transform:none;}
+.sv-cover{position:relative;height:150px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line);}
+.sv-cover .x{position:absolute;top:12px;left:12px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:19px;cursor:pointer;z-index:3;}
+.sv-cover .pat2{position:absolute;inset:0;opacity:.35;background-image:radial-gradient(circle at 25% 40%,rgba(255,255,255,.07) 0 34px,transparent 35px),radial-gradient(circle at 70% 65%,rgba(255,255,255,.05) 0 46px,transparent 47px),radial-gradient(circle at 88% 20%,rgba(255,255,255,.06) 0 26px,transparent 27px);}
+.sv-logo{position:relative;z-index:2;width:64px;height:64px;border-radius:16px;background:rgba(0,0,0,.3);border:1px solid;display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:29px;}
+.sv-head{padding:18px 22px 0;}
+.sv-head .nm{font-weight:700;font-size:20px;color:var(--white);}
+.sv-head .rl{font-size:13px;color:var(--gold-pale);margin-top:3px;}
+.sv-head .rt{color:var(--gold-light);font-size:14.5px;margin-top:7px;}
+.sv-book{display:inline-block;margin-top:12px;background:linear-gradient(120deg,#dbbd81,#caa85f 45%,#937842);color:#0e0d11;font-weight:600;font-size:13.5px;padding:9px 22px;border-radius:6px;}
+.sv-tabs{display:flex;gap:8px;padding:16px 22px 0;border-bottom:1px solid var(--line);}
+.sv-tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;padding:10px 14px;cursor:pointer;}
+.sv-tab.on{color:var(--gold-light);border-bottom-color:var(--gold-light);}
+.sv-sec{padding:18px 22px 22px;}
+.sv-review{border-bottom:1px solid var(--line);padding:13px 0;}
+.sv-review:last-child{border-bottom:none;}
+.rv-top{display:flex;align-items:center;gap:11px;}
+.rv-av{width:34px;height:34px;border-radius:50%;background:var(--panel3);border:1px solid var(--gold-deep);color:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.rv-n{font-size:13.5px;color:var(--white);font-weight:600;}
+.rv-d{font-size:11px;color:var(--muted);}
+.rv-stars{color:var(--gold-light);font-size:13px;letter-spacing:2px;direction:ltr;}
+.rv-t{font-size:13.5px;color:var(--cream);line-height:1.8;margin-top:8px;}
+.rv-form{margin-top:14px;padding-top:16px;border-top:1px dashed var(--line);}
+.rv-form .ft2{font-size:13px;color:var(--gold);font-weight:600;margin-bottom:10px;}
+.rv-form input,.rv-form textarea{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;margin-bottom:9px;resize:vertical;}
+.rv-form input:focus,.rv-form textarea:focus{border-color:var(--gold-deep);}
+#sv-stars{display:flex;gap:4px;direction:ltr;justify-content:flex-end;margin-bottom:9px;}
+#sv-stars span{font-size:22px;color:var(--muted-deep);cursor:pointer;transition:color .15s;}
+#sv-stars span.on{color:var(--gold-light);}
+.rv-send{width:100%;background:linear-gradient(120deg,#dbbd81,#caa85f 45%,#937842);border:none;color:#0e0d11;font-family:inherit;font-weight:700;font-size:14px;padding:11px;border-radius:8px;cursor:pointer;}
+#sv-thread{height:250px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px;}
+.msg{max-width:78%;padding:9px 14px;border-radius:13px;font-size:13.5px;line-height:1.7;}
+.msg.them{align-self:flex-start;background:var(--panel3);color:var(--cream);border:1px solid var(--line);border-bottom-right-radius:4px;}
+.msg.me{align-self:flex-end;background:linear-gradient(120deg,#dbbd81,#caa85f 55%,#9c8047);color:#131217;border-bottom-left-radius:4px;}
+.sv-chatbar{display:flex;gap:8px;margin-top:12px;}
+.sv-chatbar input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:24px;padding:11px 17px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;}
+.sv-chatbar input:focus{border-color:var(--gold-deep);}
+.sv-chatbar button{background:linear-gradient(120deg,#dbbd81,#937842);border:none;color:#0e0d11;font-family:inherit;font-weight:700;font-size:13.5px;padding:0 20px;border-radius:24px;cursor:pointer;}
+html[data-theme="light"] .sview{background:rgba(59,47,43,.35);}
+</style>
+<div class="sview" id="sview" onclick="if(event.target===this)closeSalon()">
+  <div class="sv-panel">
+    <div class="sv-cover" id="sv-cover"><button class="x" onclick="closeSalon()">×</button><div class="pat2"></div><span class="sv-logo" id="sv-logo"></span></div>
+    <div class="sv-head">
+      <div class="nm" id="sv-name"></div>
+      <div class="rl" id="sv-role"></div>
+      <div class="rt" id="sv-rate"></div>
+      <a class="sv-book" id="sv-book" href="#">احجزي الآن ←</a>
+    </div>
+    <div class="sv-tabs">
+      <button class="sv-tab on" data-t="rev" onclick="svTab('rev')">💬 التعليقات</button>
+      <button class="sv-tab" data-t="chat" onclick="svTab('chat')">✉️ الشات</button>
+    </div>
+    <div class="sv-sec" id="sv-rev">
+      <div id="sv-revlist"></div>
+      <div class="rv-form">
+        <div class="ft2">أضيفي تعليقكِ</div>
+        <div id="sv-stars" onclick="void 0"><span class="on" onclick="pickStars(1)">★</span><span class="on" onclick="pickStars(2)">★</span><span class="on" onclick="pickStars(3)">★</span><span class="on" onclick="pickStars(4)">★</span><span class="on" onclick="pickStars(5)">★</span></div>
+        <input id="rv-name" placeholder="اسمك"/>
+        <textarea id="rv-text" rows="2" placeholder="شاركينا تجربتك مع الصالون…"></textarea>
+        <button class="rv-send" onclick="addReview()">نشر التعليق</button>
+      </div>
+    </div>
+    <div class="sv-sec" id="sv-chat" style="display:none">
+      <div id="sv-thread"></div>
+      <div class="sv-chatbar">
+        <input id="sv-msg" placeholder="اكتبي رسالتك…" onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button onclick="sendChat()">إرسال</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="luma-theme.js"></script>
 </body>
 </html>
