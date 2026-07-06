@@ -56,7 +56,7 @@
       return `<g class="bar">
         <rect x="${x}" y="${pad.t}" width="${bw}" height="${ih}" fill="transparent"/>
         <rect class="b" x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" fill="url(#barg${last?'2':''})" />
-        <text x="${x+bw/2}" y="${H-14}" fill="${last?'#ccab64':'#86818d'}" font-size="10.5" font-family="Cairo" text-anchor="middle">${d.m}</text>
+        <text x="${x+bw/2}" y="${H-14}" fill="${last?'#ccab64':'#86818d'}" font-size="10.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text>
         ${last?`<text x="${x+bw/2}" y="${y-9}" fill="#ccab64" font-size="12" font-family="IBM Plex Mono" text-anchor="middle">18.4k</text>`:''}
       </g>`;}).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">
@@ -82,10 +82,10 @@
   .ov-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start;}
   @media(max-width:1180px){.ov-row{grid-template-columns:1fr;}}
   .ov-hi{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-  .ov-hi .lt .t{font-family:'Cairo',sans-serif;font-weight:600;font-size:17px;color:var(--white);}
+  .ov-hi .lt .t{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:17px;color:var(--white);}
   .ov-hi .lt .s{font-size:12.5px;color:var(--muted);margin-top:2px;}
   .ov-hi .tabs{display:flex;gap:6px;background:var(--surface3);border-radius:9px;padding:4px;}
-  .ov-hi .tabs button{font-family:'Cairo',sans-serif;font-size:12px;color:var(--muted);background:none;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;}
+  .ov-hi .tabs button{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12px;color:var(--muted);background:none;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;}
   .ov-hi .tabs button.on{background:var(--surface);color:var(--gold-light);}
   .chart-wrap .bar:hover .b{fill:url(#barg2);}
   .appt{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--line-soft);}
@@ -125,7 +125,7 @@
 <!-- greeting -->
 <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
   <div>
-    <div style="font-family:'Cairo',sans-serif;font-weight:600;font-size:26px;color:var(--white)">مساءِ الخير، رهف <span style="color:var(--gold-light)">✦</span></div>
+    <div style="font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:26px;color:var(--white)">مساءِ الخير، رهف <span style="color:var(--gold-light)">✦</span></div>
     <div style="font-size:14px;color:var(--gold-pale);margin-top:2px">لديكِ <b style="color:var(--white);font-weight:600">٤ مواعيد</b> اليوم، وتقييمان بانتظار ردّك.</div>
   </div>
   <div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="LUMA.go('bookings')">${icon('calendar',16)} التقويم</button><button class="btn btn-gold" onclick="LUMA.go('myservices')">+ خدمة جديدة</button></div>
@@ -197,7 +197,7 @@
           <text x="46" y="52" fill="#f6f2ec" font-size="22" font-family="Cormorant Garamond" font-weight="500" text-anchor="middle">80%</text>
         </svg>
         <div>
-          <div style="font-family:'Cairo',sans-serif;font-weight:600;font-size:16px;color:var(--white)">ملفك شبه مكتمل</div>
+          <div style="font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:16px;color:var(--white)">ملفك شبه مكتمل</div>
           <div style="font-size:13px;color:var(--muted);margin-top:4px;max-width:30ch;line-height:1.7">أكملي الخطوتين المتبقيتين لرفع ظهورك في المتجر وجذب عميلات أكثر.</div>
           <button class="btn btn-gold" style="margin-top:14px" onclick="LUMA.go('profile')">إكمال الملف</button>
         </div>

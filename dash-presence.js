@@ -14,7 +14,7 @@
   .pf-badge{position:absolute;top:10px;left:10px;z-index:3;font-size:10px;color:var(--gold-light);background:rgba(23,18,13,0.8);border:0.5px solid var(--gold-deep);border-radius:20px;padding:3px 9px;}
   .form-row{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
   .form-row label{font-size:13px;color:var(--gold-pale);font-weight:500;}
-  .inp,.ta{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:13px 15px;color:var(--white);font-family:'Cairo',sans-serif;font-size:14px;font-weight:300;outline:none;transition:border-color .25s;width:100%;}
+  .inp,.ta{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:13px 15px;color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;font-weight:300;outline:none;transition:border-color .25s;width:100%;}
   .inp:focus,.ta:focus{border-color:var(--gold-deep);}
   .ta{resize:none;min-height:110px;line-height:1.8;}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -73,7 +73,7 @@
     <div class="card" style="text-align:center;position:sticky;top:90px">
       <div class="sec-label" style="justify-content:center">معاينة بطاقتك <span style="position:absolute;left:22px"></span></div>
       <div style="width:96px;height:96px;border-radius:50%;margin:6px auto 0;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:42px;color:var(--gold-light);position:relative">ر<button style="position:absolute;bottom:0;left:0;width:30px;height:30px;border-radius:50%;background:var(--gold-light);border:2px solid var(--surface);color:#131217;cursor:pointer;font-size:13px">✎</button></div>
-      <div style="font-family:'Cairo',sans-serif;font-weight:700;font-size:19px;color:var(--white);margin-top:14px;display:flex;align-items:center;gap:7px;justify-content:center">رهف العتيبي <span style="color:var(--gold-light);font-size:13px">◆</span></div>
+      <div style="font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:19px;color:var(--white);margin-top:14px;display:flex;align-items:center;gap:7px;justify-content:center">رهف العتيبي <span style="color:var(--gold-light);font-size:13px">◆</span></div>
       <div style="font-size:13px;color:var(--gold-pale)">خبيرة مكياج · جدة</div>
       <div style="display:flex;align-items:center;gap:7px;justify-content:center;margin-top:10px;font-size:13px;color:var(--cream)"><span style="color:var(--gold-light)">★</span> 4.9 <span style="color:var(--muted)">· ٢١٣ حجز</span></div>
       <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft);font-size:12.5px;color:var(--muted);line-height:1.7">هكذا تظهرين للعميلات في متجر لوما.</div>
@@ -125,7 +125,7 @@
         </div>
         <div style="padding:24px 20px;text-align:center">
           <div style="width:64px;height:64px;border-radius:50%;margin:0 auto;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:28px;color:var(--gold-light)">ر</div>
-          <div style="font-family:'Cairo',sans-serif;font-weight:700;font-size:17px;color:var(--white);margin-top:12px">رهف · استوديو مكياج</div>
+          <div style="font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:17px;color:var(--white);margin-top:12px">رهف · استوديو مكياج</div>
           <div style="font-size:12px;color:var(--gold-pale)">خبيرة مكياج · جدة</div>
           <div style="font-size:11.5px;color:var(--cream);margin-top:4px"><span style="color:var(--gold-light)">★</span> 4.9 · ٢١٣ حجز</div>
           <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:16px">احجزي الآن</button>
@@ -139,7 +139,7 @@
   /* ════════ PORTFOLIO ════════ */
   const CATS=['الكل','مكياج عرائس','سهرات','مكياج ناعم','قبل / بعد'];
   S.portfolio = { render(){ return COMMON + `
-<style>.pf-cat{font-family:'Cairo',sans-serif;font-size:12.5px;padding:8px 16px;border-radius:20px;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--muted);}.pf-cat.on{background:rgba(156,124,58,0.14);border-color:var(--gold-deep);color:var(--gold-light);}</style>
+<style>.pf-cat{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;padding:8px 16px;border-radius:20px;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--muted);}.pf-cat.on{background:rgba(156,124,58,0.14);border-color:var(--gold-deep);color:var(--gold-light);}</style>
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
   <div style="display:flex;gap:8px;flex-wrap:wrap">${CATS.map((c,i)=>`<button class="pf-cat ${i===0?'on':''}" onclick="this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${c}</button>`).join('')}</div>
   <div style="margin-right:auto;display:flex;gap:10px"><button class="btn btn-gold">+ رفع صور</button></div>
@@ -177,7 +177,7 @@
   ${SVC.map(s=>`<div style="display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 20px;${s.on?'':'opacity:0.6'}">
     <div style="width:44px;height:44px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('services',20)}</div>
     <div style="flex:1"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:15.5px;color:var(--white);font-weight:600">${s.n}</span>${s.book?`<span class="badge gold">★ ${s.book}</span>`:''}</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">◷ ${s.d}</div></div>
-    <div style="font-family:'Bodoni Moda',serif;font-size:26px;color:var(--gold-light);direction:ltr">${s.p} <span style="font-family:Cairo;font-size:12px;color:var(--muted)">ر.س</span></div>
+    <div style="font-family:'Bodoni Moda',serif;font-size:26px;color:var(--gold-light);direction:ltr">${s.p} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:12px;color:var(--muted)">ر.س</span></div>
     <button class="toggle ${s.on?'on':'off'}" onclick="this.classList.toggle('on');this.classList.toggle('off');this.closest('div').style.opacity=this.classList.contains('on')?'1':'0.6'"><span class="k"></span></button>
     <button class="bk-more" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">⋯</button>
   </div>`).join('')}

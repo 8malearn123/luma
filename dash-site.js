@@ -22,7 +22,7 @@
   /* ── live preview builder ── */
   function buildPreview(st){
     const p = PALS[st.palette];
-    const hf = st.font==='serif' ? "'Bodoni Moda',serif" : "'Cairo',sans-serif";
+    const hf = st.font==='serif' ? "'Bodoni Moda',serif" : "'IBM Plex Sans Arabic','Cairo',sans-serif";
     const hw = st.font==='serif' ? '500' : '700';
     const card = st.layout==='cards';
     const mini = st.layout==='minimal';
@@ -44,7 +44,7 @@
     const tiles = (n)=>`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">${Array.from({length:n}).map(()=>`<div style="aspect-ratio:1;border-radius:9px;background:${p.tile};border:1px solid ${p.line};display:flex;align-items:center;justify-content:center;color:${p.acc2};font-size:15px">◆</div>`).join('')}</div>`;
 
     const SVC=[['مكياج عروس كامل','١٢٠ د','850'],['مكياج سهرة','٦٠ د','350'],['مكياج ناعم','٤٥ د','250']];
-    const svcRows = SVC.map((s,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;${i<2?`border-bottom:1px solid ${p.line}`:''}"><div><div style="font-size:13.5px;color:${p.txt};font-weight:500">${s[0]}</div><div style="font-size:11px;color:${p.sub}">◷ ${s[1]}</div></div><div style="font-family:'Bodoni Moda',serif;font-size:19px;color:${p.acc};direction:ltr">${s[2]} <span style="font-family:Cairo;font-size:10px;color:${p.sub}">ر.س</span></div></div>`).join('');
+    const svcRows = SVC.map((s,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;${i<2?`border-bottom:1px solid ${p.line}`:''}"><div><div style="font-size:13.5px;color:${p.txt};font-weight:500">${s[0]}</div><div style="font-size:11px;color:${p.sub}">◷ ${s[1]}</div></div><div style="font-family:'Bodoni Moda',serif;font-size:19px;color:${p.acc};direction:ltr">${s[2]} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:10px;color:${p.sub}">ر.س</span></div></div>`).join('');
 
     const stars = `<span style="color:${p.acc};font-size:12px;letter-spacing:1px">★★★★★</span>`;
     const REV=[['منى','احترافية عالية ونتيجة مبهرة فاقت توقعاتي.'],['هند','في الموعد بالضبط ولمسة راقية تدوم.']];
@@ -65,7 +65,7 @@
     const nameSize = mini ? 19 : 21;
     return `
       <svg style="position:absolute;width:0;height:0"><defs><pattern id="sp-${st.palette}" width="56" height="56" patternUnits="userSpaceOnUse"><g fill="none" stroke="${p.acc2}" stroke-width="1"><circle cx="0" cy="0" r="28"/><circle cx="56" cy="0" r="28"/><circle cx="0" cy="56" r="28"/><circle cx="56" cy="56" r="28"/><circle cx="28" cy="28" r="28"/></g></pattern></defs></svg>
-      <div style="background:${p.bg};color:${p.txt};min-height:100%;font-family:'Cairo',sans-serif;font-weight:300">
+      <div style="background:${p.bg};color:${p.txt};min-height:100%;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:300">
         <div style="position:relative;height:120px;background:${cover};overflow:hidden">${patternOverlay}</div>
         <div style="padding:0 ${pad}px ${pad}px;margin-top:-46px;position:relative">
           <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
@@ -73,7 +73,7 @@
             <div style="font-family:${hf};font-weight:${hw};font-size:${nameSize}px;color:${p.txt};margin-top:12px">رهف · استوديو مكياج</div>
             <div style="font-size:12.5px;color:${p.acc};margin-top:3px">خبيرة مكياج · جدة</div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:${p.sub};margin-top:7px">${stars} <b style="color:${p.txt};font-weight:600">4.9</b> · ٢١٣ حجز</div>
-            <div style="width:100%;background:${p.acc};color:${btnText};font-family:Cairo;font-weight:600;font-size:14px;text-align:center;padding:13px;border-radius:11px;margin-top:16px">احجزي الآن</div>
+            <div style="width:100%;background:${p.acc};color:${btnText};font-family:'IBM Plex Sans Arabic',Cairo;font-weight:600;font-size:14px;text-align:center;padding:13px;border-radius:11px;margin-top:16px">احجزي الآن</div>
           </div>
           ${sep}
           ${body}
@@ -114,7 +114,7 @@
   .pal .pn{font-size:12px;color:var(--cream);text-align:center;}
   .pal.on .pn{color:var(--gold-light);}
   .seg{display:flex;gap:5px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px;}
-  .seg button{flex:1;font-family:'Cairo',sans-serif;font-size:12.5px;color:var(--muted);background:none;border:none;padding:9px 8px;border-radius:7px;cursor:pointer;transition:all .2s;}
+  .seg button{flex:1;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;color:var(--muted);background:none;border:none;padding:9px 8px;border-radius:7px;cursor:pointer;transition:all .2s;}
   .seg button.on{background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-weight:600;}
   .sec-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-soft);}
   .sec-row:last-child{border-bottom:none;}

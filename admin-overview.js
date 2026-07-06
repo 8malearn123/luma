@@ -43,7 +43,7 @@
       const x=pad.l+i*step+(step-bw)/2;
       const hs=(d.sub/max)*ih, hc=(d.com/max)*ih;
       const yb=pad.t+ih-hs, yc=yb-hc;
-      return `<g><rect x="${x}" y="${yb}" width="${bw}" height="${hs}" rx="3" fill="url(#gsub)"/><rect x="${x}" y="${yc}" width="${bw}" height="${hc}" rx="3" fill="url(#gcom)"/><text x="${x+bw/2}" y="${H-12}" fill="#86818d" font-size="10" font-family="Cairo" text-anchor="middle">${d.m}</text></g>`;
+      return `<g><rect x="${x}" y="${yb}" width="${bw}" height="${hs}" rx="3" fill="url(#gsub)"/><rect x="${x}" y="${yc}" width="${bw}" height="${hc}" rx="3" fill="url(#gcom)"/><text x="${x+bw/2}" y="${H-12}" fill="#86818d" font-size="10" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text></g>`;
     }).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs>
       <linearGradient id="gsub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c8047"/><stop offset="1" stop-color="#6e5526"/></linearGradient>
@@ -52,7 +52,7 @@
   }
   function donut(){
     const r=52,c=2*Math.PI*r; let off=0; const segs=TIERS.map(t=>{const frac=t[1]/TIER_TOTAL;const seg=`<circle cx="70" cy="70" r="${r}" fill="none" stroke="${t[2]}" stroke-width="16" stroke-dasharray="${(frac*c).toFixed(1)} ${c}" stroke-dashoffset="${(-off*c).toFixed(1)}" transform="rotate(-90 70 70)"/>`;off+=frac;return seg;}).join('');
-    return `<svg width="140" height="140" viewBox="0 0 140 140">${segs}<text x="70" y="66" fill="#f6f2ec" font-size="26" font-family="Cormorant Garamond" font-weight="500" text-anchor="middle">${TIER_TOTAL}</text><text x="70" y="86" fill="#86818d" font-size="11" font-family="Cairo" text-anchor="middle">مشترك</text></svg>`;
+    return `<svg width="140" height="140" viewBox="0 0 140 140">${segs}<text x="70" y="66" fill="#f6f2ec" font-size="26" font-family="Cormorant Garamond" font-weight="500" text-anchor="middle">${TIER_TOTAL}</text><text x="70" y="86" fill="#86818d" font-size="11" font-family="IBM Plex Sans Arabic" text-anchor="middle">مشترك</text></svg>`;
   }
 
   A.overview = { render(){ return `
@@ -64,7 +64,7 @@
   .ov-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start;}
   @media(max-width:1180px){.ov-row{grid-template-columns:1fr;}}
   .ov-hi{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-  .ov-hi .t{font-family:'Cairo',sans-serif;font-weight:600;font-size:17px;color:var(--white);}
+  .ov-hi .t{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:17px;color:var(--white);}
   .ov-hi .s{font-size:12.5px;color:var(--muted);margin-top:2px;}
   .legend{display:flex;gap:16px;flex-wrap:wrap;}
   .legend .lg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--cream);}
@@ -93,7 +93,7 @@
 </style>
 <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px">
   <div>
-    <div style="font-family:'Cairo',sans-serif;font-weight:600;font-size:26px;color:var(--white)">لوحة تحكّم المنصة <span style="color:var(--gold-light)">◈</span></div>
+    <div style="font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:26px;color:var(--white)">لوحة تحكّم المنصة <span style="color:var(--gold-light)">◈</span></div>
     <div style="font-size:14px;color:var(--gold-pale);margin-top:2px">نمو الإيراد <b style="color:var(--green);font-weight:600">+22%</b> هذا الشهر · ٧ مزوّدات بانتظار التوثيق.</div>
   </div>
   <div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="ADMIN.go('analytics')">${icon('trend',16)} التحليلات</button><button class="btn btn-gold" onclick="ADMIN.go('providers')">إدارة المزوّدين</button></div>

@@ -16,7 +16,7 @@
     --white:#f6f2ec; --cream:#ece6da; --muted:#86818d; --muted-deep:#58545f;
     --line:#26242d; --line-soft:#1e1d24; --green:#6fa86a; --rose:#d98a93;
   }
-  body{background:radial-gradient(ellipse at 50% 0%,#1f1812,#0c0b0e 70%);min-height:100vh;font-family:'Cairo',sans-serif;color:var(--white);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:34px 16px;}
+  body{background:radial-gradient(ellipse at 50% 0%,#1f1812,#0c0b0e 70%);min-height:100vh;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;color:var(--white);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:34px 16px;}
   .serif{font-family:'Bodoni Moda',serif;}
   .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.2em;direction:ltr;}
   .num{font-family:'Bodoni Moda',serif;font-weight:500;direction:ltr;}
@@ -35,7 +35,7 @@
   .view{flex:1;overflow-y:auto;padding:6px 18px 90px;}
   .view::-webkit-scrollbar{width:0;}
   .tabbar{position:absolute;bottom:0;left:0;right:0;height:78px;background:rgba(14,10,7,0.92);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;align-items:flex-start;padding:12px 14px 0;z-index:15;border-radius:0 0 34px 34px;}
-  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;color:var(--muted);transition:color .2s;background:none;border:none;font-family:'Cairo',sans-serif;}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;color:var(--muted);transition:color .2s;background:none;border:none;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;}
   .tab .ic{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
   .tab .lb{font-size:10.5px;}
   .tab.on{color:var(--gold-light);}
@@ -43,12 +43,12 @@
   /* shared */
   .greet{padding:8px 4px 4px;}
   .greet .d{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:var(--gold);direction:ltr;}
-  .greet .h{font-family:'Cairo',sans-serif;font-weight:600;font-size:23px;color:var(--white);margin-top:6px;}
+  .greet .h{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:23px;color:var(--white);margin-top:6px;}
   .greet .h .w{color:var(--gold-light);}
   .greet .s{font-size:13px;color:var(--gold-pale);margin-top:3px;}
   .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;}
   .seclab{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;}
-  .seclab .t{font-family:'Cairo',sans-serif;font-weight:600;font-size:15px;color:var(--white);}
+  .seclab .t{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:15px;color:var(--white);}
   .seclab .m{font-size:12px;color:var(--gold-light);cursor:pointer;}
   .avc{border-radius:50%;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);flex-shrink:0;}
   .stars{color:var(--gold-light);letter-spacing:1px;}
@@ -56,13 +56,14 @@
   .badge.gold{color:var(--gold-light);background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);}
   .badge.green{color:var(--green);background:rgba(111,168,106,0.14);}
   .badge.soft{color:var(--muted);background:var(--surface3);}
-  .gbtn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:600;font-size:14.5px;color:#131217;background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);box-shadow:0 8px 22px rgba(156,124,58,0.25);}
-  .ghbtn{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:500;font-size:14px;color:var(--gold-pale);background:none;}
+  .gbtn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:14.5px;color:#131217;background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);box-shadow:0 8px 22px rgba(156,124,58,0.25);}
+  .ghbtn{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:500;font-size:14px;color:var(--gold-pale);background:none;}
   .lat{position:absolute;inset:0;opacity:0.4;}
   .fade{animation:fd .4s ease both;}@keyframes fd{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
   @media(prefers-reduced-motion:reduce){.fade{animation:none;}}
-  .reset{font-size:12px;color:var(--gold-pale);background:none;border:1px solid var(--line);border-radius:30px;padding:9px 22px;cursor:pointer;font-family:'Cairo',sans-serif;}
+  .reset{font-size:12px;color:var(--gold-pale);background:none;border:1px solid var(--line);border-radius:30px;padding:9px 22px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="head-brand"><a class="b" href="index.html" title="العودة للرئيسية" style="display:inline-block;text-decoration:none;cursor:pointer">LUMA</a><div class="s"><a href="index.html" style="color:inherit;text-decoration:none">→ العودة للرئيسية</a></div></div>
@@ -127,10 +128,10 @@ const RECO=[
 
 /* SCREENS */
 function tile(h){return `<div style="height:${h}px;border-radius:11px;background:linear-gradient(150deg,#2a2218,#131217);border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg class="lat" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#clat)"/></svg><span style="position:relative;color:var(--gold-deep)">◆</span></div>`;}
-function expertCard(e){return `<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px;cursor:pointer">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="text-align:left"><div style="font-size:10px;color:var(--muted)">يبدأ من</div><div class="num" style="font-size:18px;color:var(--gold-light)">${e.from} <span style="font-family:Cairo;font-size:10px;color:var(--muted)">ر.س</span></div></div></div>`;}
+function expertCard(e){return `<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px;cursor:pointer">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="text-align:left"><div style="font-size:10px;color:var(--muted)">يبدأ من</div><div class="num" style="font-size:18px;color:var(--gold-light)">${e.from} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:10px;color:var(--muted)">ر.س</span></div></div></div>`;}
 /* WhatsApp is the client's main channel on LUMA */
 function waLink(msg){return 'https://wa.me/966501234567?text='+encodeURIComponent(msg);}
-function waBtn(msg,label){return `<a href="${waLink(msg)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#06351c;font-family:'Cairo',sans-serif;font-weight:600;font-size:13px;border-radius:9px;padding:11px;text-decoration:none;margin-top:12px">${icon('whatsapp',16)} ${label||'تواصل عبر واتساب'}</a>`;}
+function waBtn(msg,label){return `<a href="${waLink(msg)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#06351c;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:13px;border-radius:9px;padding:11px;text-decoration:none;margin-top:12px">${icon('whatsapp',16)} ${label||'تواصل عبر واتساب'}</a>`;}
 
 const SCREENS={
   home(){return `

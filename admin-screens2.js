@@ -31,7 +31,7 @@
 <style>
   .f-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
   .f-seg{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px;}
-  .f-seg button{font-family:'Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;}
+  .f-seg button{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;}
   .f-seg button.on{background:linear-gradient(120deg,rgba(156,124,58,0.2),rgba(156,124,58,0.06));color:var(--gold-light);}
   .f-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}@media(max-width:1100px){.f-kpi{grid-template-columns:1fr 1fr;}}
   .ftable{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
@@ -82,7 +82,7 @@
   .mctr .who{display:flex;align-items:center;gap:11px;}.mctr .who .n{font-size:13.5px;color:var(--white);font-weight:500;}.mctr .who .h{font-size:11.5px;color:var(--gold-pale);direction:ltr;text-align:right;}
   .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:14px;}
   .mctr .gmv{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr;} .mctr .rt{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--gold-pale);direction:ltr;} .mctr .com{font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-light);direction:ltr;}
-  .mctr .ed{background:none;border:1px solid var(--line);color:var(--gold-pale);border-radius:8px;padding:7px 12px;font-family:'Cairo',sans-serif;font-size:12.5px;cursor:pointer;justify-self:start;}.mctr .ed:hover{border-color:var(--gold-deep);color:var(--gold-light);}
+  .mctr .ed{background:none;border:1px solid var(--line);color:var(--gold-pale);border-radius:8px;padding:7px 12px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;cursor:pointer;justify-self:start;}.mctr .ed:hover{border-color:var(--gold-deep);color:var(--gold-light);}
   @media(max-width:1080px){.mcth{display:none;}.mctr{grid-template-columns:1fr auto;}.mctr .hide{display:none;}}
 </style>
 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap">

@@ -18,7 +18,7 @@
     --green:#6fa86a; --green-bg:rgba(111,168,106,0.12); --red:#c2705f; --rose:#d98a93; --blue:#6f93b8;
     --sidebar-w:262px;
   }
-  body{background:var(--bg);color:var(--white);font-family:'Cairo',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;}
+  body{background:var(--bg);color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;}
   .serif{font-family:'Bodoni Moda',serif;} .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.14em;direction:ltr;}
   .num{font-family:'Bodoni Moda',serif;font-weight:500;direction:ltr;}
   .gold-fill{background:linear-gradient(120deg,#dbbd81,#ccab64 35%,#9c8047);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
@@ -44,7 +44,7 @@
   .main{min-width:0;display:flex;flex-direction:column;}
   .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:18px;padding:16px 30px;background:rgba(23,18,13,0.85);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);}
   .topbar .pg .crumb{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:var(--gold);direction:ltr;}
-  .topbar .pg h1{font-family:'Cairo',sans-serif;font-weight:600;font-size:20px;color:var(--white);}
+  .topbar .pg h1{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:20px;color:var(--white);}
   .topbar .right{margin-right:auto;display:flex;align-items:center;gap:12px;}
   .topbar .me{display:flex;align-items:center;gap:10px;} .topbar .me .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-family:'Bodoni Moda',serif;font-size:17px;}
   .topbar .me .nm b{font-size:13px;color:var(--white);font-weight:600;display:block;} .topbar .me .nm span{font-size:11px;color:var(--muted);}
@@ -61,11 +61,11 @@
   .stat .top .ico{width:38px;height:38px;border-radius:10px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
   .stat .top .delta{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 9px;border-radius:20px;direction:ltr;color:var(--green);background:var(--green-bg);}
   .stat .val{font-family:'Bodoni Moda',serif;font-weight:500;font-size:38px;color:var(--white);direction:ltr;line-height:1;margin-top:16px;display:flex;align-items:baseline;gap:6px;}
-  .stat .val .u{font-family:'Cairo',sans-serif;font-size:13px;color:var(--muted);} .stat .k{font-size:13px;color:var(--gold-pale);margin-top:7px;}
+  .stat .val .u{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:var(--muted);} .stat .k{font-size:13px;color:var(--gold-pale);margin-top:7px;}
   .badge{font-size:11px;padding:4px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
   .badge.gold{color:var(--gold-light);background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);}
   .badge.green{color:var(--green);background:var(--green-bg);} .badge.soft{color:var(--muted);background:var(--surface3);}
-  .btn{font-family:'Cairo',sans-serif;font-weight:500;font-size:13.5px;padding:11px 20px;border-radius:9px;cursor:pointer;border:none;transition:all .25s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;}
+  .btn{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:500;font-size:13.5px;padding:11px 20px;border-radius:9px;cursor:pointer;border:none;transition:all .25s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;}
   .btn-gold{background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);color:#131217;} .btn-gold:hover{filter:brightness(1.07);}
   .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--cream);} .btn-ghost:hover{border-color:var(--gold-deep);color:var(--gold-light);}
   .empty-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 20px;gap:16px;}
@@ -74,6 +74,7 @@
   .fade-in{animation:fade .5s ease both;}@keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
   @media(prefers-reduced-motion:reduce){.fade-in{animation:none;}}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="app">
@@ -168,7 +169,7 @@ SCREENS.overview=()=>{
   function apptBars(){
     const W=540,H=230,pad={t:18,r:8,b:34,l:30},iw=W-pad.l-pad.r,ih=H-pad.t-pad.b,max=12,step=iw/WEEK.length,bw=Math.min(30,step*0.42);
     let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1"/><text x="${pad.l-6}" y="${y+4}" fill="#58545f" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
-    let bars=WEEK.map((d,i)=>{const x=pad.l+i*step+(step-bw)/2;const hc=(d[1]/max)*ih,hx=(d[2]/max)*ih;const yC=pad.t+ih-hc,yX=yC-hx;return `<g><rect x="${x}" y="${yC}" width="${bw}" height="${hc}" rx="3" fill="url(#abg)"/>${d[2]?`<rect x="${x}" y="${yX}" width="${bw}" height="${hx}" rx="3" fill="#c2705f"/>`:''}<text x="${x+bw/2}" y="${H-14}" fill="#86818d" font-size="9.5" font-family="Cairo" text-anchor="middle">${d[0]}</text></g>`;}).join('');
+    let bars=WEEK.map((d,i)=>{const x=pad.l+i*step+(step-bw)/2;const hc=(d[1]/max)*ih,hx=(d[2]/max)*ih;const yC=pad.t+ih-hc,yX=yC-hx;return `<g><rect x="${x}" y="${yC}" width="${bw}" height="${hc}" rx="3" fill="url(#abg)"/>${d[2]?`<rect x="${x}" y="${yX}" width="${bw}" height="${hx}" rx="3" fill="#c2705f"/>`:''}<text x="${x+bw/2}" y="${H-14}" fill="#86818d" font-size="9.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d[0]}</text></g>`;}).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs><linearGradient id="abg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dbbd81"/><stop offset="1" stop-color="#9c8047"/></linearGradient></defs>${grid}${bars}</svg>`;
   }
   function salesLines(){
@@ -178,7 +179,7 @@ SCREENS.overview=()=>{
     const path=p=>p.map((q,i)=>`${i?'L':'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' ');
     let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1"/><text x="${pad.l-6}" y="${y+4}" fill="#58545f" font-size="9" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}k</text>`;}
     const dots=(p,c)=>p.map(q=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="2.6" fill="${c}"/>`).join('');
-    const labels=SALES.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="9.5" font-family="Cairo" text-anchor="middle">${d[0]}</text>`).join('');
+    const labels=SALES.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="9.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d[0]}</text>`).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">${grid}<path d="${path(p2)}" fill="none" stroke="#6fa86a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="${path(p1)}" fill="none" stroke="#ccab64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots(p2,'#6fa86a')}${dots(p1,'#ccab64')}${labels}</svg>`;
   }
   const STATS=[
@@ -336,7 +337,7 @@ SCREENS.services=()=>{
   ];
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">خدمات الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">١١ خدمة عبر ٤ أقسام</div></div><button class="btn btn-gold">+ خدمة جديدة</button></div>
-  ${GROUPS.map(gr=>`<div class="sec-label">${gr.g} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${gr.items.map(s=>`<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px"><div style="width:42px;height:42px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div><div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]} · تُقدّم بواسطة ${s[3]}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:Cairo;font-size:11px;color:var(--muted)">ر.س</span></div><button class="btn btn-ghost" style="padding:8px 14px">تحرير</button></div>`).join('')}</div>`).join('')}`;
+  ${GROUPS.map(gr=>`<div class="sec-label">${gr.g} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${gr.items.map(s=>`<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px"><div style="width:42px;height:42px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div><div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]} · تُقدّم بواسطة ${s[3]}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div><button class="btn btn-ghost" style="padding:8px 14px">تحرير</button></div>`).join('')}</div>`).join('')}`;
 };
 
 /* ── PRODUCTS (retail — products being sold) ── */
@@ -364,7 +365,7 @@ SCREENS.products=()=>{
   <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start">
     <div>
       <div class="sec-label">المنتجات <span class="ln"></span></div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">${P.map(p=>`<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('bag',22)}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">${P.map(p=>`<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('bag',22)}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`).join('')}</div>
     </div>
     <div class="card"><div class="sec-label">الأكثر مبيعاً <span class="ln"></span></div>${P.slice().sort((a,b)=>b.sold-a.sold).map((p,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${i<P.length-1?'border-bottom:1px solid var(--line-soft)':''}"><span style="font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-deep);width:20px;direction:ltr">${i+1}</span><div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--white);font-weight:500">${p.n}</div><div class="bar" style="height:6px;background:var(--surface3);border-radius:10px;overflow:hidden;margin-top:5px"><span style="display:block;height:100%;width:${p.sold/maxSold*100}%;background:linear-gradient(90deg,#9c8047,#dbbd81);border-radius:10px"></span></div></div><span class="num" style="font-family:'Bodoni Moda',serif;font-size:17px;color:var(--gold-light);direction:ltr">${p.sold}</span></div>`).join('')}</div>
   </div>`;
@@ -424,7 +425,7 @@ SCREENS.settings=()=>{
       <div class="card"><div class="sec-label">ساعات العمل <span class="ln"></span></div>${HOURS.map((h,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;${i<HOURS.length-1?'border-bottom:1px solid var(--line-soft)':''}"><span style="font-size:14px;color:var(--white)">${h[0]}</span><span class="mono" style="font-size:12.5px;color:var(--gold-pale)">${h[1]}</span></div>`).join('')}</div>
     </div>
     <div class="card"><div class="sec-label">معلومات الصالون <span class="ln"></span></div>
-      ${[['اسم الصالون','صالون لمسة'],['الفرع الرئيسي','جدة · حي الشاطئ'],['عدد الكراسي','٦ كراسي'],['بوابة الدفع','mada + Apple Pay']].map(r=>`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"><label style="font-size:12.5px;color:var(--gold-pale)">${r[0]}</label><input value="${r[1]}" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Cairo',sans-serif;font-size:14px;outline:none"/></div>`).join('')}
+      ${[['اسم الصالون','صالون لمسة'],['الفرع الرئيسي','جدة · حي الشاطئ'],['عدد الكراسي','٦ كراسي'],['بوابة الدفع','mada + Apple Pay']].map(r=>`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"><label style="font-size:12.5px;color:var(--gold-pale)">${r[0]}</label><input value="${r[1]}" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;outline:none"/></div>`).join('')}
       <button class="btn btn-gold" style="margin-top:4px">حفظ الإعدادات</button>
     </div>
   </div>`;
@@ -511,7 +512,7 @@ SCREENS.inventory=()=>{
   .modal{display:none;position:fixed;inset:0;z-index:90;background:rgba(8,6,4,0.7);backdrop-filter:blur(6px);align-items:center;justify-content:center}
   .sheet{width:480px;max-width:92vw;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
   .sheet h3{font-size:18px;color:var(--white);font-weight:600;margin-bottom:4px}.sheet .sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
-  .frow{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.frow label{font-size:12.5px;color:var(--gold-pale)}.fin{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Cairo',sans-serif;font-size:14px;outline:none}.fin:focus{border-color:var(--gold-deep)}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}</style>
+  .frow{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.frow label{font-size:12.5px;color:var(--gold-pale)}.fin{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;outline:none}.fin:focus{border-color:var(--gold-deep)}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}</style>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">مخزون الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">المستلزمات وتنبيهات النفاد</div></div><button class="btn btn-gold" onclick="SALON_INV.open()">${icon('plus',16)} إضافة للمخزون</button></div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('boxes',19)}</div></div><div class="val">${items.length}</div><div class="k">أصناف في المخزون</div></div>

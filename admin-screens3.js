@@ -15,12 +15,12 @@
   A.plans={ render(){ return `
 <style>
   .pl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px;}
-  .pl-top .h{font-family:'Cairo',sans-serif;font-weight:600;font-size:20px;color:var(--white);} .pl-top .s{font-size:13px;color:var(--gold-pale);margin-top:3px;}
+  .pl-top .h{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:20px;color:var(--white);} .pl-top .s{font-size:13px;color:var(--gold-pale);margin-top:3px;}
   .pl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}@media(max-width:980px){.pl-grid{grid-template-columns:1fr;}}
   .plan{position:relative;background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:18px;padding:26px 24px;display:flex;flex-direction:column;}
   .plan.hot{border-color:var(--gold-deep);}
   .plan .tag{position:absolute;top:-11px;right:24px;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;}
-  .plan .nm{font-family:'Cairo',sans-serif;font-weight:700;font-size:30px;color:var(--white);}
+  .plan .nm{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:30px;color:var(--white);}
   .plan .mean{font-family:'Bodoni Moda',serif;font-style:italic;font-size:15px;color:var(--gold-pale);direction:ltr;text-align:right;}
   .plan .price{display:flex;align-items:baseline;gap:6px;margin:16px 0 4px;}
   .plan .price .v{font-family:'Bodoni Moda',serif;font-size:48px;color:var(--gold-light);direction:ltr;} .plan .price .u{font-size:13px;color:var(--muted);}
@@ -71,7 +71,7 @@
   .toggle.on{background:linear-gradient(120deg,#dbbd81,#9c8047);}.toggle.off{background:var(--surface3);}
   .toggle .k{position:absolute;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.25s;}.toggle.on .k{left:3px;}.toggle.off .k{right:3px;}
   .frow{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}.frow label{font-size:13px;color:var(--gold-pale);font-weight:500;}
-  .inp{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Cairo',sans-serif;font-size:14px;outline:none;width:100%;}.inp:focus{border-color:var(--gold-deep);}
+  .inp{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;outline:none;width:100%;}.inp:focus{border-color:var(--gold-deep);}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .trow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft);}.trow:last-child{border-bottom:none;}
   .trow .av{width:36px;height:36px;border-radius:10px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;}
@@ -245,8 +245,8 @@
   .rp-card .t{font-size:14.5px;color:var(--white);font-weight:600;}
   .rp-card .d{font-size:12.5px;color:var(--muted);flex:1;line-height:1.6;}
   .rp-card .b{display:flex;gap:8px;margin-top:10px;}
-  .rp-card .gen{flex:1;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;border:none;border-radius:8px;padding:9px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
-  .rp-card .csv{background:none;border:1px solid var(--line);color:var(--gold-pale);border-radius:8px;padding:9px 12px;font-family:'Cairo',sans-serif;font-size:12.5px;cursor:pointer;}.rp-card .csv:hover{border-color:var(--gold-deep);color:var(--gold-light);}
+  .rp-card .gen{flex:1;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;border:none;border-radius:8px;padding:9px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+  .rp-card .csv{background:none;border:1px solid var(--line);color:var(--gold-pale);border-radius:8px;padding:9px 12px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;cursor:pointer;}.rp-card .csv:hover{border-color:var(--gold-deep);color:var(--gold-light);}
 </style>
 <div class="rp-top">
   <div class="s">مركز التقارير — وَلّدي أي تقرير حسب الفترة، وصدّريه CSV/PDF أو اعرضيه مباشرة.</div>
