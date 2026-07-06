@@ -38,6 +38,9 @@
   'html[data-theme="light"] .nav.scrolled{background:rgba(250,246,238,.94);}',
   'html[data-theme="light"] .topbar{background:rgba(250,246,238,.86);}',
   'html[data-theme="light"] .sidebar{background:linear-gradient(190deg,#F3ECDE,#EAE0CD);}',
+  /* sections with hardcoded dark radial glows (index closing, pricing philo/closing) */
+  'html[data-theme="light"] .closing{background:radial-gradient(ellipse at 50% 40%,#EDE3D2,var(--bg2,#F3ECE2) 72%);}',
+  'html[data-theme="light"] .philo{background:radial-gradient(ellipse at 50% 50%,#EFE7D8,#F3ECE2 74%);}',
   /* luma-ui widgets (modals/toasts/menus) carry dark fallbacks — recolor for light */
   'html[data-theme="light"] .lux-modal{background:linear-gradient(168deg,#FDFBF7,#F5EFE5);border-color:#E4DACA;}',
   'html[data-theme="light"] .lux-h{background:#FBF7F0;border-bottom-color:#E4DACA;}',
