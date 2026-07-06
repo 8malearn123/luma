@@ -10,7 +10,7 @@
     const ar=`${line} L${pad.l+iw} ${pad.t+ih} L${pad.l} ${pad.t+ih} Z`;
     let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1" stroke-dasharray="2 4"/><text x="${pad.l-7}" y="${y+4}" fill="#58545f" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
     const dots=pts.map((p,i)=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${i===pts.length-1?4:2.4}" fill="${i===pts.length-1?'#dbbd81':'#9c8047'}"/>`).join('');
-    const labels=data.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="10" font-family="Cairo" text-anchor="middle">${d.m}</text>`).join('');
+    const labels=data.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="10" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text>`).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs><linearGradient id="aag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c8047" stop-opacity="0.32"/><stop offset="1" stop-color="#9c8047" stop-opacity="0"/></linearGradient></defs>${grid}<path d="${ar}" fill="url(#aag)"/><path d="${line}" fill="none" stroke="#ccab64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}</svg>`;
   }
   function stars(r,sz=12){let s='';for(let i=1;i<=5;i++)s+=`<span style="color:${i<=r?'#ccab64':'#26242d'};font-size:${sz}px">★</span>`;return s;}
@@ -30,7 +30,7 @@
   .brow .bar{flex:1;height:9px;background:var(--surface3);border-radius:10px;overflow:hidden;}
   .brow .bar span{display:block;height:100%;border-radius:10px;}
   .brow .pc{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold-pale);width:38px;text-align:left;direction:ltr;}
-  .ttl{font-family:'Cairo',sans-serif;font-weight:600;font-size:17px;color:var(--white);} .tsub{font-size:12.5px;color:var(--muted);}
+  .ttl{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:17px;color:var(--white);} .tsub{font-size:12.5px;color:var(--muted);}
 </style>
 <div class="an-kpi">
   <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div><div class="delta up">▲ 18%</div></div><div class="val">62<span class="u">ألف</span></div><div class="k">GMV هذا الشهر (ر.س)</div></div>
@@ -73,7 +73,7 @@
 <style>
   .p-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
   .p-seg{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px;}
-  .p-seg button{font-family:'Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;display:flex;gap:7px;align-items:center;}
+  .p-seg button{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;display:flex;gap:7px;align-items:center;}
   .p-seg button .c{font-size:11px;background:var(--surface3);padding:1px 7px;border-radius:20px;}
   .p-seg button.on{background:linear-gradient(120deg,rgba(156,124,58,0.2),rgba(156,124,58,0.06));color:var(--gold-light);}
   .p-seg button.on .c{background:var(--gold-deep);color:#131217;}
@@ -132,7 +132,7 @@
 <style>
   .b-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
   .b-seg{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px;}
-  .b-seg button{font-family:'Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;display:flex;gap:7px;align-items:center;}
+  .b-seg button{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;display:flex;gap:7px;align-items:center;}
   .b-seg button .c{font-size:11px;background:var(--surface3);padding:1px 7px;border-radius:20px;}
   .b-seg button.on{background:linear-gradient(120deg,rgba(156,124,58,0.2),rgba(156,124,58,0.06));color:var(--gold-light);}.b-seg button.on .c{background:var(--gold-deep);color:#131217;}
   .b-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}@media(max-width:1100px){.b-kpi{grid-template-columns:1fr 1fr;}}

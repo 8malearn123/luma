@@ -12,7 +12,7 @@
     let grid='';
     for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1" stroke-dasharray="2 4"/><text x="${pad.l-8}" y="${y+4}" fill="#58545f" font-size="10" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
     const dots=pts.map((p,i)=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${i===pts.length-1?4:2.5}" fill="${i===pts.length-1?'#dbbd81':'#9c8047'}"/>`).join('');
-    const labels=data.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="10" font-family="Cairo" text-anchor="middle">${d.m}</text>`).join('');
+    const labels=data.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="10" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text>`).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">
       <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c8047" stop-opacity="0.34"/><stop offset="1" stop-color="#9c8047" stop-opacity="0"/></linearGradient></defs>
       ${grid}<path d="${area}" fill="url(#ag)"/><path d="${line}" fill="none" stroke="#ccab64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}
@@ -54,7 +54,7 @@
 </div>
 <div class="ea-main">
   <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div><div style="font-family:Cairo;font-weight:600;font-size:17px;color:var(--white)">تدفّق الأرباح</div><div style="font-size:12.5px;color:var(--muted)">آخر ٧ أشهر · بالألف ريال</div></div><span class="badge gold">+34% سنوياً</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div><div style="font-family:'IBM Plex Sans Arabic',Cairo;font-weight:600;font-size:17px;color:var(--white)">تدفّق الأرباح</div><div style="font-size:12.5px;color:var(--muted)">آخر ٧ أشهر · بالألف ريال</div></div><span class="badge gold">+34% سنوياً</span></div>
     ${areaChart(EARN,20)}
   </div>
   <div>
@@ -112,7 +112,7 @@
   <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('calendar',19)}</div></div><div class="val">6<span class="u">م</span></div><div class="k">وقت الذروة</div></div>
 </div>
 <div class="an-row">
-  <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:12px"><div><div style="font-family:Cairo;font-weight:600;font-size:17px;color:var(--white)">الحجوزات عبر الزمن</div><div style="font-size:12.5px;color:var(--muted)">آخر ٧ أشهر</div></div><span class="badge gold">+96% نمو</span></div>${areaChart(BOOK,50)}</div>
+  <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:12px"><div><div style="font-family:'IBM Plex Sans Arabic',Cairo;font-weight:600;font-size:17px;color:var(--white)">الحجوزات عبر الزمن</div><div style="font-size:12.5px;color:var(--muted)">آخر ٧ أشهر</div></div><span class="badge gold">+96% نمو</span></div>${areaChart(BOOK,50)}</div>
   <div class="card"><div class="sec-label">مصادر الزيارات <span class="ln"></span></div>${SRC.map(s=>`<div class="src-row"><span class="nm">${s[0]}</span><div class="bar"><span style="width:${s[1]}%;background:${s[2]}"></span></div><span class="pc">${s[1]}%</span></div>`).join('')}</div>
 </div>
 <div class="an-row2">
@@ -134,7 +134,7 @@
   .ly-hero{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#201f26,#1a140e);border:1px solid var(--gold-deep);border-radius:16px;padding:22px 26px;margin-bottom:22px;flex-wrap:wrap;gap:16px;}
   .ly-hero .l{display:flex;align-items:center;gap:16px;}
   .ly-hero .ic{width:52px;height:52px;border-radius:14px;background:rgba(156,124,58,0.2);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
-  .ly-hero .t1{font-family:Cairo;font-weight:700;font-size:19px;color:var(--white);}
+  .ly-hero .t1{font-family:'IBM Plex Sans Arabic',Cairo;font-weight:700;font-size:19px;color:var(--white);}
   .ly-hero .t2{font-size:13px;color:var(--gold-pale);margin-top:2px;}
   .ly-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px;}
   @media(max-width:900px){.ly-grid{grid-template-columns:1fr;}}
@@ -193,7 +193,7 @@
   .ref-row .am{font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-light);direction:ltr;}
 </style>
 <div class="card" style="margin-bottom:22px;background:linear-gradient(135deg,#201f26,#1a140e);border-color:var(--gold-deep)">
-  <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><div style="width:48px;height:48px;border-radius:13px;background:rgba(156,124,58,0.2);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('affiliate',22)}</div><div><div style="font-family:Cairo;font-weight:700;font-size:18px;color:var(--white)">ادعي خبيرات أخريات، واكسبي</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">احصلي على ١٠٪ من اشتراك الشهر الأول لكل خبيرة تنضم برابطك</div></div></div>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><div style="width:48px;height:48px;border-radius:13px;background:rgba(156,124,58,0.2);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('affiliate',22)}</div><div><div style="font-family:'IBM Plex Sans Arabic',Cairo;font-weight:700;font-size:18px;color:var(--white)">ادعي خبيرات أخريات، واكسبي</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">احصلي على ١٠٪ من اشتراك الشهر الأول لكل خبيرة تنضم برابطك</div></div></div>
   <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:6px 6px 6px 16px">
     <span id="refLink" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--gold-light);direction:ltr;text-align:left">luma.sa/join?ref=rahaf</span>
     <button class="btn btn-ghost" style="padding:9px 16px" onclick="LUX_copyRef&&LUX_copyRef()">نسخ الرابط</button>
