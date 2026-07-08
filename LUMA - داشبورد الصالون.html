@@ -92,7 +92,7 @@
     <header class="topbar">
       <div class="pg"><span class="crumb" id="tb-crumb">SALON</span><h1 id="tb-title">نظرة عامة</h1></div>
       <div class="right">
-        <button class="btn btn-gold" onclick="SALON.go('board')">+ حجز جديد</button>
+        <button class="btn btn-gold" onclick="SALON.newBooking()">+ حجز جديد</button>
         <div class="me"><div class="av">ل</div><div class="nm"><b>لمى المالكي</b><span>مديرة الصالون</span></div></div>
       </div>
     </header>
@@ -195,7 +195,11 @@ const APPTS=[
   {staff:'reem',start:5,dur:3,client:'لطيفة المطيري',service:'منيكير + بديكير',st:'confirmed'},
   {staff:'reem',start:11,dur:2,client:'عبير الغامدي',service:'تركيب أظافر',st:'walkin'},
 ];
-const ST_STYLE={confirmed:{bg:'rgba(111,168,106,0.16)',bd:'#6fa86a',lb:'مؤكد'},pending:{bg:'rgba(205,172,80,0.16)',bd:'#ccab64',lb:'بانتظار الدفع'},walkin:{bg:'rgba(125,155,192,0.16)',bd:'#7d9bc0',lb:'حضور مباشر'}};
+/* bookings & blocked slots added from the UI persist across reloads */
+const APPTS_KEY='luma_salon_appts';
+try{(JSON.parse(localStorage.getItem(APPTS_KEY))||[]).forEach(a=>{if(a&&a.staff&&!APPTS.some(x=>x.id&&x.id===a.id))APPTS.push(a);});}catch(e){}
+function saveAppts(){try{localStorage.setItem(APPTS_KEY,JSON.stringify(APPTS.filter(a=>a.custom)));}catch(e){}}
+const ST_STYLE={confirmed:{bg:'rgba(111,168,106,0.16)',bd:'#6fa86a',lb:'مؤكد'},pending:{bg:'rgba(205,172,80,0.16)',bd:'#ccab64',lb:'بانتظار الدفع'},walkin:{bg:'rgba(125,155,192,0.16)',bd:'#7d9bc0',lb:'حضور مباشر'},blocked:{bg:'rgba(134,129,141,0.16)',bd:'#86818d',lb:'وقت محجوب'}};
 
 const SCREENS={};
 
@@ -259,15 +263,17 @@ SCREENS.overview=()=>{
   </div>`;
 };
 
-/* ── THE BOOKING BOARD: staff columns × time rows ── */
+/* ── THE BOOKING BOARD: staff columns × time rows + agenda view ── */
 SCREENS.board=()=>{
+  const live=APPTS.filter(a=>a.st!=='cancelled');
   const colTracks=STAFF.map(s=>{
-    const blocks=APPTS.filter(a=>a.staff===s.id).map(a=>{
+    const blocks=live.filter(a=>a.staff===s.id).map(a=>{
       const st=ST_STYLE[a.st];
       const top=a.start*ROW_H+2, h=a.dur*ROW_H-4;
-      return `<div class="appt" style="top:${top}px;height:${h}px;background:${st.bg};border-color:${st.bd}">
+      const own=a.custom?`onclick="event.stopPropagation();SALON.apptActions(${a.id})"`:'';
+      return `<div class="appt" ${own} style="top:${top}px;height:${h}px;background:${st.bg};border-color:${st.bd}${a.st==='blocked'?';border-style:dashed':''}">
         <div class="ap-t">${slotLabel(a.start)}</div>
-        <div class="ap-c">${a.client}</div>
+        <div class="ap-c">${a.st==='blocked'?'⛔ '+a.client:a.client}</div>
         <div class="ap-s">${a.service}</div>
       </div>`;
     }).join('');
@@ -276,6 +282,17 @@ SCREENS.board=()=>{
   const heads=STAFF.map(s=>{const blocked=hrOnLeaveToday(s.id)?'في إجازة — محظورة الحجز':(spOf(s.id).status!=='active'?'موقوفة — محظورة الحجز':null);
     return `<div class="col-h" ${blocked?'style="opacity:.55"':''}><span class="ch-av" style="border-color:${s.color};color:${s.color}">${s.n.charAt(0)}</span><div><div class="ch-n">${s.n}</div><div class="ch-r">${blocked?'<span style="color:#ccab64">'+blocked+'</span>':s.role}</div></div></div>`;}).join('');
   const timeCol=Array.from({length:SLOTS}).map((_,i)=>`<div class="tl" style="height:${ROW_H}px">${i%2===0?slotLabel(i):''}</div>`).join('');
+  /* agenda view: compact time+client bars sorted by start (like a month-cell) */
+  const agenda=live.slice().sort((a,b)=>a.start-b.start).map(a=>{
+    const st=ST_STYLE[a.st];const s=STAFF.find(x=>x.id===a.staff)||{n:'—'};
+    return `<div class="agitem" ${a.custom?`onclick="SALON.apptActions(${a.id})"`:''} style="background:${st.bg};border-color:${st.bd}${a.st==='blocked'?';border-style:dashed':''}">
+      <span class="ag-t">${slotLabel(a.start)}</span>
+      <b>${a.st==='blocked'?'وقت محجوب — '+a.client:a.client}</b>
+      <span class="ag-s">${a.service} · ${s.n}</span>
+      <span class="badge ${a.st==='pending'?'gold':a.st==='blocked'?'soft':'green'}" style="margin-right:auto;font-size:10px">${st.lb}</span>
+    </div>`;
+  }).join('')||'<div class="card" style="text-align:center;color:var(--muted)">لا حجوزات اليوم.</div>';
+  const view=SALON.boardView||'grid';
   return `
   <style>
     .bd-top{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
@@ -284,6 +301,9 @@ SCREENS.board=()=>{
     .date-pill .dt{font-size:14px;color:var(--white);font-weight:600;} .date-pill .dt span{font-size:11.5px;color:var(--muted);font-weight:300;margin-right:6px;}
     .legend{display:flex;gap:16px;flex-wrap:wrap;margin-right:auto;}
     .legend .lg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--cream);} .legend .lg .sw{width:11px;height:11px;border-radius:3px;border:1px solid;}
+    .vsw{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+    .vsw button{background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--muted);padding:9px 16px;cursor:pointer;}
+    .vsw button.on{background:linear-gradient(120deg,rgba(220,192,106,.18),rgba(156,124,58,.06));color:var(--gold-light);}
     .board{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
     .board-head{display:grid;grid-template-columns:66px repeat(${STAFF.length},1fr);border-bottom:1px solid var(--line);background:var(--surface2);}
     .board-head .corner{border-left:1px solid var(--line);}
@@ -301,16 +321,22 @@ SCREENS.board=()=>{
     .appt:hover{transform:scale(1.015);z-index:5;}
     .appt .ap-t{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-pale);direction:ltr;}
     .appt .ap-c{font-size:12.5px;color:var(--white);font-weight:600;margin-top:1px;} .appt .ap-s{font-size:11px;color:var(--cream);opacity:0.85;margin-top:1px;}
+    .agitem{display:flex;align-items:center;gap:11px;border:1px solid;border-right-width:4px;border-radius:9px;padding:9px 13px;margin-bottom:7px;cursor:pointer;font-size:13px;color:var(--white);}
+    .agitem b{font-weight:600;} .agitem .ag-t{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-pale);direction:ltr;min-width:44px;}
+    .agitem .ag-s{font-size:11.5px;color:var(--muted);}
   </style>
   <div class="bd-top">
     <div class="date-pill"><button class="nav">›</button><div class="dt">اليوم <span>الأحد ٢١ يونيو</span></div><button class="nav">‹</button></div>
-    <button class="btn btn-ghost">${icon('walk',16)} حضور مباشر</button>
+    <button class="btn btn-gold" onclick="SALON.newBooking()">+ موعد / وقت محجوب</button>
+    <div class="vsw"><button class="${view==='grid'?'on':''}" onclick="SALON.setBoardView('grid')">اللوحة</button><button class="${view==='list'?'on':''}" onclick="SALON.setBoardView('list')">الأجندة</button></div>
     <div class="legend">${Object.keys(ST_STYLE).map(k=>`<span class="lg"><span class="sw" style="background:${ST_STYLE[k].bg};border-color:${ST_STYLE[k].bd}"></span>${ST_STYLE[k].lb}</span>`).join('')}</div>
   </div>
-  <div class="board">
+  ${view==='list'
+    ?`<div class="card" style="padding:16px">${agenda}</div>`
+    :`<div class="board">
     <div class="board-head"><div class="corner"></div>${heads}</div>
     <div class="board-body"><div class="timecol">${timeCol}</div>${colTracks}</div>
-  </div>`;
+  </div>`}`;
 };
 function gridLines(){let g='';for(let i=1;i<SLOTS;i++)g+=`<div class="gl" style="top:${i*ROW_H}px"></div>`;return g;}
 
@@ -319,7 +345,7 @@ function hrStaffTab(){
   const active=STAFF.filter(s=>spOf(s.id).status==='active').length;
   const rows=STAFF.map(s=>{
     const p=spOf(s.id);
-    const cnt=APPTS.filter(a=>a.staff===s.id).length;const rev=cnt*380;
+    const cnt=APPTS.filter(a=>a.staff===s.id&&a.st!=='cancelled'&&a.st!=='blocked').length;const rev=cnt*380;
     const susp=p.status!=='active';
     return `<div class="card" style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;${susp?'opacity:.65':''}">
     ${spAvatar(s,52)}
@@ -390,12 +416,12 @@ function hrBalance(sid){
 function hrConflicts(l){
   const t=new Date().toISOString().slice(0,10);
   if(l.from>t||l.to<t)return [];
-  return APPTS.filter(a=>a.staff===l.staff&&a.st!=='cancelled');
+  return APPTS.filter(a=>a.staff===l.staff&&a.st!=='cancelled'&&a.st!=='blocked');
 }
 /* الرواتب متعددة المصادر: خدمات (بشرائح) + منتجات + بقشيش − سلف */
 function hrLedger(sid){
   const p=hrPayOf(sid);
-  const svc=APPTS.filter(a=>a.staff===sid&&a.st!=='cancelled').length*380*24;
+  const svc=APPTS.filter(a=>a.staff===sid&&a.st!=='cancelled'&&a.st!=='blocked').length*380*24;
   const rate=svc>=p.tierAt?p.tierPct:p.pct;
   const svcComm=Math.round(svc*rate/100);
   const prod=HR_PROD[sid]||0, prodComm=Math.round(prod*p.prodPct/100);
@@ -1126,6 +1152,83 @@ const SALON={
     if(SCREENS[id])host.innerHTML=SCREENS[id]();
     else host.innerHTML=`<div class="empty-screen"><div class="ico">${icon(it.icon,30)}</div><h3>${it.label}</h3><p>هذه الشاشة ضمن المراحل القادمة. القائمة ولوحة الحجوزات تعمل بالكامل.</p></div>`;
     window.scrollTo({top:0});
+  },
+  boardView:'grid',
+  setBoardView(v){this.boardView=v;this.go('board');},
+  /* ─── new booking / blocked time ─── */
+  newBooking(){
+    LUX.modal('إضافة إلى اللوحة',`
+      <div class="lux-lead">اختاري نوع الإدخال:</div>
+      <button class="lux-btn lux-gold" data-appt style="width:100%;margin-bottom:9px">📅 موعد جديد — حجز عميلة</button>
+      <button class="lux-btn lux-ghost" data-block style="width:100%">⛔ وقت محجوب — بريك، اجتماع، حجز خارجي…</button>`,{onMount(ov,close){
+      ov.querySelector('[data-appt]').onclick=()=>{close();SALON.bookingForm('appt');};
+      ov.querySelector('[data-block]').onclick=()=>{close();SALON.bookingForm('block');};
+    }});
+  },
+  bookingForm(kind){
+    const block=kind==='block';
+    const slots=Array.from({length:SLOTS}).map((_,i)=>`<option value="${i}">${slotLabel(i)}</option>`).join('');
+    const durs=[[1,'30 دقيقة'],[2,'ساعة'],[3,'ساعة ونصف'],[4,'ساعتان']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+    const reasons=['بريك / استراحة','اجتماع','حجز خارجي','تدريب','مشغولة — أخرى'];
+    const body=block?`
+      <div class="lux-lead">احجبي فترة من جدول الموظفة — تظهر على اللوحة ولا تُحتسب ضمن الحجوزات.</div>
+      <div class="lux-f"><label>الموظفة / الفنانة</label><select name="staff">${STAFF.map(s=>`<option value="${s.id}">${s.n} · ${s.role}</option>`).join('')}</select></div>
+      <div class="lux-f"><label>السبب</label><select name="reason">${reasons.map(r=>`<option>${r}</option>`).join('')}</select></div>
+      <div class="lux-two">
+        <div class="lux-f"><label>من الساعة</label><select name="start">${slots}</select></div>
+        <div class="lux-f"><label>المدة</label><select name="dur">${durs}</select></div>
+      </div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%">حجب الوقت</button>`
+    :`
+      <div class="lux-lead">حجز جديد يظهر فوراً على لوحة اليوم وفي عرض الأجندة.</div>
+      <div class="lux-f"><label>اسم العميلة</label><input name="client" placeholder="مثال: هيا العجمي"/></div>
+      <div class="lux-two">
+        <div class="lux-f"><label>الخدمة</label><select name="service"><option>مكياج سهرة</option><option>مكياج عروس</option><option>صبغة + قص</option><option>تسريحة</option><option>هيدرافيشل</option><option>تنظيف بشرة</option><option>منيكير جل</option><option>تركيب أظافر</option></select></div>
+        <div class="lux-f"><label>الموظفة</label><select name="staff">${STAFF.map(s=>`<option value="${s.id}">${s.n} · ${s.role}</option>`).join('')}</select></div>
+      </div>
+      <div class="lux-two">
+        <div class="lux-f"><label>الوقت</label><select name="start">${slots}</select></div>
+        <div class="lux-f"><label>المدة</label><select name="dur">${durs}</select></div>
+      </div>
+      <div class="lux-f"><label>الحالة</label><select name="st"><option value="confirmed">مؤكد</option><option value="pending">بانتظار الدفع</option><option value="walkin">حضور مباشر</option></select></div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%">إضافة الحجز</button>`;
+    LUX.modal(block?'وقت محجوب':'موعد جديد',body,{onMount(ov,close){
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const q=n=>ov.querySelector('[name='+n+']');
+        const staff=q('staff').value, start=+q('start').value, dur=+q('dur').value;
+        if(!block&&!q('client').value.trim()){q('client').style.borderColor='#c0566a';q('client').focus();return;}
+        if(!block&&(hrOnLeaveToday(staff)||spOf(staff).status!=='active')){LUX.toast(hrStaffName(staff)+' محظورة الحجز اليوم (إجازة أو موقوفة)','err');return;}
+        if(start+dur>SLOTS){LUX.toast('المدة تتجاوز نهاية الدوام','err');return;}
+        const clash=APPTS.some(b=>b.staff===staff&&b.st!=='cancelled'&&b.start<start+dur&&start<b.start+b.dur);
+        if(clash){LUX.toast('يوجد تعارض — لدى '+hrStaffName(staff)+' إدخال آخر في هذا الوقت','err');return;}
+        APPTS.push(block
+          ?{id:Date.now(),staff,start,dur,client:q('reason').value,service:'وقت محجوب',st:'blocked',custom:true}
+          :{id:Date.now(),staff,start,dur,client:q('client').value.trim(),service:q('service').value,st:q('st').value,custom:true});
+        saveAppts();close();SALON.boardView=SALON.boardView||'grid';SALON.go('board');
+        LUX.toast(block?'حُجب الوقت لـ '+hrStaffName(staff)+' ✓':'أُضيف حجز '+q('client').value.trim()+' ✓','ok');
+      };
+    }});
+  },
+  apptActions(id){
+    const a=APPTS.find(x=>x.id===id);if(!a)return;
+    const s=STAFF.find(x=>x.id===a.staff)||{n:'—'};
+    const block=a.st==='blocked';
+    LUX.modal(block?'وقت محجوب':'تفاصيل الحجز',`
+      <div class="lux-row"><span class="k">${block?'السبب':'العميلة'}</span><span class="v">${a.client}</span></div>
+      ${block?'':`<div class="lux-row"><span class="k">الخدمة</span><span class="v">${a.service}</span></div>`}
+      <div class="lux-row"><span class="k">الموظفة</span><span class="v">${s.n}</span></div>
+      <div class="lux-row"><span class="k">الوقت</span><span class="v" dir="ltr">${slotLabel(a.start)} · ${a.dur*30} دقيقة</span></div>
+      <div class="lux-foot" style="margin-top:14px">
+        <button class="lux-btn lux-ghost" data-c style="flex:1">إغلاق</button>
+        <button class="lux-btn" data-del style="flex:1;background:#b14a5c22;border:1px solid #b14a5c;color:#e29aa6">${block?'إزالة الحجب':'إلغاء الحجز'}</button>
+      </div>`,{onMount(ov,close){
+      ov.querySelector('[data-c]').onclick=close;
+      ov.querySelector('[data-del]').onclick=()=>{
+        const i=APPTS.findIndex(x=>x.id===id);if(i>-1)APPTS.splice(i,1);
+        saveAppts();close();SALON.go('board');
+        LUX.toast(block?'أُزيل الوقت المحجوب ✓':'أُلغي الحجز','ok');
+      };
+    }});
   },
   addStaff(editId){
     const roles=['مكياج','شعر','بشرة','أظافر','رموش','سبا'];
