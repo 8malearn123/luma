@@ -70,6 +70,37 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('برنامج الولاء: نقاط العميلات والإعدادات والاستبدال', async ({ page }) => {
+  await page.goto('/salon.html#clients');
+  await page.waitForTimeout(800);
+  await expect(page.locator('.loypts').first()).toBeVisible();          // شارة النقاط لكل عميلة
+  await page.click('button:has-text("برنامج الولاء")');
+  await expect(page.getByText('نقطة لكل ريال مدفوع')).toBeVisible();
+  await expect(page.getByText('LUMA10')).toBeVisible();                  // كوبون الافتتاح
+  await page.locator('.x').click();                                      // إغلاق النافذة
+  await page.waitForTimeout(400);
+  // استبدال نقاط نوف (920) بمكافأة 30 ر.س
+  await page.locator('.ctr', { hasText: 'نوف العتيبي' }).locator('.loypts').click();
+  await page.click('.lux-modal button:has-text("خصم 30 ر.س")');
+  await expect(page.getByText('كوبون العميلة الشخصي')).toBeVisible();
+});
+
+test('كوبون الخصم يعمل في صفحة الحجز العامة', async ({ page }) => {
+  await page.goto('/booking.html');
+  await page.waitForTimeout(600);
+  await page.locator('.svc').first().click();
+  await page.locator('.stf:not(.leave)').first().click();
+  await page.locator('.day:not([disabled])').first().click();
+  await page.locator('.slot:not([disabled])').first().click();
+  await page.click('button:has-text("متابعة")');
+  await page.fill('#cpn', 'LUMA10');
+  await page.click('button:has-text("تطبيق")');
+  await expect(page.getByText('تم تطبيق الخصم ✓')).toBeVisible();
+  await expect(page.locator('.trow2', { hasText: 'كوبون' })).toBeVisible();
+  await page.click('button:has-text("تأكيد الحجز")');
+  await expect(page.getByText('تم تأكيد حجزك')).toBeVisible();
+});
+
 test('الموارد البشرية: رصيد الإجازات وسلسلة الموافقات', async ({ page }) => {
   await page.goto('/salon.html#hr');
   await page.waitForTimeout(800);
