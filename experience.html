@@ -58,6 +58,19 @@
   .head .badge{margin-right:auto;align-self:flex-start;font-size:12px;color:var(--gold-light);border:0.5px solid var(--gold-deep);background:rgba(147,115,53,0.1);padding:6px 14px;border-radius:30px;white-space:nowrap;}
   @media(max-width:560px){.head .badge{display:none;}}
 
+  /* bio + reviews */
+  .bio-card{background:var(--panel);border:0.5px solid var(--line);border-radius:16px;padding:20px 24px;margin-top:24px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;}
+  .rv{background:var(--panel);border:0.5px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;}
+  .rv .rtop{display:flex;align-items:center;gap:11px;}
+  .rv .av2{width:36px;height:36px;border-radius:50%;background:var(--panel3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;flex-shrink:0;}
+  .rv .rn{font-size:13.5px;font-weight:600;color:var(--white);}
+  .rv .rd{font-size:11px;color:var(--muted);}
+  .rv .rstars{margin-inline-start:auto;color:var(--gold-light);font-size:13px;letter-spacing:2px;}
+  .rv .rt{font-size:13.5px;color:var(--cream);line-height:2;margin-top:9px;}
+  .st-pick span{cursor:pointer;font-size:27px;color:var(--muted-deep);transition:color .15s,transform .15s;display:inline-block;}
+  .st-pick span.on{color:var(--gold-light);}
+  .st-pick span:hover{transform:scale(1.15);}
+
   /* tabs */
   .tabs{display:flex;gap:8px;justify-content:center;margin:26px 0 0;}
   .tab{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14.5px;font-weight:500;color:var(--muted);background:transparent;border:0.5px solid var(--line);border-radius:30px;padding:10px 24px;cursor:pointer;transition:all .25s;}
@@ -243,7 +256,7 @@
       <h1 id="exp-name">رهف العتيبي</h1>
       <div class="role" id="exp-role">خبيرة مكياج</div>
       <div class="sub">
-        <span><span class="star">★</span> 4.9 <span style="color:var(--muted-deep)">(213 حجز)</span></span>
+        <span><span class="star">★</span> <span id="exp-rate">4.9</span> <span style="color:var(--muted-deep)" id="exp-jobs">(213 حجز)</span></span>
         <span id="exp-city">⌖ جدة</span>
         <span id="exp-kind">◆ خبيرة موثّقة</span>
       </div>
@@ -253,14 +266,40 @@
 </header>
 
 <div class="wrap">
+  <div class="bio-card" id="bioCard">
+    <div style="flex:1;min-width:250px">
+      <div class="mono" style="font-size:10px;color:var(--gold)">ABOUT</div>
+      <div style="font-weight:600;font-size:16px;color:var(--white);margin:3px 0 6px" id="bioTitle">نبذة عنها</div>
+      <p id="bioTxt" style="font-size:13.5px;color:var(--cream);line-height:2.1"></p>
+    </div>
+    <a id="bioWork" class="btn btn-ghost" target="_blank" rel="noopener" style="display:none;align-self:center;border-radius:30px">🔗 شاهدي أعمالها</a>
+  </div>
+
   <div class="tabs">
     <button class="tab active" id="tab-book" onclick="VIEW.show('book')">احجزي موعدًا</button>
     <button class="tab" id="tab-shop" onclick="VIEW.show('shop')">منتجاتها</button>
+    <button class="tab" id="tab-revs" onclick="VIEW.show('revs')">التقييمات <span id="revN" style="font-size:11px;color:var(--muted)"></span></button>
   </div>
 
   <div id="view-book">
     <div class="stepper" id="stepper"></div>
     <div id="step-host"></div>
+  </div>
+
+  <div id="view-revs" style="display:none">
+    <div class="sec-head" style="margin-top:28px">
+      <div class="eyebrow">CLIENT LOVE</div>
+      <h2>تقييمات عميلاتها</h2>
+      <p id="revSum"></p>
+    </div>
+    <div id="revList"></div>
+    <div class="rv" style="margin-top:18px">
+      <div style="font-weight:600;font-size:14.5px;color:var(--white);margin-bottom:12px">شاركي تجربتك ✍️</div>
+      <div class="st-pick" id="stPick" style="margin-bottom:10px"></div>
+      <input id="rvName" placeholder="اسمك" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;margin-bottom:10px"/>
+      <textarea id="rvText" rows="3" placeholder="اكتبي تجربتك مع الخبيرة…" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;resize:vertical;margin-bottom:12px"></textarea>
+      <button id="rvSend" class="btn btn-gold" style="width:100%;border-radius:10px">نشر التقييم</button>
+    </div>
   </div>
 
   <div id="view-shop" class="prod-sec" style="display:none">
@@ -312,6 +351,54 @@ document.getElementById('exp-av').textContent=EXPERT.name.replace('صالون ',
 document.getElementById('exp-city').textContent='⌖ '+EXPERT.city;
 document.getElementById('exp-kind').textContent=IS_SALON?'⬢ صالون معتمد':'◆ خبيرة موثّقة';
 
+/* ═══ نبذة كل خبيرة مستقلة + رابط معرض أعمالها + تقييماتها ═══ */
+const EXPERT_PROFILES={
+  'رهف العتيبي':{bio:'خبيرة مكياج عرائس وسهرات بخبرة 9 سنوات، متخصصة في اللوك الخليجي الفاخر والمكياج الثابت للمناسبات الطويلة. حاصلة على شهادات معتمدة من أكاديميات عالمية، وجهّزت أكثر من 300 عروس.',work:'https://instagram.com/rahaf.beauty.sa',rating:4.9,jobs:213,revs:[
+    {n:'غادة المطيري',r:5,t:'جهزتني ليوم عرسي وكان المكياج ثابتاً من العصر لبعد منتصف الليل — صور العرس طلعت خيالية.',d:'قبل 4 أيام'},
+    {n:'نجود الحربي',r:5,t:'ذوقها راقٍ وتسمع وش تبغين بالضبط، ما تفرض ستايلها عليك.',d:'قبل أسبوع'},
+    {n:'العنود السبيعي',r:4,t:'شغلها نظيف جداً، بس احجزي بدري لأن جدولها يمتلئ بسرعة.',d:'قبل أسبوعين'}]},
+  'لمياء الزهراني':{bio:'أخصائية بشرة معتمدة بخبرة 7 سنوات في العناية العميقة وجلسات الهيدرافيشل والتقشير الكيميائي الآمن. تبني لكل عميلة بروتوكولاً علاجياً خاصاً حسب نوع بشرتها، وتتابع النتائج جلسة بجلسة.',work:'https://instagram.com/lamia.skin.expert',rating:5.0,jobs:98,revs:[
+    {n:'أريج الدوسري',r:5,t:'بشرتي تغيرت جذرياً بعد 3 جلسات — تشخيصها دقيق وما تبيع لك جلسات ما تحتاجينها.',d:'قبل يومين'},
+    {n:'شهد القحطاني',r:5,t:'أول أخصائية تشرح لي روتين يناسب بشرتي فعلاً. متابعتها بعد الجلسة شيء يفرق.',d:'قبل أسبوع'},
+    {n:'مها العتيبي',r:5,t:'الهيدرافيشل عندها مستوى عيادات — نظافة وتعقيم واهتمام بالتفاصيل.',d:'قبل 3 أسابيع'}]},
+  'نورة القحطاني':{bio:'مصففة شعر متنقلة تغطي منطقة جازان، متخصصة في التسريحات والصبغات المنزلية باحترافية الصالونات. تصل بأدواتها كاملة، وخبيرة في شعر المناسبات والعرايس.',work:'https://instagram.com/noura.hair.jazan',rating:4.8,jobs:156,revs:[
+    {n:'فاطمة عريشي',r:5,t:'جات البيت وسوّت لي صبغة أومبريه أحلى من صالونات المدينة — وأنا مرتاحة في بيتي!',d:'قبل 3 أيام'},
+    {n:'أسماء حكمي',r:5,t:'تسريحة العروس كانت تحفة وثبتت طول الليلة.',d:'قبل 10 أيام'},
+    {n:'مريم النعمي',r:4,t:'شاطرة جداً في الصبغات، أنصح بالحجز المبكر أيام الأعياد.',d:'قبل شهر'}]},
+  'دانة الشهري':{bio:'خبيرة مكياج في الرياض متخصصة في اللوك الناعم والـSoft Glam — فلسفتها «مكياج يبرز جمالك ولا يغطيه». مثالية لمكياج الخطوبات والتخرج وجلسات التصوير الشخصية.',work:'https://instagram.com/dana.soft.glam',rating:4.7,jobs:187,revs:[
+    {n:'لين الراجحي',r:5,t:'أخيراً أحد فهم معنى مكياج ناعم! طلعت شكلي أنا بس أحلى.',d:'قبل 5 أيام'},
+    {n:'ريما السديري',r:5,t:'مكياج تخرجي كان مثالياً للتصوير — ولا لمعة زايدة ولا ثقل.',d:'قبل أسبوعين'},
+    {n:'هيا العنقري',r:4,t:'ذوق راقٍ وأسعار منطقية مقارنة بمستواها.',d:'قبل شهر'}]},
+  'جواهر الدوسري':{bio:'فنانة أظافر في جدة بخبرة 6 سنوات — تركيب، جل، ورسم فني يدوي بتصاميم لا تتكرر. تستخدم منتجات صحية معتمدة وتهتم بصحة الظفر قبل جماله.',work:'https://instagram.com/jawaher.nails.art',rating:4.9,jobs:142,revs:[
+    {n:'وعد الزهراني',r:5,t:'رسمت لي تصميماً خاصاً لمناسبتي — قطعة فنية على أظافري بمعنى الكلمة.',d:'قبل يومين'},
+    {n:'أمجاد الغامدي',r:5,t:'التركيب ثبت 4 أسابيع كاملة بدون ولا كسر.',d:'قبل أسبوعين'},
+    {n:'دلال الشمراني',r:4,t:'دقيقة جداً في شغلها، والجلسة عندها ما تحس فيها بالوقت.',d:'قبل 3 أسابيع'}]},
+  'سارة الغامدي':{bio:'مصورة بورتريه نسائية في مكة، متخصصة في جلسات التصوير الشخصية وتوثيق المناسبات بخصوصية تامة وطاقم نسائي كامل. أسلوبها سينمائي بإضاءة ناعمة.',work:'https://instagram.com/sara.portraits',rating:4.8,jobs:76,revs:[
+    {n:'بشاير المالكي',r:5,t:'صورت ملكتي بذوق واحترافية — كل التفاصيل الصغيرة موثقة بشكل فني.',d:'قبل أسبوع'},
+    {n:'جود الهذلي',r:5,t:'أول مرة أحس إني مرتاحة قدام كاميرا. النتائج فاقت توقعي.',d:'قبل أسبوعين'},
+    {n:'رغد القرشي',r:4,t:'الصور تسليمها سريع وجودتها عالية جداً.',d:'قبل شهر'}]},
+  'ريم العنزي':{bio:'فنية رموش معتمدة في الدمام — كلاسيك، هجين، وفوليوم روسي. تدرس شكل العين قبل التركيب لتختار التقنية الأنسب، مع التزام صارم بمعايير التعقيم.',work:'https://instagram.com/reem.lashes.dmm',rating:5.0,jobs:121,revs:[
+    {n:'سارة البقمي',r:5,t:'الفوليوم الروسي عندها خرافي وخفيف، ولا حسيت فيه على عيني.',d:'قبل 3 أيام'},
+    {n:'نوف الخالدي',r:5,t:'رموشي عاشت 5 أسابيع! أنظف شغل جربته في الدمام.',d:'قبل أسبوعين'},
+    {n:'عبير المهيدب',r:5,t:'تشرح لك طريقة العناية بالتفصيل بعد التركيب. محترفة فعلاً.',d:'قبل شهر'}]},
+  'وجدان الحربي':{bio:'خبيرة شعر في جدة متخصصة في الكيراتين والبروتين المعالج وقصّات تناسب شكل الوجه. 8 سنوات خبرة وتحليل مجاني لحالة الشعر قبل أي جلسة.',work:'https://instagram.com/wijdan.hair.jed',rating:4.9,jobs:203,revs:[
+    {n:'حصة العوفي',r:5,t:'شعري كان متضرراً من الصبغات وبعد جلستين بروتين رجع حيوي ولامع.',d:'قبل 4 أيام'},
+    {n:'لمى باجابر',r:5,t:'أول مرة أحد يحلل شعري قبل ما يقترح المعالجة — نتيجة الكيراتين طبيعية مو مبالغ فيها.',d:'قبل أسبوع'},
+    {n:'دانية فلمبان',r:4,t:'القصة اللي اختارتها لوجهي غيرت إطلالتي كاملة.',d:'قبل 3 أسابيع'}]},
+  'أمل السبيعي':{bio:'خبيرة مكياج سهرات وتخرج في الدمام — جريئة في الألوان، محترفة في السموكي والكات كريس. تجهز لوكات كاملة مع تثبيت يدوم 12 ساعة.',work:'https://instagram.com/amal.mua.dmm',rating:4.7,jobs:134,revs:[
+    {n:'مضاوي الدوسري',r:5,t:'سموكي العيون عندها ما يتكرر — كنت نجمة الحفلة.',d:'قبل 5 أيام'},
+    {n:'شذى التميمي',r:4,t:'مكياج تخرجي ثبت من الصبح للمغرب مع الزحمة والحر.',d:'قبل أسبوعين'},
+    {n:'جواهر السهلي',r:5,t:'تفهم وش يناسب لون بشرتك وما تمشي على موضة وحدة للكل.',d:'قبل شهر'}]},
+};
+const PROF=EXPERT_PROFILES[EXPERT.name]||{
+  bio:IS_SALON?'وجهة جمال معتمدة على منصة لوما — طاقم محترف، التزام بالمواعيد، وتجربة تليق بك من الاستقبال حتى النتيجة.':'خبيرة جمال موثّقة على منصة لوما — تم التحقق من هويتها وشهاداتها وجودة أعمالها قبل انضمامها.',
+  work:'',rating:4.9,jobs:180,revs:[]};
+document.getElementById('exp-rate').textContent=PROF.rating.toFixed(1);
+document.getElementById('exp-jobs').textContent='('+PROF.jobs+' حجز)';
+document.getElementById('bioTitle').textContent=IS_SALON?'نبذة عن الصالون':'نبذة عنها';
+document.getElementById('bioTxt').textContent=PROF.bio;
+if(PROF.work){const w=document.getElementById('bioWork');w.href=PROF.work;w.style.display='inline-flex';}
+
 const SERVICES=[
   {id:'soiree',t:'مكياج سهرة',dur:'60 دقيقة',price:350},
   {id:'bride',t:'مكياج عروس كامل',dur:'120 دقيقة',price:850},
@@ -346,15 +433,47 @@ const DAYS=nextDays(7);
 
 const VIEW={
   show(v){
-    const book=v==='book';
-    document.getElementById('view-book').style.display=book?'block':'none';
-    document.getElementById('view-shop').style.display=book?'none':'block';
-    document.getElementById('tab-book').classList.toggle('active',book);
-    document.getElementById('tab-shop').classList.toggle('active',!book);
+    ['book','shop','revs'].forEach(k=>{
+      document.getElementById('view-'+k).style.display=k===v?'block':'none';
+      document.getElementById('tab-'+k).classList.toggle('active',k===v);
+    });
     window.scrollTo({top:0,behavior:'smooth'});
   }
 };
 window.VIEW=VIEW;
+
+/* ═══ التقييمات: بذور الخبيرة + ما تضيفه الزائرات (نفس مفاتيح تقييمات المتجر) ═══ */
+const REV_KEY='luma_reviews_'+EXPERT.name;
+const loadRevs=()=>{try{return JSON.parse(localStorage.getItem(REV_KEY))||[]}catch(e){return[]}};
+const escR=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let rvStars=5;
+function allExpertRevs(){return [...loadRevs(),...(PROF.revs||[])];}
+function renderExpertRevs(){
+  const list=allExpertRevs();
+  document.getElementById('revN').textContent=list.length?'('+list.length+')':'';
+  document.getElementById('revSum').textContent='★ '+PROF.rating.toFixed(1)+' — '+list.length+' تقييم من عميلات حقيقيات';
+  document.getElementById('revList').innerHTML=list.map(r=>`
+    <div class="rv"><div class="rtop">
+      <span class="av2">${escR(r.n).charAt(0)}</span>
+      <div><div class="rn">${escR(r.n)}${r.vf?' <span style="font-size:10px;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:1px 8px;opacity:.85">زيارة موثقة ✓</span>':''}</div><div class="rd">${escR(r.d)}</div></div>
+      <span class="rstars">${'★'.repeat(r.r)}${'☆'.repeat(5-r.r)}</span></div>
+      <div class="rt">${escR(r.t)}</div></div>`).join('')
+    ||'<div style="color:var(--muted);font-size:13.5px;padding:14px 4px">لا تقييمات بعد — كوني أول من يشارك تجربتها 🌸</div>';
+}
+function drawStars(){
+  document.getElementById('stPick').innerHTML=[1,2,3,4,5].map(i=>`<span class="${i<=rvStars?'on':''}" data-s="${i}">★</span>`).join('');
+  document.querySelectorAll('#stPick span').forEach(s=>s.onclick=()=>{rvStars=+s.dataset.s;drawStars();});
+}
+document.getElementById('rvSend').onclick=()=>{
+  const nm=document.getElementById('rvName'),tx=document.getElementById('rvText');
+  if(!nm.value.trim()){nm.style.borderColor='#c0566a';nm.focus();return;}
+  if(!tx.value.trim()){tx.style.borderColor='#c0566a';tx.focus();return;}
+  const mine=loadRevs();
+  mine.unshift({n:nm.value.trim(),r:rvStars,t:tx.value.trim(),d:'الآن'});
+  try{localStorage.setItem(REV_KEY,JSON.stringify(mine));}catch(e){}
+  nm.value='';tx.value='';rvStars=5;drawStars();renderExpertRevs();
+};
+drawStars();renderExpertRevs();
 
 function renderStepper(){
   let h='';
