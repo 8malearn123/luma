@@ -314,8 +314,8 @@ SCREENS.board=()=>{
 };
 function gridLines(){let g='';for(let i=1;i<SLOTS;i++)g+=`<div class="gl" style="top:${i*ROW_H}px"></div>`;return g;}
 
-/* ── STAFF management: full employee files ── */
-SCREENS.staff=()=>{
+/* ── STAFF files tab (merged into the HR screen) ── */
+function hrStaffTab(){
   const active=STAFF.filter(s=>spOf(s.id).status==='active').length;
   const rows=STAFF.map(s=>{
     const p=spOf(s.id);
@@ -332,18 +332,14 @@ SCREENS.staff=()=>{
     <button class="btn btn-gold" style="padding:8px 18px" onclick="SALON.viewStaff('${s.id}')">الملف الكامل</button>
   </div>`;}).join('');
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-    <div><div style="font-weight:600;font-size:19px;color:var(--white)">طاقم الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${STAFF.length} موظفات · ${active} على رأس العمل</div></div>
-    <button class="btn btn-gold" onclick="SALON.addStaff()">+ إضافة موظفة</button>
-  </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('staff',19)}</div></div><div class="val">${STAFF.length}</div><div class="k">إجمالي الطاقم</div></div>
-    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div></div><div class="val">${active}</div><div class="k">نشطات</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div></div><div class="val">${active}</div><div class="k">نشطات · على رأس العمل</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('invoice',19)}</div></div><div class="val">${STAFF.reduce((t,s)=>t+spOf(s.id).docs.length,0)}</div><div class="k">مستندات محفوظة</div></div>
   </div>
   <div class="sec-label">الموظفات <span class="ln"></span></div>
   ${rows}`;
-};
+}
 
 /* ══════════ HR — الموارد البشرية (إجازات برصيد وتعارضات · دوام وحضور · رواتب متعددة المصادر) ══════════ */
 const HR_LEAVE_KEY='luma_hr_leaves', HR_PAY_KEY='luma_hr_pay2', HR_SHIFT_KEY='luma_hr_shifts',
@@ -412,7 +408,7 @@ function hrLedger(sid){
 }
 
 const HR={
-  tab:'leaves',
+  tab:'staff',
   go(t){this.tab=t;SALON.go('hr');},
   review(id,ok){
     const l=HR_LEAVES.find(x=>x.id===id);if(!l)return;
@@ -548,16 +544,19 @@ const HR={
 window.HR=HR;
 
 SCREENS.hr=()=>{
-  const tabs=[['leaves','طلبات الإجازة'],['shifts','جدول الدوام'],['payroll','الرواتب والعمولات']];
+  const tabs=[['staff','الموظفات'],['leaves','طلبات الإجازة'],['shifts','جدول الدوام'],['payroll','الرواتب والعمولات']];
   const pending=HR_LEAVES.filter(l=>l.status==='pending').length;
   const head=`
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
-    <div><div style="font-weight:600;font-size:19px;color:var(--white)">الموارد البشرية</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">منظومة مغلقة: الإجازات والدوام والحضور تتزامن مع الحجوزات والرواتب تلقائياً</div></div>
+    <div><div style="font-weight:600;font-size:19px;color:var(--white)">الطاقم والموارد البشرية</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">ملفات الموظفات، الإجازات، الدوام والحضور، والرواتب — كلها تتزامن مع الحجوزات تلقائياً</div></div>
+    ${HR.tab==='staff'?`<button class="btn btn-gold" onclick="SALON.addStaff()">+ إضافة موظفة</button>`:''}
     ${HR.tab==='leaves'?`<button class="btn btn-gold" onclick="HR.newLeave()">+ طلب إجازة</button>`:''}
   </div>
-  <div style="display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:20px">
-    ${tabs.map(([k,lb])=>`<button onclick="HR.go('${k}')" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;padding:10px 16px;border-bottom:2px solid ${HR.tab===k?'var(--gold-light)':'transparent'};color:${HR.tab===k?'var(--gold-light)':'var(--muted)'}">${lb}${k==='leaves'&&pending?` · ${pending}`:''}</button>`).join('')}
+  <div style="display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto">
+    ${tabs.map(([k,lb])=>`<button onclick="HR.go('${k}')" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;padding:10px 16px;white-space:nowrap;border-bottom:2px solid ${HR.tab===k?'var(--gold-light)':'transparent'};color:${HR.tab===k?'var(--gold-light)':'var(--muted)'}">${lb}${k==='staff'?` · ${STAFF.length}`:''}${k==='leaves'&&pending?` · ${pending}`:''}</button>`).join('')}
   </div>`;
+
+  if(HR.tab==='staff')return head+hrStaffTab();
 
   if(HR.tab==='leaves'){
     const ST={pending:['قيد المراجعة','gold'],approved:['معتمدة','green'],rejected:['مرفوضة','soft']};
@@ -876,8 +875,7 @@ SCREENS.inventory=()=>{
 const NAV=[
   {id:'overview',label:'نظرة عامة',icon:'grid',crumb:'SALON'},
   {id:'board',label:'لوحة الحجوزات',icon:'board',crumb:'SALON'},
-  {id:'staff',label:'الطاقم',icon:'staff',crumb:'SALON'},
-  {id:'hr',label:'الموارد البشرية',icon:'staff',crumb:'SALON'},
+  {id:'hr',label:'الطاقم والموارد البشرية',icon:'staff',crumb:'SALON'},
   {id:'clients',label:'العملاء',icon:'users',crumb:'SALON'},
   {id:'services',label:'الخدمات',icon:'scissors',crumb:'SALON'},
   {id:'products',label:'المنتجات',icon:'bag',crumb:'SALON'},
@@ -894,6 +892,7 @@ document.getElementById('sb-nav').innerHTML=NAV.map(it=>`<div class="nav-item" d
 
 const SALON={
   go(id){
+    if(id==='staff'){HR.tab='staff';id='hr';}
     const it=NAV_FLAT[id];if(!it)return;location.hash=id;
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.id===id));
     document.getElementById('tb-crumb').textContent=it.crumb;document.getElementById('tb-title').textContent=it.label;
@@ -1089,7 +1088,7 @@ const SALON={
   }
 };
 window.SALON=SALON;
-const start=(location.hash||'').replace('#','')||'overview';SALON.go(NAV_FLAT[start]?start:'overview');
+const start=(location.hash||'').replace('#','')||'overview';SALON.go((NAV_FLAT[start]||start==='staff')?start:'overview');
 </script>
 <script src="luma-ui.js"></script>
 <script src="luma-theme.js"></script>
