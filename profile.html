@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0C0B0E"/>
+<script src="luma-store.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LUMA — الملف التعريفي الرسمي 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  :root{
+    --bg:#16151b; --bg-soft:#141210; --panel:#1b1a20; --panel2:#201f26;
+    --gold:#9c8047; --gold-light:#ccab64; --gold-pale:#e6ce95; --gold-deep:#846a38;
+    --white:#f6f2ec; --muted:#86818d; --muted-deep:#58545f;
+    --line:#26242d; --line-soft:#211f1b;
+  }
+  html,body{background:#1a1714;}
+  body{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:300;color:var(--white);line-height:1.75;-webkit-font-smoothing:antialiased;}
+  .word{font-family:'Bodoni Moda',serif;font-weight:300;letter-spacing:0.22em;direction:ltr;line-height:0.9;white-space:nowrap;}
+  .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.22em;text-transform:uppercase;direction:ltr;font-weight:300;}
+  .gold{color:var(--gold-light);}
+  .gold-fill{background:linear-gradient(120deg,#dbbd81,#caa85f 30%,#937842 55%,#caa85f 80%,#dbbd81);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;}
+
+  /* ── toolbar (screen only) ── */
+  .toolbar{position:fixed;top:18px;left:18px;z-index:99;display:flex;gap:10px;}
+  .toolbar button{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:var(--bg);background:linear-gradient(120deg,#dbbd81,#caa85f 40%,#937842);border:none;padding:10px 22px;cursor:pointer;border-radius:2px;font-weight:500;}
+  @media print{.toolbar{display:none;}}
+
+  /* ── A4 page ── */
+  .page{
+    width:210mm;min-height:297mm;background:var(--bg);position:relative;
+    margin:14mm auto;padding:24mm 20mm 22mm;display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 10px 50px rgba(0,0,0,0.55);
+  }
+  /* gold bars top & bottom */
+  .page::before,.page::after{content:'';position:absolute;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--gold-deep),var(--gold-light) 50%,var(--gold-deep));}
+  .page::before{top:0;}
+  .page::after{bottom:0;}
+
+  /* running header / footer */
+  .rh{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:9mm;border-bottom:0.5px solid var(--line);margin-bottom:11mm;}
+  .rh .bw{font-family:'Bodoni Moda',serif;font-weight:400;font-size:17pt;letter-spacing:0.24em;color:var(--gold-light);direction:ltr;}
+  .rh .sec{display:none;}
+  .rf{margin-top:auto;padding-top:8mm;border-top:0.5px solid var(--line);display:flex;justify-content:center;align-items:center;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:9pt;letter-spacing:0;color:var(--muted);direction:rtl;}
+  .rf .ar{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;letter-spacing:0;direction:rtl;}
+
+  /* page title block */
+  .ptitle{display:flex;flex-direction:column;gap:5px;margin-bottom:9mm;}
+  .ptitle .idx{display:none;}
+  .ptitle h2{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:24pt;color:var(--white);line-height:1.25;}
+  .ptitle .lede{font-size:11.5pt;color:var(--gold-pale);font-weight:300;max-width:60ch;}
+
+  hr.thin{border:none;height:0.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:7mm 0;}
+
+  .body-text{font-size:11.5pt;color:var(--white);font-weight:300;line-height:1.9;}
+  .body-text.muted{color:var(--gold-pale);}
+
+  /* stat row */
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm;margin:4mm 0;}
+  .stat{border:0.5px solid var(--line);background:var(--panel);padding:9mm 7mm;display:flex;flex-direction:column;align-items:flex-start;gap:5px;}
+  .stat .n{display:inline-flex;align-items:baseline;gap:8px;direction:ltr;font-family:'Bodoni Moda',serif;font-weight:400;font-size:34pt;line-height:1;color:var(--gold-light);white-space:nowrap;}
+  .stat .n.ar{direction:rtl;}
+  .stat .n .u{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:15pt;color:var(--gold-light);}
+  .stat .n .p{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:300;font-size:18pt;color:var(--gold);}
+  .stat .dv{width:30px;height:1px;background:var(--gold-deep);margin:7px 0 3px;}
+  .stat .k{font-size:11pt;color:var(--gold-pale);font-weight:500;}
+  .stat .d{font-size:9.5pt;color:var(--muted);line-height:1.5;}
+
+  /* bullet list */
+  ul.lux{list-style:none;display:flex;flex-direction:column;gap:0;}
+  ul.lux li{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:0.5px solid var(--line-soft);font-size:11.5pt;color:var(--white);font-weight:300;line-height:1.6;}
+  ul.lux li:last-child{border-bottom:none;}
+  ul.lux li .mk{color:var(--gold);font-size:9pt;margin-top:7px;flex-shrink:0;}
+  ul.lux li b{color:var(--gold-light);font-weight:600;}
+
+  /* key-value rows */
+  .kv{display:flex;flex-direction:column;}
+  .kv .row{display:grid;grid-template-columns:34% 1fr;gap:6mm;padding:13px 0;border-bottom:0.5px solid var(--line-soft);align-items:baseline;}
+  .kv .row .k{font-size:10pt;color:var(--gold);font-weight:500;}
+  .kv .row .v{font-size:11.5pt;color:var(--white);font-weight:300;}
+  .kv .row .v b{color:var(--gold-light);font-weight:600;}
+
+  /* before/after */
+  .ba{display:grid;grid-template-columns:1fr 46px 1fr;gap:0;align-items:stretch;margin-top:3mm;}
+  .ba .col{display:flex;flex-direction:column;}
+  .ba .ch{text-align:center;padding:9px;font-weight:600;font-size:12pt;margin-bottom:2mm;}
+  .ba .ch.before{color:var(--muted);border-bottom:0.5px solid var(--line);}
+  .ba .ch.after{color:var(--gold-light);border-bottom:0.5px solid var(--gold-deep);}
+  .ba .cell{padding:15px 16px;font-size:11pt;font-weight:300;border-bottom:0.5px solid var(--line-soft);min-height:54px;display:flex;align-items:center;}
+  .ba .col.before .cell{color:var(--muted);justify-content:flex-end;text-align:left;}
+  .ba .col.after .cell{color:var(--white);background:var(--panel2);}
+  .ba .arrows{display:flex;flex-direction:column;}
+  .ba .arrows .sp{height:calc(9px + 12pt + 2mm + 8px);}
+  .ba .arrows .a{flex:1;min-height:54px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:15pt;border-bottom:0.5px solid transparent;}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:2mm;}
+  .chips span{font-size:10pt;color:var(--gold-pale);border:0.5px solid var(--line);background:var(--panel);padding:8px 16px;border-radius:30px;}
+
+  /* revenue numbered */
+  ol.rev{list-style:none;counter-reset:r;display:flex;flex-direction:column;}
+  ol.rev li{counter-increment:r;display:flex;align-items:flex-start;gap:16px;padding:15px 0;border-bottom:0.5px solid var(--line-soft);font-size:11.5pt;font-weight:300;}
+  ol.rev li::before{content:counter(r);font-family:'Bodoni Moda',serif;font-size:20pt;color:var(--gold);line-height:1;direction:ltr;min-width:24px;}
+  ol.rev li b{color:var(--gold-light);font-weight:600;}
+
+  .callout{border:0.5px solid var(--gold-deep);background:linear-gradient(120deg,rgba(147,115,53,0.10),rgba(147,115,53,0.02));padding:7mm;display:flex;justify-content:space-around;gap:6mm;margin-top:5mm;flex-wrap:wrap;}
+  .callout .c{text-align:center;display:flex;flex-direction:column;gap:4px;}
+  .callout .c .n{font-family:'Bodoni Moda',serif;font-weight:400;font-size:30pt;direction:ltr;line-height:1;}
+  .callout .c .k{font-size:10pt;color:var(--gold-pale);}
+
+  /* table */
+  table.fin{width:100%;border-collapse:collapse;border:0.5px solid var(--line);margin-top:2mm;}
+  table.fin th,table.fin td{padding:12px 14px;border-bottom:0.5px solid var(--line);text-align:right;font-size:11pt;font-weight:300;}
+  table.fin thead th{background:var(--panel);color:var(--gold);font-weight:600;font-size:10pt;letter-spacing:0.02em;}
+  table.fin tbody tr:nth-child(even){background:var(--panel2);}
+  table.fin td .big{font-family:'Bodoni Moda',serif;font-size:16pt;color:var(--gold-light);direction:ltr;display:inline-block;}
+  table.fin td.st{color:var(--gold-pale);font-size:10pt;}
+  table.fin td.st b{color:var(--gold-light);font-weight:600;}
+  .total-line{margin-top:5mm;border:0.5px solid var(--gold-deep);background:var(--panel);padding:6mm 7mm;display:flex;justify-content:space-between;align-items:center;}
+  .total-line .l{font-size:11pt;color:var(--gold-pale);}
+  .total-line .v{font-family:'Bodoni Moda',serif;font-size:19pt;color:transparent;white-space:nowrap;}
+
+  /* expansion timeline */
+  .timeline{display:flex;flex-direction:column;}
+  .timeline .ph{display:grid;grid-template-columns:auto auto 1fr;gap:18px;align-items:center;padding:16px 0;border-bottom:0.5px solid var(--line-soft);}
+  .timeline .ph .stage{font-family:'IBM Plex Mono',monospace;font-size:8.5pt;letter-spacing:0.12em;color:var(--gold);direction:ltr;white-space:nowrap;}
+  .timeline .ph .when{font-size:9.5pt;color:var(--muted);white-space:nowrap;min-width:96px;}
+  .timeline .ph .place{font-size:12.5pt;color:var(--white);font-weight:400;}
+  .timeline .ph .num{font-family:'Bodoni Moda',serif;font-size:18pt;color:var(--gold-deep);direction:ltr;}
+
+  /* partnership cards */
+  .pcards{display:grid;grid-template-columns:1fr 1fr;gap:6mm;margin-top:2mm;}
+  .pcard{border:0.5px solid var(--gold-deep);background:linear-gradient(160deg,var(--panel),var(--bg));padding:7mm 6mm;display:flex;flex-direction:column;gap:10px;}
+  .pcard .h{display:flex;align-items:center;gap:10px;font-size:13pt;font-weight:600;color:var(--gold-light);padding-bottom:8px;border-bottom:0.5px solid var(--line);}
+  .pcard .h .d{font-size:11pt;color:var(--gold);}
+  .pcard .block{display:flex;flex-direction:column;gap:3px;}
+  .pcard .block .lbl{font-size:8.5pt;color:var(--gold);letter-spacing:0.04em;font-family:'IBM Plex Mono',monospace;direction:ltr;text-transform:uppercase;}
+  .pcard .block .txt{font-size:10.5pt;color:var(--white);font-weight:300;line-height:1.55;}
+
+  /* compliance checklist */
+  ul.check{list-style:none;display:flex;flex-direction:column;}
+  ul.check li{display:flex;align-items:flex-start;gap:14px;padding:15px 0;border-bottom:0.5px solid var(--line-soft);font-size:11.5pt;font-weight:300;}
+  ul.check li:last-child{border-bottom:none;}
+  ul.check li .ck{width:22px;height:22px;border:1px solid var(--gold-deep);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-size:10pt;flex-shrink:0;margin-top:2px;}
+  ul.check li b{color:var(--gold-light);font-weight:600;}
+
+  /* cover */
+  .cover{justify-content:center;align-items:center;text-align:center;padding:0;}
+  .cover .frame{position:absolute;inset:14mm;border:0.5px solid rgba(147,115,53,0.3);pointer-events:none;}
+  .cover .frame i{position:absolute;width:34px;height:34px;border-color:var(--gold);border-style:solid;}
+  .cover .frame i.tr{top:-1px;right:-1px;border-width:1.5px 1.5px 0 0;}
+  .cover .frame i.tl{top:-1px;left:-1px;border-width:1.5px 0 0 1.5px;}
+  .cover .frame i.br{bottom:-1px;right:-1px;border-width:0 1.5px 1.5px 0;}
+  .cover .frame i.bl{bottom:-1px;left:-1px;border-width:0 0 1.5px 1.5px;}
+  .cover .topm{position:absolute;top:26mm;left:0;right:0;text-align:center;}
+  .cover .wm{font-size:90pt;}
+  .cover .sep{display:flex;align-items:center;justify-content:center;gap:20px;color:var(--gold);font-size:12pt;margin:8mm 0 9mm;}
+  .cover .sep .l{width:70px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+  .cover h1{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:25pt;color:var(--white);}
+  .cover .one{font-size:13pt;color:var(--gold-pale);font-weight:300;margin-top:7mm;max-width:46ch;}
+  .cover .org{font-size:11pt;color:var(--muted);margin-top:4mm;}
+  .cover .conf{position:absolute;bottom:26mm;left:0;right:0;display:flex;justify-content:center;}
+  .cover .conf .tag{border:0.5px solid var(--gold-deep);color:var(--gold-light);font-size:9.5pt;letter-spacing:0.04em;padding:9px 26px;}
+
+  /* closing */
+  .closing{justify-content:center;align-items:center;text-align:center;}
+  .closing .wm{font-size:40pt;margin-bottom:8mm;}
+  .closing .big{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:30pt;line-height:1.35;color:var(--white);max-width:22ch;}
+  .closing .para{font-size:12.5pt;color:var(--gold-pale);font-weight:300;margin-top:8mm;max-width:48ch;line-height:1.9;}
+  .closing .contact{margin-top:10mm;border:0.5px dashed var(--line);padding:6mm 10mm;font-size:10.5pt;color:var(--muted);}
+  .closing .contact b{color:var(--gold-pale);font-weight:500;}
+  .closing .conf{margin-top:9mm;font-family:'IBM Plex Mono',monospace;font-size:8pt;letter-spacing:0.1em;color:var(--muted-deep);direction:ltr;}
+
+  @media print{
+    @page{size:A4;margin:0;}
+    html,body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .page{margin:0;box-shadow:none;page-break-after:always;break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .page:last-child{page-break-after:auto;}
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+</head>
+<body>
+
+<div class="toolbar"><button onclick="window.print()">طباعة / حفظ PDF</button></div>
+
+<!-- ═══════ PAGE 1 · COVER ═══════ -->
+<section class="page cover" data-screen-label="01 الغلاف">
+  <div class="frame"><i class="tr"></i><i class="tl"></i><i class="br"></i><i class="bl"></i></div>
+  <div class="word gold-fill wm">LUMA</div>
+  <div class="sep"><span class="l"></span><span>◆</span><span class="l" style="transform:scaleX(-1)"></span></div>
+  <h1>الملف التعريفي الرسمي</h1>
+  <div class="one">منصة SaaS متخصصة لإدارة الأعمال الإبداعية المحترفة</div>
+  <div class="org">قمة كود &nbsp;·&nbsp; المملكة العربية السعودية</div>
+</section>
+
+<!-- ═══════ PAGE 2 · OPPORTUNITY ═══════ -->
+<section class="page" data-screen-label="02 السياق والفرصة">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">Context & Opportunity · 02</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 01</span>
+    <h2>السياق والفرصة</h2>
+    <span class="lede">لماذا الآن؟ — لحظة سوقية نادرة يلتقي فيها حجم القطاع مع فجوة رقمية واضحة ودَفعٍ وطني نحو التحول.</span>
+  </div>
+  <div class="stat-grid">
+    <div class="stat"><span class="n ar">6<span class="u">مليار</span><span class="p">+</span></span><span class="dv"></span><span class="k">ريال سنوياً</span><span class="d">حجم سوق خدمات التجميل في السعودية</span></div>
+    <div class="stat"><span class="n">200,000<span class="p">+</span></span><span class="dv"></span><span class="k">محترف</span><span class="d">خبيرات تجميل ومصورون في المملكة</span></div>
+    <div class="stat"><span class="n">90%<span class="p">+</span></span><span class="dv"></span><span class="k">عبر واتساب</span><span class="d">يديرون حجوزاتهم بلا أدوات احترافية</span></div>
+  </div>
+  <hr class="thin" />
+  <ul class="lux">
+    <li><span class="mk">◆</span><span>السوق السعودي لخدمات التجميل يتجاوز <b>6 مليار ريال سنوياً</b> — قطاعٌ ناضج وقابل للرقمنة الفورية.</span></li>
+    <li><span class="mk">◆</span><span>أكثر من <b>200,000 خبيرة تجميل ومصور محترف</b> يمثلون قاعدة مستخدمين مؤهلة وواسعة.</span></li>
+    <li><span class="mk">◆</span><span>أكثر من <b>90%</b> يديرون أعمالهم عبر واتساب — دون نظام حجز، دون دفع مسبق، ودون بيانات.</span></li>
+    <li><span class="mk">◆</span><span><b>رؤية 2030</b> تدفع نحو رقمنة الاقتصاد الإبداعي وتمكين رواد الأعمال المستقلين.</span></li>
+    <li><span class="mk">◆</span><span><b>لا يوجد منافس مباشر</b> بهذا التخصص في السوق السعودي والخليجي حتى اللحظة.</span></li>
+  </ul>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 3 · ABOUT ═══════ -->
+<section class="page" data-screen-label="03 من نحن">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">About Us · 03</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 02</span>
+    <h2>من نحن</h2>
+    <span class="lede">جهةٌ تشغيلية قائمة بسجلٍ تجاري مفعّل، ومنتجٌ شبه مكتمل جاهزٌ للإطلاق التجريبي.</span>
+  </div>
+  <div class="kv">
+    <div class="row"><span class="k">المنصة</span><span class="v"><b>LUMA</b> — منصة SaaS متخصصة لخبيرات التجميل والمصورين المحترفين</span></div>
+    <div class="row"><span class="k">الشركة المالكة</span><span class="v">قمة كود — <b>سجل تجاري مفعّل</b> + حساب بنكي رسمي</span></div>
+    <div class="row"><span class="k">البنية التقنية</span><span class="v">منصة سحابية حديثة قابلة للتوسّع — <b>جاهزة للإطلاق</b></span></div>
+    <div class="row"><span class="k">بوابة الدفع</span><span class="v">Moyasar — mada + Apple Pay</span></div>
+    <div class="row"><span class="k">الإطلاق التجريبي</span><span class="v">جازان — <b>بداية من أغسطس 2026</b></span></div>
+    <div class="row"><span class="k">فلسفة المنصة</span><span class="v">Quiet Luxury — الاحترافية الصامتة</span></div>
+  </div>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 4 · PROBLEM ═══════ -->
+<section class="page" data-screen-label="04 المشكلة">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">The Problem · 04</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 03</span>
+    <h2>المشكلة التي نحلّها</h2>
+    <span class="lede">نقلةٌ من الفوضى غير المنظّمة إلى منظومة عملٍ احترافية متكاملة.</span>
+  </div>
+  <div class="ba">
+    <div class="col before">
+      <div class="ch before">قبل لوما</div>
+      <div class="cell">واتساب + فوضى</div>
+      <div class="cell">حجوزات وهمية</div>
+      <div class="cell">لا أرشيف للأعمال</div>
+      <div class="cell">لا بيانات مالية</div>
+      <div class="cell">لا هوية مهنية</div>
+    </div>
+    <div class="arrows">
+      <div class="sp"></div>
+      <div class="a">←</div><div class="a">←</div><div class="a">←</div><div class="a">←</div><div class="a">←</div>
+    </div>
+    <div class="col after">
+      <div class="ch after">مع لوما</div>
+      <div class="cell">نظام حجز احترافي</div>
+      <div class="cell">دفع مسبق إلزامي</div>
+      <div class="cell">معرض رقمي احترافي</div>
+      <div class="cell">تقارير وتحليلات فورية</div>
+      <div class="cell">صفحة استوديو خاصة</div>
+    </div>
+  </div>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 5 · PRODUCT ═══════ -->
+<section class="page" data-screen-label="05 المنتج">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">The Product · 05</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 04</span>
+    <h2>المنتج — نظرة تقنية</h2>
+    <span class="lede">منتجٌ مبنيٌ فعلياً لا فكرة على ورق — بنية بيانات ناضجة وأمانٌ مؤسسي وقابلية توسّع.</span>
+  </div>
+  <div class="stat-grid">
+    <div class="stat"><span class="n">25<span class="p">+</span></span><span class="dv"></span><span class="k">ميزة جاهزة</span><span class="d">مبنية ومفعّلة في الكود</span></div>
+    <div class="stat"><span class="n">38</span><span class="dv"></span><span class="k">جدول بيانات</span><span class="d">قاعدة بيانات سحابية آمنة</span></div>
+    <div class="stat"><span class="n">95%</span><span class="dv"></span><span class="k">على الجوال</span><span class="d">بنية Mobile-First</span></div>
+  </div>
+  <ul class="lux" style="margin-top:5mm">
+    <li><span class="mk">◆</span><span><b>الأمان:</b> KYC + توثيق هوية + عقود رقمية موثّقة.</span></li>
+    <li><span class="mk">◆</span><span><b>قابلية التوسّع:</b> بنية تدعم آلاف المستخدمين المتزامنين.</span></li>
+    <li><span class="mk">◆</span><span><b>التكامل:</b> API جاهز للربط مع الأنظمة الخارجية.</span></li>
+  </ul>
+  <hr class="thin" />
+  <div style="font-size:9.5pt;color:var(--gold);font-family:'IBM Plex Mono',monospace;letter-spacing:0.12em;direction:ltr;margin-bottom:3mm">KEY FEATURES · أبرز الميزات</div>
+  <div class="chips">
+    <span>صفحة استوديو</span><span>حجز ذكي</span><span>دفع مسبق</span><span>معرض أعمال</span>
+    <span>واتساب تلقائي</span><span>Google Calendar</span><span>تحليلات</span><span>مساعد AI كامل</span>
+    <span>برنامج ولاء</span><span>حجوزات جماعية</span><span>إدارة طاقم</span><span>API</span>
+  </div>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 6 · REVENUE MODEL ═══════ -->
+<section class="page" data-screen-label="06 نموذج الإيراد">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">Revenue Model · 06</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 05</span>
+    <h2>نموذج الإيراد</h2>
+    <span class="lede">نموذجٌ مزدوج — اشتراكٌ ثابت + عمولةٌ على كل حجزة — يمنح تدفقاً نقدياً مستقراً ومتنامياً.</span>
+  </div>
+  <ol class="rev">
+    <li><span><b>اشتراك شهري ثابت</b> — سَناء 199 · وَهَج 399 · فَرِيد 799 ر.س</span></li>
+    <li><span><b>عمولة على كل حجزة مدفوعة</b> — 12% · 10% · 8% بحسب الباقة</span></li>
+    <li><span><b>اشتراك نصف سنوي مخفّض</b> — 990 · 1,990 · 3,990 ر.س</span></li>
+    <li><span><b>عمولة الإحالة</b> — 10% من اشتراك الشهر الأول</span></li>
+    <li><span><b>ترقية الباقات</b> — محسوبة آلياً بنظام Proration</span></li>
+  </ol>
+  <div class="callout">
+    <div class="c"><span class="n gold-fill">17–20</span><span class="k">نقطة التعادل — بالاشتراكات فقط</span></div>
+    <div class="c"><span class="n gold-fill">14–18</span><span class="k">مع عمولات الحجوزات</span></div>
+  </div>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 7 · FINANCIALS ═══════ -->
+<section class="page" data-screen-label="07 التوقعات المالية">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">Financial Projections · 07</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 06</span>
+    <h2>التوقّعات المالية — 12 شهراً</h2>
+    <span class="lede">مسارٌ متحفّظ يصل إلى التعادل في الشهر الثاني، ثم ربحيةٌ مستقرة ونموٌ نحو التوسّع الخليجي.</span>
+  </div>
+  <table class="fin">
+    <thead><tr><th>الشهر</th><th>المشتركات</th><th>الإيراد التقديري</th><th>الحالة</th></tr></thead>
+    <tbody>
+      <tr><td>الشهر 1</td><td><span class="big">15</span></td><td>~6,500 ر.س</td><td class="st">دون التعادل — لا دفع بعد</td></tr>
+      <tr><td>الشهر 2</td><td><span class="big">30</span></td><td>~19,000 ر.س</td><td class="st"><b>تعادل ✓</b></td></tr>
+      <tr><td>الشهر 4</td><td><span class="big">50</span></td><td>~34,000 ر.س</td><td class="st">ربحية مستقرة</td></tr>
+      <tr><td>الشهر 6</td><td><span class="big">80</span></td><td>~55,000 ر.س</td><td class="st">نمو قوي</td></tr>
+      <tr><td>الشهر 12</td><td><span class="big">130</span></td><td>~90,000 ر.س</td><td class="st"><b>توسّع خليجي</b></td></tr>
+    </tbody>
+  </table>
+  <div class="total-line">
+    <span class="l">إجمالي إيرادات السنة الأولى <span style="color:var(--muted);font-size:9pt">(حسب مزيج الباقات ومعدّل العمولات)</span></span>
+    <span class="v gold-fill"><span dir="ltr">~490,000–680,000</span> ر.س</span>
+  </div>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 8 · EXPANSION ═══════ -->
+<section class="page" data-screen-label="08 خطة التوسع">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">Geographic Expansion · 08</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 07</span>
+    <h2>خطة التوسّع الجغرافي</h2>
+    <span class="lede">انطلاقٌ مدروس من جازان، فتوسّعٌ متدرّج يغطي المملكة ثم الخليج خلال عامين.</span>
+  </div>
+  <div class="timeline">
+    <div class="ph"><span class="num">1</span><span class="stage">PHASE 01 · شهر 1–3</span><span class="place">جازان — اختبار وتحقّق</span></div>
+    <div class="ph"><span class="num">2</span><span class="stage">PHASE 02 · شهر 4–6</span><span class="place">المنطقة الغربية — جدة + مكة</span></div>
+    <div class="ph"><span class="num">3</span><span class="stage">PHASE 03 · شهر 7–9</span><span class="place">الرياض + المنطقة الشرقية</span></div>
+    <div class="ph"><span class="num">4</span><span class="stage">PHASE 04 · شهر 10–12</span><span class="place">المملكة كاملة</span></div>
+    <div class="ph"><span class="num">5</span><span class="stage">PHASE 05 · السنة الثانية</span><span class="place">الإمارات + الكويت + البحرين</span></div>
+  </div>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 9 · COMPETITIVE EDGE ═══════ -->
+<section class="page" data-screen-label="09 الميزة التنافسية">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">Competitive Advantage · 09</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 08</span>
+    <h2>الميزة التنافسية</h2>
+    <span class="lede">لماذا لوما، ولا غيرها؟ — تخصّصٌ كامل، دخولٌ مبكر، ونموذجٌ مالي مزدوج.</span>
+  </div>
+  <ul class="lux">
+    <li><span class="mk">◆</span><span><b>التخصّص الكامل:</b> مبنية حصراً لهذا القطاع — لا حلول وسطى ولا تسوية.</span></li>
+    <li><span class="mk">◆</span><span><b>السوق الخليجي:</b> واجهة عربية كاملة + توافق ثقافي أصيل.</span></li>
+    <li><span class="mk">◆</span><span><b>الموقع التنافسي:</b> لا منافس مباشر بنفس التخصص في السعودية.</span></li>
+    <li><span class="mk">◆</span><span><b>الدخول المبكر:</b> أفضلية المبادر (First Mover) في سوق ناضج للرقمنة.</span></li>
+    <li><span class="mk">◆</span><span><b>نموذج الإيراد المزدوج:</b> اشتراك + عمولة = تدفق نقدي مستقر.</span></li>
+    <li><span class="mk">◆</span><span><b>التكنولوجيا:</b> AI + تحليلات + أتمتة — مزايا لا توفّرها المنافسة العالمية محلياً.</span></li>
+    <li><span class="mk">◆</span><span><b>الشراكة المحلية:</b> تكامل مع mada + Moyasar + واتساب.</span></li>
+  </ul>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 10 · PARTNERSHIP ═══════ -->
+<section class="page" data-screen-label="10 فرص الشراكة">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">Partnership Opportunities · 10</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 09</span>
+    <h2>فرص الشراكة</h2>
+    <span class="lede">أربعة مسارات شراكةٍ واضحة — لكل شريكٍ دورٌ محدد وعائدٌ متبادل.</span>
+  </div>
+  <div class="pcards">
+    <div class="pcard">
+      <div class="h"><span class="d">◆</span> الشريك التشغيلي</div>
+      <div class="block"><span class="lbl">نبحث عن</span><span class="txt">إدارة علاقات المشتركات + دعم الإطلاق</span></div>
+      <div class="block"><span class="lbl">نقدّم</span><span class="txt">نسبة من الإيراد + لقب رسمي + حصة في النمو</span></div>
+    </div>
+    <div class="pcard">
+      <div class="h"><span class="d">◆</span> الشريك التسويقي</div>
+      <div class="block"><span class="lbl">نبحث عن</span><span class="txt">بناء الحضور الرقمي + إدارة الحملات + جذب المشتركات</span></div>
+      <div class="block"><span class="lbl">نقدّم</span><span class="txt">نسبة من الإيراد + حوافز على النمو + لقب رسمي</span></div>
+    </div>
+    <div class="pcard">
+      <div class="h"><span class="d">◆</span> المستثمر / المموّل</div>
+      <div class="block"><span class="lbl">نبحث عن</span><span class="txt">تمويل لمرحلة التوسّع الجغرافي</span></div>
+      <div class="block"><span class="lbl">نقدّم</span><span class="txt">حصة في الشركة + عائد على الاستثمار + تقارير دورية · الاستخدام: تسويق + فريق + بنية تحتية</span></div>
+    </div>
+    <div class="pcard">
+      <div class="h"><span class="d">◆</span> الحاضنة / الجهة الحكومية</div>
+      <div class="block"><span class="lbl">نبحث عن</span><span class="txt">دعم + تمويل + اعتراف رسمي</span></div>
+      <div class="block"><span class="lbl">نقدّم</span><span class="txt">قصة نجاح محلية + بيانات قطاع حقيقية + توافق مع رؤية 2030</span></div>
+    </div>
+  </div>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 11 · COMPLIANCE ═══════ -->
+<section class="page" data-screen-label="11 الامتثال">
+  <div class="rh"><span class="bw">LUMA</span><span class="sec">Compliance & Readiness · 11</span></div>
+  <div class="ptitle">
+    <span class="idx">§ 10</span>
+    <h2>الامتثال والجاهزية القانونية</h2>
+    <span class="lede">جاهزيةٌ نظامية كاملة — توثيقٌ قانوني وحمايةٌ للبيانات متوافقة مع الأنظمة المحلية.</span>
+  </div>
+  <ul class="check">
+    <li><span class="ck">✓</span><span><b>السجل التجاري:</b> مفعّل ومجدّد — قمة كود.</span></li>
+    <li><span class="ck">✓</span><span><b>الحساب البنكي:</b> رسمي ومفعّل.</span></li>
+    <li><span class="ck">✓</span><span><b>عقود المشتركات:</b> قانونية + توقيع رقمي.</span></li>
+    <li><span class="ck">✓</span><span><b>سياسة الخصوصية:</b> متوافقة مع نظام حماية البيانات الشخصية (PDPL).</span></li>
+    <li><span class="ck">✓</span><span><b>KYC:</b> التحقّق من هوية المشتركات قبل التفعيل.</span></li>
+    <li><span class="ck">✓</span><span><b>الشروط والأحكام:</b> موثّقة ومراجَعة قانونياً.</span></li>
+  </ul>
+  <div class="rf"><span>جميع الحقوق محفوظة لشركة قمة كود</span></div>
+</section>
+
+<!-- ═══════ PAGE 12 · CLOSING ═══════ -->
+<section class="page closing" data-screen-label="12 الختام">
+  <div class="word gold-fill wm">LUMA</div>
+  <div class="big">لوما — <span class="gold">حيث تبدأ المهنية الحقيقية</span></div>
+  <div class="para">نحن لا نبني تطبيقاً، بل نبني منظومة تمكينٍ للاقتصاد الإبداعي السعودي.</div>
+  <div class="contact">بيانات التواصل: <b>[ تُملأ قبل الإرسال ]</b></div>
+  <div class="conf">هذا الملف سري ومُعدّ خصيصاً للشركاء المعتمدين · LUMA × قمة كود</div>
+</section>
+
+<script src="luma-theme.js"></script>
+</body>
+</html>

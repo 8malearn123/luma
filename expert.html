@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0C0B0E"/>
+<script src="luma-store.js"></script>
+<link rel="stylesheet" href="luma-core.css"/>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LUMA — داشبورد الخبيرة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#131217; --surface:#18171d; --surface2:#1b1a21; --surface3:#201f26;
+    --gold:#9c8047; --gold-light:#ccab64; --gold-bright:#dbbd81; --gold-pale:#e6ce95; --gold-deep:#846a38;
+    --white:#f6f2ec; --cream:#ece6da; --muted:#86818d; --muted-deep:#58545f;
+    --line:#26242d; --line-soft:#1e1d24;
+    --green:#6fa86a; --green-bg:rgba(111,168,106,0.12);
+    --red:#c2705f; --blue:#6f93b8;
+    --sidebar-w:268px;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:'Bodoni Moda',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.14em;direction:ltr;}
+  .num{font-family:'Bodoni Moda',serif;font-weight:500;direction:ltr;}
+  .gold-fill{background:linear-gradient(120deg,#dbbd81,#ccab64 35%,#9c8047);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  ::selection{background:var(--gold);color:#131217;}
+  a{color:inherit;text-decoration:none;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:6px;border:2px solid var(--bg);}
+  ::-webkit-scrollbar-thumb:hover{background:var(--gold-deep);}
+
+  .app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;}
+
+  /* ── SIDEBAR ── */
+  .sidebar{background:linear-gradient(190deg,#1c160f,#140f0a);border-left:1px solid var(--line);height:100vh;position:sticky;top:0;display:flex;flex-direction:column;overflow:hidden;}
+  .sb-head{padding:26px 24px 22px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;text-align:center;}
+  .sb-head .brand{font-family:'Bodoni Moda',serif;font-weight:500;font-size:26px;letter-spacing:0.28em;color:var(--gold-light);direction:ltr;}
+  .sb-head .badge{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:var(--gold-pale);border:0.5px solid var(--gold-deep);border-radius:20px;padding:4px 9px;direction:ltr;}
+  .sb-nav{flex:1;overflow-y:auto;padding:14px 14px 20px;}
+  .sb-nav::-webkit-scrollbar{width:5px;}
+  .sb-group{margin-top:18px;}
+  .sb-group:first-child{margin-top:6px;}
+  .sb-group .gt{font-size:11px;font-weight:500;color:var(--muted-deep);letter-spacing:0.04em;padding:0 12px 8px;}
+  .nav-item{display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:9px;cursor:pointer;color:var(--cream);font-size:14.5px;font-weight:300;transition:background .2s,color .2s;position:relative;margin-bottom:2px;}
+  .nav-item .ico{width:20px;height:20px;flex-shrink:0;color:var(--muted);transition:color .2s;display:flex;align-items:center;justify-content:center;}
+  .nav-item .lbl{flex:1;}
+  .nav-item .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-light);opacity:0;transition:opacity .2s;}
+  .nav-item:hover{background:var(--surface);color:var(--white);}
+  .nav-item:hover .ico{color:var(--gold-pale);}
+  .nav-item.active{background:linear-gradient(100deg,rgba(156,124,58,0.18),rgba(156,124,58,0.05));color:var(--gold-light);font-weight:500;}
+  .nav-item.active .ico{color:var(--gold-light);}
+  .nav-item.active .dot{opacity:1;}
+  .nav-item.active::before{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gold-light);border-radius:3px;}
+  .sb-foot{padding:14px;border-top:1px solid var(--line-soft);}
+  .tier-card{background:linear-gradient(135deg,var(--surface2),var(--surface));border:0.5px solid var(--gold-deep);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;}
+  .tier-card .ti{flex:1;}
+  .tier-card .ti .t1{font-size:11px;color:var(--muted);}
+  .tier-card .ti .t2{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:17px;color:var(--white);}
+  .tier-card .up{font-size:11px;color:var(--gold-light);border:0.5px solid var(--gold-deep);border-radius:20px;padding:6px 12px;white-space:nowrap;cursor:pointer;transition:all .25s;}
+  .tier-card .up:hover{background:var(--gold-light);color:#131217;}
+
+  /* ── MAIN ── */
+  .main{min-width:0;display:flex;flex-direction:column;}
+  .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:20px;padding:16px 34px;background:rgba(23,18,13,0.82);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);}
+  .topbar .pg{display:flex;flex-direction:column;gap:1px;}
+  .topbar .pg .crumb{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:var(--gold);direction:ltr;text-transform:uppercase;}
+  .topbar .pg h1{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:21px;color:var(--white);}
+  .topbar .search{margin-right:auto;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 15px;width:300px;max-width:34vw;transition:border-color .25s;}
+  .topbar .search:focus-within{border-color:var(--gold-deep);}
+  .topbar .search input{flex:1;background:none;border:none;outline:none;color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13.5px;padding:11px 0;}
+  .topbar .search input::placeholder{color:var(--muted-deep);}
+  .topbar .ic-btn{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--gold-pale);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;position:relative;}
+  .topbar .ic-btn:hover{border-color:var(--gold-deep);color:var(--gold-light);}
+  .topbar .ic-btn .pip{position:absolute;top:9px;left:11px;width:7px;height:7px;border-radius:50%;background:var(--gold-light);border:1.5px solid var(--surface);}
+  .topbar .me{display:flex;align-items:center;gap:11px;padding-right:6px;cursor:pointer;}
+  .topbar .me .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:20px;color:var(--gold-light);}
+  .topbar .me .nm{display:flex;flex-direction:column;gap:0;}
+  .topbar .me .nm b{font-size:13.5px;font-weight:600;color:var(--white);}
+  .topbar .me .nm span{font-size:11px;color:var(--muted);}
+  @media(max-width:1080px){.topbar .me .nm,.topbar .search{display:none;}.topbar .search{display:none;}}
+
+  .screen{padding:34px;max-width:1500px;width:100%;}
+
+  /* ── shared components (used by screen modules) ── */
+  .sec-label{display:flex;align-items:center;gap:12px;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:0.02em;margin-bottom:18px;}
+  .sec-label .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);}
+  .sec-label .more{font-size:12px;font-weight:400;color:var(--muted);cursor:pointer;}
+  .sec-label .more:hover{color:var(--gold-light);}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;}
+  .card.pad0{padding:0;overflow:hidden;}
+
+  .stat{position:relative;background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;overflow:hidden;transition:border-color .3s,transform .3s;}
+  .stat:hover{border-color:var(--gold-deep);transform:translateY(-3px);}
+  .stat .glow{position:absolute;top:-40%;left:-10%;width:55%;height:80%;background:radial-gradient(ellipse,rgba(156,124,58,0.14),transparent 70%);pointer-events:none;}
+  .stat .top{display:flex;align-items:center;justify-content:space-between;position:relative;}
+  .stat .top .ico{width:40px;height:40px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
+  .stat .top .delta{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 9px;border-radius:20px;direction:ltr;display:flex;align-items:center;gap:4px;}
+  .stat .delta.up{color:var(--green);background:var(--green-bg);}
+  .stat .delta.down{color:var(--red);background:rgba(194,112,95,0.12);}
+  .stat .val{font-family:'Bodoni Moda',serif;font-weight:500;font-size:42px;color:var(--white);direction:ltr;line-height:1;margin-top:18px;display:flex;align-items:baseline;gap:7px;}
+  .stat .val .u{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;color:var(--muted);font-weight:300;}
+  .stat .k{font-size:13.5px;color:var(--gold-pale);margin-top:8px;}
+
+  .badge{font-size:11.5px;padding:5px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+  .badge.gold{color:var(--gold-light);background:rgba(156,124,58,0.14);border:0.5px solid var(--gold-deep);}
+  .badge.green{color:var(--green);background:var(--green-bg);}
+  .badge.soft{color:var(--muted);background:var(--surface3);}
+
+  .btn{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:500;font-size:13.5px;padding:11px 22px;border-radius:9px;cursor:pointer;border:none;transition:all .25s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;}
+  .btn-gold{background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);color:#131217;}
+  .btn-gold:hover{filter:brightness(1.07);}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--cream);}
+  .btn-ghost:hover{border-color:var(--gold-deep);color:var(--gold-light);}
+
+  .empty-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:90px 20px;gap:18px;}
+  .empty-screen .ico{width:74px;height:74px;border-radius:50%;border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);}
+  .empty-screen h3{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:22px;color:var(--white);}
+  .empty-screen p{font-size:14px;color:var(--muted);max-width:42ch;line-height:1.8;}
+
+  .fade-in{animation:fade .5s ease both;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  @media(prefers-reduced-motion:reduce){.fade-in{animation:none;}}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-head">
+      <a class="brand" href="index.html" title="العودة للرئيسية" style="text-decoration:none;cursor:pointer">LUMA</a>
+    </div>
+    <nav class="sb-nav" id="sb-nav"></nav>
+    <div class="sb-foot">
+      <div class="tier-card">
+        <div class="ti"><div class="t1">باقتك الحالية</div><div class="t2">وَهَج</div></div>
+        <div class="up" onclick="LUMA.go('advanced')">ترقية ↑</div>
+      </div>
+      <a href="login.html" title="تسجيل الخروج" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;color:var(--gold-pale);font-size:13px;border:1px solid var(--line);border-radius:10px;padding:10px;text-decoration:none" onmouseover="this.style.borderColor='var(--gold-deep)';this.style.color='var(--gold-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--gold-pale)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="pg"><span class="crumb" id="tb-crumb">DASHBOARD</span><h1 id="tb-title">نظرة عامة</h1></div>
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--gold)"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input placeholder="ابحثي عن حجز، عميلة، خدمة…" />
+      </div>
+      <button class="ic-btn" title="الإشعارات"><span class="pip"></span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></button>
+      <div class="me">
+        <div class="av">ر</div>
+        <div class="nm"><b>رهف العتيبي</b><span>خبيرة مكياج · جدة</span></div>
+      </div>
+    </header>
+    <div class="screen fade-in" id="screen"></div>
+  </div>
+</div>
+
+<script>
+/* ── ICONS ── */
+const IC = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  calendar:'<rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+  users:'<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.2a3.4 3.4 0 010 6M21.5 20a6.5 6.5 0 00-4-6"/>',
+  star:'<path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 16l-5-5L5 21"/>',
+  services:'<path d="M4 7h16M4 7l1.5 13h13L20 7M4 7l2-4h12l2 4M9 11v5M15 11v5"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16 14h2"/>',
+  chart:'<path d="M4 20V4M4 20h16"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/>',
+  loyalty:'<path d="M12 2l2 4 4 1-3 3 .6 4.4L12 16l-3.6 2.4L9 14 6 11l4-1z"/><path d="M5 21l2-3M19 21l-2-3"/>',
+  affiliate:'<circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="6" r="2.6"/><circle cx="18" cy="18" r="2.6"/><path d="M8.3 10.8l7.4-3.6M8.3 13.2l7.4 3.6"/>',
+  tools:'<path d="M14.5 5.5a3.5 3.5 0 00-4.6 4.6l-6 6 2 2 6-6a3.5 3.5 0 004.6-4.6l-2.2 2.2-1.8-.4-.4-1.8z"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+};
+function icon(name,size=20){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${IC[name]||''}</svg>`;}
+
+/* ── NAV CONFIG ── */
+const NAV = [
+  {group:'الرئيسية', items:[
+    {id:'overview', label:'نظرة عامة', icon:'grid', crumb:'DASHBOARD'},
+  ]},
+  {group:'العمل اليومي', items:[
+    {id:'bookings', label:'الحجوزات', icon:'calendar', crumb:'DAILY'},
+    {id:'clients', label:'العملاء', icon:'users', crumb:'DAILY'},
+    {id:'reviews', label:'التقييمات', icon:'star', crumb:'DAILY'},
+  ]},
+  {group:'حضورك على لوما', items:[
+    {id:'profile', label:'ملفي الشخصي', icon:'user', crumb:'PRESENCE'},
+    {id:'site', label:'موقعي التعريفي', icon:'globe', crumb:'PRESENCE'},
+    {id:'portfolio', label:'معرض الأعمال', icon:'image', crumb:'PRESENCE'},
+    {id:'myservices', label:'خدماتي', icon:'services', crumb:'PRESENCE'},
+  ]},
+  {group:'النمو والمال', items:[
+    {id:'earnings', label:'الأرباح', icon:'wallet', crumb:'GROWTH'},
+    {id:'analytics', label:'التحليلات', icon:'chart', crumb:'GROWTH'},
+    {id:'loyalty', label:'برنامج الولاء', icon:'loyalty', crumb:'GROWTH'},
+    {id:'affiliate', label:'تسويق بالعمولة', icon:'affiliate', crumb:'GROWTH'},
+  ]},
+  {group:'متقدّم', items:[
+    {id:'advanced', label:'أدوات احترافية', icon:'tools', crumb:'ADVANCED'},
+    {id:'sync', label:'الاعتماد والمزامنة', icon:'shield', crumb:'ADVANCED'},
+  ]},
+];
+const NAV_FLAT = {}; NAV.forEach(g=>g.items.forEach(it=>NAV_FLAT[it.id]=it));
+
+/* ── render sidebar ── */
+document.getElementById('sb-nav').innerHTML = NAV.map(g=>`
+  <div class="sb-group">
+    <div class="gt">${g.group}</div>
+    ${g.items.map(it=>`<div class="nav-item" data-id="${it.id}" onclick="LUMA.go('${it.id}')">
+      <span class="ico">${icon(it.icon)}</span><span class="lbl">${it.label}</span><span class="dot"></span>
+    </div>`).join('')}
+  </div>`).join('');
+
+/* ── ROUTER ── */
+window.LUMA_SCREENS = window.LUMA_SCREENS || {};
+const LUMA = {
+  current:null,
+  go(id){
+    const it = NAV_FLAT[id]; if(!it) return;
+    this.current = id;
+    location.hash = id;
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.id===id));
+    document.getElementById('tb-crumb').textContent = it.crumb;
+    document.getElementById('tb-title').textContent = it.label;
+    const host = document.getElementById('screen');
+    const scr = window.LUMA_SCREENS[id];
+    host.classList.remove('fade-in'); void host.offsetWidth; host.classList.add('fade-in');
+    if(scr){ host.innerHTML = scr.render ? scr.render() : ''; if(scr.init) scr.init(host); }
+    else { host.innerHTML = `<div class="empty-screen"><div class="ico">${icon(it.icon,30)}</div><h3>${it.label}</h3><p>هذه الشاشة قيد البناء ضمن المراحل القادمة من النموذج. القائمة والتنقل يعملان بالكامل.</p></div>`; }
+    document.querySelector('.main').scrollTop = 0;
+    window.scrollTo({top:0});
+  }
+};
+window.LUMA = LUMA;
+window.icon = icon;
+addEventListener('DOMContentLoaded',()=>{
+  const start = (location.hash||'').replace('#','') || 'overview';
+  LUMA.go(NAV_FLAT[start] ? start : 'overview');
+});
+</script>
+<script src="dash-overview.js"></script>
+<script src="dash-daily.js"></script>
+<script src="dash-presence.js"></script>
+<script src="dash-growth.js"></script>
+<script src="dash-advanced.js"></script>
+<script src="dash-site.js"></script>
+<script>if(window.LUMA && window.LUMA.current===null){const s=(location.hash||'').replace('#','')||'overview';LUMA.go(NAV_FLAT[s]?s:'overview');}</script>
+<script src="luma-ui.js"></script>
+<script src="luma-theme.js"></script>
+</body>
+</html>

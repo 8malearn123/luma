@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0C0B0E"/>
+<script src="luma-store.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>LUMA — احجزي موعدك</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -75,7 +78,7 @@ const THEMES={
   'rose-velvet':{bg:'#1a0e12',card:'#241318',ac:'#e08a9b',tx:'#f8eef1'},
   'minimal-emerald':{bg:'#0a1413',card:'#12201e',ac:'#8fd0c0',tx:'#eef6f4'},
 };
-const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}};
+const load=(k,f)=>LumaStore.get(k,f);
 const CFG={slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',...load('luma_page_cfg',{})};
 const T=THEMES[CFG.theme]||THEMES['dark-luxury'];
 const rt=document.documentElement.style;
@@ -212,13 +215,11 @@ window.pickDate=i=>{date=days[i].iso;time='';render();};
 window.pickTime=t=>{time=t;render();};
 window.confirmBooking=()=>{
   const rec={staff:staff.id,staffName:staff.n,client:'حجز أونلاين',service:svc.n,price:svc.p,date,time,at:new Date().toISOString()};
-  BOOKED.push(rec);try{localStorage.setItem('luma_public_bookings',JSON.stringify(BOOKED));}catch(e){}
+  BOOKED.push(rec);LumaStore.set('luma_public_bookings',BOOKED);
   /* الحجز بتاريخ اليوم يظهر مباشرة على لوحة حجوزات الصالون */
   if(date===days[0].iso){
     try{
-      const appts=JSON.parse(localStorage.getItem('luma_salon_appts'))||[];
-      appts.push({id:Date.now(),staff:staff.id,start:(parseInt(time)-10)*2,dur:Math.max(1,Math.round(svc.d/30)),client:'حجز أونلاين — '+svc.n.split(' ')[0],service:svc.n,st:'pending',custom:true});
-      localStorage.setItem('luma_salon_appts',JSON.stringify(appts));
+      LumaStore.update('luma_salon_appts',a=>{a.push({id:Date.now(),staff:staff.id,start:(parseInt(time)-10)*2,dur:Math.max(1,Math.round(svc.d/30)),client:'حجز أونلاين — '+svc.n.split(' ')[0],service:svc.n,st:'pending',custom:true});return a;},[]);
     }catch(e){}
   }
   step=5;render();

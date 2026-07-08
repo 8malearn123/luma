@@ -1,0 +1,41 @@
+/* ===== LUMA Core — نظام التصميم المشترك =====
+   المصدر الكنسي لمتغيرات الهوية ومكونات الداشبوردات المشتركة.
+   يُحمَّل قبل أنماط كل صفحة؛ أنماط الصفحة تكسب عند الاختلاف، لذا
+   إدراجه لا يغيّر أي مظهر قائم — لكنه المرجع الواحد لأي تعديل هوية
+   قادم ولأي صفحة/مكوّن جديد. (ألوان الوضع الفاتح تُدار في luma-theme.js) */
+
+:root{
+  /* Eclipse — Black & Gold (الهوية الأساسية) */
+  --bg:#131217; --bg2:#0C0B0E;
+  --surface:#18171d; --surface2:#1b1a21; --surface3:#201f26;
+  --panel:#141319; --panel2:#19181e; --panel3:#1b1a21;
+  --gold:#9c8047; --gold-light:#ccab64; --gold-bright:#dbbd81;
+  --gold-pale:#e6ce95; --gold-deep:#846a38;
+  --white:#f6f2ec; --cream:#ece6da;
+  --muted:#86818d; --muted-deep:#58545f;
+  --line:#26242d; --line-soft:#1e1d24;
+  --green:#6fa86a; --green-bg:rgba(111,168,106,0.12);
+  --red:#c2705f; --red-bg:rgba(194,112,95,0.12);
+  --rose:#d98a93; --blue:#6f93b8;
+  --font-ar:'IBM Plex Sans Arabic','Cairo',sans-serif;
+  --font-display:'Bodoni Moda',serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+
+/* ── مكونات الداشبورد المشتركة (قاعدة موحدة قابلة للتجاوز) ── */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 11px;border-radius:30px;border:1px solid var(--line);color:var(--cream);background:var(--surface3);}
+.badge.gold{background:rgba(205,172,80,.14);border-color:var(--gold-deep);color:var(--gold-light);}
+.badge.green{background:var(--green-bg);border-color:rgba(111,168,106,.4);color:#9fce99;}
+.badge.soft{background:var(--surface3);border-color:var(--line);color:var(--muted);}
+
+.btn{font-family:var(--font-ar);font-weight:600;font-size:13.5px;padding:10px 20px;border-radius:9px;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
+.btn-gold{background:linear-gradient(120deg,var(--gold-bright),var(--gold-light) 45%,var(--gold));color:#131217;}
+.btn-gold:hover{filter:brightness(1.07);}
+.btn-ghost{background:transparent;border:1px solid var(--gold-deep);color:var(--gold-light);}
+.btn-ghost:hover{background:rgba(156,124,58,.12);}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;}
+.sec-label{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--gold);font-weight:700;margin:4px 0 14px;}
+.sec-label .ln{flex:1;height:1px;background:var(--line);}
+.sec-label .more{font-size:12px;color:var(--gold-pale);cursor:pointer;font-weight:400;}
+.sec-label .more:hover{color:var(--gold-light);}
