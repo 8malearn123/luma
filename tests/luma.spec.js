@@ -70,6 +70,27 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('نوع الخط وشريط الترحيب من المحرر إلى صفحة الحجز', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  // اختيار خط «أميري» + كتابة رسالة ترحيب
+  await page.locator('.font-chip', { hasText: 'أميري' }).click();
+  await page.waitForTimeout(500);
+  await page.fill('#wbIn', '🌸 أهلاً بك! خصم 10٪ على أول حجز بكود LUMA10');
+  await page.waitForTimeout(400);
+  // صفحة الحجز: الخط مطبق والشريط ظاهر
+  await page.goto('/booking.html');
+  await page.waitForTimeout(600);
+  expect(await page.evaluate(() => document.body.style.fontFamily)).toContain('Amiri');
+  await expect(page.locator('.wbar')).toContainText('أهلاً بك! خصم 10٪');
+  // الإغلاق يخفيه لبقية الجلسة
+  await page.click('.wbar .wx');
+  await expect(page.locator('.wbar')).toHaveCount(0);
+  await page.reload();
+  await page.waitForTimeout(500);
+  await expect(page.locator('.wbar')).toHaveCount(0);
+});
+
 test('سياسة الحجز والخدمات المميزة تظهر في صفحة الحجز', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);

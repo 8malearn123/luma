@@ -17,8 +17,27 @@ function pageThemeOf(c){
   return PAGE_PRESETS.find(p=>p.k===c.theme)||PAGE_PRESETS[0];
 }
 const PAGE_POLICY_DEFAULT='الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.';
-const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},...hrLoad(PAGE_KEY,{})});
+const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',...hrLoad(PAGE_KEY,{})});
 const PAGE_BADGES=['الأكثر طلباً','جديدة','عرض خاص','اختيار الخبيرات'];
+/* خطوط عربية لصفحة الحجز — [مفتاح، الاسم، عائلة CSS، استعلام Google Fonts] */
+const PAGE_FONTS=[
+  ['plex','بلكس عربي — الافتراضي',"'IBM Plex Sans Arabic',sans-serif",'IBM+Plex+Sans+Arabic:wght@300;400;500;700'],
+  ['cairo','القاهرة',"'Cairo',sans-serif",'Cairo:wght@300;400;600;700'],
+  ['tajawal','تجوَل',"'Tajawal',sans-serif",'Tajawal:wght@300;400;500;700'],
+  ['almarai','المراعي',"'Almarai',sans-serif",'Almarai:wght@300;400;700'],
+  ['noto-kufi','نوتو كوفي',"'Noto Kufi Arabic',sans-serif",'Noto+Kufi+Arabic:wght@300;400;600'],
+  ['messiri','المسيري',"'El Messiri',sans-serif",'El+Messiri:wght@400;600'],
+  ['amiri','أميري — كلاسيكي',"'Amiri',serif",'Amiri:wght@400;700'],
+  ['changa','تشانغا',"'Changa',sans-serif",'Changa:wght@300;400;600'],
+];
+/* تحميل الخطوط للمعاينة داخل المحرر — غير حاجب حتى لا يجمّد الصفحة */
+(function(){
+  const q=PAGE_FONTS.map(f=>'family='+f[3]).join('&');
+  const l=document.createElement('link');l.rel='stylesheet';l.media='print';
+  l.href='https://fonts.googleapis.com/css2?'+q+'&display=swap';
+  l.onload=function(){this.media='all';};
+  document.head.appendChild(l);
+})();
 /* معرّف يوتيوب من أي شكل رابط (watch / youtu.be / shorts / embed) */
 const ytIdOf=u=>{const m=String(u||'').match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);return m?m[1]:null;};
 const isVideoUrl=u=>!!ytIdOf(u)||/\.(mp4|webm|mov)(\?|$)/i.test(String(u||''));
@@ -48,6 +67,7 @@ const PAGE={
     const badge=document.getElementById('thBadge');if(badge)badge.style.display='inline-block';
   },
   preset(k){PAGE.save({theme:k,themeCustom:null},true);SALON.go('page');LUX.toast('طُبّق قالب البداية — عدّلي ألوانه كما تحبين','ok');},
+  setFont(k){PAGE.save({font:k},true);SALON.go('page');LUX.toast('تغيّر خط الصفحة ✓','ok');},
   resetTheme(){PAGE.save({theme:'dark-luxury',themeCustom:null},true);SALON.go('page');LUX.toast('عاد المظهر للافتراضي','ok');},
   /* ── الشعار والغلاف: رفع من الجهاز (مضغوط) أو رابط ── */
   imgUpload(key,inp){
@@ -213,7 +233,21 @@ SCREENS.page=()=>{
           <input type="range" min="0" max="28" value="${t.rad!=null?t.rad:18}" onchange="PAGE.setRad(this.value)" style="flex:1;accent-color:var(--gold-light)"/>
           <span id="radV" class="num" style="font-size:13px;color:var(--gold-light);width:44px;text-align:left" dir="ltr">${t.rad!=null?t.rad:18}px</span>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+        <div style="margin-top:16px">
+          <div style="font-size:12.5px;color:var(--gold-pale);margin-bottom:9px">نوع الخط</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
+            ${PAGE_FONTS.map(([k,lb,fam])=>`
+            <button class="font-chip" onclick="PAGE.setFont('${k}')" style="font-family:${fam.replace(/"/g,'&quot;')};background:var(--surface2);border:1.5px solid ${(c.font||'plex')===k?'var(--gold-light)':'var(--line)'};border-radius:11px;padding:10px 6px;cursor:pointer;text-align:center;color:var(--white)">
+              <span style="display:block;font-size:17px;line-height:1.5">أهلاً بك 🌸</span>
+              <span style="display:block;font-size:9.5px;color:${(c.font||'plex')===k?'var(--gold-light)':'var(--muted)'};margin-top:4px">${lb}</span>
+            </button>`).join('')}
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <div style="font-size:12.5px;color:var(--gold-pale);margin-bottom:7px">شريط رسالة الترحيب <span style="font-size:10px;color:var(--muted)">— اختياري، يظهر أعلى الصفحة أول ما تفتحها العميلة</span></div>
+          <input id="wbIn" value="${(c.welcome||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('welcome',this)" placeholder="مثال: 🌸 أهلاً بك! خصم 10٪ على أول حجز بكود LUMA10 — اتركيه فارغاً للإخفاء" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
           <span style="font-size:11px;color:var(--muted)">كل تغيير يُحفظ فوراً وينعكس على المعاينة والفاتورة</span>
           <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px" onclick="PAGE.resetTheme()">استعادة الافتراضي</button>
         </div>`;})()}
