@@ -30,17 +30,16 @@ SCREENS.clients=()=>{
   </div>`;
 };
 
-/* ── SERVICES ── */
+/* ── SERVICES (كتالوج حي — يغذي الحجز والأسعار والتقارير) ── */
 SCREENS.services=()=>{
-  const GROUPS=[
-    {g:'مكياج',items:[['مكياج عروس كامل','١٢٠ د','850','أمل'],['مكياج سهرة','٦٠ د','350','أمل'],['مكياج ناعم','٤٥ د','250','أمل']]},
-    {g:'شعر',items:[['صبغة كاملة','١٢٠ د','550','سارة'],['قص وتصفيف','٤٥ د','200','سارة'],['كيراتين','١٨٠ د','700','سارة']]},
-    {g:'بشرة',items:[['هيدرافيشل','٧٥ د','480','نورة'],['تنظيف عميق','٦٠ د','320','نورة']]},
-    {g:'أظافر',items:[['منيكير جل','٦٠ د','160','ريم'],['تركيب أظافر','٩٠ د','220','ريم']]},
-  ];
+  const cats=[...new Set(SVC_CATALOG.map(s=>s[3]||'أخرى'))];
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">خدمات الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">١١ خدمة عبر ٤ أقسام</div></div><button class="btn btn-gold">+ خدمة جديدة</button></div>
-  ${GROUPS.map(gr=>`<div class="sec-label">${gr.g} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${gr.items.map(s=>`<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px"><div style="width:42px;height:42px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div><div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]} · تُقدّم بواسطة ${s[3]}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div><button class="btn btn-ghost" style="padding:8px 14px">تحرير</button></div>`).join('')}</div>`).join('')}`;
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">خدمات الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${SVC_CATALOG.length} خدمة عبر ${cats.length} أقسام — كل تعديل ينعكس فوراً على الحجز والفواتير والتقارير</div></div><button class="btn btn-gold" onclick="SALON.svcForm()">+ خدمة جديدة</button></div>
+  ${cats.map(cat=>{
+    const items=SVC_CATALOG.filter(s=>(s[3]||'أخرى')===cat);
+    const by=(STAFF.find(x=>x.role===cat)||{}).n;
+    return `<div class="sec-label">${cat} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${items.map(s=>`<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px"><div style="width:42px;height:42px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div><div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]*30} دقيقة${by?` · تُقدّم بواسطة ${by}`:''}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div><button class="btn btn-ghost" style="padding:8px 14px" onclick="SALON.svcForm('${s[0].replace(/'/g,"\\'")}')">تحرير</button></div>`).join('')}</div>`;
+  }).join('')}`;
 };
 
 /* ── PRODUCTS (retail — products being sold) ── */
@@ -508,6 +507,44 @@ const SALON={
       </div>`,{onMount(ov,close){
       ov.querySelector('[data-c]').onclick=close;
       ov.querySelector('[data-pr]').onclick=()=>SALON.printInvoice(id);
+    }});
+  },
+  /* إضافة / تحرير / حذف خدمة من الكتالوج */
+  svcForm(editName){
+    const s=editName?SVC_CATALOG.find(x=>x[0]===editName):null;
+    const cats=[...new Set(SVC_CATALOG.map(x=>x[3]||'أخرى'))];
+    const DURS=[[1,'30 دقيقة'],[2,'60 دقيقة'],[3,'90 دقيقة'],[4,'120 دقيقة'],[5,'150 دقيقة'],[6,'180 دقيقة']];
+    LUX.modal(s?'تحرير خدمة':'خدمة جديدة',`
+      <div class="lux-f"><label>اسم الخدمة</label><input id="svN" value="${s?s[0]:''}" placeholder="مثال: باديكير سبا"/></div>
+      <div style="display:flex;gap:10px">
+        <div class="lux-f" style="flex:1"><label>السعر (ر.س)</label><input id="svP" type="number" min="0" value="${s?s[2]:''}" dir="ltr" style="text-align:right"/></div>
+        <div class="lux-f" style="flex:1"><label>المدة</label><select id="svD">${DURS.map(([v,l])=>`<option value="${v}" ${s&&s[1]===v?'selected':''}>${l}</option>`).join('')}</select></div>
+      </div>
+      <div class="lux-f"><label>القسم</label>
+        <div class="lux-chips" id="svC">${cats.map((c,i)=>`<button type="button" class="lux-chip ${s?(s[3]===c?'on':''):(i===0?'on':'')}" data-v="${c}">${c}</button>`).join('')}</div>
+        <input id="svCX" placeholder="أو قسم جديد…" style="margin-top:7px"/></div>
+      <div class="lux-foot" style="margin-top:14px">
+        ${s?'<button class="lux-btn lux-ghost" data-del style="flex:1;border-color:#7c4a55;color:#e29aa6">حذف الخدمة</button>':''}
+        <button class="lux-btn lux-gold" data-ok style="flex:1.6">${s?'حفظ التعديلات':'إضافة الخدمة'}</button>
+      </div>`,{onMount(ov,close){
+      ov.querySelectorAll('#svC .lux-chip').forEach(c=>c.onclick=()=>{ov.querySelectorAll('#svC .lux-chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');ov.querySelector('#svCX').value='';});
+      const del=ov.querySelector('[data-del]');
+      if(del)del.onclick=()=>{
+        const i=SVC_CATALOG.findIndex(x=>x[0]===editName);
+        if(i>-1){SVC_CATALOG.splice(i,1);saveSvcCatalog();}
+        close();SALON.go('services');LUX.toast('حُذفت خدمة «'+editName+'»','ok');};
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const n=ov.querySelector('#svN').value.trim();
+        const p=parseFloat(ov.querySelector('#svP').value);
+        if(!n){ov.querySelector('#svN').focus();return;}
+        if(!(p>0)){ov.querySelector('#svP').focus();return;}
+        const dur=parseInt(ov.querySelector('#svD').value)||2;
+        const cat=ov.querySelector('#svCX').value.trim()||(ov.querySelector('#svC .lux-chip.on')||{dataset:{}}).dataset.v||'أخرى';
+        if(!s&&SVC_CATALOG.some(x=>x[0]===n)){LUX.toast('توجد خدمة بهذا الاسم','warn');return;}
+        if(s){s[0]=n;s[1]=dur;s[2]=p;s[3]=cat;}
+        else SVC_CATALOG.push([n,dur,p,cat]);
+        saveSvcCatalog();close();SALON.go('services');
+        LUX.toast(s?'حُدّثت الخدمة ✓':'أُضيفت خدمة «'+n+'» ✓ — أصبحت متاحة في الحجز','ok');};
     }});
   },
   printInvoice(id){
