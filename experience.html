@@ -176,6 +176,9 @@
   .pcard .img{height:150px;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:0.5px solid var(--line);overflow:hidden;}
   .pcard .img .pat{position:absolute;inset:0;opacity:0.4;}
   .pcard .img .em{position:relative;z-index:2;font-size:42px;}
+  .pcard .img .art{position:relative;z-index:2;display:flex;filter:drop-shadow(0 14px 22px rgba(0,0,0,.35));}
+  .pcard .img .art svg{width:96px;height:96px;transition:transform .35s;}
+  .pcard:hover .img .art svg{transform:translateY(-4px) scale(1.04);}
   .pcard .b{padding:16px 16px 18px;display:flex;flex-direction:column;flex:1;}
   .pcard .cat{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;color:var(--gold);direction:ltr;}
   .pcard .nm{font-size:14.5px;color:var(--white);font-weight:500;margin-top:6px;line-height:1.5;flex:1;}
@@ -674,6 +677,61 @@ const PRODUCTS=[
   {id:'p5',cat:'HAIR',em:'💧',nm:'زيت إصلاح أطراف الشعر',price:120},
   {id:'p6',cat:'MAKEUP',em:'✨',nm:'هايلايتر ذهبي ناعم',price:110},
 ];
+/* صور المنتجات — رسوم SVG فاخرة مدمجة بأسلوب الهوية (لا تعتمد على الشبكة) */
+const PRODUCT_ART={
+  p1:`<svg viewBox="0 0 96 96"><defs>
+    <linearGradient id="a1g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9c98a"/><stop offset="1" stop-color="#b8863f"/></linearGradient>
+    <linearGradient id="a1l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6dfae"/><stop offset="1" stop-color="#d9a75c"/></linearGradient></defs>
+    <circle cx="48" cy="52" r="34" fill="rgba(202,168,95,.10)"/>
+    <rect x="33" y="38" width="30" height="46" rx="9" fill="url(#a1g)"/>
+    <rect x="37" y="50" width="22" height="30" rx="6" fill="url(#a1l)" opacity=".85"/>
+    <rect x="36" y="56" width="24" height="14" rx="2" fill="#fdf7ea"/><text x="48" y="66" font-size="7" text-anchor="middle" fill="#937842" font-family="serif">VIT&#160;C</text>
+    <rect x="42" y="30" width="12" height="9" rx="2" fill="#3a2f22"/>
+    <rect x="45.5" y="18" width="5" height="13" rx="2.5" fill="#caa85f"/>
+    <circle cx="48" cy="15" r="6" fill="#3a2f22"/><circle cx="46" cy="13" r="1.6" fill="#caa85f" opacity=".8"/></svg>`,
+  p2:`<svg viewBox="0 0 96 96"><defs>
+    <linearGradient id="a2c" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e9c98a"/><stop offset=".5" stop-color="#a9814a"/><stop offset="1" stop-color="#e9c98a"/></linearGradient>
+    <linearGradient id="a2r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e89aa8"/><stop offset="1" stop-color="#b25a6c"/></linearGradient></defs>
+    <circle cx="48" cy="52" r="34" fill="rgba(217,138,147,.10)"/>
+    <path d="M41 30 L55 30 L55 48 L41 48 Z" fill="url(#a2r)"/>
+    <path d="M41 30 Q41 18 48 16 Q55 20 55 30 Z" fill="url(#a2r)"/>
+    <path d="M41 30 Q41 18 48 16 L48 30 Z" fill="#fff" opacity=".18"/>
+    <rect x="38" y="46" width="20" height="12" rx="2" fill="#2e2620"/>
+    <rect x="35" y="56" width="26" height="26" rx="4" fill="url(#a2c)"/>
+    <rect x="35" y="66" width="26" height="3" fill="#2e2620" opacity=".25"/></svg>`,
+  p3:`<svg viewBox="0 0 96 96"><defs>
+    <linearGradient id="a3b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf3e4"/><stop offset="1" stop-color="#e3cfae"/></linearGradient></defs>
+    <circle cx="48" cy="52" r="34" fill="rgba(240,231,216,.08)"/>
+    <rect x="33" y="40" width="30" height="44" rx="8" fill="url(#a3b)"/>
+    <rect x="37" y="52" width="22" height="18" rx="2" fill="#fff" opacity=".75"/>
+    <text x="48" y="63" font-size="6.5" text-anchor="middle" fill="#937842" font-family="serif">GENTLE</text>
+    <rect x="43" y="32" width="10" height="9" fill="#caa85f"/>
+    <path d="M43 32 L43 25 Q43 22 46 22 L58 22 L58 27 L49 27 L49 32 Z" fill="#937842"/>
+    <circle cx="42" cy="76" r="2" fill="#d9a75c" opacity=".55"/><circle cx="49" cy="79" r="1.4" fill="#d9a75c" opacity=".4"/></svg>`,
+  p4:`<svg viewBox="0 0 96 96"><defs>
+    <linearGradient id="a4h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9c98a"/><stop offset="1" stop-color="#8a6a38"/></linearGradient></defs>
+    <circle cx="48" cy="52" r="34" fill="rgba(202,168,95,.10)"/>
+    <g transform="rotate(-14 48 60)"><ellipse cx="38" cy="26" rx="6" ry="11" fill="#4a3a2c"/><rect x="34.5" y="34" width="7" height="8" fill="#caa85f"/><rect x="35.5" y="42" width="5" height="36" rx="2.5" fill="url(#a4h)"/></g>
+    <g><ellipse cx="48" cy="22" rx="5.5" ry="12" fill="#3a2f26"/><rect x="44.8" y="31" width="6.4" height="8" fill="#caa85f"/><rect x="45.8" y="39" width="4.4" height="40" rx="2.2" fill="url(#a4h)"/></g>
+    <g transform="rotate(14 48 60)"><ellipse cx="58" cy="26" rx="5" ry="10" fill="#55432f"/><rect x="55" y="33" width="6" height="8" fill="#caa85f"/><rect x="56" y="41" width="4" height="36" rx="2" fill="url(#a4h)"/></g></svg>`,
+  p5:`<svg viewBox="0 0 96 96"><defs>
+    <linearGradient id="a5o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2d491"/><stop offset="1" stop-color="#c08b3e"/></linearGradient></defs>
+    <circle cx="48" cy="52" r="34" fill="rgba(202,168,95,.10)"/>
+    <rect x="39" y="34" width="18" height="50" rx="8" fill="rgba(240,231,216,.28)" stroke="#caa85f" stroke-width="1"/>
+    <rect x="42" y="46" width="12" height="35" rx="6" fill="url(#a5o)"/>
+    <rect x="42.5" y="26" width="11" height="8" rx="2" fill="#2e2620"/>
+    <path d="M48 12 Q53 19 53 22.5 A5 5 0 1 1 43 22.5 Q43 19 48 12 Z" fill="url(#a5o)"/>
+    <circle cx="45.5" cy="60" r="1.6" fill="#fff" opacity=".5"/></svg>`,
+  p6:`<svg viewBox="0 0 96 96"><defs>
+    <radialGradient id="a6p" cx=".38" cy=".32" r=".9"><stop offset="0" stop-color="#fbe9c3"/><stop offset=".55" stop-color="#e5bd7d"/><stop offset="1" stop-color="#b98b45"/></radialGradient>
+    <linearGradient id="a6r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9c98a"/><stop offset="1" stop-color="#8a6a38"/></linearGradient></defs>
+    <ellipse cx="48" cy="34" rx="26" ry="10" fill="url(#a6r)" opacity=".55"/>
+    <circle cx="48" cy="56" r="25" fill="url(#a6r)"/>
+    <circle cx="48" cy="56" r="20" fill="url(#a6p)"/>
+    <path d="M40 50 q8 -6 16 0" stroke="#fff" stroke-width="1.6" fill="none" opacity=".55" stroke-linecap="round"/>
+    <g fill="#fdf3da"><path d="M67 26 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 Z"/><path d="M26 40 l1.1 2.8 2.8 1.1 -2.8 1.1 -1.1 2.8 -1.1 -2.8 -2.8 -1.1 2.8 -1.1 Z"/></g></svg>`,
+};
+const productArt=id=>PRODUCT_ART[id]||'';
 document.getElementById('prod-h').textContent='منتجات '+EXPERT.name;
 document.getElementById('prod-p').textContent='منتجات عناية وتجميل تختارها وتضمن جودتها '+EXPERT.name+' بنفسها — أضيفي ما تشائين للسلة ثم أتمّي طلبكِ.';
 
@@ -681,7 +739,7 @@ function renderProducts(){
   document.getElementById('prod-grid').innerHTML=PRODUCTS.map(p=>{
     const inCart=CART.data[p.id]>0;
     return `<div class="pcard">
-      <div class="img"><div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div><div class="em">${p.em}</div></div>
+      <div class="img"><div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div><div class="art">${productArt(p.id)||`<span class="em">${p.em}</span>`}</div></div>
       <div class="b"><div class="cat">${p.cat}</div><div class="nm">${p.nm}</div>
         <div class="row"><span class="pr">${p.price} ر.س</span><button class="add ${inCart?'in':''}" onclick="CART.add('${p.id}')">${inCart?('في السلة · '+CART.data[p.id]):'+ أضيفي'}</button></div>
       </div></div>`;
