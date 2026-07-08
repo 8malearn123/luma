@@ -29,7 +29,7 @@
   .prog span.on{background:var(--ac)}
   .step{padding:14px 18px}
   .cat{font-size:11.5px;color:var(--ac);font-weight:700;margin:16px 0 8px}
-  .svc,.stf{width:100%;text-align:right;background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px;margin-bottom:8px;color:var(--tx);font-family:inherit;cursor:pointer;transition:transform .12s,border-color .2s}
+  .svc,.stf{width:100%;text-align:right;background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--rad,16px);padding:14px;margin-bottom:8px;color:var(--tx);font-family:inherit;cursor:pointer;transition:transform .12s,border-color .2s}
   .svc:active{transform:scale(.98)} .svc:hover,.stf:hover{border-color:var(--ac)}
   .svc{display:flex;justify-content:space-between;align-items:center}
   .svc .n{font-size:13.5px;font-weight:600} .svc .d{font-size:10.5px;opacity:.5;margin-top:2px}
@@ -40,19 +40,19 @@
   .stf .nm{font-size:13.5px;font-weight:700} .stf .rl{font-size:10px;opacity:.55;margin-top:2px}
   .stf.leave{opacity:.5} .stf .lv{font-size:9.5px;color:#f0a3b0;font-weight:700;margin-top:3px}
   .stf.sel{background:var(--ac);color:var(--bg)} .stf.sel .av{border-color:var(--bg);color:var(--bg)}
-  .reroute{background:var(--card);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);border-radius:16px;padding:14px;margin-top:12px;font-size:13px;line-height:1.9}
+  .reroute{background:var(--card);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);border-radius:var(--rad,16px);padding:14px;margin-top:12px;font-size:13px;line-height:1.9}
   .reroute b{color:var(--ac)}
-  .btn{width:100%;border:none;border-radius:14px;padding:14px;background:var(--ac);color:var(--bg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px}
+  .btn{width:100%;border:none;border-radius:calc(var(--rad,16px) - 2px);padding:14px;background:var(--ac);color:var(--bg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px}
   .btn:disabled{opacity:.35} .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--tx)}
   .days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-  .day{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:15px;padding:11px;text-align:center;color:var(--tx);font-family:inherit;cursor:pointer}
+  .day{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:calc(var(--rad,16px) - 1px);padding:11px;text-align:center;color:var(--tx);font-family:inherit;cursor:pointer}
   .day .lb{font-size:12px;font-weight:700} .day .dt{font-size:10px;opacity:.55;margin-top:2px}
   .day.sel{background:var(--ac);color:var(--bg)} .day:disabled{opacity:.32}
   .day .lv{font-size:9px;color:#f0a3b0}
   .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
   .slot{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:10px 0;color:var(--tx);font-family:inherit;font-size:12px;cursor:pointer;direction:ltr}
   .slot.sel{background:var(--ac);color:var(--bg);font-weight:700} .slot:disabled{opacity:.3;text-decoration:line-through}
-  .ticket{background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden}
+  .ticket{background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:calc(var(--rad,16px) + 6px);overflow:hidden}
   .ticket .th{background:color-mix(in srgb,var(--ac) 12%,transparent);padding:16px}
   .ticket .th .k{font-size:10.5px;color:var(--ac)} .ticket .th h2{font-size:17px;margin-top:3px}
   .ticket .rows{padding:16px;display:grid;gap:11px;font-size:13px}
@@ -65,7 +65,7 @@
   .success{text-align:center;padding:60px 18px}
   .ok{width:82px;height:82px;border-radius:50%;background:var(--ac);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
   @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
-  .wa{display:flex;gap:11px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px;margin-top:22px;text-align:right;font-size:12px;line-height:1.8}
+  .wa{display:flex;gap:11px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:var(--rad,16px);padding:14px;margin-top:22px;text-align:right;font-size:12px;line-height:1.8}
   .wa .ic{width:38px;height:38px;border-radius:50%;background:#22a55b;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px}
 </style>
 </head>
@@ -77,12 +77,15 @@ const THEMES={
   'dark-luxury':{bg:'#09090b',card:'#151517',ac:'#e5c158',tx:'#f5f1e8'},
   'rose-velvet':{bg:'#1a0e12',card:'#241318',ac:'#e08a9b',tx:'#f8eef1'},
   'minimal-emerald':{bg:'#0a1413',card:'#12201e',ac:'#8fd0c0',tx:'#eef6f4'},
+  'pearl-light':{bg:'#f7f3ec',card:'#ffffff',ac:'#9c8047',tx:'#2e241b'},
 };
 const load=(k,f)=>LumaStore.get(k,f);
 const CFG={slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',...load('luma_page_cfg',{})};
-const T=THEMES[CFG.theme]||THEMES['dark-luxury'];
+/* ثيم مخصص من المحرر الكامل، أو قالب جاهز */
+const T=(CFG.theme==='custom'&&CFG.themeCustom)?{...THEMES['dark-luxury'],...CFG.themeCustom}:(THEMES[CFG.theme]||THEMES['dark-luxury']);
 const rt=document.documentElement.style;
 rt.setProperty('--bg',T.bg);rt.setProperty('--card',T.card);rt.setProperty('--ac',T.ac);rt.setProperty('--tx',T.tx);
+rt.setProperty('--rad',(T.rad!=null?T.rad:18)+'px');
 
 /* ═══ بيانات الصالون: خدمات + طاقم (تتزامن مع الداشبورد) ═══ */
 const CATS=[['makeup','مكياج ✨'],['hair','شعر 💇‍♀️'],['nails','أظافر 💅'],['skin','بشرة 🧖‍♀️']];
