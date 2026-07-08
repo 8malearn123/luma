@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LUMA — احجزي موعدك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&family=Bodoni+Moda:opsz,wght@6..96,500&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#09090b;--card:#151517;--ac:#e5c158;--tx:#f5f1e8}
+  body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+  .wrap{max-width:430px;margin:0 auto;padding-bottom:40px}
+  .cover{position:relative;height:150px;background:linear-gradient(140deg,color-mix(in srgb,var(--ac) 25%,transparent),var(--bg))}
+  .cover img{width:100%;height:100%;object-fit:cover}
+  .logo{position:absolute;bottom:-26px;right:18px;width:58px;height:58px;border-radius:16px;border:1px solid var(--ac);background:var(--card);color:var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:24px;overflow:hidden}
+  .logo img{width:100%;height:100%;object-fit:cover}
+  .head{padding:36px 18px 8px}
+  .head h1{font-size:19px}
+  .head .bio{font-size:11.5px;opacity:.65;line-height:1.8;margin-top:4px}
+  .head .meta{font-size:10.5px;opacity:.45;margin-top:4px}
+  .prog{display:flex;gap:6px;padding:14px 18px 4px}
+  .prog span{height:5px;flex:1;border-radius:5px;background:rgba(255,255,255,.1);transition:background .3s}
+  .prog span.on{background:var(--ac)}
+  .step{padding:14px 18px}
+  .cat{font-size:11.5px;color:var(--ac);font-weight:700;margin:16px 0 8px}
+  .svc,.stf{width:100%;text-align:right;background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px;margin-bottom:8px;color:var(--tx);font-family:inherit;cursor:pointer;transition:transform .12s,border-color .2s}
+  .svc:active{transform:scale(.98)} .svc:hover,.stf:hover{border-color:var(--ac)}
+  .svc{display:flex;justify-content:space-between;align-items:center}
+  .svc .n{font-size:13.5px;font-weight:600} .svc .d{font-size:10.5px;opacity:.5;margin-top:2px}
+  .svc .p{color:var(--ac);font-weight:700;font-size:13.5px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stf{text-align:center;margin:0}
+  .stf .av{width:48px;height:48px;border-radius:50%;border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:19px;margin:0 auto 8px}
+  .stf .nm{font-size:13.5px;font-weight:700} .stf .rl{font-size:10px;opacity:.55;margin-top:2px}
+  .stf.leave{opacity:.5} .stf .lv{font-size:9.5px;color:#f0a3b0;font-weight:700;margin-top:3px}
+  .stf.sel{background:var(--ac);color:var(--bg)} .stf.sel .av{border-color:var(--bg);color:var(--bg)}
+  .reroute{background:var(--card);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);border-radius:16px;padding:14px;margin-top:12px;font-size:13px;line-height:1.9}
+  .reroute b{color:var(--ac)}
+  .btn{width:100%;border:none;border-radius:14px;padding:14px;background:var(--ac);color:var(--bg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px}
+  .btn:disabled{opacity:.35} .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--tx)}
+  .days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .day{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:15px;padding:11px;text-align:center;color:var(--tx);font-family:inherit;cursor:pointer}
+  .day .lb{font-size:12px;font-weight:700} .day .dt{font-size:10px;opacity:.55;margin-top:2px}
+  .day.sel{background:var(--ac);color:var(--bg)} .day:disabled{opacity:.32}
+  .day .lv{font-size:9px;color:#f0a3b0}
+  .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .slot{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:10px 0;color:var(--tx);font-family:inherit;font-size:12px;cursor:pointer;direction:ltr}
+  .slot.sel{background:var(--ac);color:var(--bg);font-weight:700} .slot:disabled{opacity:.3;text-decoration:line-through}
+  .ticket{background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden}
+  .ticket .th{background:color-mix(in srgb,var(--ac) 12%,transparent);padding:16px}
+  .ticket .th .k{font-size:10.5px;color:var(--ac)} .ticket .th h2{font-size:17px;margin-top:3px}
+  .ticket .rows{padding:16px;display:grid;gap:11px;font-size:13px}
+  .trow2{display:flex;justify-content:space-between} .trow2 .k{opacity:.5}
+  .total{border-top:1px dashed rgba(255,255,255,.18);padding-top:12px;font-weight:700}
+  .total b{color:var(--ac)}
+  .back{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .back button{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:none;color:var(--tx);cursor:pointer;font-size:15px}
+  .back h1{font-size:17px}
+  .success{text-align:center;padding:60px 18px}
+  .ok{width:82px;height:82px;border-radius:50%;background:var(--ac);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+  .wa{display:flex;gap:11px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px;margin-top:22px;text-align:right;font-size:12px;line-height:1.8}
+  .wa .ic{width:38px;height:38px;border-radius:50%;background:#22a55b;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+/* ═══ تُقرأ الهوية والثيم مما حفظته المالكة في «مُنشئ الصفحة» ═══ */
+const THEMES={
+  'dark-luxury':{bg:'#09090b',card:'#151517',ac:'#e5c158',tx:'#f5f1e8'},
+  'rose-velvet':{bg:'#1a0e12',card:'#241318',ac:'#e08a9b',tx:'#f8eef1'},
+  'minimal-emerald':{bg:'#0a1413',card:'#12201e',ac:'#8fd0c0',tx:'#eef6f4'},
+};
+const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}};
+const CFG={slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',...load('luma_page_cfg',{})};
+const T=THEMES[CFG.theme]||THEMES['dark-luxury'];
+const rt=document.documentElement.style;
+rt.setProperty('--bg',T.bg);rt.setProperty('--card',T.card);rt.setProperty('--ac',T.ac);rt.setProperty('--tx',T.tx);
+
+/* ═══ بيانات الصالون: خدمات + طاقم (تتزامن مع الداشبورد) ═══ */
+const CATS=[['makeup','مكياج ✨'],['hair','شعر 💇‍♀️'],['nails','أظافر 💅'],['skin','بشرة 🧖‍♀️']];
+const SERVICES=[
+  {id:1,cat:'makeup',n:'مكياج سهرة',p:350,d:60},{id:2,cat:'makeup',n:'مكياج عروس',p:850,d:120},
+  {id:3,cat:'hair',n:'صبغة + قص',p:550,d:90},{id:4,cat:'hair',n:'تسريحة مناسبات',p:200,d:60},
+  {id:5,cat:'skin',n:'هيدرافيشل',p:480,d:75},{id:6,cat:'skin',n:'تنظيف بشرة عميق',p:320,d:60},
+  {id:7,cat:'nails',n:'منيكير جل',p:160,d:60},{id:8,cat:'nails',n:'تركيب أظافر',p:220,d:90},
+];
+const ROLE2CAT={'مكياج':'makeup','شعر':'hair','بشرة':'skin','أظافر':'nails','رموش':'makeup','سبا':'skin'};
+let STAFF=[
+  {id:'amal',n:'أمل',role:'مكياج'},{id:'sara',n:'سارة',role:'شعر'},
+  {id:'nora',n:'نورة',role:'بشرة'},{id:'reem',n:'ريم',role:'أظافر'},
+];
+load('luma_salon_staff',[]).forEach(s=>{if(s&&s.id)STAFF.push({id:s.id,n:s.n,role:s.role});});
+const PROFILES=load('luma_staff_profiles',{});
+const ARCH=load('luma_staff_archived',[]);
+STAFF=STAFF.filter(s=>!ARCH.includes(s.id)&&((PROFILES[s.id]||{}).status||'active')==='active');
+const LEAVES=load('luma_hr_leaves',[]).filter(l=>l.status==='approved');
+const onLeave=(sid,iso)=>LEAVES.some(l=>l.staff===sid&&l.from<=iso&&l.to>=iso);
+const SHIFTS=load('luma_hr_shifts',{});
+function shiftOf(sid,weekday){const s=(SHIFTS[sid]||{})[weekday];return s||((weekday===5)?{off:true}:{off:false,start:'10:00',end:'20:00'});}
+const BOOKED=load('luma_public_bookings',[]);
+
+/* ═══ حالة المعالج ═══ */
+let step=1,svc=null,staff=null,date='',time='';
+const days=Array.from({length:3},(_,i)=>{const d=new Date();d.setDate(d.getDate()+i);
+  return {iso:d.toISOString().slice(0,10),wd:d.getDay(),
+    lb:i===0?'اليوم':d.toLocaleDateString('ar-SA',{weekday:'long'}),
+    dt:d.toLocaleDateString('ar-SA',{day:'numeric',month:'short'})};});
+
+function slotsFor(sid,day){
+  if(onLeave(sid,day.iso))return[];
+  const sh=shiftOf(sid,day.wd);if(sh.off)return[];
+  const h0=parseInt(sh.start),h1=parseInt(sh.end);
+  const out=[];
+  for(let h=h0;h<h1;h++){
+    const hh=String(h).padStart(2,'0')+':00';
+    const taken=BOOKED.some(b=>b.staff===sid&&b.date===day.iso&&b.time===hh);
+    out.push({t:hh,taken});
+  }
+  return out;
+}
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const app=document.getElementById('app');
+
+function header(){
+  return `<div class="cover">${CFG.cover?`<img src="${CFG.cover}" alt=""/>`:''}
+    <div class="logo">${CFG.logo?`<img src="${CFG.logo}" alt=""/>`:esc(CFG.title).charAt(0)}</div></div>
+  <div class="head"><h1>${esc(CFG.title)}</h1><div class="bio">${esc(CFG.bio)}</div>
+    <div class="meta">${esc(CFG.address||'')} · <bdo dir="ltr">${esc(CFG.phone||'')}</bdo> · ★ 4.9 (512)</div></div>
+  <div class="prog">${[1,2,3,4].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div>`;
+}
+function back(t,to){return `<div class="back"><button onclick="go(${to})">‹</button><h1>${t}</h1></div>`;}
+
+function render(){
+  if(step===5){
+    app.innerHTML=header()+`<div class="success">
+      <div class="ok">✓</div><h1 style="margin-top:18px">تم تأكيد حجزك 🎉</h1>
+      <p style="font-size:13px;opacity:.7;margin-top:8px">${esc(svc.n)} · مع ${esc(staff.n)}<br>${date} · <bdo dir="ltr">${time}</bdo></p>
+      <div class="wa"><span class="ic">💬</span><div><b>واتساب · ${esc(CFG.title)}</b><br>أهلاً 🌸 حجزك مؤكد يوم ${date} الساعة <bdo dir="ltr">${time}</bdo>. نراكِ قريباً!</div></div>
+      <button class="btn ghost" onclick="restart()">حجز موعد آخر</button></div>`;
+    window.scrollTo({top:0});return;
+  }
+  let s='';
+  if(step===1){
+    s=`<h1 style="font-size:18px">اختاري خدمتك</h1>`+CATS.map(([k,ar])=>{
+      const list=SERVICES.filter(x=>x.cat===k);if(!list.length)return'';
+      return `<div class="cat">${ar}</div>`+list.map(x=>`<button class="svc" onclick="pickSvc(${x.id})">
+        <span><span class="n">${x.n}</span><div class="d">${x.d} دقيقة</div></span><span class="p">${x.p} ر.س</span></button>`).join('');
+    }).join('');
+  }
+  if(step===2){
+    const iso=date||days[0].iso;
+    s=back('اختاري الأخصائية',1)+`<div class="grid2">`+STAFF.map(x=>{
+      const lv=onLeave(x.id,iso);
+      return `<button class="stf ${lv?'leave':''} ${staff&&staff.id===x.id?'sel':''}" onclick="pickStaff('${x.id}')">
+        <span class="av">${x.n.charAt(0)}</span><span class="nm">${x.n}</span><div class="rl">${x.role}</div>
+        ${lv?'<div class="lv">في إجازة معتمدة</div>':''}</button>`;}).join('')+`</div><div id="reroute"></div>`;
+  }
+  if(step===3){
+    s=back('التاريخ والوقت',2)+`<div class="days">`+days.map((d,i)=>{
+      const lv=onLeave(staff.id,d.iso);
+      return `<button class="day ${date===d.iso?'sel':''}" ${lv?'disabled':''} onclick="pickDate(${i})">
+        <div class="lb">${d.lb}</div><div class="dt">${d.dt}</div>${lv?'<div class="lv">إجازة</div>':''}</button>`;}).join('')+`</div>`;
+    if(date){
+      const day=days.find(d=>d.iso===date);
+      const sl=slotsFor(staff.id,day);
+      s+=sl.length?`<div class="slots">${sl.map(x=>`<button class="slot ${time===x.t?'sel':''}" ${x.taken?'disabled':''} onclick="pickTime('${x.t}')">${x.t}</button>`).join('')}</div>`
+        :`<div style="text-align:center;opacity:.55;font-size:13px;padding:18px">لا أوقات متاحة هذا اليوم</div>`;
+    }
+    s+=`<button class="btn" ${!date||!time?'disabled':''} onclick="go(4)">متابعة</button>`;
+  }
+  if(step===4){
+    s=back('تأكيد الموعد',3)+`<div class="ticket">
+      <div class="th"><div class="k">تذكرة الحجز · ${esc(CFG.title)}</div><h2>${esc(svc.n)}</h2></div>
+      <div class="rows">
+        <div class="trow2"><span class="k">الأخصائية</span><b>${esc(staff.n)} · ${esc(staff.role)}</b></div>
+        <div class="trow2"><span class="k">التاريخ</span><b>${date}</b></div>
+        <div class="trow2"><span class="k">الوقت</span><b dir="ltr">${time}</b></div>
+        <div class="trow2"><span class="k">المدة</span><b>${svc.d} دقيقة</b></div>
+        <div class="trow2 total"><span>الإجمالي</span><b>${svc.p} ر.س</b></div>
+      </div></div>
+      <button class="btn" onclick="confirmBooking()">تأكيد الحجز ✓</button>`;
+  }
+  app.innerHTML=header()+`<div class="step">${s}</div>`;
+  if(step===2&&staff&&onLeave(staff.id,date||days[0].iso))showReroute();
+  window.scrollTo({top:0});
+}
+function showReroute(){
+  const iso=date||days[0].iso;
+  const alt=STAFF.find(x=>x.id!==staff.id&&x.role===staff.role&&!onLeave(x.id,iso))
+        ||STAFF.find(x=>x.id!==staff.id&&!onLeave(x.id,iso));
+  document.getElementById('reroute').innerHTML=`<div class="reroute">
+    💛 ${staff.n} في إجازة حالياً — تحبين الحجز مع <b>${alt?alt.n:'زميلة أخرى'}</b>${alt&&alt.role===staff.role?' (نفس التخصص)':''} أو اختيار تاريخ آخر؟
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      ${alt?`<button class="btn" style="margin:0;padding:11px;font-size:12.5px" onclick="pickAlt('${alt.id}')">الحجز مع ${alt.n}</button>`:''}
+      <button class="btn ghost" style="margin:0;padding:11px;font-size:12.5px" onclick="go(3)">اختيار تاريخ آخر</button>
+    </div></div>`;
+}
+window.go=n=>{step=n;render();};
+window.restart=()=>{step=1;svc=staff=null;date=time='';render();};
+window.pickSvc=id=>{svc=SERVICES.find(x=>x.id===id);
+  /* اقتراح الأخصائية المناسبة للتصنيف تلقائياً */
+  step=2;render();};
+window.pickStaff=id=>{staff=STAFF.find(x=>x.id===id);
+  if(onLeave(id,date||days[0].iso)){render();}else{step=3;render();}};
+window.pickAlt=id=>{staff=STAFF.find(x=>x.id===id);step=3;render();};
+window.pickDate=i=>{date=days[i].iso;time='';render();};
+window.pickTime=t=>{time=t;render();};
+window.confirmBooking=()=>{
+  const rec={staff:staff.id,staffName:staff.n,client:'حجز أونلاين',service:svc.n,price:svc.p,date,time,at:new Date().toISOString()};
+  BOOKED.push(rec);try{localStorage.setItem('luma_public_bookings',JSON.stringify(BOOKED));}catch(e){}
+  /* الحجز بتاريخ اليوم يظهر مباشرة على لوحة حجوزات الصالون */
+  if(date===days[0].iso){
+    try{
+      const appts=JSON.parse(localStorage.getItem('luma_salon_appts'))||[];
+      appts.push({id:Date.now(),staff:staff.id,start:(parseInt(time)-10)*2,dur:Math.max(1,Math.round(svc.d/30)),client:'حجز أونلاين — '+svc.n.split(' ')[0],service:svc.n,st:'pending',custom:true});
+      localStorage.setItem('luma_salon_appts',JSON.stringify(appts));
+    }catch(e){}
+  }
+  step=5;render();
+};
+render();
+</script>
+</body>
+</html>
