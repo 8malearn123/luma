@@ -904,32 +904,48 @@ const SALON={
   },
   addStaff(editId){
     const roles=['مكياج','شعر','بشرة','أظافر','رموش','سبا'];
+    const NATS=['سعودية','مصرية','مغربية','لبنانية','سورية','أردنية','فلبينية','إندونيسية','هندية','باكستانية','أخرى'];
     const s=editId?STAFF.find(x=>x.id===editId):null;
     const p=editId?spOf(editId):{};
     const g=v=>v||'';
+    /* مُعرف الموظف: تسلسلي تلقائي (8001، 8002…) */
+    const nextEmpId=()=>{const ids=STAFF.map(x=>parseInt(spOf(x.id).empId)||0);return Math.max(8000,...ids)+1;};
+    const sect=t=>`<div style="font-size:12.5px;color:var(--gold,#9c8047);font-weight:700;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--line,#26242d)">${t}</div>`;
     const body=`
-      <div class="lux-lead">${editId?'تحديث بيانات الموظفة وملفها الوظيفي.':'أدخلي بيانات الموظفة — ستظهر في قائمة الطاقم ولوحة الحجوزات فوراً.'}</div>
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <div class="lux-lead">لبداية دقيقة 💪 تأكدي من دقة جميع بيانات الموظفة لتفادي أي مشكلات في الوصول أو الرواتب.</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px">
         <span id="spPhotoPrev">${s?spAvatar(s,58):'<span style="width:58px;height:58px;border-radius:50%;background:#0e0d11;border:1px dashed var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-size:22px">📷</span>'}</span>
         <input type="file" id="spPhotoFile" accept="image/*" style="display:none"/>
         <button type="button" class="lux-btn lux-ghost" style="padding:9px 16px;font-size:12.5px" onclick="document.getElementById('spPhotoFile').click()">${p.photo?'تغيير الصورة':'رفع صورة شخصية'}</button>
       </div>
-      <div class="lux-f"><label>اسم الموظفة</label><input name="name" value="${g(s&&s.n)}" placeholder="مثال: لينا الدوسري"/></div>
+      ${sect('بيانات الموظف')}
+      <div class="lux-f"><label>الاسم الكامل (عربي) <span style="color:#c0566a">*</span></label><input name="name" value="${g(s&&s.n)}" placeholder="أدخل الاسم كاملًا بالعربية"/></div>
+      <div class="lux-f"><label>الاسم الكامل (إنجليزي) <span style="color:#c0566a">*</span></label><input name="nameEn" dir="ltr" style="text-align:right" value="${g(p.nameEn)}" placeholder="Full name in English"/></div>
       <div class="lux-two">
-        <div class="lux-f"><label>التخصص</label><select name="role">${roles.map(r=>`<option ${s&&s.role===r?'selected':''}>${r}</option>`).join('')}</select></div>
-        <div class="lux-f"><label>الدوام</label><select name="shift"><option ${s&&s.shift==='دوام كامل'?'selected':''}>دوام كامل</option><option ${s&&s.shift==='دوام جزئي'?'selected':''}>دوام جزئي</option></select></div>
+        <div class="lux-f"><label>مُعرف الموظف <span style="color:#c0566a">*</span></label><input name="empId" dir="ltr" style="text-align:right" value="${g(p.empId)||nextEmpId()}"/></div>
+        <div class="lux-f"><label>الجنسية <span style="color:#c0566a">*</span></label><select name="nat"><option value="">اختار…</option>${NATS.map(n=>`<option ${p.nat===n?'selected':''}>${n}</option>`).join('')}</select></div>
       </div>
       <div class="lux-two">
-        <div class="lux-f"><label>رقم الجوال</label><input name="phone" dir="ltr" style="text-align:right" value="${g(p.phone)}" placeholder="05xxxxxxxx"/></div>
         <div class="lux-f"><label>البريد الإلكتروني</label><input name="email" dir="ltr" style="text-align:right" value="${g(p.email)}" placeholder="name@mail.com"/></div>
+        <div class="lux-f"><label>رقم الهاتف</label><input name="phone" dir="ltr" style="text-align:right" value="${g(p.phone)}" placeholder="05xxxxxxxx"/></div>
+      </div>
+      <div class="lux-f"><label>محل الإقامة <span style="color:#c0566a">*</span></label>
+        <div style="display:flex;gap:18px;padding:6px 2px">
+          <label style="display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--cream,#ece6da);cursor:pointer"><input type="radio" name="res" value="داخل السعودية" ${p.res!=='خارج السعودية'?'checked':''}/> داخل السعودية</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--cream,#ece6da);cursor:pointer"><input type="radio" name="res" value="خارج السعودية" ${p.res==='خارج السعودية'?'checked':''}/> خارج السعودية</label>
+        </div></div>
+      <div class="lux-f"><label>الهوية الوطنية أو الإقامة أو رقم الحدود <span style="color:#c0566a">*</span></label><input name="nid" dir="ltr" style="text-align:right" value="${g(p.nid)}" placeholder="أدخل 9 أرقام على الأقل"/></div>
+      ${sect('البيانات الوظيفية')}
+      <div class="lux-two">
+        <div class="lux-f"><label>نوع الوظيفة <span style="color:#c0566a">*</span></label><select name="shift"><option ${s&&s.shift==='دوام كامل'?'selected':''}>دوام كامل</option><option ${s&&s.shift==='دوام جزئي'?'selected':''}>دوام جزئي</option></select></div>
+        <div class="lux-f"><label>المسمى الوظيفي / التخصص <span style="color:#c0566a">*</span></label><select name="role">${roles.map(r=>`<option ${s&&s.role===r?'selected':''}>${r}</option>`).join('')}</select></div>
       </div>
       <div class="lux-two">
-        <div class="lux-f"><label>رقم الهوية / الإقامة</label><input name="nid" dir="ltr" style="text-align:right" value="${g(p.nid)}" placeholder="1xxxxxxxxx"/></div>
-        <div class="lux-f"><label>تاريخ التعيين</label><input type="date" name="hired" value="${g(p.hired)}"/></div>
+        <div class="lux-f"><label>تاريخ الالتحاق</label><input type="date" name="hired" value="${g(p.hired)}"/></div>
+        <div class="lux-f"><label>ملاحظات إدارية</label><input name="notes" value="${g(p.notes)}" placeholder="شهادات، مهارات…"/></div>
       </div>
-      <div class="lux-f"><label>ملاحظات إدارية (اختياري)</label><textarea name="notes" rows="2" placeholder="شهادات، مهارات، اتفاقات خاصة…">${g(p.notes)}</textarea></div>
-      <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">${editId?'حفظ التعديلات':'إضافة الموظفة'}</button></div>`;
-    LUX.modal(editId?'تعديل ملف '+s.n:'إضافة موظفة جديدة',body,{onMount(ov,close){
+      <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إغلاق</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">${editId?'حفظ التعديلات':'إضافة الموظف'}</button></div>`;
+    LUX.modal(editId?'تعديل ملف '+s.n:'إضافة ملف موظف',body,{onMount(ov,close){
       let photo=p.photo||null;
       ov.querySelector('#spPhotoFile').onchange=e=>{
         const f=e.target.files&&e.target.files[0];if(!f)return;
@@ -938,10 +954,17 @@ const SALON={
       ov.querySelector('[data-c]').onclick=close;
       ov.querySelector('[data-ok]').onclick=()=>{
         const q=n=>ov.querySelector('[name='+n+']');
-        if(!q('name').value.trim()){q('name').style.borderColor='#c0566a';q('name').focus();return;}
+        const bad=el=>{el.style.borderColor='#c0566a';el.focus();};
+        if(!q('name').value.trim())return bad(q('name'));
+        if(!q('nameEn').value.trim())return bad(q('nameEn'));
+        if(!q('nat').value)return bad(q('nat'));
+        const nid=q('nid').value.replace(/\s/g,'');
+        if(!/^\d{9,}$/.test(nid)){bad(q('nid'));LUX.toast('الهوية/الإقامة: 9 أرقام على الأقل','err');return;}
         const ph=q('phone').value.trim();
-        if(ph&&!/^0?5\d{8}$/.test(ph.replace(/[\s-]/g,''))){q('phone').style.borderColor='#c0566a';LUX.toast('رقم الجوال غير صحيح — مثال: 0551234567','err');return;}
-        const prof={photo,phone:ph,email:q('email').value.trim(),nid:q('nid').value.trim(),hired:q('hired').value,notes:q('notes').value.trim()};
+        if(ph&&!/^0?5\d{8}$/.test(ph.replace(/[\s-]/g,''))){bad(q('phone'));LUX.toast('رقم الجوال غير صحيح — مثال: 0551234567','err');return;}
+        const prof={photo,nameEn:q('nameEn').value.trim(),empId:q('empId').value.trim(),nat:q('nat').value,
+          res:ov.querySelector('[name=res]:checked').value,phone:ph,email:q('email').value.trim(),
+          nid,hired:q('hired').value,notes:q('notes').value.trim()};
         if(editId){
           s.n=q('name').value.trim();s.role=q('role').value;s.shift=q('shift').value;
           if(s.custom)saveStaff();else spSet(editId,{n:s.n,role2:s.role});
@@ -952,7 +975,7 @@ const SALON={
           const id='s'+Date.now();
           STAFF.push({id,n:q('name').value.trim(),role:q('role').value,shift:q('shift').value,color,custom:true});
           saveStaff();spSet(id,prof);
-          close();SALON.go('staff');LUX.toast('تمت إضافة '+q('name').value.trim()+' إلى الطاقم ✓','ok');
+          close();SALON.go('staff');LUX.toast('أُنشئ ملف '+q('name').value.trim()+' — مُعرف الموظف '+prof.empId+' ✓','ok');
         }
       };
     }});
@@ -981,10 +1004,18 @@ const SALON={
         <div style="background:#0e0d11;border-radius:9px;padding:9px"><div style="color:#ccab64;font-size:16px;font-weight:700">${L.net.toLocaleString('en')}</div><div style="font-size:10px;color:#86818d">صافي الشهر (ر.س)</div></div>
         <div style="background:#0e0d11;border-radius:9px;padding:9px"><div style="color:${L.late||L.abs?'#e29aa6':'#9fce99'};font-size:16px;font-weight:700">${L.late||L.abs?L.late+' د':'✓'}</div><div style="font-size:10px;color:#86818d">${L.abs?L.abs+' غياب':'الانضباط'}</div></div>
       </div>
-      ${row('رقم الجوال',p.phone?`<bdo dir="ltr">${p.phone}</bdo>`:'')}
-      ${row('البريد',p.email?`<bdo dir="ltr">${p.email}</bdo>`:'')}
-      ${row('الهوية / الإقامة',p.nid?`<bdo dir="ltr">${p.nid}</bdo>`:'')}
-      ${row('تاريخ التعيين',p.hired?`<bdo dir="ltr">${p.hired}</bdo>`:'')}
+      <div style="font-size:12px;color:#9c8047;font-weight:700;margin:6px 0 2px">بيانات الموظف</div>
+      ${row('الاسم (إنجليزي)',p.nameEn?`<bdo dir="ltr">${p.nameEn}</bdo>`:'')}
+      ${row('مُعرف الموظف',p.empId?`<bdo dir="ltr">${p.empId}</bdo>`:'')}
+      ${row('الجنسية',p.nat)}
+      ${row('رقم الهاتف',p.phone?`<bdo dir="ltr">${p.phone}</bdo>`:'')}
+      ${row('البريد الإلكتروني',p.email?`<bdo dir="ltr">${p.email}</bdo>`:'')}
+      ${row('محل الإقامة',p.res)}
+      ${row('الهوية / الإقامة / رقم الحدود',p.nid?`<bdo dir="ltr">${p.nid}</bdo>`:'')}
+      <div style="font-size:12px;color:#9c8047;font-weight:700;margin:12px 0 2px">البيانات الوظيفية</div>
+      ${row('نوع الوظيفة',s.shift||'دوام كامل')}
+      ${row('المسمى الوظيفي',s.role)}
+      ${row('تاريخ الالتحاق',p.hired?`<bdo dir="ltr">${p.hired}</bdo>`:'')}
       ${row('رصيد الإجازات',hrBalance(id)+' يوماً')}
       ${row('ملاحظات',p.notes)}
       <div style="font-size:12px;color:#9c8047;font-weight:700;margin:14px 0 4px">المستندات (هوية، عقد، شهادات…)</div>
