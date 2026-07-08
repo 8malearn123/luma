@@ -105,6 +105,12 @@ const paidOf=id=>paidAll()[id]||null;
 function markPaid(id,rec){const all=paidAll();all[id]=rec;LumaStore.set(PAID_KEY,all);}
 function nextInvNo(){let n=parseInt(LumaStore.raw.get(INV_SEQ_KEY,'1000'))+1;LumaStore.raw.set(INV_SEQ_KEY,n);return 'INV-'+n;}
 const SVC_CATALOG=[['مكياج سهرة',2,350],['مكياج عروس',4,850],['مكياج ناعم',2,250],['صبغة + قص',3,550],['تسريحة',2,200],['كيراتين',4,700],['هيدرافيشل',3,480],['تنظيف بشرة',2,320],['تقشير',2,280],['منيكير جل',2,160],['منيكير + بديكير',3,240],['تركيب أظافر',3,220]];
+/* الكتالوج قابل للإدارة من شاشة «الخدمات» — أي تعديل يُحفظ كاملاً وينعكس على الحجز والأسعار */
+const SVC_KEY='luma_svc_catalog';
+const SVC_CAT_DEFAULT={'مكياج سهرة':'مكياج','مكياج عروس':'مكياج','مكياج ناعم':'مكياج','صبغة + قص':'شعر','تسريحة':'شعر','كيراتين':'شعر','هيدرافيشل':'بشرة','تنظيف بشرة':'بشرة','تقشير':'بشرة','منيكير جل':'أظافر','منيكير + بديكير':'أظافر','تركيب أظافر':'أظافر'};
+{const saved=LumaStore.get(SVC_KEY,null);if(saved&&saved.length){SVC_CATALOG.length=0;saved.forEach(s=>SVC_CATALOG.push(s));}}
+SVC_CATALOG.forEach(s=>{if(!s[3])s[3]=SVC_CAT_DEFAULT[s[0]]||'أخرى';});
+function saveSvcCatalog(){LumaStore.set(SVC_KEY,SVC_CATALOG);}
 const svcPrice=n=>{const x=SVC_CATALOG.find(s=>s[0]===n);return x?x[2]:350;};
 const ST_STYLE={confirmed:{bg:'rgba(111,168,106,0.16)',bd:'#6fa86a',lb:'مؤكد'},pending:{bg:'rgba(205,172,80,0.16)',bd:'#ccab64',lb:'بانتظار الدفع'},walkin:{bg:'rgba(125,155,192,0.16)',bd:'#7d9bc0',lb:'حضور مباشر'},blocked:{bg:'rgba(134,129,141,0.16)',bd:'#86818d',lb:'وقت محجوب'}};
 

@@ -70,6 +70,38 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('إدارة الخدمات: إضافة خدمة تنعكس في الكتالوج', async ({ page }) => {
+  await page.goto('/salon.html#services');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("+ خدمة جديدة")');
+  await page.fill('#svN', 'باديكير سبا');
+  await page.fill('#svP', '300');
+  await page.click('.lux-modal [data-ok]');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.card', { hasText: 'باديكير سبا' })).toBeVisible();
+  await expect(page.locator('.card', { hasText: 'باديكير سبا' })).toContainText('300');
+  // تحرير سعر خدمة قائمة
+  await page.locator('.card', { hasText: 'منيكير جل' }).locator('button:has-text("تحرير")').click();
+  await page.fill('#svP', '180');
+  await page.click('.lux-modal [data-ok]');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.card', { hasText: 'منيكير جل' })).toContainText('180');
+});
+
+test('التقارير: تصدير للطباعة وملخص أسبوعي', async ({ page }) => {
+  await page.goto('/salon.html#reports');
+  await page.waitForTimeout(800);
+  const [pop] = await Promise.all([
+    page.waitForEvent('popup'),
+    page.click('button:has-text("تصدير التقرير")'),
+  ]);
+  await pop.waitForLoadState('domcontentloaded');
+  await expect(pop.getByText('تقرير الأداء الشهري')).toBeVisible();
+  await page.click('button:has-text("الملخص الأسبوعي")');
+  await expect(page.getByText('هذا ملخص أسبوعك في صالون لمسة')).toBeVisible();
+  await expect(page.getByText(/نجمة الأسبوع/)).toBeVisible();
+});
+
 test('برنامج الولاء: نقاط العميلات والإعدادات والاستبدال', async ({ page }) => {
   await page.goto('/salon.html#clients');
   await page.waitForTimeout(800);
