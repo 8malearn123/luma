@@ -70,6 +70,29 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('سياسة الحجز والخدمات المميزة تظهر في صفحة الحجز', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await expect(page.getByText('سياسة الحجز والخدمات المميزة')).toBeVisible();
+  // تمييز خدمة إضافية بشارة «عرض خاص»
+  await page.locator('.feat-sel').first().selectOption('عرض خاص');
+  await page.waitForTimeout(500);
+  // صفحة الحجز: الشارات والسياسة
+  await page.goto('/booking.html');
+  await page.waitForTimeout(600);
+  await expect(page.locator('.svc .feat', { hasText: 'الأكثر طلباً' })).toBeVisible();   // الافتراضية
+  await expect(page.locator('.svc .feat', { hasText: 'عرض خاص' })).toBeVisible();       // المضافة
+  await expect(page.getByText('سياسة الحجز 📋').first()).toBeVisible();
+  await expect(page.getByText(/إلغاء أو تعديل الحجز مجاناً/).first()).toBeVisible();
+  // البنود تظهر أيضاً في خطوة التأكيد
+  await page.locator('.svc').first().click();
+  await page.locator('.stf:not(.leave)').first().click();
+  await page.locator('.day:not([disabled])').first().click();
+  await page.locator('.slot:not([disabled])').first().click();
+  await page.click('button:has-text("متابعة")');
+  await expect(page.locator('.policy.compact')).toBeVisible();
+});
+
 test('الشعار والغلاف: رفع صورة من الجهاز ينعكس على صفحة الحجز', async ({ page }) => {
   const PX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
   await page.goto('/salon.html#page');
