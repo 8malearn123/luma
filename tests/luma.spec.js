@@ -384,6 +384,9 @@ test('صفحة الخبيرة: نبذة ورابط أعمالها وتقييما
   await page.click('#rvSend');
   await expect(page.locator('#revList .rv', { hasText: 'تجربة راقية والنتيجة فاقت التوقع' })).toBeVisible();
   await expect(page.locator('#revList').getByText('عميلة موثقة ✓').first()).toBeVisible();
+  // كل منتج له صورة SVG مدمجة
+  await page.click('#tab-shop');
+  await expect(page.locator('.pcard .art svg')).toHaveCount(6);
 });
 
 test('تعليقات المتجر للعميلات فقط: رقم غير مسجل يُرفض والموثق ينشر', async ({ page }) => {
