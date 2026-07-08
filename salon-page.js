@@ -16,7 +16,9 @@ function pageThemeOf(c){
   if(c.theme==='custom'&&c.themeCustom)return {...PAGE_PRESETS[0],k:'custom',ar:'ثيم مخصص',...c.themeCustom};
   return PAGE_PRESETS.find(p=>p.k===c.theme)||PAGE_PRESETS[0];
 }
-const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],...hrLoad(PAGE_KEY,{})});
+const PAGE_POLICY_DEFAULT='الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.';
+const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},...hrLoad(PAGE_KEY,{})});
+const PAGE_BADGES=['الأكثر طلباً','جديدة','عرض خاص','اختيار الخبيرات'];
 /* معرّف يوتيوب من أي شكل رابط (watch / youtu.be / shorts / embed) */
 const ytIdOf=u=>{const m=String(u||'').match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);return m?m[1]:null;};
 const isVideoUrl=u=>!!ytIdOf(u)||/\.(mp4|webm|mov)(\?|$)/i.test(String(u||''));
@@ -62,6 +64,13 @@ const PAGE={
     rd.readAsDataURL(f);inp.value='';
   },
   imgClear(key){PAGE.save({[key]:''},true);SALON.go('page');},
+  /* شارة مميزة لخدمة (الأكثر طلباً…) — تظهر في صفحة الحجز */
+  setFeat(name,val){
+    const f={...(pageCfg().featured||{})};
+    if(val)f[name]=val;else delete f[name];
+    PAGE.save({featured:f},true);
+    LUX.toast(val?('مُيّزت «'+name+'» — '+val+' ✓'):('أُزيل تمييز «'+name+'»'),'ok');
+  },
   /* ── معرض الأعمال: صور مرفوعة (مضغوطة) أو روابط صور/فيديو ── */
   GAL_MAX:12,
   galPush(item){
@@ -158,6 +167,22 @@ SCREENS.page=()=>{
           </div>
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:9px">الصور المرفوعة تُضغط تلقائياً · الفيديو برابط يوتيوب أو ملف mp4</div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">سياسة الحجز والخدمات المميزة <span class="ln"></span></div>
+        <div class="lux-f"><label>سياسة الحجز — كل سطر يظهر كبند في صفحة الحجز وعند التأكيد</label>
+          <textarea rows="4" oninput="PAGE.field('policy',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13px;line-height:2;outline:none;resize:vertical">${c.policy||''}</textarea></div>
+        <div class="lux-f" style="margin-top:6px"><label>الخدمات المميزة — اختاري شارة تظهر على الخدمة في صفحة الحجز</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+            ${SVC_CATALOG.map(s=>{const cur=(c.featured||{})[s[0]]||'';return `
+            <div style="display:flex;align-items:center;gap:9px;border:1px solid ${cur?'var(--gold-deep)':'var(--line)'};border-radius:10px;padding:8px 11px">
+              <span style="flex:1;font-size:12.5px;color:var(--white)">${cur?'⭐ ':''}${s[0]}</span>
+              <select class="feat-sel" onchange="PAGE.setFeat('${s[0].replace(/'/g,"\\'")}',this.value)" style="background:var(--bg);border:1px solid var(--line);border-radius:7px;color:${cur?'var(--gold-light)':'var(--muted)'};font-family:inherit;font-size:11.5px;padding:6px 8px;outline:none">
+                <option value="">بدون شارة</option>
+                ${PAGE_BADGES.map(b=>`<option ${cur===b?'selected':''}>${b}</option>`).join('')}
+              </select>
+            </div>`;}).join('')}
+          </div></div>
       </div>
       <div class="card">
         <div class="sec-label">مظهر وتصميم الصفحة <span class="ln"></span>

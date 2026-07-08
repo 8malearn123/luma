@@ -35,6 +35,12 @@
   .gal-lb img,.gal-lb video{max-width:94vw;max-height:82vh;border-radius:14px}
   .gal-lb iframe{width:min(94vw,760px);aspect-ratio:16/9;border:none;border-radius:14px}
   .gal-lb .gx{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:17px;cursor:pointer}
+  .feat{display:inline-block;font-size:9.5px;font-weight:700;color:var(--bg);background:var(--ac);border-radius:20px;padding:2px 9px;margin-bottom:5px}
+  .policy{background:var(--card);border:1px solid rgba(128,128,128,.18);border-radius:var(--rad,16px);padding:15px 16px;margin-top:20px}
+  .policy.compact{margin-top:14px;font-size:11px}
+  .policy .pt{font-size:12px;color:var(--ac);font-weight:700;margin-bottom:9px}
+  .policy .pl{display:flex;gap:8px;font-size:11.8px;opacity:.78;line-height:2}
+  .policy .pl span{color:var(--ac);font-size:8px;line-height:2.6}
   .prog{display:flex;gap:6px;padding:14px 18px 4px}
   .prog span{height:5px;flex:1;border-radius:5px;background:rgba(255,255,255,.1);transition:background .3s}
   .prog span.on{background:var(--ac)}
@@ -91,21 +97,25 @@ const THEMES={
   'pearl-light':{bg:'#f7f3ec',card:'#ffffff',ac:'#9c8047',tx:'#2e241b'},
 };
 const load=(k,f)=>LumaStore.get(k,f);
-const CFG={slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',...load('luma_page_cfg',{})};
+const CFG={slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',
+  policy:'الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.',
+  featured:{'مكياج عروس':'الأكثر طلباً'},
+  ...load('luma_page_cfg',{})};
 /* ثيم مخصص من المحرر الكامل، أو قالب جاهز */
 const T=(CFG.theme==='custom'&&CFG.themeCustom)?{...THEMES['dark-luxury'],...CFG.themeCustom}:(THEMES[CFG.theme]||THEMES['dark-luxury']);
 const rt=document.documentElement.style;
 rt.setProperty('--bg',T.bg);rt.setProperty('--card',T.card);rt.setProperty('--ac',T.ac);rt.setProperty('--tx',T.tx);
 rt.setProperty('--rad',(T.rad!=null?T.rad:18)+'px');
 
-/* ═══ بيانات الصالون: خدمات + طاقم (تتزامن مع الداشبورد) ═══ */
-const CATS=[['makeup','مكياج ✨'],['hair','شعر 💇‍♀️'],['nails','أظافر 💅'],['skin','بشرة 🧖‍♀️']];
-const SERVICES=[
-  {id:1,cat:'makeup',n:'مكياج سهرة',p:350,d:60},{id:2,cat:'makeup',n:'مكياج عروس',p:850,d:120},
-  {id:3,cat:'hair',n:'صبغة + قص',p:550,d:90},{id:4,cat:'hair',n:'تسريحة مناسبات',p:200,d:60},
-  {id:5,cat:'skin',n:'هيدرافيشل',p:480,d:75},{id:6,cat:'skin',n:'تنظيف بشرة عميق',p:320,d:60},
-  {id:7,cat:'nails',n:'منيكير جل',p:160,d:60},{id:8,cat:'nails',n:'تركيب أظافر',p:220,d:90},
-];
+/* ═══ بيانات الصالون: الخدمات من الكتالوج الحي (تديره المالكة من شاشة «الخدمات») ═══ */
+const SVC_DEFAULTS=[['مكياج سهرة',2,350,'مكياج'],['مكياج عروس',4,850,'مكياج'],['مكياج ناعم',2,250,'مكياج'],['صبغة + قص',3,550,'شعر'],['تسريحة',2,200,'شعر'],['كيراتين',4,700,'شعر'],['هيدرافيشل',3,480,'بشرة'],['تنظيف بشرة',2,320,'بشرة'],['تقشير',2,280,'بشرة'],['منيكير جل',2,160,'أظافر'],['منيكير + بديكير',3,240,'أظافر'],['تركيب أظافر',3,220,'أظافر']];
+const CATLG=(load('luma_svc_catalog',null)||SVC_DEFAULTS).filter(s=>s&&s[0]);
+const CAT_EMOJI={'مكياج':'✨','شعر':'💇‍♀️','أظافر':'💅','بشرة':'🧖‍♀️'};
+const SERVICES=CATLG.map((s,i)=>({id:i+1,cat:s[3]||'أخرى',n:s[0],p:s[2],d:(s[1]||2)*30}));
+const CATS=[...new Set(SERVICES.map(s=>s.cat))].map(c=>[c,c+' '+(CAT_EMOJI[c]||'🌸')]);
+/* الخدمات المميزة تتصدر قسمها */
+const FEAT=CFG.featured||{};
+SERVICES.sort((a,b)=>(FEAT[b.n]?1:0)-(FEAT[a.n]?1:0));
 const ROLE2CAT={'مكياج':'makeup','شعر':'hair','بشرة':'skin','أظافر':'nails','رموش':'makeup','سبا':'skin'};
 let STAFF=[
   {id:'amal',n:'أمل',role:'مكياج'},{id:'sara',n:'سارة',role:'شعر'},
@@ -173,6 +183,14 @@ function gallery(){
           :`<img src="${x.src}" alt="" loading="lazy" onerror="this.closest('.gal-it').remove()"/>`}
       </button>`).join('')}</div></div>`;
 }
+/* ═══ سياسة الحجز — بنودها تديرها المالكة من «صفحتي والرابط» ═══ */
+function policyBox(compact){
+  const lines=String(CFG.policy||'').split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!lines.length)return '';
+  return `<div class="policy${compact?' compact':''}">
+    <div class="pt">سياسة الحجز 📋</div>
+    ${lines.map(l=>`<div class="pl"><span>◆</span>${esc(l)}</div>`).join('')}</div>`;
+}
 window.galOpen=i=>{
   const x=(CFG.gallery||[])[i];if(!x)return;
   const lb=document.createElement('div');lb.className='gal-lb';
@@ -200,8 +218,8 @@ function render(){
     s=gallery()+`<h1 style="font-size:18px">اختاري خدمتك</h1>`+CATS.map(([k,ar])=>{
       const list=SERVICES.filter(x=>x.cat===k);if(!list.length)return'';
       return `<div class="cat">${ar}</div>`+list.map(x=>`<button class="svc" onclick="pickSvc(${x.id})">
-        <span><span class="n">${x.n}</span><div class="d">${x.d} دقيقة</div></span><span class="p">${x.p} ر.س</span></button>`).join('');
-    }).join('');
+        <span>${FEAT[x.n]?`<span class="feat">⭐ ${esc(FEAT[x.n])}</span>`:''}<span class="n">${x.n}</span><div class="d">${x.d} دقيقة</div></span><span class="p">${x.p} ر.س</span></button>`).join('');
+    }).join('')+policyBox();
   }
   if(step===2){
     const iso=date||days[0].iso;
@@ -241,6 +259,7 @@ function render(){
         <button class="btn ghost" style="margin:0;padding:12px 18px;font-size:13px" onclick="applyCoupon()">تطبيق</button>
       </div>
       ${cpnMsg?`<div style="font-size:12px;color:#c97b88;margin-top:6px">${cpnMsg}</div>`:coupon?`<div style="font-size:12px;color:#6fa86a;margin-top:6px">تم تطبيق الخصم ✓</div>`:''}
+      ${policyBox(true)}
       <button class="btn" onclick="confirmBooking()">تأكيد الحجز ✓</button>`;
   }
   app.innerHTML=header()+`<div class="step">${s}</div>`;
