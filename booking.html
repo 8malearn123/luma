@@ -35,6 +35,9 @@
   .gal-lb img,.gal-lb video{max-width:94vw;max-height:82vh;border-radius:14px}
   .gal-lb iframe{width:min(94vw,760px);aspect-ratio:16/9;border:none;border-radius:14px}
   .gal-lb .gx{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:17px;cursor:pointer}
+  .wbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:10px;background:var(--ac);color:var(--bg);padding:10px 16px;font-size:12.5px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .wbar .wt{flex:1;text-align:center;line-height:1.7}
+  .wbar .wx{border:none;background:rgba(0,0,0,.16);color:inherit;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px;flex-shrink:0;line-height:1}
   .feat{display:inline-block;font-size:9.5px;font-weight:700;color:var(--bg);background:var(--ac);border-radius:20px;padding:2px 9px;margin-bottom:5px}
   .policy{background:var(--card);border:1px solid rgba(128,128,128,.18);border-radius:var(--rad,16px);padding:15px 16px;margin-top:20px}
   .policy.compact{margin-top:14px;font-size:11px}
@@ -106,6 +109,35 @@ const T=(CFG.theme==='custom'&&CFG.themeCustom)?{...THEMES['dark-luxury'],...CFG
 const rt=document.documentElement.style;
 rt.setProperty('--bg',T.bg);rt.setProperty('--card',T.card);rt.setProperty('--ac',T.ac);rt.setProperty('--tx',T.tx);
 rt.setProperty('--rad',(T.rad!=null?T.rad:18)+'px');
+
+/* ═══ الخط المخصص — يُحمَّل بشكل غير حاجب حتى لا يجمّد الصفحة ═══ */
+const FONTS={
+  plex:["'IBM Plex Sans Arabic',sans-serif",'IBM+Plex+Sans+Arabic:wght@300;400;500;700'],
+  cairo:["'Cairo',sans-serif",'Cairo:wght@300;400;600;700'],
+  tajawal:["'Tajawal',sans-serif",'Tajawal:wght@300;400;500;700'],
+  almarai:["'Almarai',sans-serif",'Almarai:wght@300;400;700'],
+  'noto-kufi':["'Noto Kufi Arabic',sans-serif",'Noto+Kufi+Arabic:wght@300;400;600'],
+  messiri:["'El Messiri',sans-serif",'El+Messiri:wght@400;600'],
+  amiri:["'Amiri',serif",'Amiri:wght@400;700'],
+  changa:["'Changa',sans-serif",'Changa:wght@300;400;600'],
+};
+const FK=FONTS[CFG.font||'plex'];
+if(FK&&(CFG.font||'plex')!=='plex'){
+  const fl=document.createElement('link');fl.rel='stylesheet';fl.media='print';
+  fl.href='https://fonts.googleapis.com/css2?family='+FK[1]+'&display=swap';
+  fl.onload=function(){this.media='all';};
+  document.head.appendChild(fl);
+  document.body.style.fontFamily=FK[0];
+}
+
+/* ═══ شريط رسالة الترحيب — اختياري، يُغلق لبقية الجلسة ═══ */
+if(CFG.welcome&&String(CFG.welcome).trim()&&!(()=>{try{return sessionStorage.getItem('luma_wb_x');}catch(e){return null;}})()){
+  const wb=document.createElement('div');wb.className='wbar';
+  wb.innerHTML='<span class="wt"></span><button class="wx" aria-label="إغلاق">✕</button>';
+  wb.querySelector('.wt').textContent=CFG.welcome;
+  wb.querySelector('.wx').onclick=()=>{try{sessionStorage.setItem('luma_wb_x','1');}catch(e){}wb.remove();};
+  document.body.prepend(wb);
+}
 
 /* ═══ بيانات الصالون: الخدمات من الكتالوج الحي (تديره المالكة من شاشة «الخدمات») ═══ */
 const SVC_DEFAULTS=[['مكياج سهرة',2,350,'مكياج'],['مكياج عروس',4,850,'مكياج'],['مكياج ناعم',2,250,'مكياج'],['صبغة + قص',3,550,'شعر'],['تسريحة',2,200,'شعر'],['كيراتين',4,700,'شعر'],['هيدرافيشل',3,480,'بشرة'],['تنظيف بشرة',2,320,'بشرة'],['تقشير',2,280,'بشرة'],['منيكير جل',2,160,'أظافر'],['منيكير + بديكير',3,240,'أظافر'],['تركيب أظافر',3,220,'أظافر']];
