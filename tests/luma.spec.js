@@ -70,6 +70,29 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('الشعار والغلاف: رفع صورة من الجهاز ينعكس على صفحة الحجز', async ({ page }) => {
+  const PX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.setInputFiles('#up-logo', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
+  await page.waitForTimeout(800);
+  await expect(page.locator('#pv-logo')).toBeVisible();                 // معاينة الشعار في المحرر
+  await page.setInputFiles('#up-cover', { name: 'cover.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
+  await page.waitForTimeout(800);
+  await expect(page.locator('#pv-cover')).toBeVisible();
+  // صفحة الحجز تعرضهما
+  await page.goto('/booking.html');
+  await page.waitForTimeout(600);
+  await expect(page.locator('.logo img')).toBeVisible();
+  await expect(page.locator('.cover > img')).toBeVisible();
+  // الإزالة تعيد الافتراضي
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.locator('button[title="إزالة"]').first().click();
+  await page.waitForTimeout(500);
+  await expect(page.locator('#pv-logo')).toHaveCount(0);
+});
+
 test('معرض الأعمال: صور وفيديو من المحرر إلى صفحة الحجز', async ({ page }) => {
   const PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
   await page.goto('/salon.html#page');
