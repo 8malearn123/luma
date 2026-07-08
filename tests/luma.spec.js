@@ -85,6 +85,30 @@ test('برنامج الولاء: نقاط العميلات والإعدادات 
   await expect(page.getByText('كوبون العميلة الشخصي')).toBeVisible();
 });
 
+test('المخزون مربوط بالخدمات: خصم تلقائي بعد الدفع', async ({ page }) => {
+  // قبل الدفع: محلول هيدرافيشل = 22
+  await page.goto('/salon.html#inventory');
+  await page.waitForTimeout(800);
+  await expect(page.getByText('وصفات الخدمات')).toBeVisible();
+  const row = page.locator('.ivr', { hasText: 'محلول هيدرافيشل' });
+  await expect(row.locator('.num').first()).toHaveText('22');
+  await expect(row.getByText(/يُستهلك في/)).toBeVisible();
+  // دفع حجز «سارة الأحمدي · هيدرافيشل» (تنقّل عبر القائمة — الهاش وحده لا يعيد التصيير)
+  await page.click('.nav-item[data-id="board"]');
+  await page.waitForTimeout(600);
+  await page.locator('.appt', { hasText: 'سارة الأحمدي' }).first().click();
+  await page.click('[data-pay]');
+  await page.click('.lux-modal [data-ok]');
+  await page.waitForTimeout(1900);
+  await expect(page.locator('#lumaInv')).toBeVisible();
+  // بعد الدفع: خُصمت وحدة واحدة تلقائياً
+  await page.locator('.x').last().click();          // إغلاق نافذة الفاتورة
+  await page.waitForTimeout(400);
+  await page.click('.nav-item[data-id="inventory"]');
+  await page.waitForTimeout(600);
+  await expect(page.locator('.ivr', { hasText: 'محلول هيدرافيشل' }).locator('.num').first()).toHaveText('21');
+});
+
 test('كوبون الخصم يعمل في صفحة الحجز العامة', async ({ page }) => {
   await page.goto('/booking.html');
   await page.waitForTimeout(600);

@@ -195,6 +195,8 @@ window.INVENTORY=[
   {n:'جل أظافر — ألوان',cat:'أظافر',q:30,min:12,cost:18,sup:'نيل بار'},
   {n:'مثبّت مكياج (سبراي)',cat:'مكياج',q:3,min:8,cost:60,sup:'مورّد الجمال'},
 ];
+/* الكميات المخصومة تلقائياً (وصفات الخدمات) تبقى بعد التحديث */
+{const iq=LumaStore.get(INVQ_KEY,null);if(iq)window.INVENTORY.forEach(it=>{if(iq[it.n]!=null)it.q=iq[it.n];});}
 function invStatus(it){if(it.q<=Math.ceil(it.min*0.4))return['يحتاج طلب','gold'];if(it.q<it.min)return['منخفض','gold'];return['متوفر','green'];}
 window.SALON_INV={
   open(){document.getElementById('inv-modal').style.display='flex';},
@@ -216,14 +218,14 @@ SCREENS.inventory=()=>{
   .sheet{width:480px;max-width:92vw;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
   .sheet h3{font-size:18px;color:var(--white);font-weight:600;margin-bottom:4px}.sheet .sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
   .frow{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.frow label{font-size:12.5px;color:var(--gold-pale)}.fin{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;outline:none}.fin:focus{border-color:var(--gold-deep)}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}</style>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">مخزون الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">المستلزمات وتنبيهات النفاد</div></div><button class="btn btn-gold" onclick="SALON_INV.open()">${icon('plus',16)} إضافة للمخزون</button></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">مخزون الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">المستلزمات وتنبيهات النفاد — تُخصم تلقائياً مع كل خدمة مدفوعة</div></div><div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="STOCK.recipesModal()">وصفات الخدمات</button><button class="btn btn-gold" onclick="SALON_INV.open()">${icon('plus',16)} إضافة للمخزون</button></div></div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('boxes',19)}</div></div><div class="val">${items.length}</div><div class="k">أصناف في المخزون</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('clock',19)}</div>${low?`<div class="delta" style="color:var(--gold-light);background:rgba(156,124,58,0.16)">⚠ ${low}</div>`:''}</div><div class="val">${low}</div><div class="k">أصناف تحت الحد الأدنى</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">${value.toLocaleString('en')}<span class="u">ر.س</span></div><div class="k">قيمة المخزون</div></div>
   </div>
   <div class="ivtab"><div class="ivh"><span>الصنف</span><span>القسم</span><span>المتوفر</span><span>الحد الأدنى</span><span>المورّد</span><span>الحالة</span></div>
-  ${items.map(it=>{const[lb,sc]=invStatus(it);const pct=Math.min(100,it.q/(it.min*1.6)*100);const col=sc==='green'?'#6fa86a':'#ccab64';return `<div class="ivr"><div><div class="nm">${it.n}</div><div class="bar hide"><span style="width:${pct}%;background:${col}"></span></div></div><span class="mut hide">${it.cat}</span><span class="num ${it.q<it.min?'warn':''}">${it.q}</span><span class="num mut hide" style="color:var(--muted)">${it.min}</span><span class="mut hide">${it.sup}</span><span><span class="badge ${sc}">${lb}</span></span></div>`;}).join('')}
+  ${items.map(it=>{const[lb,sc]=invStatus(it);const pct=Math.min(100,it.q/(it.min*1.6)*100);const col=sc==='green'?'#6fa86a':'#ccab64';const uses=typeof STOCK!=='undefined'?STOCK.usesOf(it.n):0;return `<div class="ivr"><div><div class="nm">${it.n}</div>${uses?`<div style="font-size:11px;color:var(--muted);margin-top:2px">يُستهلك في ${uses} ${uses>2?'خدمات':'خدمة'}</div>`:''}<div class="bar hide"><span style="width:${pct}%;background:${col}"></span></div></div><span class="mut hide">${it.cat}</span><span class="num ${it.q<it.min?'warn':''}">${it.q}</span><span class="num mut hide" style="color:var(--muted)">${it.min}</span><span class="mut hide">${it.sup}</span><span><span class="badge ${sc}">${lb}</span></span></div>`;}).join('')}
   </div>
   <div class="modal" id="inv-modal" onclick="if(event.target===this)SALON_INV.close()">
     <div class="sheet">
@@ -446,8 +448,10 @@ const SALON={
           const total=+(price*1.15+tip).toFixed(2);
           markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
           const pts=typeof loyAward==='function'?loyAward(a.client,total):0;
+          const stk=typeof stockConsume==='function'?stockConsume(a.service):{alerts:[]};
           close();SALON.go('board');
           LUX.toast('تم الدفع بنجاح عبر '+method+' ✓'+(pts?' — أُضيفت '+pts+' نقطة ولاء لرصيد '+a.client:''),'ok');
+          if(stk.alerts.length)setTimeout(()=>LUX.toast('⚠ اقترب النفاد: '+stk.alerts.join('، ')+' — اطلبي من المورّد','warn'),1500);
           setTimeout(()=>SALON.showInvoice(a.id),650);
         },900);
       };
