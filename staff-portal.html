@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0C0B0E"/>
+<script src="luma-store.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LUMA — بوابة الموظفة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&family=Bodoni+Moda:opsz,wght@6..96,500&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0C0B0E;--card:#15141A;--card2:#1B1A21;--ac:#ccab64;--acB:#dbbd81;--acD:#846a38;--tx:#f6f2ec;--mut:#86818d;--line:#26242d;--green:#9fce99;--red:#e29aa6}
+  body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+  .wrap{max-width:440px;margin:0 auto;padding:16px 16px 90px}
+  .brand{font-family:'Bodoni Moda',serif;letter-spacing:.26em;color:var(--ac);font-size:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+  .btn{width:100%;border:none;border-radius:13px;padding:13px;background:linear-gradient(120deg,var(--acB),var(--ac) 45%,#9c8047);color:#131217;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid var(--acD);color:var(--ac)}
+  .btn:disabled{opacity:.4}
+  .in{width:100%;background:#0e0d11;border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--tx);font-family:inherit;font-size:14px;outline:none}
+  .in:focus{border-color:var(--acD)}
+  label{display:block;font-size:12px;color:#e6ce95;margin:10px 0 6px}
+  .badge{display:inline-block;font-size:10.5px;padding:3px 10px;border-radius:20px;border:1px solid var(--line);color:var(--mut)}
+  .badge.g{background:rgba(111,168,106,.14);border-color:rgba(111,168,106,.4);color:var(--green)}
+  .badge.a{background:rgba(205,172,80,.14);border-color:var(--acD);color:var(--ac)}
+  .badge.r{background:rgba(192,86,106,.14);border-color:#7c4a55;color:var(--red)}
+  .tabs{position:fixed;bottom:0;right:0;left:0;background:#111015ee;border-top:1px solid var(--line);backdrop-filter:blur(14px);display:flex;z-index:50}
+  .tabs button{flex:1;background:none;border:none;color:var(--mut);font-family:inherit;font-size:10.5px;padding:10px 4px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .tabs button.on{color:var(--ac)}
+  .tabs .ic{font-size:18px}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+  .row:last-child{border:none}
+  .row .k{color:var(--mut)}
+  .stepper{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px}
+  .stp{font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--mut)}
+  .stp.done{background:rgba(111,168,106,.14);color:var(--green);border-color:rgba(111,168,106,.4)}
+  .stp.cur{background:rgba(205,172,80,.14);color:var(--ac);border-color:var(--acD)}
+  .notif{background:linear-gradient(120deg,rgba(220,192,106,.16),rgba(156,124,58,.05));border:1px solid var(--acD);border-radius:14px;padding:12px 14px;font-size:12.5px;margin-bottom:12px;color:#e6ce95}
+  .av{width:46px;height:46px;border-radius:50%;background:var(--card2);border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:19px;flex-shrink:0;overflow:hidden}
+  .av img{width:100%;height:100%;object-fit:cover}
+  .big{font-family:'Bodoni Moda',serif;font-size:30px;color:var(--ac)}
+  .toast{position:fixed;bottom:74px;right:50%;transform:translateX(50%);background:#18171d;border:1px solid var(--acD);color:var(--ac);padding:11px 20px;border-radius:28px;font-size:13px;z-index:99;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .pick{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;text-align:center;cursor:pointer;font-family:inherit;color:var(--tx)}
+  .pick.on{border-color:var(--ac);background:rgba(205,172,80,.08)}
+  /* زر الثيم العائم يرتفع فوق شريط التبويبات حتى لا يحجب «حضوري» */
+  .luma-theme-btn{bottom:78px !important;left:14px !important}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="tabs" id="tabs" style="display:none">
+  <button data-t="home"><span class="ic">🏠</span>جدولي</button>
+  <button data-t="pay"><span class="ic">💰</span>أرباحي</button>
+  <button data-t="req"><span class="ic">📨</span>طلباتي</button>
+  <button data-t="att"><span class="ic">⏰</span>حضوري</button>
+</div>
+<script>
+/* ═══ بيانات مشتركة مع داشبورد الصالون (نفس مفاتيح LumaStore) ═══ */
+const SEED_STAFF=[
+  {id:'amal',n:'أمل',role:'مكياج',color:'#ccab64'},{id:'sara',n:'سارة',role:'شعر',color:'#d98a93'},
+  {id:'nora',n:'نورة',role:'بشرة',color:'#7d9bc0'},{id:'reem',n:'ريم',role:'أظافر',color:'#6fa86a'},
+];
+const SEED_APPTS=[
+  {staff:'amal',start:0,dur:2,client:'نوف العتيبي',service:'مكياج سهرة',st:'confirmed'},
+  {staff:'amal',start:4,dur:4,client:'دانة السالم',service:'مكياج عروس',st:'confirmed'},
+  {staff:'amal',start:10,dur:2,client:'ريم القحطاني',service:'مكياج ناعم',st:'pending'},
+  {staff:'sara',start:1,dur:3,client:'لمياء الحربي',service:'صبغة + قص',st:'confirmed'},
+  {staff:'sara',start:6,dur:2,client:'هند الشمري',service:'تسريحة',st:'confirmed'},
+  {staff:'sara',start:12,dur:4,client:'وعد الزهراني',service:'كيراتين',st:'confirmed'},
+  {staff:'nora',start:0,dur:3,client:'سارة الأحمدي',service:'هيدرافيشل',st:'confirmed'},
+  {staff:'nora',start:5,dur:2,client:'منيرة الدوسري',service:'تنظيف بشرة',st:'pending'},
+  {staff:'nora',start:9,dur:2,client:'أمل السبيعي',service:'تقشير',st:'confirmed'},
+  {staff:'reem',start:2,dur:2,client:'جواهر الشهري',service:'منيكير جل',st:'confirmed'},
+  {staff:'reem',start:5,dur:3,client:'لطيفة المطيري',service:'منيكير + بديكير',st:'confirmed'},
+  {staff:'reem',start:11,dur:2,client:'عبير الغامدي',service:'تركيب أظافر',st:'walkin'},
+];
+const HR_PROD={amal:5200,sara:3400,nora:6100,reem:2800};
+const HR_TIPS={amal:640,sara:380,nora:520,reem:290};
+const QUOTA=21;
+const slotLabel=i=>{const t=600+i*30;let h=Math.floor(t/60),m=t%60;const ap=h>=12?'م':'ص';let h12=h>12?h-12:h;return `${h12}:${m===0?'00':'30'} ${ap}`;};
+
+const S=window.LumaStore;
+const profiles=()=>S.get('luma_staff_profiles',{});
+const arch=()=>S.get('luma_staff_archived',[]);
+function allStaff(){
+  const extra=S.get('luma_salon_staff',[]);
+  return SEED_STAFF.concat(extra).filter(s=>!arch().includes(s.id));
+}
+function myAppts(sid){
+  const custom=S.get('luma_salon_appts',[]).filter(a=>a.staff===sid);
+  return SEED_APPTS.filter(a=>a.staff===sid).concat(custom).filter(a=>a.st!=='cancelled').sort((a,b)=>a.start-b.start);
+}
+const payOf=sid=>({base:3500,pct:10,prodPct:15,tierAt:15000,tierPct:12,...(S.get('luma_hr_pay2',{})[sid]||{})});
+const advOf=sid=>{const m=new Date().toISOString().slice(0,7);return (S.get('luma_hr_advances',{})[m]||{})[sid]||0;};
+const attAll=()=>S.get('luma_hr_att',{amal:{},sara:{1:{late:45}},nora:{2:{absent:true}},reem:{3:{late:20}}});
+function ledger(sid){
+  const p=payOf(sid);
+  const svc=myAppts(sid).filter(a=>a.st!=='blocked').length*380*24;
+  const rate=svc>=p.tierAt?p.tierPct:p.pct;
+  const svcComm=Math.round(svc*rate/100);
+  const prod=HR_PROD[sid]||0,prodComm=Math.round(prod*p.prodPct/100);
+  const tips=HR_TIPS[sid]||0,adv=advOf(sid);
+  return {p,svc,rate,svcComm,prod,prodComm,tips,adv,net:p.base+svcComm+prodComm+tips-adv};
+}
+function balance(sid){
+  const yr=String(new Date().getFullYear());
+  const used=S.get('luma_hr_leaves',[]).filter(l=>l.staff===sid&&l.status==='approved'&&l.type==='سنوية'&&String(l.from).startsWith(yr))
+    .reduce((t,l)=>t+((new Date(l.to)-new Date(l.from))/86400000+1),0);
+  return Math.max(0,QUOTA-used);
+}
+const chains=()=>S.get('luma_req_chains',[{id:'c1',name:'اعتماد مباشر',steps:['المالكة']}]);
+const chainOf=id=>chains().find(c=>c.id===id)||chains()[0];
+const rtypes=()=>S.get('luma_req_types',[]);
+
+/* ═══ الجلسة ═══ */
+let SID=S.get('luma_portal_session',null);
+let tab='home';
+const app=document.getElementById('app');
+const tabs=document.getElementById('tabs');
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2800);}
+function avatar(s,size){
+  const p=profiles()[s.id]||{};
+  return p.photo?`<span class="av" style="width:${size}px;height:${size}px"><img src="${p.photo}"/></span>`
+    :`<span class="av" style="width:${size}px;height:${size}px;border-color:${s.color||'var(--ac)'};color:${s.color||'var(--ac)'}">${s.n.charAt(0)}</span>`;
+}
+
+/* ═══ شاشة الدخول ═══ */
+let pickId=null;
+function loginView(){
+  tabs.style.display='none';
+  const staff=allStaff().filter(s=>((profiles()[s.id]||{}).status||'active')==='active');
+  app.innerHTML=`
+    <div style="text-align:center;padding:26px 0 8px"><div class="brand">L U M A</div>
+      <h1 style="font-size:20px;margin-top:10px">بوابة الموظفة 👋</h1>
+      <p style="font-size:12.5px;color:var(--mut);margin-top:6px">اختاري ملفك ثم أدخلي رمز الدخول</p></div>
+    <div class="picker">${staff.map(s=>`<button class="pick ${pickId===s.id?'on':''}" onclick="pickStaff('${s.id}')">
+      <div style="display:flex;justify-content:center;margin-bottom:8px">${avatar(s,46)}</div>
+      <div style="font-size:13.5px;font-weight:700">${esc(s.n)}</div>
+      <div style="font-size:10.5px;color:var(--mut);margin-top:2px">${esc(s.role)}</div></button>`).join('')}</div>
+    <label>رمز الدخول (تجريبي: أي 4 أرقام)</label>
+    <input class="in" id="pin" inputmode="numeric" maxlength="4" placeholder="••••" dir="ltr" style="text-align:center;letter-spacing:8px;font-size:18px"/>
+    <button class="btn" style="margin-top:14px" onclick="doLogin()">دخول</button>
+    <a href="login.html" style="display:block;text-align:center;color:var(--mut);font-size:12px;margin-top:16px;text-decoration:none">→ العودة لتسجيل الدخول الرئيسي</a>`;
+}
+window.pickStaff=id=>{pickId=id;loginView();};
+window.doLogin=()=>{
+  const pin=document.getElementById('pin').value;
+  if(!pickId){toast('اختاري ملفك أولاً');return;}
+  if(!/^\d{4}$/.test(pin)){toast('أدخلي رمزاً من 4 أرقام');return;}
+  SID=pickId;S.set('luma_portal_session',SID);tab='home';render();
+};
+window.logout=()=>{SID=null;S.remove('luma_portal_session');loginView();};
+
+/* ═══ إشعارات تغيّر حالة الطلبات ═══ */
+function notifications(){
+  const seenKey='luma_portal_seen_'+SID;
+  const seen=S.get(seenKey,{});
+  const msgs=[];
+  S.get('luma_hr_leaves',[]).filter(l=>l.staff===SID).forEach(l=>{
+    if(l.status!=='pending'&&seen['lv'+l.id]!==l.status)
+      msgs.push(l.status==='approved'?`✅ اعتُمدت إجازتك (${l.from} ← ${l.to})`:`❌ رُفض طلب إجازتك (${l.from})`);
+    seen['lv'+l.id]=l.status;
+  });
+  S.get('luma_requests',[]).filter(r=>r.staff===SID).forEach(r=>{
+    const t=(rtypes().find(x=>x.id===r.type)||{}).name||'طلب';
+    if(r.status!=='pending'&&seen['rq'+r.id]!==r.status)
+      msgs.push(r.status==='approved'?`✅ اعتُمد طلبك: ${t}`:`❌ رُفض طلبك: ${t}`);
+    seen['rq'+r.id]=r.status;
+  });
+  S.set(seenKey,seen);
+  return msgs;
+}
+
+/* ═══ الشاشات ═══ */
+function header(me){
+  return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+    ${avatar(me,46)}
+    <div style="flex:1"><div style="font-weight:700">أهلاً ${esc(me.n)} 🌸</div>
+      <div style="font-size:11px;color:var(--mut)">${esc(me.role)} · صالون لمسة</div></div>
+    <button class="btn ghost" style="width:auto;padding:8px 14px;font-size:11.5px" onclick="logout()">خروج</button>
+  </div>`;
+}
+function render(){
+  if(!SID)return loginView();
+  const me=allStaff().find(s=>s.id===SID);
+  if(!me){logout();return;}
+  tabs.style.display='flex';
+  [...tabs.querySelectorAll('button')].forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+  const notes=notifications().map(m=>`<div class="notif">🔔 ${m}</div>`).join('');
+  let body='';
+  if(tab==='home')body=homeView(me);
+  if(tab==='pay')body=payView(me);
+  if(tab==='req')body=reqView(me);
+  if(tab==='att')body=attView(me);
+  app.innerHTML=header(me)+notes+body;
+  window.scrollTo({top:0});
+}
+tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(b){tab=b.dataset.t;render();}});
+
+function homeView(me){
+  const appts=myAppts(SID);
+  const today=new Date().toISOString().slice(0,10);
+  const onLeave=S.get('luma_hr_leaves',[]).some(l=>l.staff===SID&&l.status==='approved'&&l.from<=today&&l.to>=today);
+  const items=appts.map(a=>`<div class="row">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ac);min-width:52px" dir="ltr">${slotLabel(a.start)}</span>
+    <span style="flex:1"><b>${a.st==='blocked'?'⛔ '+esc(a.client):esc(a.client)}</b><br><span style="font-size:11px;color:var(--mut)">${esc(a.service)}</span></span>
+    <span class="badge ${a.st==='blocked'?'':a.st==='pending'?'a':'g'}">${a.st==='blocked'?'محجوب':a.st==='pending'?'بانتظار الدفع':'مؤكد'}</span>
+  </div>`).join('');
+  return `
+    ${onLeave?'<div class="notif">🏖️ أنتِ في إجازة معتمدة اليوم — جدولك محظور من الحجوزات.</div>':''}
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+      <b style="font-size:14px">جدولي اليوم</b><span class="badge a">${appts.filter(a=>a.st!=='blocked').length} مواعيد</span></div>
+      ${items||'<div style="color:var(--mut);font-size:12.5px;padding:10px 0">لا مواعيد اليوم 🎉</div>'}</div>
+    <div class="card" style="display:flex;gap:10px;text-align:center">
+      <div style="flex:1"><div class="big">${balance(SID)}</div><div style="font-size:10.5px;color:var(--mut)">رصيد الإجازات (يوم)</div></div>
+      <div style="width:1px;background:var(--line)"></div>
+      <div style="flex:1"><div class="big">${ledger(SID).net.toLocaleString('en')}</div><div style="font-size:10.5px;color:var(--mut)">صافي الشهر (ر.س)</div></div>
+    </div>`;
+}
+function payView(me){
+  const L=ledger(SID);
+  const row=(k,v,c)=>`<div class="row"><span class="k">${k}</span><b style="${c?'color:'+c:''}" dir="ltr">${v}</b></div>`;
+  return `
+    <div class="card" style="text-align:center;background:linear-gradient(160deg,#1E1C24,#15141A);border-color:var(--acD)">
+      <div style="font-size:11.5px;color:#e6ce95">صافي أرباحك هذا الشهر (حتى الآن)</div>
+      <div class="big" style="font-size:38px;margin-top:4px">${L.net.toLocaleString('en')} <span style="font-size:12px;font-family:inherit;color:var(--mut)">ر.س</span></div>
+    </div>
+    <div class="card">
+      ${row('الراتب الأساسي',L.p.base.toLocaleString('en'))}
+      ${row('مبيعات خدماتك',L.svc.toLocaleString('en'))}
+      ${row('عمولة الخدمات ('+L.rate+'٪'+(L.rate!==L.p.pct?' شريحة ▲':'')+')',L.svcComm.toLocaleString('en'),'var(--ac)')}
+      ${row('عمولة المنتجات ('+L.p.prodPct+'٪ من '+L.prod.toLocaleString('en')+')',L.prodComm.toLocaleString('en'),'var(--ac)')}
+      ${row('بقشيش إلكتروني (100٪ لكِ)',L.tips.toLocaleString('en'),'var(--green)')}
+      ${L.adv?row('سلف مخصومة','−'+L.adv.toLocaleString('en'),'var(--red)'):''}
+    </div>
+    <div style="font-size:10.5px;color:var(--mut);text-align:center">الأرقام من نفس حاسبة رواتب الصالون — تتحدث مع كل حجز مكتمل</div>`;
+}
+function reqView(me){
+  const leaves=S.get('luma_hr_leaves',[]).filter(l=>l.staff===SID);
+  const reqs=S.get('luma_requests',[]).filter(r=>r.staff===SID);
+  const lvChain=chainOf(S.raw.get('luma_leave_chain','c1').replace(/"/g,''));
+  const stepper=(chain,step,status)=>`<div class="stepper">${chain.steps.map((nm,i)=>{
+    const done=status==='approved'||i<step,cur=status==='pending'&&i===step;
+    return `<span class="stp ${done?'done':cur?'cur':''}">${done?'✓':cur?'●':'○'} ${esc(nm)}</span>`;}).join('')}</div>`;
+  const ST={pending:['قيد المراجعة','a'],approved:['معتمدة','g'],rejected:['مرفوضة','r']};
+  const lvCards=leaves.map(l=>`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <b style="font-size:13px">إجازة ${esc(l.type)}</b><span class="badge ${ST[l.status]?ST[l.status][1]:''}">${ST[l.status]?ST[l.status][0]:l.status}</span></div>
+    <div style="font-size:11.5px;color:var(--mut);margin-top:4px" dir="ltr">${l.from} ← ${l.to}</div>
+    ${l.status!=='rejected'?stepper(lvChain,l.step||0,l.status):''}</div>`).join('');
+  const rqCards=reqs.map(r=>{
+    const t=rtypes().find(x=>x.id===r.type)||{name:'طلب',chain:'c1'};
+    const vals=Object.entries(r.values||{}).filter(([k,v])=>v).map(([k,v])=>`${esc(k)}: ${esc(v)}`).join(' · ');
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b style="font-size:13px">${esc(t.name)}</b><span class="badge ${ST[r.status]?ST[r.status][1]:''}">${ST[r.status]?ST[r.status][0]:r.status}</span></div>
+      <div style="font-size:11.5px;color:var(--mut);margin-top:4px">${vals||'—'}</div>
+      ${r.status!=='rejected'?stepper(chainOf(t.chain),r.step||0,r.status):''}</div>`;}).join('');
+  return `
+    <button class="btn" style="margin-bottom:12px" onclick="newReq()">+ طلب جديد</button>
+    ${lvCards+rqCards||'<div class="card" style="text-align:center;color:var(--mut);font-size:12.5px">لا طلبات بعد — قدّمي أول طلب من الزر أعلاه.</div>'}`;
+}
+window.newReq=()=>{
+  const types=[{id:'__leave',name:'إجازة'}].concat(rtypes());
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center';
+  wrap.innerHTML=`<div class="card" style="width:100%;max-width:440px;border-radius:22px 22px 0 0;margin:0;max-height:86vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>طلب جديد</b>
+      <button style="background:none;border:none;color:var(--mut);font-size:22px;cursor:pointer" onclick="this.closest('div[style*=fixed]')?.remove()||this.parentElement.parentElement.parentElement.remove()">×</button></div>
+    <label>نوع الطلب</label>
+    <select class="in" id="rqType">${types.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select>
+    <div id="rqFields"></div>
+    <button class="btn" style="margin-top:14px" id="rqSend">إرسال الطلب</button></div>`;
+  document.body.appendChild(wrap);
+  wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove();});
+  const fields=wrap.querySelector('#rqFields');
+  function paint(){
+    const tid=wrap.querySelector('#rqType').value;
+    if(tid==='__leave'){
+      fields.innerHTML=`<label>من</label><input class="in" type="date" id="f_from"/>
+        <label>إلى</label><input class="in" type="date" id="f_to"/>
+        <label>النوع</label><select class="in" id="f_kind"><option>سنوية</option><option>مرضية</option><option>طارئة</option><option>بدون راتب</option></select>
+        <label>السبب (اختياري)</label><input class="in" id="f_reason"/>
+        <div style="font-size:11px;color:var(--mut);margin-top:8px">رصيدك المتبقي: ${balance(SID)} يوماً · سلسلة الاعتماد: ${chainOf(S.raw.get('luma_leave_chain','c1').replace(/"/g,'')).steps.join(' ← ')}</div>`;
+    }else{
+      const t=rtypes().find(x=>x.id===tid);
+      fields.innerHTML=(t.fields||[]).map((f,i)=>{
+        const req=f.req?' *':'';
+        if(f.type==='select')return `<label>${esc(f.label)}${req}</label><select class="in" data-f="${i}">${(f.options||[]).map(o=>`<option>${esc(o)}</option>`).join('')}</select>`;
+        if(f.type==='date')return `<label>${esc(f.label)}${req}</label><input class="in" type="date" data-f="${i}"/>`;
+        if(f.type==='number')return `<label>${esc(f.label)}${req}</label><input class="in" type="number" data-f="${i}" dir="ltr"/>`;
+        return `<label>${esc(f.label)}${req}</label><input class="in" data-f="${i}"/>`;
+      }).join('')+`<div style="font-size:11px;color:var(--mut);margin-top:8px">سلسلة الاعتماد: ${chainOf(t.chain).steps.join(' ← ')}</div>`;
+    }
+  }
+  wrap.querySelector('#rqType').onchange=paint;paint();
+  wrap.querySelector('#rqSend').onclick=()=>{
+    const tid=wrap.querySelector('#rqType').value;
+    if(tid==='__leave'){
+      const from=wrap.querySelector('#f_from').value,to=wrap.querySelector('#f_to').value;
+      if(!from||!to||to<from){toast('تحققي من التاريخين');return;}
+      const clash=S.get('luma_hr_leaves',[]).some(l=>l.staff===SID&&['pending','approved'].includes(l.status)&&l.from<=to&&l.to>=from);
+      if(clash){toast('لديك طلب يتقاطع مع هذه الفترة');return;}
+      S.update('luma_hr_leaves',ls=>{ls.unshift({id:Date.now(),staff:SID,from,to,type:wrap.querySelector('#f_kind').value,reason:wrap.querySelector('#f_reason').value.trim(),status:'pending'});return ls;},[]);
+    }else{
+      const t=rtypes().find(x=>x.id===tid);const values={};
+      for(let i=0;i<(t.fields||[]).length;i++){
+        const el=wrap.querySelector(`[data-f="${i}"]`);
+        if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#c0566a';el.focus();return;}
+        values[t.fields[i].label]=el.value.trim();
+      }
+      S.update('luma_requests',rs=>{rs.unshift({id:Date.now(),type:tid,staff:SID,values,step:0,status:'pending',at:new Date().toISOString().slice(0,10)});return rs;},[]);
+    }
+    wrap.remove();toast('أُرسل طلبك — بانتظار الموافقات ✓');render();
+  };
+};
+function attView(me){
+  const att=attAll();
+  const wd=new Date().getDay();
+  const today=(att[SID]||{})[wd]||null;
+  const sh=(S.get('luma_hr_shifts',{})[SID]||{})[wd]||((wd===5)?{off:true}:{off:false,start:'10:00',end:'20:00'});
+  const rec=S.get('luma_portal_att_'+SID,{});
+  const t=new Date().toISOString().slice(0,10);
+  const dayRec=rec[t]||{};
+  const now=()=>new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'});
+  const week=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const hist=Object.entries(att[SID]||{}).map(([d,v])=>`<div class="row"><span class="k">${week[d]}</span>
+    <span style="color:${v.absent?'var(--red)':'var(--red)'}">${v.absent?'غياب':'تأخير '+v.late+' دقيقة'}</span></div>`).join('');
+  return `
+    <div class="card" style="text-align:center">
+      <div style="font-size:12px;color:var(--mut)">وردية اليوم (${week[wd]})</div>
+      <div style="font-size:18px;font-weight:700;margin-top:4px" dir="ltr">${sh.off?'إجازة أسبوعية 🌙':sh.start+' – '+sh.end}</div>
+      ${dayRec.in?`<div class="badge g" style="margin-top:10px">حضور ${dayRec.in}${dayRec.out?' · انصراف '+dayRec.out:''}</div>`:''}
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn" ${sh.off||dayRec.in?'disabled':''} onclick="clockIn()">تسجيل حضور</button>
+        <button class="btn ghost" ${!dayRec.in||dayRec.out?'disabled':''} onclick="clockOut()">تسجيل انصراف</button>
+      </div>
+      ${today&&!today.absent&&today.late?`<div style="font-size:11px;color:var(--red);margin-top:10px">سُجّل تأخير ${today.late} دقيقة اليوم — يظهر لإدارة الصالون</div>`:''}
+    </div>
+    <div class="card"><b style="font-size:13px">ملاحظات الحضور هذا الأسبوع</b>
+      ${hist||'<div style="color:var(--green);font-size:12.5px;padding:8px 0">منتظمة تماماً ✓</div>'}</div>`;
+}
+window.clockIn=()=>{
+  const wd=new Date().getDay();
+  const sh=(S.get('luma_hr_shifts',{})[SID]||{})[wd]||{off:wd===5,start:'10:00'};
+  const nowMin=new Date().getHours()*60+new Date().getMinutes();
+  const startMin=parseInt(sh.start)*60+parseInt(sh.start.split(':')[1]||0);
+  const late=Math.max(0,nowMin-startMin);
+  /* يغذي نفس مفتاح أعلام التأخير في جدول دوام الصالون */
+  S.update('luma_hr_att',att=>{att[SID]=att[SID]||{};if(late>0)att[SID][wd]={late};else delete att[SID][wd];return att;},attAll());
+  const t=new Date().toISOString().slice(0,10);
+  S.update('luma_portal_att_'+SID,r=>{r[t]={...(r[t]||{}),in:new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})};return r;},{});
+  toast(late>0?`سُجّل حضورك — تأخير ${late} دقيقة`:'سُجّل حضورك في الوقت ✓');render();
+};
+window.clockOut=()=>{
+  const t=new Date().toISOString().slice(0,10);
+  S.update('luma_portal_att_'+SID,r=>{r[t]={...(r[t]||{}),out:new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})};return r;},{});
+  toast('سُجّل انصرافك — يومك سعيد 🌸');render();
+};
+
+render();
+</script>
+<script src="luma-theme.js"></script>
+</body>
+</html>
