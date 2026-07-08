@@ -387,6 +387,15 @@ test('صفحة الخبيرة: نبذة ورابط أعمالها وتقييما
   // كل منتج له صورة SVG مدمجة
   await page.click('#tab-shop');
   await expect(page.locator('.pcard .art svg')).toHaveCount(6);
+  // رفع صورة مخصصة لمنتج ثم إزالتها
+  const PPX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const [fc] = await Promise.all([page.waitForEvent('filechooser'), page.locator('.pcam').first().click()]);
+  await fc.setFiles({ name: 'prod.png', mimeType: 'image/png', buffer: Buffer.from(PPX, 'base64') });
+  await page.waitForTimeout(700);
+  await expect(page.locator('.pimg')).toHaveCount(1);
+  await page.locator('.pcam.del').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.pimg')).toHaveCount(0);
   // تابي وتمارا في إتمام الطلب مع تفصيل الأقساط
   await page.locator('.pcard .add').first().click();
   await page.click('#cartFab');

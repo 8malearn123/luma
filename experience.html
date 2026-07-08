@@ -176,6 +176,11 @@
   .pcard .img{height:150px;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:0.5px solid var(--line);overflow:hidden;}
   .pcard .img .pat{position:absolute;inset:0;opacity:0.4;}
   .pcard .img .em{position:relative;z-index:2;font-size:42px;}
+  .pcard .img .pimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;}
+  .pcam{position:absolute;top:9px;left:9px;z-index:4;width:30px;height:30px;border-radius:50%;border:1px solid var(--gold-deep);background:rgba(11,10,8,.62);color:var(--gold-light);font-size:13px;cursor:pointer;line-height:1;opacity:0;transition:opacity .25s;}
+  .pcam.del{left:45px;color:#e29aa6;}
+  .pcard:hover .pcam{opacity:1;}
+  @media(hover:none){.pcam{opacity:.85;}}
   .pcard .img .art{position:relative;z-index:2;display:flex;filter:drop-shadow(0 14px 22px rgba(0,0,0,.35));}
   .pcard .img .art svg{width:96px;height:96px;transition:transform .35s;}
   .pcard:hover .img .art svg{transform:translateY(-4px) scale(1.04);}
@@ -732,6 +737,31 @@ const PRODUCT_ART={
     <g fill="#fdf3da"><path d="M67 26 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 Z"/><path d="M26 40 l1.1 2.8 2.8 1.1 -2.8 1.1 -1.1 2.8 -1.1 -2.8 -2.8 -1.1 2.8 -1.1 Z"/></g></svg>`,
 };
 const productArt=id=>PRODUCT_ART[id]||'';
+
+/* خاصية إضافة صورة لكل منتج — تُرفع وتُحفظ وتحل محل الرسمة الافتراضية */
+const PIMG_KEY='luma_prod_img';
+const prodImgs=()=>{try{return JSON.parse(localStorage.getItem(PIMG_KEY))||{};}catch(e){return{};}};
+function prodImgSet(id,src){
+  const m=prodImgs();if(src)m[id]=src;else delete m[id];
+  try{localStorage.setItem(PIMG_KEY,JSON.stringify(m));}catch(e){}
+  renderProducts();
+}
+window.prodImgPick=id=>{
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  inp.onchange=()=>{
+    const f=inp.files&&inp.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{const im=new Image();im.onload=()=>{
+      const MAX=700,sc=Math.min(1,MAX/Math.max(im.width,im.height));
+      const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      prodImgSet(id,cv.toDataURL('image/jpeg',0.78));toast('حُفظت صورة المنتج ✓');
+    };im.src=rd.result;};
+    rd.readAsDataURL(f);
+  };
+  inp.click();
+};
+window.prodImgClear=id=>{prodImgSet(id,null);toast('عادت الصورة الافتراضية');};
 document.getElementById('prod-h').textContent='منتجات '+EXPERT.name;
 document.getElementById('prod-p').textContent='منتجات عناية وتجميل تختارها وتضمن جودتها '+EXPERT.name+' بنفسها — أضيفي ما تشائين للسلة ثم أتمّي طلبكِ.';
 
@@ -739,7 +769,13 @@ function renderProducts(){
   document.getElementById('prod-grid').innerHTML=PRODUCTS.map(p=>{
     const inCart=CART.data[p.id]>0;
     return `<div class="pcard">
-      <div class="img"><div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div><div class="art">${productArt(p.id)||`<span class="em">${p.em}</span>`}</div></div>
+      <div class="img">
+        ${prodImgs()[p.id]
+          ?`<img class="pimg" src="${prodImgs()[p.id]}" alt="${p.nm}"/>`
+          :`<div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div><div class="art">${productArt(p.id)||`<span class="em">${p.em}</span>`}</div>`}
+        <button type="button" class="pcam" title="إضافة صورة للمنتج" onclick="event.stopPropagation();prodImgPick('${p.id}')">📷</button>
+        ${prodImgs()[p.id]?`<button type="button" class="pcam del" title="إزالة الصورة — العودة للرسمة" onclick="event.stopPropagation();prodImgClear('${p.id}')">✕</button>`:''}
+      </div>
       <div class="b"><div class="cat">${p.cat}</div><div class="nm">${p.nm}</div>
         <div class="row"><span class="pr">${p.price} ر.س</span><button class="add ${inCart?'in':''}" onclick="CART.add('${p.id}')">${inCart?('في السلة · '+CART.data[p.id]):'+ أضيفي'}</button></div>
       </div></div>`;

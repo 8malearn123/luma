@@ -43,6 +43,29 @@ SCREENS.services=()=>{
 };
 
 /* ── PRODUCTS (retail — products being sold) ── */
+/* صور المنتجات — بالنقر على أيقونة المنتج تُرفع صورة تُحفظ مع المنتج */
+const SPIMG_KEY='luma_salon_prod_img';
+const salonProdImgs=()=>LumaStore.get(SPIMG_KEY,{});
+const SALONPIMG={
+  pick(name){
+    const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=()=>{
+      const f=inp.files&&inp.files[0];if(!f)return;
+      const rd=new FileReader();
+      rd.onload=()=>{const im=new Image();im.onload=()=>{
+        const MAX=700,sc=Math.min(1,MAX/Math.max(im.width,im.height));
+        const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+        cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+        LumaStore.update(SPIMG_KEY,m=>{m[name]=cv.toDataURL('image/jpeg',0.78);return m;},{});
+        SALON.go('products');LUX.toast('حُفظت صورة «'+name+'» ✓','ok');
+      };im.src=rd.result;};
+      rd.readAsDataURL(f);
+    };
+    inp.click();
+  },
+  clear(name){LumaStore.update(SPIMG_KEY,m=>{delete m[name];return m;},{});SALON.go('products');},
+};
+
 SCREENS.products=()=>{
   const P=[
     {n:'سيروم ترطيب',c:'عناية',price:180,sold:42,q:24,sc:'green'},
@@ -67,7 +90,7 @@ SCREENS.products=()=>{
   <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start">
     <div>
       <div class="sec-label">المنتجات <span class="ln"></span></div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">${P.map(p=>`<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('bag',22)}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">${P.map(p=>{const pim=salonProdImgs()[p.n];return `<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="position:relative"><div onclick="SALONPIMG.pick('${p.n.replace(/'/g,"\\'")}')" title="${pim?'تغيير صورة المنتج':'إضافة صورة للمنتج'}" style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);cursor:pointer;overflow:hidden">${pim?`<img src="${pim}" alt="" style="width:100%;height:100%;object-fit:cover"/>`:icon('bag',22)}</div>${pim?`<button onclick="SALONPIMG.clear('${p.n.replace(/'/g,"\\'")}')" title="إزالة الصورة" style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#e29aa6;cursor:pointer;font-size:10px;line-height:1">✕</button>`:`<span style="position:absolute;bottom:-5px;left:-5px;width:17px;height:17px;border-radius:50%;background:var(--gold-deep);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;pointer-events:none">📷</span>`}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`;}).join('')}</div>
     </div>
     <div class="card"><div class="sec-label">الأكثر مبيعاً <span class="ln"></span></div>${P.slice().sort((a,b)=>b.sold-a.sold).map((p,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${i<P.length-1?'border-bottom:1px solid var(--line-soft)':''}"><span style="font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-deep);width:20px;direction:ltr">${i+1}</span><div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--white);font-weight:500">${p.n}</div><div class="bar" style="height:6px;background:var(--surface3);border-radius:10px;overflow:hidden;margin-top:5px"><span style="display:block;height:100%;width:${p.sold/maxSold*100}%;background:linear-gradient(90deg,#9c8047,#dbbd81);border-radius:10px"></span></div></div><span class="num" style="font-family:'Bodoni Moda',serif;font-size:17px;color:var(--gold-light);direction:ltr">${p.sold}</span></div>`).join('')}</div>
   </div>`;
