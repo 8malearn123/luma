@@ -449,6 +449,9 @@ const SALON={
           markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
           const pts=typeof loyAward==='function'?loyAward(a.client,total):0;
           const stk=typeof stockConsume==='function'?stockConsume(a.service):{alerts:[]};
+          /* طلب تقييم ما بعد الزيارة — يفتح في review.html ويُنشر موثقاً في المتجر */
+          try{LumaStore.update('luma_review_reqs',l=>{l.push({id:'rv'+a.id+'_'+Date.now(),client:a.client,service:a.service,staff:(STAFF.find(x=>x.id===a.staff)||{n:''}).n,salon:'صالون لمسة',date:new Date().toISOString().slice(0,10),st:'sent'});return l;},[]);}catch(e){}
+          setTimeout(()=>LUX.toast('📱 أُرسل للعميلة رابط تقييم الزيارة عبر واتساب (محاكاة)','ok'),2800);
           close();SALON.go('board');
           LUX.toast('تم الدفع بنجاح عبر '+method+' ✓'+(pts?' — أُضيفت '+pts+' نقطة ولاء لرصيد '+a.client:''),'ok');
           if(stk.alerts.length)setTimeout(()=>LUX.toast('⚠ اقترب النفاد: '+stk.alerts.join('، ')+' — اطلبي من المورّد','warn'),1500);

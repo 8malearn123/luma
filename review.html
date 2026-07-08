@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>قيّمي زيارتك · لوما</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<script src="luma-store.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<style>
+:root{--bg:#0c0b0e;--surface:#141317;--surface2:#1b191f;--line:rgba(190,160,105,.16);--gold:#ccab64;--gold-light:#dbbd81;--white:#f4f0e8;--cream:#d9d2c5;--muted:#86818d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--cream);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px}
+.card{width:480px;max-width:94vw;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:34px 30px;box-shadow:0 30px 90px rgba(0,0,0,.5)}
+.logo{width:58px;height:58px;border-radius:16px;border:1px solid var(--gold);color:var(--gold-light);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:26px;margin:0 auto 14px}
+h1{font-size:21px;color:var(--white);text-align:center;font-weight:600}
+.sub{font-size:13px;color:var(--muted);text-align:center;margin-top:6px;line-height:1.9}
+.meta{display:flex;justify-content:space-between;gap:10px;background:var(--surface2);border:1px solid var(--line);border-radius:13px;padding:13px 16px;margin:20px 0;font-size:12.5px}
+.meta b{color:var(--white);display:block;margin-top:3px;font-size:13.5px}
+.stars{display:flex;justify-content:center;gap:9px;margin:8px 0 18px;direction:ltr}
+.stars button{background:none;border:none;font-size:34px;color:#4a4550;cursor:pointer;transition:transform .12s,color .12s;line-height:1}
+.stars button.on{color:var(--gold-light)}
+.stars button:hover{transform:scale(1.18)}
+textarea{width:100%;min-height:110px;background:var(--surface2);border:1px solid var(--line);border-radius:13px;padding:14px;color:var(--white);font-family:inherit;font-size:14px;resize:vertical;outline:none}
+textarea:focus{border-color:var(--gold)}
+.btn{width:100%;margin-top:16px;padding:15px;border:none;border-radius:13px;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#141013;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:default}
+.done{text-align:center;padding:20px 0}
+.done .big{font-size:52px}
+.vf{display:inline-block;font-size:11px;color:#7fbf7a;border:1px solid rgba(127,191,122,.4);border-radius:20px;padding:3px 11px;margin-top:12px}
+.brand{text-align:center;font-family:'Bodoni Moda',serif;letter-spacing:.3em;font-size:11px;color:var(--gold);margin-top:22px}
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+<script>
+const REQS_KEY='luma_review_reqs';
+const qs=new URLSearchParams(location.search);
+let reqs=LumaStore.get(REQS_KEY,[]);
+/* الطلب من الرابط، وإلا آخر طلب معلق (تجربة سلسة في العرض) */
+let req=reqs.find(r=>r.id===qs.get('rq'))||[...reqs].reverse().find(r=>r.st!=='done');
+let stars=5;
+const app=document.getElementById('app');
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function render(){
+  if(!req){
+    app.innerHTML=`<div class="logo">L</div><h1>لا يوجد طلب تقييم نشط</h1>
+      <div class="sub">يصلك رابط التقييم برسالة واتساب بعد اكتمال زيارتك وسداد الفاتورة.</div>
+      <div class="brand">L U M A</div>`;
+    return;
+  }
+  app.innerHTML=`
+    <div class="logo">${esc(req.salon).charAt(0)==='ص'?esc(req.salon).replace('صالون ','').charAt(0):esc(req.salon).charAt(0)}</div>
+    <h1>كيف كانت تجربتك يا ${esc(req.client.split(' ')[0])}؟ 🌸</h1>
+    <div class="sub">يسعدنا في ${esc(req.salon)} سماع رأيك — تقييمك يُنشر موثقاً في صفحتنا على سوق لوما.</div>
+    <div class="meta">
+      <div>الخدمة<b>${esc(req.service)}</b></div>
+      <div>الموظفة<b>${esc(req.staff||'—')}</b></div>
+      <div>التاريخ<b dir="ltr">${esc(req.date)}</b></div>
+    </div>
+    <div class="stars" id="st">${[1,2,3,4,5].map(i=>`<button class="${i<=stars?'on':''}" data-s="${i}">★</button>`).join('')}</div>
+    <textarea id="txt" placeholder="اكتبي تجربتك بكلماتك…"></textarea>
+    <button class="btn" id="send">نشر التقييم</button>
+    <div class="brand">L U M A</div>`;
+  document.querySelectorAll('#st button').forEach(b=>b.onclick=()=>{stars=+b.dataset.s;
+    document.querySelectorAll('#st button').forEach(x=>x.classList.toggle('on',+x.dataset.s<=stars));});
+  document.getElementById('send').onclick=submit;
+}
+function submit(){
+  const t=document.getElementById('txt').value.trim();
+  if(!t){document.getElementById('txt').style.borderColor='#c0566a';document.getElementById('txt').focus();return;}
+  /* التعليق الموثق يدخل صفحة الصالون في المتجر (نفس مفتاح store.html) */
+  const rk='luma_reviews_'+req.salon;
+  let list=[];try{list=JSON.parse(localStorage.getItem(rk))||[];}catch(e){}
+  list.unshift({n:req.client,r:stars,t,d:'الآن',vf:1});
+  try{localStorage.setItem(rk,JSON.stringify(list));}catch(e){}
+  LumaStore.update(REQS_KEY,l=>{const x=l.find(r=>r.id===req.id);if(x)x.st='done';return l;},[]);
+  app.innerHTML=`<div class="done"><div class="big">💛</div>
+    <h1>شكراً لكِ يا ${esc(req.client.split(' ')[0])}!</h1>
+    <div class="sub">نُشر تقييمك (${'★'.repeat(stars)}) في صفحة ${esc(req.salon)} على سوق لوما.</div>
+    <div class="vf">زيارة موثقة ✓ — مرتبط بفاتورة مدفوعة</div></div>
+    <div class="brand">L U M A</div>`;
+}
+render();
+</script>
+<script src="luma-theme.js"></script>
+</body>
+</html>

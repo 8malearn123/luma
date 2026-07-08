@@ -459,7 +459,7 @@ function svTab(t){
 function allRevs(){return [...loadJ(revKey(SV.n)),...(SEED_REVIEWS[SV.n]||[])];}
 function renderRevs(){
   const list=allRevs();
-  document.getElementById('sv-revlist').innerHTML=list.map(r=>`<div class="sv-review"><div class="rv-top"><span class="rv-av">${esc(r.n).charAt(0)}</span><div style="flex:1"><div class="rv-n">${esc(r.n)}</div><div class="rv-d">${esc(r.d)}</div></div><span class="rv-stars">${'★'.repeat(r.r)}${'☆'.repeat(5-r.r)}</span></div><div class="rv-t">${esc(r.t)}</div>${r.img?`<img class="rv-img" src="${r.img}" alt="صورة التعليق" onclick="zoomImg(this.src)"/>`:''}</div>`).join('')||'<div style="color:var(--muted);font-size:13.5px;padding:16px 0">لا توجد تعليقات بعد — كوني أول من يقيّم!</div>';
+  document.getElementById('sv-revlist').innerHTML=list.map(r=>`<div class="sv-review"><div class="rv-top"><span class="rv-av">${esc(r.n).charAt(0)}</span><div style="flex:1"><div class="rv-n">${esc(r.n)}${r.vf?' <span style="font-size:10px;color:#7fbf7a;border:1px solid rgba(127,191,122,.4);border-radius:20px;padding:2px 9px;margin-right:5px;vertical-align:2px">زيارة موثقة ✓</span>':''}</div><div class="rv-d">${esc(r.d)}</div></div><span class="rv-stars">${'★'.repeat(r.r)}${'☆'.repeat(5-r.r)}</span></div><div class="rv-t">${esc(r.t)}</div>${r.img?`<img class="rv-img" src="${r.img}" alt="صورة التعليق" onclick="zoomImg(this.src)"/>`:''}</div>`).join('')||'<div style="color:var(--muted);font-size:13.5px;padding:16px 0">لا توجد تعليقات بعد — كوني أول من يقيّم!</div>';
 }
 let pickedStars=5,pickedImg=null;
 function pickStars(n){pickedStars=n;document.querySelectorAll('#sv-stars span').forEach((s,i)=>s.classList.toggle('on',i<n));}
