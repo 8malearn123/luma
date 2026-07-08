@@ -426,7 +426,7 @@ const SALON={
   payFlow(id){
     const a=APPTS.find(x=>String(x.id)===String(id));if(!a)return;
     const price=svcPrice(a.service);
-    const METHODS=[['mada','مدى'],['apple','Apple Pay'],['card','بطاقة ائتمانية'],['cash','نقداً']];
+    const METHODS=[['mada','مدى'],['apple','Apple Pay'],['card','بطاقة ائتمانية'],['tabby','تابي · تقسيط'],['tamara','تمارا · تقسيط'],['cash','نقداً']];
     LUX.modal('إتمام الدفع',`
       <div class="lux-lead">${a.client} · ${a.service} · <b style="color:var(--gold-light,#ccab64)">${price} ر.س</b></div>
       <div class="lux-f"><label>طريقة الدفع</label>

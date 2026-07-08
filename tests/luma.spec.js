@@ -387,6 +387,14 @@ test('صفحة الخبيرة: نبذة ورابط أعمالها وتقييما
   // كل منتج له صورة SVG مدمجة
   await page.click('#tab-shop');
   await expect(page.locator('.pcard .art svg')).toHaveCount(6);
+  // تابي وتمارا في إتمام الطلب مع تفصيل الأقساط
+  await page.locator('.pcard .add').first().click();
+  await page.click('#cartFab');
+  await page.click('button:has-text("إتمام الطلب")');
+  await page.click('.paym[data-p="tabby"]');
+  await expect(page.locator('#bnplHint')).toContainText('4 دفعات');
+  await page.click('.paym[data-p="tamara"]');
+  await expect(page.locator('#bnplHint')).toContainText('3 دفعات');
 });
 
 test('تعليقات المتجر للعميلات فقط: رقم غير مسجل يُرفض والموثق ينشر', async ({ page }) => {

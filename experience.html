@@ -189,7 +189,7 @@
   .pcard .add.in{background:linear-gradient(120deg,#dbbd81,#937842);color:#0e0d11;border-color:transparent;}
 
   /* cart */
-  .cart-fab{position:fixed;bottom:24px;left:24px;z-index:60;background:linear-gradient(120deg,#dbbd81,#937842);color:#0e0d11;border:none;border-radius:50px;padding:14px 22px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;transition:transform .2s;}
+  .cart-fab{position:fixed;bottom:72px;left:16px;z-index:60;background:linear-gradient(120deg,#dbbd81,#937842);color:#0e0d11;border:none;border-radius:50px;padding:14px 22px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;transition:transform .2s;}
   .cart-fab:hover{transform:translateY(-2px);}
   .cart-fab .cnt{background:#0e0d11;color:var(--gold-light);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;direction:ltr;}
   .cart-fab.empty{display:none;}
@@ -775,7 +775,19 @@ const CART={
   checkout(){ if(!this.count())return; this.close(); this.openCheckout(); },
   openCheckout(){ this.copay='mada'; document.getElementById('coTitle').textContent='إتمام الطلب'; document.getElementById('coBody').innerHTML=this.formHTML(); document.getElementById('coBg').classList.add('open'); },
   closeCheckout(){ document.getElementById('coBg').classList.remove('open'); },
-  setCoPay(p){ this.copay=p; document.querySelectorAll('#coBody .paym').forEach(el=>el.classList.toggle('sel',el.dataset.p===p)); },
+  setCoPay(p){
+    this.copay=p;
+    document.querySelectorAll('#coBody .paym').forEach(el=>el.classList.toggle('sel',el.dataset.p===p));
+    /* تفصيل الأقساط لتابي وتمارا */
+    const hint=document.getElementById('bnplHint');
+    if(hint){
+      const ship=this.total()>=200?0:20;const grand=this.total()+ship;
+      const fmt=v=>(Math.round(v*100)/100).toLocaleString('en');
+      hint.style.display=(p==='tabby'||p==='tamara')?'block':'none';
+      if(p==='tabby')hint.innerHTML=`<b style="color:#3ddbb4">تابي</b> · 4 دفعات × <b>${fmt(grand/4)} ر.س</b> — بدون فوائد أو رسوم، الدفعة الأولى اليوم`;
+      if(p==='tamara')hint.innerHTML=`<b style="color:#e8927c">تمارا</b> · 3 دفعات × <b>${fmt(grand/3)} ر.س</b> — بدون فوائد، متوافقة مع الشريعة`;
+    }
+  },
   formHTML(){
     const ids=Object.keys(this.data).filter(id=>PRODUCTS.find(x=>x.id===id));
     const ship=this.total()>=200?0:20;
@@ -791,8 +803,11 @@ const CART={
         <div class="pays">
           <div class="paym sel" data-p="mada" onclick="CART.setCoPay('mada')">mada</div>
           <div class="paym" data-p="apple" onclick="CART.setCoPay('apple')"> Apple Pay</div>
+          <div class="paym" data-p="tabby" onclick="CART.setCoPay('tabby')"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3ddbb4;margin-left:6px;vertical-align:1px"></span>تابي · قسّميها 4</div>
+          <div class="paym" data-p="tamara" onclick="CART.setCoPay('tamara')"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e8927c;margin-left:6px;vertical-align:1px"></span>تمارا · قسّميها 3</div>
           <div class="paym" data-p="cod" onclick="CART.setCoPay('cod')">عند الاستلام</div>
         </div>
+        <div id="bnplHint" style="display:none;font-size:12px;color:var(--cream);border:1px dashed var(--gold-deep);border-radius:9px;padding:9px 12px;margin-top:9px;line-height:1.9"></div>
       </div>
       <div class="co-sum">
         ${ids.map(id=>{const p=PRODUCTS.find(x=>x.id===id);const q=this.data[id];return `<div class="r"><span>${p.nm} × ${q}</span><b>${p.price*q} ر.س</b></div>`;}).join('')}
@@ -812,7 +827,12 @@ const CART={
     const ids=Object.keys(this.data).filter(id=>PRODUCTS.find(x=>x.id===id));
     const ship=this.total()>=200?0:20; const grand=this.total()+ship;
     const items=ids.map(id=>{const p=PRODUCTS.find(x=>x.id===id);return `${p.nm} × ${this.data[id]}`;}).join('، ');
-    const payLb=this.copay==='cod'?'الدفع عند الاستلام':(this.copay==='apple'?'Apple Pay':'mada');
+    const fmt=v=>(Math.round(v*100)/100).toLocaleString('en');
+    const payLb=this.copay==='cod'?'الدفع عند الاستلام'
+      :this.copay==='apple'?'Apple Pay'
+      :this.copay==='tabby'?'تابي — 4 دفعات × '+fmt(grand/4)+' ر.س'
+      :this.copay==='tamara'?'تمارا — 3 دفعات × '+fmt(grand/3)+' ر.س'
+      :'mada';
     document.getElementById('coTitle').textContent='تم الطلب';
     document.getElementById('coBody').innerHTML=`
       <div style="text-align:center;padding:6px 0 4px">
