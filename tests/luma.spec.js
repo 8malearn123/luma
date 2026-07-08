@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 
 const PAGES = [
-  'index.html', 'login.html', 'booking.html', '404.html',
+  'index.html', 'login.html', 'booking.html', 'review.html', '404.html',
   'store.html', 'market.html', 'salons.html', 'experience.html',
   'salon.html', 'expert.html', 'client.html', 'admin.html',
   'profile.html', 'pricing.html',
@@ -144,6 +144,30 @@ test('صفحة الحجز العامة: المعالج حتى النجاح', asy
   await expect(page.getByText('تذكرة الحجز')).toBeVisible();
   await page.click('button:has-text("تأكيد الحجز")');
   await expect(page.getByText('تم تأكيد حجزك')).toBeVisible();
+});
+
+test('تقييم ما بعد الزيارة: من الدفع إلى تعليق موثق في المتجر', async ({ page }) => {
+  // 1) دفع حجز «لطيفة المطيري»
+  await page.goto('/salon.html#board');
+  await page.waitForTimeout(800);
+  await page.locator('.appt', { hasText: 'لطيفة المطيري' }).first().click();
+  await page.click('[data-pay]');
+  await page.click('.lux-modal [data-ok]');
+  await page.waitForTimeout(1900);
+  await expect(page.locator('#lumaInv')).toBeVisible();
+  // 2) صفحة التقييم تلتقط الطلب المعلق
+  await page.goto('/review.html');
+  await page.waitForTimeout(500);
+  await expect(page.getByText(/كيف كانت تجربتك يا لطيفة/)).toBeVisible();
+  await page.fill('#txt', 'منيكير وبديكير مثاليان — تجربة راقية فعلاً.');
+  await page.click('#send');
+  await expect(page.getByText(/شكراً لكِ يا لطيفة/)).toBeVisible();
+  // 3) التعليق يظهر موثقاً في صفحة الصالون بالمتجر
+  await page.goto('/store.html');
+  await page.waitForTimeout(700);
+  await page.locator('.card.salon').first().click();
+  await expect(page.getByText('منيكير وبديكير مثاليان — تجربة راقية فعلاً.')).toBeVisible();
+  await expect(page.getByText('زيارة موثقة ✓').first()).toBeVisible();
 });
 
 test('المتجر: نافذة الصالون بالتعليقات والاستفسارات', async ({ page }) => {
