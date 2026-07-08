@@ -407,11 +407,53 @@ function hrLedger(sid){
           net:p.base+svcComm+prodComm+tips-adv};
 }
 
+/* ── custom request types (owner-defined forms) + approval chains ── */
+const REQ_TYPES_KEY='luma_req_types', REQ_CHAINS_KEY='luma_req_chains',
+      REQS_KEY='luma_requests', LEAVE_CHAIN_KEY='luma_leave_chain';
+let HR_CHAINS=hrLoad(REQ_CHAINS_KEY,null);
+if(!HR_CHAINS){
+  HR_CHAINS=[
+    {id:'c1',name:'اعتماد مباشر',steps:['المالكة']},
+    {id:'c2',name:'سلسلة مزدوجة',steps:['مديرة الصالون','المالكة']},
+  ];
+  hrSave(REQ_CHAINS_KEY,HR_CHAINS);
+}
+let HR_RTYPES=hrLoad(REQ_TYPES_KEY,null);
+if(!HR_RTYPES){
+  HR_RTYPES=[
+    {id:'t1',name:'طلب سلفة',chain:'c2',fields:[{label:'المبلغ (ر.س)',type:'number',req:1},{label:'سبب السلفة',type:'text',req:0}]},
+    {id:'t2',name:'خطاب تعريف',chain:'c1',fields:[{label:'الجهة الموجَّه لها',type:'text',req:1},{label:'اللغة',type:'select',options:['عربي','إنجليزي'],req:1}]},
+  ];
+  hrSave(REQ_TYPES_KEY,HR_RTYPES);
+}
+let HR_REQS=hrLoad(REQS_KEY,[]);
+const hrChainOf=id=>HR_CHAINS.find(c=>c.id===id)||HR_CHAINS[0]||{id:'x',name:'اعتماد مباشر',steps:['المالكة']};
+const hrTypeOf=id=>HR_RTYPES.find(t=>t.id===id);
+const hrLeaveChain=()=>hrChainOf(hrLoad(LEAVE_CHAIN_KEY,'c1'));
+/* visual stepper: ✓ done · ● current · ○ upcoming */
+function hrStepper(chain,step,status){
+  return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px">${chain.steps.map((nm,i)=>{
+    const done=status==='approved'||i<step, cur=status==='pending'&&i===step;
+    return `${i?'<span style="color:var(--muted-deep)">←</span>':''}
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;
+        ${done?'background:rgba(111,168,106,.14);color:#9fce99;border:1px solid rgba(111,168,106,.4)'
+        :cur?'background:rgba(205,172,80,.14);color:var(--gold-light);border:1px solid var(--gold-deep)'
+        :'background:var(--surface3);color:var(--muted);border:1px solid var(--line)'}">
+        ${done?'✓':cur?'●':'○'} ${nm}</span>`;}).join('')}</div>`;
+}
+
 const HR={
   tab:'staff',
   go(t){this.tab=t;SALON.go('hr');},
   review(id,ok){
     const l=HR_LEAVES.find(x=>x.id===id);if(!l)return;
+    const chain=hrLeaveChain();l.step=l.step||0;
+    /* توقيع خطوة وسيطة في سلسلة الموافقات — الطلب يبقى قيد المراجعة */
+    if(ok&&l.step<chain.steps.length-1){
+      l.step++;hrSave(HR_LEAVE_KEY,HR_LEAVES);SALON.go('hr');
+      LUX.toast('وقّعت «'+chain.steps[l.step-1]+'» — بانتظار موافقة «'+chain.steps[l.step]+'»','ok');
+      return;
+    }
     if(ok&&l.type==='سنوية'){
       const days=(new Date(l.to)-new Date(l.from))/86400000+1;
       if(days>hrBalance(l.staff)){LUX.toast('رصيد '+hrStaffName(l.staff)+' لا يكفي ('+hrBalance(l.staff)+' يوماً متبقياً)','err');return;}
@@ -421,9 +463,157 @@ const HR={
     if(ok){
       const cf=hrConflicts(l);
       if(cf.length){this.conflictModal(l,cf);return;}
-      LUX.toast('تم الاعتماد — حُدّث جدول الدوام وحُظرت مواعيد الحجز تلقائياً ✓','ok');
+      LUX.toast('اكتملت سلسلة الموافقات — حُدّث الدوام وحُظرت مواعيد الحجز تلقائياً ✓','ok');
     }else LUX.toast('تم رفض الطلب','ok');
     SALON.go('hr');
+  },
+  /* ─── الطلبات العامة: تقديم بحسب نوع وفورم تحدّدهما المالكة ─── */
+  newRequest(){
+    const opts=[{id:'__leave',name:'إجازة (نظامي)'}].concat(HR_RTYPES);
+    LUX.modal('طلب جديد',`
+      <div class="lux-lead">اختاري الموظفة ونوع الطلب — النموذج يظهر حسب النوع الذي عرّفتِه في «أنواع الطلبات».</div>
+      <div class="lux-f"><label>الموظفة</label><select name="staff">${STAFF.map(s=>`<option value="${s.id}">${s.n}</option>`).join('')}</select></div>
+      <div class="lux-f"><label>نوع الطلب</label><select name="type">${opts.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</select></div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%">متابعة</button>`,{onMount(ov,close){
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const staff=ov.querySelector('[name=staff]').value, tid=ov.querySelector('[name=type]').value;
+        close();
+        if(tid==='__leave')return HR.newLeave();
+        HR.requestForm(tid,staff);
+      };
+    }});
+  },
+  requestForm(tid,staff){
+    const t=hrTypeOf(tid);if(!t)return;
+    const chain=hrChainOf(t.chain);
+    const fld=(f,i)=>{
+      const req=f.req?' <span style="color:#c0566a">*</span>':'';
+      if(f.type==='select')return `<div class="lux-f"><label>${f.label}${req}</label><select data-f="${i}">${(f.options||[]).map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+      if(f.type==='date')return `<div class="lux-f"><label>${f.label}${req}</label><input type="date" data-f="${i}"/></div>`;
+      if(f.type==='number')return `<div class="lux-f"><label>${f.label}${req}</label><input type="number" data-f="${i}" dir="ltr" style="text-align:right"/></div>`;
+      return `<div class="lux-f"><label>${f.label}${req}</label><input data-f="${i}"/></div>`;
+    };
+    LUX.modal(t.name+' — '+hrStaffName(staff),`
+      <div class="lux-lead">سلسلة الاعتماد: <b style="color:var(--gold-light,#ccab64)">${chain.steps.join(' ← ')}</b></div>
+      ${t.fields.map(fld).join('')}
+      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:6px">إرسال الطلب</button>`,{onMount(ov,close){
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const values={};
+        for(let i=0;i<t.fields.length;i++){
+          const el=ov.querySelector(`[data-f="${i}"]`);
+          if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#c0566a';el.focus();return;}
+          values[t.fields[i].label]=el.value.trim();
+        }
+        HR_REQS.unshift({id:Date.now(),type:tid,staff,values,step:0,status:'pending',at:new Date().toISOString().slice(0,10)});
+        hrSave(REQS_KEY,HR_REQS);close();SALON.go('hr');
+        LUX.toast('أُرسل الطلب — بانتظار «'+chain.steps[0]+'» ✓','ok');
+      };
+    }});
+  },
+  reviewReq(id,ok){
+    const r=HR_REQS.find(x=>x.id===id);if(!r)return;
+    const chain=hrChainOf((hrTypeOf(r.type)||{}).chain);
+    if(!ok){r.status='rejected';}
+    else if(r.step<chain.steps.length-1){
+      r.step++;hrSave(REQS_KEY,HR_REQS);SALON.go('hr');
+      LUX.toast('وقّعت «'+chain.steps[r.step-1]+'» — بانتظار «'+chain.steps[r.step]+'»','ok');return;
+    }
+    else r.status='approved';
+    hrSave(REQS_KEY,HR_REQS);SALON.go('hr');
+    LUX.toast(ok?'اكتملت سلسلة الموافقات — الطلب معتمد نهائياً ✓':'تم رفض الطلب','ok');
+  },
+  /* ─── إدارة أنواع الطلبات (فورم من تصميم المالكة) ─── */
+  manageTypes(){
+    const rows=HR_RTYPES.map(t=>`
+      <div class="lux-row"><span class="k">${t.name}<br><span style="font-size:10.5px">${t.fields.length} حقول · سلسلة: ${hrChainOf(t.chain).name}</span></span>
+      <span class="v"><button class="lux-btn lux-ghost" style="padding:6px 12px;font-size:11px" onclick="HR.delType('${t.id}')">حذف</button></span></div>`).join('')
+      ||'<div class="lux-lead">لا أنواع مخصصة بعد.</div>';
+    LUX.modal('أنواع الطلبات',`
+      <div class="lux-lead">النوع يحدد النموذج الذي تعبّئه الموظفة وسلسلة الموافقات التي يمر بها.</div>
+      <div class="lux-row"><span class="k">إجازة (نظامي)<br><span style="font-size:10.5px">نموذج ثابت + رصيد وتعارضات</span></span>
+        <span class="v"><select id="lvChain" style="background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:7px 9px;font-family:inherit;font-size:12px">${HR_CHAINS.map(c=>`<option value="${c.id}" ${hrLeaveChain().id===c.id?'selected':''}>${c.name}</option>`).join('')}</select></span></div>
+      ${rows}
+      <button class="lux-btn lux-gold" data-new style="width:100%;margin-top:14px">+ نوع طلب جديد</button>`,{onMount(ov,close){
+      ov.querySelector('#lvChain').onchange=e=>{hrSave(LEAVE_CHAIN_KEY,e.target.value);LUX.toast('حُدّثت سلسلة موافقات الإجازات ✓','ok');};
+      ov.querySelector('[data-new]').onclick=()=>{close();HR.typeBuilder();};
+    }});
+  },
+  typeBuilder(){
+    let fields=[];
+    const render=ov=>{
+      ov.querySelector('#tbFields').innerHTML=fields.map((f,i)=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px">
+          <span style="flex:1;color:#f6f2ec">${f.label}</span>
+          <span style="color:#86818d">${{text:'نص',number:'رقم',date:'تاريخ',select:'قائمة'}[f.type]}${f.req?' · إلزامي':''}</span>
+          <button style="background:none;border:none;color:#c0566a;cursor:pointer" onclick="this.dispatchEvent(new CustomEvent('rmf',{bubbles:true,detail:${i}}))">×</button>
+        </div>`).join('')||'<div style="color:#86818d;font-size:12px;padding:6px 0">أضيفي حقول النموذج…</div>';
+    };
+    LUX.modal('نوع طلب جديد',`
+      <div class="lux-f"><label>اسم النوع</label><input name="tname" placeholder="مثال: طلب دورة تدريبية"/></div>
+      <div class="lux-f"><label>سلسلة الموافقات</label><select name="tchain">${HR_CHAINS.map(c=>`<option value="${c.id}">${c.name} (${c.steps.join(' ← ')})</option>`).join('')}</select></div>
+      <div style="font-size:12px;color:#9c8047;font-weight:700;margin:12px 0 6px">حقول النموذج</div>
+      <div id="tbFields"></div>
+      <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+        <input id="tbLabel" placeholder="تسمية الحقل" style="flex:2;min-width:120px;background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px 11px;font-family:inherit;font-size:12.5px"/>
+        <select id="tbType" style="background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px;font-family:inherit;font-size:12.5px"><option value="text">نص</option><option value="number">رقم</option><option value="date">تاريخ</option><option value="select">قائمة خيارات</option></select>
+        <label style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:#86818d"><input type="checkbox" id="tbReq"/> إلزامي</label>
+      </div>
+      <input id="tbOpts" placeholder="الخيارات مفصولة بفاصلة (للقائمة فقط)" style="display:none;width:100%;margin-top:8px;background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px 11px;font-family:inherit;font-size:12.5px"/>
+      <button class="lux-btn lux-ghost" data-addf style="width:100%;margin-top:10px;padding:9px">+ إضافة الحقل</button>
+      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:12px">حفظ نوع الطلب</button>`,{onMount(ov,close){
+      render(ov);
+      ov.addEventListener('rmf',e=>{fields.splice(e.detail,1);render(ov);});
+      ov.querySelector('#tbType').onchange=e=>ov.querySelector('#tbOpts').style.display=e.target.value==='select'?'':'none';
+      ov.querySelector('[data-addf]').onclick=()=>{
+        const lb=ov.querySelector('#tbLabel').value.trim();if(!lb)return;
+        const ty=ov.querySelector('#tbType').value;
+        const f={label:lb,type:ty,req:ov.querySelector('#tbReq').checked?1:0};
+        if(ty==='select')f.options=ov.querySelector('#tbOpts').value.split(',').map(x=>x.trim()).filter(Boolean);
+        fields.push(f);ov.querySelector('#tbLabel').value='';render(ov);
+      };
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const nm=ov.querySelector('[name=tname]').value.trim();
+        if(!nm){ov.querySelector('[name=tname]').style.borderColor='#c0566a';return;}
+        if(!fields.length){LUX.toast('أضيفي حقلاً واحداً على الأقل','err');return;}
+        HR_RTYPES.push({id:'t'+Date.now(),name:nm,chain:ov.querySelector('[name=tchain]').value,fields});
+        hrSave(REQ_TYPES_KEY,HR_RTYPES);close();SALON.go('hr');LUX.toast('أُنشئ نوع «'+nm+'» ✓','ok');
+      };
+    }});
+  },
+  delType(id){
+    const i=HR_RTYPES.findIndex(t=>t.id===id);if(i<0)return;
+    HR_RTYPES.splice(i,1);hrSave(REQ_TYPES_KEY,HR_RTYPES);
+    document.querySelectorAll('.lux-ov').forEach(o=>o.remove());HR.manageTypes();
+  },
+  /* ─── إدارة سلاسل الموافقات ─── */
+  manageChains(){
+    const rows=HR_CHAINS.map(c=>`
+      <div class="lux-row"><span class="k">${c.name}<br><span style="font-size:10.5px">${c.steps.join(' ← ')}</span></span>
+      <span class="v">${HR_CHAINS.length>1?`<button class="lux-btn lux-ghost" style="padding:6px 12px;font-size:11px" onclick="HR.delChain('${c.id}')">حذف</button>`:''}</span></div>`).join('');
+    LUX.modal('سلاسل الموافقات',`
+      <div class="lux-lead">السلسلة تحدّد مَن يوقّع على الطلب وبأي ترتيب — يعتمد الطلب نهائياً بعد آخر توقيع.</div>
+      ${rows}
+      <div style="font-size:12px;color:#9c8047;font-weight:700;margin:14px 0 6px">سلسلة جديدة</div>
+      <div class="lux-f"><label>اسم السلسلة</label><input id="chName" placeholder="مثال: اعتماد ثلاثي"/></div>
+      <div class="lux-f"><label>الخطوات بالترتيب (مفصولة بفاصلة)</label><input id="chSteps" placeholder="مديرة الفرع، مديرة الموارد البشرية، المالكة"/></div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%">إضافة السلسلة</button>`,{onMount(ov,close){
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const nm=ov.querySelector('#chName').value.trim();
+        const steps=ov.querySelector('#chSteps').value.split(/[،,]/).map(x=>x.trim()).filter(Boolean);
+        if(!nm){ov.querySelector('#chName').style.borderColor='#c0566a';return;}
+        if(!steps.length){ov.querySelector('#chSteps').style.borderColor='#c0566a';LUX.toast('أدخلي خطوة واحدة على الأقل','err');return;}
+        HR_CHAINS.push({id:'c'+Date.now(),name:nm,steps});
+        hrSave(REQ_CHAINS_KEY,HR_CHAINS);close();SALON.go('hr');
+        LUX.toast('أُنشئت سلسلة «'+nm+'» ('+steps.length+' خطوات) ✓','ok');
+      };
+    }});
+  },
+  delChain(id){
+    if(HR_CHAINS.length<=1)return;
+    const used=HR_RTYPES.some(t=>t.chain===id)||hrLoad(LEAVE_CHAIN_KEY,'c1')===id;
+    if(used){LUX.toast('السلسلة مستخدمة في نوع طلب — غيّري النوع أولاً','err');return;}
+    const i=HR_CHAINS.findIndex(c=>c.id===id);HR_CHAINS.splice(i,1);hrSave(REQ_CHAINS_KEY,HR_CHAINS);
+    document.querySelectorAll('.lux-ov').forEach(o=>o.remove());HR.manageChains();
   },
   conflictModal(l,cf){
     const rows=cf.map(a=>`<div class="lux-row"><span class="k" dir="ltr">${slotLabel(a.start)}</span><span class="v">${a.client} · ${a.service}</span></div>`).join('');
@@ -544,13 +734,17 @@ const HR={
 window.HR=HR;
 
 SCREENS.hr=()=>{
-  const tabs=[['staff','الموظفات'],['leaves','طلبات الإجازة'],['shifts','جدول الدوام'],['payroll','الرواتب والعمولات']];
+  const tabs=[['staff','الموظفات'],['leaves','الطلبات'],['shifts','جدول الدوام'],['payroll','الرواتب والعمولات']];
   const pending=HR_LEAVES.filter(l=>l.status==='pending').length;
   const head=`
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
     <div><div style="font-weight:600;font-size:19px;color:var(--white)">الطاقم والموارد البشرية</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">ملفات الموظفات، الإجازات، الدوام والحضور، والرواتب — كلها تتزامن مع الحجوزات تلقائياً</div></div>
     ${HR.tab==='staff'?`<button class="btn btn-gold" onclick="SALON.addStaff()">+ إضافة موظفة</button>`:''}
-    ${HR.tab==='leaves'?`<button class="btn btn-gold" onclick="HR.newLeave()">+ طلب إجازة</button>`:''}
+    ${HR.tab==='leaves'?`<div style="display:flex;gap:9px;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="HR.manageChains()">سلاسل الموافقات</button>
+      <button class="btn btn-ghost" onclick="HR.manageTypes()">أنواع الطلبات</button>
+      <button class="btn btn-gold" onclick="HR.newRequest()">+ طلب جديد</button>
+    </div>`:''}
   </div>
   <div style="display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto">
     ${tabs.map(([k,lb])=>`<button onclick="HR.go('${k}')" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;padding:10px 16px;white-space:nowrap;border-bottom:2px solid ${HR.tab===k?'var(--gold-light)':'transparent'};color:${HR.tab===k?'var(--gold-light)':'var(--muted)'}">${lb}${k==='staff'?` · ${STAFF.length}`:''}${k==='leaves'&&pending?` · ${pending}`:''}</button>`).join('')}
@@ -560,22 +754,54 @@ SCREENS.hr=()=>{
 
   if(HR.tab==='leaves'){
     const ST={pending:['قيد المراجعة','gold'],approved:['معتمدة','green'],rejected:['مرفوضة','soft']};
+    const lvChain=hrLeaveChain();
     const rows=HR_LEAVES.map(l=>`
-      <div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap">
-        <span style="width:42px;height:42px;border-radius:50%;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${hrStaffName(l.staff).charAt(0)}</span>
-        <div style="flex:1;min-width:200px">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-size:14.5px;color:var(--white);font-weight:600">${hrStaffName(l.staff)}</span>
-            <span class="badge soft" style="font-size:10.5px">الرصيد المتبقي: ${hrBalance(l.staff)} يوماً</span>
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <span style="width:42px;height:42px;border-radius:50%;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${hrStaffName(l.staff).charAt(0)}</span>
+          <div style="flex:1;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:14.5px;color:var(--white);font-weight:600">${hrStaffName(l.staff)}</span>
+              <span class="badge soft" style="font-size:10.5px">إجازة</span>
+              <span class="badge soft" style="font-size:10.5px">الرصيد المتبقي: ${hrBalance(l.staff)} يوماً</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">${l.type} · <span dir="ltr">${l.from}</span> ← <span dir="ltr">${l.to}</span>${l.reason?` · «${l.reason}»`:''}</div>
           </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px">${l.type} · <span dir="ltr">${l.from}</span> ← <span dir="ltr">${l.to}</span>${l.reason?` · «${l.reason}»`:''}</div>
+          ${l.status==='pending'
+            ?`<button class="btn btn-gold" style="padding:8px 18px" onclick="HR.review(${l.id},true)">اعتماد «${lvChain.steps[l.step||0]}»</button>
+               <button class="btn btn-ghost" style="padding:8px 18px;border-color:#7c4a55;color:#e29aa6" onclick="HR.review(${l.id},false)">رفض</button>`
+            :`<span class="badge ${ST[l.status][1]}">${ST[l.status][0]}</span>`}
         </div>
-        ${l.status==='pending'
-          ?`<button class="btn btn-gold" style="padding:8px 18px" onclick="HR.review(${l.id},true)">اعتماد</button>
-             <button class="btn btn-ghost" style="padding:8px 18px;border-color:#7c4a55;color:#e29aa6" onclick="HR.review(${l.id},false)">رفض</button>`
-          :`<span class="badge ${ST[l.status][1]}">${ST[l.status][0]}</span>`}
+        ${l.status!=='rejected'?hrStepper(lvChain,l.step||0,l.status):''}
       </div>`).join('');
-    return head+(rows||'<div class="card" style="text-align:center;color:var(--muted)">لا توجد طلبات إجازة.</div>');
+    const reqRows=HR_REQS.map(r=>{
+      const t=hrTypeOf(r.type)||{name:'نوع محذوف',fields:[]};
+      const chain=hrChainOf(t.chain);
+      const vals=Object.entries(r.values).filter(([k,v])=>v).map(([k,v])=>`<span style="color:var(--muted)">${k}:</span> ${v}`).join(' · ');
+      return `
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <span style="width:42px;height:42px;border-radius:11px;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">📄</span>
+          <div style="flex:1;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:14.5px;color:var(--white);font-weight:600">${hrStaffName(r.staff)}</span>
+              <span class="badge gold" style="font-size:10.5px">${t.name}</span>
+              <span style="font-size:11px;color:var(--muted-deep)" dir="ltr">${r.at}</span>
+            </div>
+            <div style="font-size:12px;color:var(--cream);margin-top:3px">${vals||'—'}</div>
+          </div>
+          ${r.status==='pending'
+            ?`<button class="btn btn-gold" style="padding:8px 18px" onclick="HR.reviewReq(${r.id},true)">اعتماد «${chain.steps[r.step]}»</button>
+               <button class="btn btn-ghost" style="padding:8px 18px;border-color:#7c4a55;color:#e29aa6" onclick="HR.reviewReq(${r.id},false)">رفض</button>`
+            :`<span class="badge ${ST[r.status][1]}">${ST[r.status][0]}</span>`}
+        </div>
+        ${r.status!=='rejected'?hrStepper(chain,r.step,r.status):''}
+      </div>`;}).join('');
+    return head+`
+    <div class="sec-label">طلبات الإجازة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">سلسلة الاعتماد: ${lvChain.name}</span></div>
+    ${rows||'<div class="card" style="text-align:center;color:var(--muted);margin-bottom:10px">لا توجد طلبات إجازة.</div>'}
+    <div class="sec-label" style="margin-top:22px">الطلبات العامة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">${HR_RTYPES.length} أنواع معرّفة</span></div>
+    ${reqRows||'<div class="card" style="text-align:center;color:var(--muted)">لا طلبات عامة بعد — قدّمي طلباً من زر «+ طلب جديد».</div>'}`;
   }
 
   if(HR.tab==='shifts'){
