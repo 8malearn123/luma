@@ -125,6 +125,13 @@
   .card .cover{position:relative;height:160px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:0.5px solid var(--line);}
   .card .cover .pat{position:absolute;inset:0;opacity:0.5;}
   .card .cover .mono-lg{position:relative;font-family:'Bodoni Moda',serif;font-size:66px;color:var(--gold);direction:ltr;opacity:0.85;}
+  .card .cover .motif{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.55;transform:translateX(-74px);}
+  .card .cover .cvimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .card .cover .cvshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,8,6,.18),rgba(10,8,6,.42));}
+  .cvcam{position:absolute;bottom:10px;left:10px;z-index:3;width:30px;height:30px;border-radius:50%;border:1px solid rgba(200,170,110,.55);background:rgba(11,10,8,.62);color:var(--gold-light);font-size:13px;cursor:pointer;line-height:1;opacity:0;transition:opacity .25s;}
+  .cvcam.del{left:46px;color:#e29aa6;}
+  .card:hover .cvcam{opacity:1;}
+  @media(hover:none){.cvcam{opacity:.85;}}
   .card.salon .cover .logo{position:relative;z-index:2;width:60px;height:60px;border-radius:15px;background:linear-gradient(140deg,#1c2630,#10141a);border:1px solid var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:27px;color:var(--blue);}
   .card .ptag{position:absolute;top:13px;right:13px;z-index:3;font-size:11px;padding:5px 11px;border-radius:30px;display:flex;align-items:center;gap:5px;backdrop-filter:blur(8px);}
   .card .ptag.expert{background:rgba(147,115,53,0.18);border:0.5px solid var(--gold-deep);color:var(--gold-light);}
@@ -377,10 +384,15 @@ function render(){
     const k=e.type+'|'+e.n;
     const link='experience.html?name='+encodeURIComponent(e.n)+'&role='+encodeURIComponent(e.type==='salon'?('صالون · '+e.cat):e.role)+'&city='+encodeURIComponent(e.city)+'&type='+e.type;
     const isSalon=e.type==='salon';
+    const cvr=isSalon?salonCovers()[e.n]:null;
     return `<a class="card ${isSalon?'salon':''}" href="${link}" ${isSalon?`onclick="openSalon('${e.n}',event)"`:''}>
       <div class="cover" ${isSalon?`style="background:${salonHue(e.n).cover}"`:''}>
-        <div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+        ${cvr?`<img class="cvimg" src="${cvr}" alt="${e.n}"/><span class="cvshade"></span>`
+          :`<div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+             ${isSalon?`<span class="motif">${salonMotif(e.cat,salonHue(e.n).ac)}</span>`:''}`}
         ${isSalon?`<span class="logo" style="border-color:${salonHue(e.n).ac};color:${salonHue(e.n).ac}">${e.n.replace('صالون ','').replace('مركز ','').replace('استوديو ','').charAt(0)}</span>`:`<span class="mono-lg">${e.n.charAt(0)}</span>`}
+        ${isSalon?`<button type="button" class="cvcam" title="إضافة صورة للصالون" onclick="salonCoverPick('${e.n}',event)">📷</button>
+        ${cvr?`<button type="button" class="cvcam del" title="إزالة الصورة" onclick="salonCoverClear('${e.n}',event)">✕</button>`:''}`:''}
         <span class="fav ${state.fav.has(k)?'on':''}" onclick="toggleFav('${k}',event)">${state.fav.has(k)?'♥':'♡'}</span>
         <span class="ptag ${isSalon?'salon':'expert'}">${isSalon?'⬢ صالون':'◆ خبيرة مستقلة'}</span>
       </div>
@@ -412,6 +424,43 @@ const HUES=[
 function salonHue(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))>>>0;return HUES[h%HUES.length];}
 window.salonHue=salonHue;
 
+/* ═══ صورة لكل صالون: رسم مميز حسب التخصص افتراضياً + رفع صورة حقيقية ═══ */
+const SCOVER_KEY='luma_salon_covers';
+const salonCovers=()=>{try{return JSON.parse(localStorage.getItem(SCOVER_KEY))||{};}catch(e){return{};}};
+function salonCoverSet(n,src){
+  const m=salonCovers();if(src)m[n]=src;else delete m[n];
+  try{localStorage.setItem(SCOVER_KEY,JSON.stringify(m));}catch(e){}
+  render();if(SV&&SV.n===n)svApplyCover();
+}
+window.salonCoverPick=(n,ev)=>{
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  inp.onchange=()=>{
+    const f=inp.files&&inp.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{const im=new Image();im.onload=()=>{
+      const MAX=1100,sc=Math.min(1,MAX/Math.max(im.width,im.height));
+      const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      salonCoverSet(n,cv.toDataURL('image/jpeg',0.78));
+    };im.src=rd.result;};
+    rd.readAsDataURL(f);
+  };
+  inp.click();
+};
+window.salonCoverClear=(n,ev)=>{if(ev){ev.preventDefault();ev.stopPropagation();}salonCoverSet(n,null);};
+
+/* رسوم خطية أنيقة حسب تخصص الصالون */
+function salonMotif(cat,ac){
+  const S=(inner)=>`<svg width="112" height="112" viewBox="0 0 96 96" fill="none" stroke="${ac}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+  if(cat==='شعر')return S('<path d="M30 26 L58 62 M58 26 L30 62"/><circle cx="26" cy="66" r="6"/><circle cx="62" cy="66" r="6"/><path d="M70 30 v34 M74 32 v10 M78 32 v14 M82 32 v10"/>');
+  if(cat==='أظافر')return S('<rect x="36" y="42" width="24" height="30" rx="7"/><rect x="42" y="28" width="12" height="14" rx="2"/><path d="M48 20 v8"/><path d="M70 34 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 Z" fill="'+ac+'" opacity=".6"/>');
+  if(cat==='بشرة')return S('<path d="M48 24 q10 12 10 20 a10 10 0 1 1 -20 0 q0 -8 10 -20 Z"/><path d="M30 66 q18 10 36 0"/><path d="M26 58 q22 12 44 0" opacity=".55"/>');
+  if(cat==='سبا')return S('<ellipse cx="48" cy="66" rx="20" ry="7"/><ellipse cx="48" cy="54" rx="15" ry="6"/><ellipse cx="48" cy="43" rx="10" ry="5"/><path d="M42 30 q3 -6 0 -10 M54 30 q3 -6 0 -10" opacity=".7"/>');
+  /* متكامل: مرآة التسريحة */
+  return S('<ellipse cx="48" cy="40" rx="17" ry="21"/><path d="M48 61 v12 M38 76 h20"/><circle cx="27" cy="30" r="2.2"/><circle cx="25" cy="42" r="2.2"/><circle cx="69" cy="30" r="2.2"/><circle cx="71" cy="42" r="2.2"/>');
+}
+
 buildSidebar();
 render();
 document.getElementById('q').addEventListener('input',render);
@@ -438,7 +487,7 @@ function openSalon(name,ev){
   SV=DATA.find(d=>d.type==='salon'&&d.n===name);if(!SV)return;
   const hue=salonHue(name);
   const link='experience.html?name='+encodeURIComponent(SV.n)+'&role='+encodeURIComponent('صالون · '+SV.cat)+'&city='+encodeURIComponent(SV.city)+'&type=salon';
-  document.getElementById('sv-cover').style.background=hue.cover;
+  svApplyCover();
   document.getElementById('sv-logo').style.borderColor=hue.ac;
   document.getElementById('sv-logo').style.color=hue.ac;
   document.getElementById('sv-logo').textContent=name.replace('صالون ','').replace('مركز ','').replace('استوديو ','').charAt(0);
@@ -449,6 +498,13 @@ function openSalon(name,ev){
   svTab('rev');
   renderRevs();renderChat();wireRevGate();
   const ov=document.getElementById('sview');ov.style.display='flex';requestAnimationFrame(()=>ov.classList.add('show'));
+}
+/* غلاف نافذة الصالون: الصورة المرفوعة إن وُجدت وإلا التدرج المميز */
+function svApplyCover(){
+  const el=document.getElementById('sv-cover');if(!el||!SV)return;
+  const cvr=salonCovers()[SV.n];
+  if(cvr){el.style.background=`linear-gradient(180deg,rgba(10,8,6,.15),rgba(10,8,6,.4)),url('${cvr}') center/cover no-repeat`;}
+  else el.style.background=salonHue(SV.n).cover;
 }
 function closeSalon(){const ov=document.getElementById('sview');ov.classList.remove('show');setTimeout(()=>ov.style.display='none',250);}
 function svTab(t){
