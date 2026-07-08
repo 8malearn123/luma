@@ -47,6 +47,21 @@ const PAGE={
   },
   preset(k){PAGE.save({theme:k,themeCustom:null},true);SALON.go('page');LUX.toast('طُبّق قالب البداية — عدّلي ألوانه كما تحبين','ok');},
   resetTheme(){PAGE.save({theme:'dark-luxury',themeCustom:null},true);SALON.go('page');LUX.toast('عاد المظهر للافتراضي','ok');},
+  /* ── الشعار والغلاف: رفع من الجهاز (مضغوط) أو رابط ── */
+  imgUpload(key,inp){
+    const f=inp.files&&inp.files[0];if(!f)return;
+    const MAX=key==='logo'?300:1400;
+    const rd=new FileReader();
+    rd.onload=()=>{const im=new Image();im.onload=()=>{
+      const sc=Math.min(1,MAX/Math.max(im.width,im.height));
+      const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      PAGE.save({[key]:cv.toDataURL('image/jpeg',0.78)},true);
+      SALON.go('page');LUX.toast(key==='logo'?'رُفع الشعار ✓':'رُفعت صورة الغلاف ✓','ok');
+    };im.src=rd.result;};
+    rd.readAsDataURL(f);inp.value='';
+  },
+  imgClear(key){PAGE.save({[key]:''},true);SALON.go('page');},
   /* ── معرض الأعمال: صور مرفوعة (مضغوطة) أو روابط صور/فيديو ── */
   GAL_MAX:12,
   galPush(item){
@@ -107,8 +122,18 @@ SCREENS.page=()=>{
         </div>
         <div class="lux-f"><label>نبذة مختصرة</label><textarea rows="2" oninput="PAGE.field('bio',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;resize:vertical">${c.bio}</textarea></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="lux-f"><label>رابط الشعار</label><input value="${c.logo}" oninput="PAGE.field('logo',this)" dir="ltr" placeholder="https://…/logo.png" style="width:100%;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/></div>
-          <div class="lux-f"><label>صورة الغلاف الفاخرة</label><input value="${c.cover}" oninput="PAGE.field('cover',this)" dir="ltr" placeholder="https://…/cover.jpg" style="width:100%;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/></div>
+          ${[['logo','الشعار','https://…/logo.png'],['cover','صورة الغلاف الفاخرة','https://…/cover.jpg']].map(([k,lb,ph])=>{
+            const v=c[k]||'';const isData=v.startsWith('data:');
+            return `
+          <div class="lux-f"><label>${lb} <span style="font-size:10px;color:var(--muted)">— رفع صورة أو رابط</span></label>
+            <div style="display:flex;gap:8px;align-items:center">
+              ${v?`<span style="position:relative;flex-shrink:0">
+                <img id="pv-${k}" src="${v}" alt="" style="width:${k==='logo'?'42px':'66px'};height:42px;border-radius:9px;object-fit:cover;border:1px solid var(--gold-deep)" onerror="this.style.display='none'"/>
+                <button onclick="PAGE.imgClear('${k}')" title="إزالة" style="position:absolute;top:-7px;left:-7px;width:19px;height:19px;border-radius:50%;border:none;background:rgba(0,0,0,.75);color:#f0a3b0;cursor:pointer;font-size:10px;line-height:1">✕</button></span>`:''}
+              <label class="btn btn-ghost" style="cursor:pointer;padding:9px 12px;font-size:12px;white-space:nowrap">⬆ رفع
+                <input id="up-${k}" type="file" accept="image/*" onchange="PAGE.imgUpload('${k}',this)" style="display:none"/></label>
+              <input value="${isData?'':v}" oninput="PAGE.field('${k}',this)" dir="ltr" placeholder="${isData?'صورة مرفوعة ✓ — أو الصقي رابطاً':ph}" style="flex:1;min-width:0;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/>
+            </div></div>`;}).join('')}
         </div>
       </div>
       <div class="card" style="margin-bottom:14px">
