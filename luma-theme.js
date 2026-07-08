@@ -7,7 +7,7 @@
 
   var KEY='luma_theme';
   var saved='dark';
-  try{saved=localStorage.getItem(KEY)||'dark';}catch(e){}
+  try{saved=(window.LumaStore?LumaStore.raw.get(KEY,'dark'):localStorage.getItem(KEY))||'dark';}catch(e){}
   document.documentElement.dataset.theme=saved;
 
   var css=[
@@ -86,11 +86,18 @@
       var next=document.documentElement.dataset.theme==='light'?'dark':'light';
       document.documentElement.classList.add('luma-anim');
       document.documentElement.dataset.theme=next;
-      try{localStorage.setItem(KEY,next);}catch(e){}
+      try{window.LumaStore?LumaStore.raw.set(KEY,next):localStorage.setItem(KEY,next);}catch(e){}
       paint();
       setTimeout(function(){document.documentElement.classList.remove('luma-anim');},420);
     });
     paint();
     document.body.appendChild(b);
   });
+})();
+
+/* ── PWA: تسجيل عامل الخدمة (يعمل على https والمعاينة المحلية فقط) ── */
+(function(){
+  if(!('serviceWorker' in navigator))return;
+  var ok=location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname);
+  if(ok)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});
 })();

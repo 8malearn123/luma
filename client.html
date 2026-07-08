@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0C0B0E"/>
+<script src="luma-store.js"></script>
+<link rel="stylesheet" href="luma-core.css"/>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LUMA — حساب العميلة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#131217; --bg2:#0c0b0e; --surface:#18171d; --surface2:#1b1a21; --surface3:#201f26;
+    --gold:#9c8047; --gold-light:#ccab64; --gold-bright:#dbbd81; --gold-pale:#e6ce95; --gold-deep:#846a38;
+    --white:#f6f2ec; --cream:#ece6da; --muted:#86818d; --muted-deep:#58545f;
+    --line:#26242d; --line-soft:#1e1d24; --green:#6fa86a; --rose:#d98a93;
+  }
+  body{background:radial-gradient(ellipse at 50% 0%,#1f1812,#0c0b0e 70%);min-height:100vh;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;color:var(--white);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:34px 16px;}
+  .serif{font-family:'Bodoni Moda',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.2em;direction:ltr;}
+  .num{font-family:'Bodoni Moda',serif;font-weight:500;direction:ltr;}
+  .gold-fill{background:linear-gradient(120deg,#dbbd81,#ccab64 35%,#9c8047);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  ::selection{background:var(--gold);color:#131217;}
+  .head-brand{text-align:center;}
+  .head-brand .b{font-family:'Bodoni Moda',serif;font-size:26px;letter-spacing:0.3em;color:var(--gold-light);direction:ltr;}
+  .head-brand .s{font-size:12px;color:var(--muted);margin-top:3px;}
+
+  /* phone */
+  .phone{width:380px;max-width:94vw;height:760px;max-height:88vh;border-radius:46px;background:#0c0b0e;border:1px solid var(--line);padding:12px;box-shadow:0 40px 90px rgba(0,0,0,0.6);position:relative;}
+  .phone .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:130px;height:28px;background:#0c0b0e;border-radius:0 0 18px 18px;z-index:20;}
+  .scr{width:100%;height:100%;border-radius:34px;overflow:hidden;position:relative;background:var(--bg);display:flex;flex-direction:column;}
+  .status{height:46px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;font-size:13px;color:var(--cream);flex-shrink:0;}
+  .status .r{display:flex;gap:6px;align-items:center;}
+  .view{flex:1;overflow-y:auto;padding:6px 18px 90px;}
+  .view::-webkit-scrollbar{width:0;}
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:78px;background:rgba(14,10,7,0.92);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;align-items:flex-start;padding:12px 14px 0;z-index:15;border-radius:0 0 34px 34px;}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;color:var(--muted);transition:color .2s;background:none;border:none;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;}
+  .tab .ic{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+  .tab .lb{font-size:10.5px;}
+  .tab.on{color:var(--gold-light);}
+
+  /* shared */
+  .greet{padding:8px 4px 4px;}
+  .greet .d{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:var(--gold);direction:ltr;}
+  .greet .h{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:23px;color:var(--white);margin-top:6px;}
+  .greet .h .w{color:var(--gold-light);}
+  .greet .s{font-size:13px;color:var(--gold-pale);margin-top:3px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;}
+  .seclab{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;}
+  .seclab .t{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:15px;color:var(--white);}
+  .seclab .m{font-size:12px;color:var(--gold-light);cursor:pointer;}
+  .avc{border-radius:50%;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);flex-shrink:0;}
+  .stars{color:var(--gold-light);letter-spacing:1px;}
+  .badge{font-size:11px;padding:4px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .badge.gold{color:var(--gold-light);background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);}
+  .badge.green{color:var(--green);background:rgba(111,168,106,0.14);}
+  .badge.soft{color:var(--muted);background:var(--surface3);}
+  .gbtn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:14.5px;color:#131217;background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);box-shadow:0 8px 22px rgba(156,124,58,0.25);}
+  .ghbtn{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:500;font-size:14px;color:var(--gold-pale);background:none;}
+  .lat{position:absolute;inset:0;opacity:0.4;}
+  .fade{animation:fd .4s ease both;}@keyframes fd{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @media(prefers-reduced-motion:reduce){.fade{animation:none;}}
+  .reset{font-size:12px;color:var(--gold-pale);background:none;border:1px solid var(--line);border-radius:30px;padding:9px 22px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+</head>
+<body>
+<div class="head-brand"><a class="b" href="index.html" title="العودة للرئيسية" style="display:inline-block;text-decoration:none;cursor:pointer">LUMA</a><div class="s"><a href="index.html" style="color:inherit;text-decoration:none">→ العودة للرئيسية</a></div></div>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="scr">
+    <div class="status"><span class="mono">9:41</span><span class="r"><span>📶</span><span>🔋</span></span></div>
+    <div class="view fade" id="view"></div>
+    <div class="tabbar" id="tabbar"></div>
+  </div>
+</div>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">
+<button class="reset" onclick="localStorage.removeItem('luma_cli_tab');CLI.go('home')">↺ إعادة البدء</button>
+<a class="reset" href="login.html" style="text-decoration:none;display:inline-flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
+</div>
+
+<svg width="0" height="0" style="position:absolute"><defs><pattern id="clat" width="60" height="60" patternUnits="userSpaceOnUse"><g fill="none" stroke="#9c8047" stroke-width="1" opacity="0.5"><circle cx="0" cy="0" r="30"/><circle cx="60" cy="0" r="30"/><circle cx="0" cy="60" r="30"/><circle cx="60" cy="60" r="30"/><circle cx="30" cy="30" r="30"/></g></pattern></defs></svg>
+
+<script>
+const IC={
+  home:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  cal:'<rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+  heart:'<path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  pin:'<path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  loyalty:'<path d="M12 2l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/>',
+  gift:'<rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 13h18M12 9v12M12 9c-2-4-6-3-6 0M12 9c2-4 6-3 6 0"/>',
+  card:'<rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/>',
+  bell:'<path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .3c0 1.7-2.5 2-2.5 3.7"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/>',
+  out:'<path d="M14 21H5a2 2 0 01-2-2V5a2 2 0 012-2h9"/><path d="M18 16l4-4-4-4M22 12H9"/>',
+  chev:'<path d="M15 6l-6 6 6 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  whatsapp:'<path d="M3.5 20.5l1.4-4.1A8.5 8.5 0 1112 20.5a8.4 8.4 0 01-3.8-.9z"/><path d="M8.8 9.2c.7 1.9 2.1 3.3 4 4 .5.2.9 0 1.2-.4"/>',
+};
+const icon=(n,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
+const stars=(r,sz=12)=>{let s='';for(let i=1;i<=5;i++)s+=`<span style="color:${i<=r?'#ccab64':'#26242d'};font-size:${sz}px">★</span>`;return s;}
+const av=(n,sz=44,fs=18)=>`<span class="avc" style="width:${sz}px;height:${sz}px;font-size:${fs}px">${n.charAt(0)}</span>`;
+
+/* DATA */
+const NEXT={pr:'رهف العتيبي',role:'خبيرة مكياج',s:'مكياج سهرة',date:'الإثنين ٢٢ يونيو',time:'7:00 م',city:'جدة'};
+const UPCOMING=[
+  {pr:'رهف العتيبي',s:'مكياج سهرة',date:'٢٢ يونيو · 7:00 م',st:'مؤكد',stc:'green'},
+  {pr:'لمياء الزهراني',s:'هيدرافيشل',date:'٢٨ يونيو · 1:00 م',st:'بانتظار الدفع',stc:'gold'},
+];
+const PAST=[
+  {pr:'رهف العتيبي',s:'مكياج عروس',date:'٢ يونيو',rated:5},
+  {pr:'نورة القحطاني',s:'تسريحة مناسبة',date:'٢٤ مايو',rated:5},
+  {pr:'دانة الشهري',s:'مكياج ناعم',date:'١٠ مايو',rated:0},
+];
+const FAVS=[
+  {n:'رهف العتيبي',role:'مكياج · جدة',r:4.9,from:350},
+  {n:'لمياء الزهراني',role:'بشرة · الرياض',r:5.0,from:280},
+  {n:'نورة القحطاني',role:'شعر · جازان',r:4.8,from:220},
+  {n:'ريم العنزي',role:'رموش · الدمام',r:5.0,from:190},
+];
+const RECO=[
+  {n:'دانة الشهري',role:'مكياج · الرياض',r:4.7,from:380},
+  {n:'غادة الفيفي',role:'تصوير · جازان',r:4.9,from:550},
+];
+
+/* SCREENS */
+function tile(h){return `<div style="height:${h}px;border-radius:11px;background:linear-gradient(150deg,#2a2218,#131217);border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg class="lat" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#clat)"/></svg><span style="position:relative;color:var(--gold-deep)">◆</span></div>`;}
+function expertCard(e){return `<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px;cursor:pointer">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="text-align:left"><div style="font-size:10px;color:var(--muted)">يبدأ من</div><div class="num" style="font-size:18px;color:var(--gold-light)">${e.from} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:10px;color:var(--muted)">ر.س</span></div></div></div>`;}
+/* WhatsApp is the client's main channel on LUMA */
+function waLink(msg){return 'https://wa.me/966501234567?text='+encodeURIComponent(msg);}
+function waBtn(msg,label){return `<a href="${waLink(msg)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#06351c;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:13px;border-radius:9px;padding:11px;text-decoration:none;margin-top:12px">${icon('whatsapp',16)} ${label||'تواصل عبر واتساب'}</a>`;}
+
+const SCREENS={
+  home(){return `
+  <div class="greet"><div class="h">مرحباً، <span class="w">سارة</span> ✦</div><div class="s">لديكِ موعد قادم بعد يومين.</div></div>
+
+  <div style="display:flex;align-items:center;gap:10px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.32);border-radius:12px;padding:11px 13px;margin-top:12px">
+    <span style="color:#25D366;display:flex;flex-shrink:0">${icon('whatsapp',19)}</span>
+    <div style="flex:1;font-size:12.5px;color:var(--cream);line-height:1.6">تأكيد الحجز والتذكيرات تصلك على <b style="color:#5fe08a">واتساب</b>، وتقدرين تتواصلين مع خبيرتك مباشرة منه.</div>
+  </div>
+
+  <div class="card" style="margin-top:12px;background:linear-gradient(150deg,#201f26,#131217);border-color:var(--gold-deep);position:relative;overflow:hidden">
+    <svg class="lat" width="100%" height="100%" style="opacity:0.25"><rect width="100%" height="100%" fill="url(#clat)"/></svg>
+    <div style="position:relative">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span class="badge gold">موعدك القادم</span><span style="font-size:12px;color:var(--gold-pale)">${NEXT.city}</span></div>
+      <div style="display:flex;align-items:center;gap:13px;margin-top:14px">${av(NEXT.pr,52,22)}<div style="flex:1"><div style="font-size:16px;color:var(--white);font-weight:600">${NEXT.pr}</div><div style="font-size:12.5px;color:var(--gold-pale)">${NEXT.s}</div></div></div>
+      <div style="display:flex;gap:18px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+        <div style="display:flex;align-items:center;gap:7px;color:var(--cream);font-size:13px">${icon('cal',15)} ${NEXT.date}</div>
+        <div style="display:flex;align-items:center;gap:7px;color:var(--cream);font-size:13px">${icon('clock',15)} ${NEXT.time}</div>
+      </div>
+      ${waBtn('مرحبًا '+NEXT.pr+'، بخصوص موعدي ('+NEXT.s+') يوم '+NEXT.date+' الساعة '+NEXT.time+'.')}
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:14px">
+    <div class="card" style="text-align:center;padding:16px"><div style="color:var(--gold-light);display:flex;justify-content:center">${icon('loyalty',22)}</div><div class="num" style="font-size:26px;color:var(--white);margin-top:6px">1,240</div><div style="font-size:11.5px;color:var(--gold-pale)">نقطة ولاء</div></div>
+    <div class="card" style="text-align:center;padding:16px"><div style="color:var(--gold-light);display:flex;justify-content:center">${icon('cal',22)}</div><div class="num" style="font-size:26px;color:var(--white);margin-top:6px">14</div><div style="font-size:11.5px;color:var(--gold-pale)">حجز مكتمل</div></div>
+  </div>
+
+  <div class="seclab"><span class="t">خبيراتكِ المفضلة</span><span class="m" onclick="CLI.go('favs')">الكل</span></div>
+  ${FAVS.slice(0,2).map(expertCard).join('')}
+
+  <div class="seclab"><span class="t">مقترحة لكِ</span><span class="m">اكتشفي</span></div>
+  ${RECO.map(expertCard).join('')}
+  `;},
+
+  bookings(){return `
+  <div class="greet" style="padding-bottom:8px"><div class="h" style="font-size:21px">حجوزاتي</div></div>
+  <div style="display:flex;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px;margin:4px 0 16px">
+    <button class="seg-b on" onclick="CLI.seg(this,'up')">قادمة</button>
+    <button class="seg-b" onclick="CLI.seg(this,'pa')">سابقة</button>
+  </div>
+  <style>.seg-b{flex:1;font-family:'Cairo';font-size:13px;color:var(--muted);background:none;border:none;padding:9px;border-radius:7px;cursor:pointer}.seg-b.on{background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-weight:600}</style>
+  <div id="bk-up">
+    ${UPCOMING.map(b=>`<div class="card" style="margin-bottom:11px"><div style="display:flex;align-items:center;gap:12px">${av(b.pr,46,18)}<div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${b.pr}</div><div style="font-size:12.5px;color:var(--gold-pale)">${b.s}</div></div><span class="badge ${b.stc}">${b.st}</span></div><div style="display:flex;align-items:center;gap:7px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line-soft);color:var(--cream);font-size:13px">${icon('cal',15)} ${b.date}</div><div style="display:flex;gap:9px;margin-top:12px"><a href="${waLink('مرحبًا '+b.pr+'، بخصوص موعدي ('+b.s+') '+b.date+'.')}" target="_blank" rel="noopener" class="ghbtn" style="padding:11px;display:flex;align-items:center;justify-content:center;gap:7px;color:#25D366;border-color:rgba(37,211,102,0.35);text-decoration:none">${icon('whatsapp',15)} واتساب</a><button class="ghbtn" style="padding:11px">تعديل</button><button class="ghbtn" style="padding:11px;color:var(--rose);border-color:rgba(217,138,147,0.3)">إلغاء</button></div></div>`).join('')}
+  </div>
+  <div id="bk-pa" style="display:none">
+    ${PAST.map(b=>`<div class="card" style="margin-bottom:11px"><div style="display:flex;align-items:center;gap:12px">${av(b.pr,46,18)}<div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${b.pr}</div><div style="font-size:12.5px;color:var(--gold-pale)">${b.s} · ${b.date}</div></div></div><div style="display:flex;gap:9px;margin-top:13px;align-items:center">${b.rated?`<div style="flex:1;font-size:12.5px;color:var(--muted)">تقييمك: ${stars(b.rated,13)}</div>`:`<div style="flex:1;font-size:12.5px;color:var(--gold-light)">قيّمي تجربتك</div>`}<button class="ghbtn" style="width:auto;padding:9px 18px">إعادة الحجز</button></div></div>`).join('')}
+  </div>
+  `;},
+
+  favs(){return `
+  <div class="greet" style="padding-bottom:8px"><div class="h" style="font-size:21px">المفضلة</div><div class="s">${FAVS.length} خبيرات محفوظات</div></div>
+  <div style="margin-top:10px">${FAVS.map(e=>`<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span style="color:var(--rose);font-size:19px">♥</span><button class="gbtn" style="width:auto;padding:8px 16px;font-size:12px">احجزي</button></div></div>`).join('')}</div>
+  `;},
+
+  account(){return `
+  <div class="card" style="display:flex;align-items:center;gap:14px;margin-top:10px;background:linear-gradient(150deg,#201f26,#131217);border-color:var(--gold-deep)">
+    ${av('سارة',60,26)}<div style="flex:1"><div style="font-size:18px;color:var(--white);font-weight:700">سارة الأحمدي</div><div style="font-size:12.5px;color:var(--gold-pale)">عضوة منذ ٢٠٢٦</div><div style="display:flex;align-items:center;gap:5px;margin-top:4px;font-size:11.5px;color:#5fe08a">${icon('whatsapp',13)} +966 50 123 4567 · موثّق عبر واتساب</div></div><button class="ghbtn" style="width:auto;padding:8px 14px;font-size:12px">تعديل</button>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:9px;color:var(--gold-light)">${icon('loyalty',20)}<span style="font-size:14.5px;color:var(--white);font-weight:600">نقاط الولاء</span></div><span class="badge gold">عضوة ذهبية</span></div>
+    <div style="display:flex;align-items:baseline;gap:7px;margin:12px 0 8px"><span class="num gold-fill" style="font-size:34px">1,240</span><span style="font-size:13px;color:var(--muted)">نقطة</span></div>
+    <div style="height:7px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:62%;background:linear-gradient(90deg,#9c8047,#dbbd81);border-radius:10px"></span></div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:8px">٢٦٠ نقطة للوصول لمكافأة جلسة مجانية</div>
+  </div>
+
+  <div class="seclab"><span class="t">الحساب</span></div>
+  <div class="card" style="padding:6px 16px">
+    ${[['whatsapp','رقم واتساب','+966 50 123 4567'],['bell','إشعارات واتساب','مُفعّلة'],['card','طرق الدفع','mada · Apple Pay'],['gift','بطاقات الإهداء','رصيد ٢٠٠ ر.س'],['help','المساعدة والدعم','']].map((m,i,a)=>`<div style="display:flex;align-items:center;gap:13px;padding:14px 0;${i<a.length-1?'border-bottom:1px solid var(--line-soft)':''};cursor:pointer"><span style="color:${m[0]==='whatsapp'?'#25D366':'var(--gold-pale)'};display:flex">${icon(m[0],19)}</span><span style="flex:1;font-size:14px;color:var(--white)">${m[1]}</span>${m[2]?`<span style="font-size:11.5px;color:${m[1]==='إشعارات واتساب'?'#5fe08a':'var(--muted)'}">${m[2]}</span>`:''}<span style="color:var(--muted-deep);display:flex">${icon('chev',16)}</span></div>`).join('')}
+  </div>
+  <button class="ghbtn" style="margin-top:14px;color:var(--rose);border-color:rgba(217,138,147,0.25);display:flex;align-items:center;justify-content:center;gap:9px">${icon('out',17)} تسجيل الخروج</button>
+  `;},
+};
+
+const TABS=[['home','الرئيسية','home'],['bookings','حجوزاتي','cal'],['favs','المفضلة','heart'],['account','حسابي','user']];
+const TABOF={home:'home',bookings:'bookings',favs:'favs',account:'account'};
+const CLI={
+  tab:'home',
+  go(t){
+    this.tab=t; try{localStorage.setItem('luma_cli_tab',t);}catch(e){}
+    const v=document.getElementById('view');
+    v.classList.remove('fade'); void v.offsetWidth; v.classList.add('fade');
+    v.innerHTML=SCREENS[t]();
+    v.scrollTop=0;
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  },
+  seg(el,which){
+    el.parentElement.querySelectorAll('.seg-b').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+    document.getElementById('bk-up').style.display=which==='up'?'block':'none';
+    document.getElementById('bk-pa').style.display=which==='pa'?'block':'none';
+  }
+};
+window.CLI=CLI;
+document.getElementById('tabbar').innerHTML=TABS.map(t=>`<button class="tab" data-t="${t[0]}" onclick="CLI.go('${t[0]}')"><span class="ic">${icon(t[2],23)}</span><span class="lb">${t[1]}</span></button>`).join('');
+CLI.go((()=>{try{return localStorage.getItem('luma_cli_tab')||'home';}catch(e){return 'home';}})());
+</script>
+<script src="luma-ui.js"></script>
+<script src="luma-theme.js"></script>
+</body>
+</html>
