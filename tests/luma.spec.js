@@ -146,6 +146,22 @@ test('صفحة الحجز العامة: المعالج حتى النجاح', asy
   await expect(page.getByText('تم تأكيد حجزك')).toBeVisible();
 });
 
+test('الفروع المتعددة: التبديل يعزل الطاقم والحجوزات', async ({ page }) => {
+  await page.goto('/salon.html#board');
+  await page.waitForTimeout(800);
+  await expect(page.locator('.appt', { hasText: 'نوف العتيبي' }).first()).toBeVisible();
+  // التبديل لفرع الروضة من الشريط الجانبي (يعيد التحميل)
+  await page.click('.br-switch button:has-text("الروضة")');
+  await page.waitForTimeout(1200);
+  await expect(page.locator('.appt', { hasText: 'أفنان الحربي' }).first()).toBeVisible();
+  await expect(page.locator('.appt', { hasText: 'نوف العتيبي' })).toHaveCount(0);
+  await expect(page.getByText('شهد').first()).toBeVisible();
+  // العودة للفرع الرئيسي
+  await page.click('.br-switch button:has-text("الشاطئ")');
+  await page.waitForTimeout(1200);
+  await expect(page.locator('.appt', { hasText: 'نوف العتيبي' }).first()).toBeVisible();
+});
+
 test('تقييم ما بعد الزيارة: من الدفع إلى تعليق موثق في المتجر', async ({ page }) => {
   // 1) دفع حجز «لطيفة المطيري»
   await page.goto('/salon.html#board');

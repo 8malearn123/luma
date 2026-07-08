@@ -6,6 +6,23 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script>
+/* عزل بيانات الفروع: البيانات التشغيلية لكل فرع تُخزَّن بمفاتيح مُلحقة بمعرّفه،
+   فالحجوزات والمدفوعات والموارد البشرية لا تختلط بين الفروع. الفرع الرئيسي بلا لاحقة. */
+(function(){
+  window.LUMA_BRANCH=(function(){try{return localStorage.getItem('luma_branch')||'shatee';}catch(e){return 'shatee';}})();
+  if(window.LUMA_BRANCH==='shatee')return;
+  const SCOPED=/^(luma_salon_appts|luma_salon_staff|luma_salon_clients|luma_paid|luma_inv_seq|luma_inv_q|luma_hr_|luma_review_reqs|luma_loyalty_pts|luma_svc_recipes|luma_coupons)/;
+  const sk=k=>SCOPED.test(k)?k+'@'+window.LUMA_BRANCH:k;
+  const g=LumaStore.get,s=LumaStore.set,u=LumaStore.update,rm=LumaStore.remove,rg=LumaStore.raw.get,rs=LumaStore.raw.set;
+  LumaStore.get=(k,f)=>g(sk(k),f);
+  LumaStore.set=(k,v)=>s(sk(k),v);
+  LumaStore.update=(k,fn,f)=>u(sk(k),fn,f);
+  LumaStore.remove=k=>rm(sk(k));
+  LumaStore.raw.get=(k,f)=>rg(sk(k),f);
+  LumaStore.raw.set=(k,v)=>rs(sk(k),v);
+})();
+</script>
 <link rel="stylesheet" href="luma-core.css"/>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>LUMA — داشبورد الصالون</title>
@@ -106,6 +123,7 @@
 </div>
 
 <script src="salon-core.js"></script>
+<script src="salon-branch.js"></script>
 <script src="salon-board.js"></script>
 <script src="salon-hr.js"></script>
 <script src="salon-page.js"></script>
