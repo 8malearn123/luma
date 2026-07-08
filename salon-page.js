@@ -16,7 +16,10 @@ function pageThemeOf(c){
   if(c.theme==='custom'&&c.themeCustom)return {...PAGE_PRESETS[0],k:'custom',ar:'ثيم مخصص',...c.themeCustom};
   return PAGE_PRESETS.find(p=>p.k===c.theme)||PAGE_PRESETS[0];
 }
-const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,...hrLoad(PAGE_KEY,{})});
+const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],...hrLoad(PAGE_KEY,{})});
+/* معرّف يوتيوب من أي شكل رابط (watch / youtu.be / shorts / embed) */
+const ytIdOf=u=>{const m=String(u||'').match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);return m?m[1]:null;};
+const isVideoUrl=u=>!!ytIdOf(u)||/\.(mp4|webm|mov)(\?|$)/i.test(String(u||''));
 const slugClean=v=>v.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-{2,}/g,'-');
 const PAGE={
   save(patch,silent){const c={...pageCfg(),...patch};hrSave(PAGE_KEY,c);
@@ -44,6 +47,34 @@ const PAGE={
   },
   preset(k){PAGE.save({theme:k,themeCustom:null},true);SALON.go('page');LUX.toast('طُبّق قالب البداية — عدّلي ألوانه كما تحبين','ok');},
   resetTheme(){PAGE.save({theme:'dark-luxury',themeCustom:null},true);SALON.go('page');LUX.toast('عاد المظهر للافتراضي','ok');},
+  /* ── معرض الأعمال: صور مرفوعة (مضغوطة) أو روابط صور/فيديو ── */
+  GAL_MAX:12,
+  galPush(item){
+    const g=[...(pageCfg().gallery||[])];
+    if(g.length>=PAGE.GAL_MAX)return LUX.toast('الحد الأقصى '+PAGE.GAL_MAX+' عنصراً — احذفي عنصراً أولاً','warn');
+    g.push(item);PAGE.save({gallery:g},true);SALON.go('page');
+    LUX.toast(item.type==='video'?'أُضيف الفيديو للمعرض ✓':'أُضيفت الصورة للمعرض ✓','ok');
+  },
+  galAddFile(inp){
+    const f=inp.files&&inp.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{const im=new Image();im.onload=()=>{
+      const MAX=900,sc=Math.min(1,MAX/Math.max(im.width,im.height));
+      const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      PAGE.galPush({type:'img',src:cv.toDataURL('image/jpeg',0.72)});
+    };im.src=rd.result;};
+    rd.readAsDataURL(f);inp.value='';
+  },
+  galAddUrl(){
+    const el=document.getElementById('galUrl');const u=(el&&el.value||'').trim();if(!u)return;
+    if(isVideoUrl(u))PAGE.galPush({type:'video',src:u,yt:ytIdOf(u)});
+    else PAGE.galPush({type:'img',src:u});
+  },
+  galDel(i){
+    const g=[...(pageCfg().gallery||[])];g.splice(i,1);
+    PAGE.save({gallery:g},true);SALON.go('page');
+  },
 };
 window.PAGE=PAGE;
 
@@ -79,6 +110,29 @@ SCREENS.page=()=>{
           <div class="lux-f"><label>رابط الشعار</label><input value="${c.logo}" oninput="PAGE.field('logo',this)" dir="ltr" placeholder="https://…/logo.png" style="width:100%;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/></div>
           <div class="lux-f"><label>صورة الغلاف الفاخرة</label><input value="${c.cover}" oninput="PAGE.field('cover',this)" dir="ltr" placeholder="https://…/cover.jpg" style="width:100%;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/></div>
         </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">معرض الأعمال — صور وفيديوهات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">${(c.gallery||[]).length} / ${PAGE.GAL_MAX}</span></div>
+        ${(c.gallery||[]).length?`
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-bottom:14px">
+          ${c.gallery.map((g,i)=>`
+          <div class="gal-thumb" style="position:relative;aspect-ratio:1;border-radius:11px;overflow:hidden;border:1px solid var(--line);background:var(--surface3)">
+            ${g.type==='video'
+              ?`${g.yt?`<img src="https://i.ytimg.com/vi/${g.yt}/hqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.remove()"/>`:''}
+                 <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);color:#fff;font-size:22px">▶</span>`
+              :`<img src="${g.src}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'"/>`}
+            <button onclick="PAGE.galDel(${i})" title="حذف" style="position:absolute;top:5px;left:5px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(0,0,0,.65);color:#f0a3b0;cursor:pointer;font-size:12px;line-height:1">✕</button>
+          </div>`).join('')}
+        </div>`:`<div style="font-size:12.5px;color:var(--muted);margin-bottom:14px">أضيفي صور أعمالك (مكياج، تسريحات، أظافر…) وفيديوهات قصيرة — تظهر كمعرض أنيق في صفحة الحجز.</div>`}
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <label class="btn btn-gold" style="cursor:pointer">⬆ رفع صورة من الجهاز
+            <input id="galFile" type="file" accept="image/*" onchange="PAGE.galAddFile(this)" style="display:none"/></label>
+          <div style="flex:1;display:flex;gap:8px;min-width:260px">
+            <input id="galUrl" dir="ltr" placeholder="رابط صورة أو فيديو (YouTube / mp4)…" style="flex:1;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/>
+            <button id="galAdd" class="btn btn-ghost" onclick="PAGE.galAddUrl()">إضافة</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:9px">الصور المرفوعة تُضغط تلقائياً · الفيديو برابط يوتيوب أو ملف mp4</div>
       </div>
       <div class="card">
         <div class="sec-label">مظهر وتصميم الصفحة <span class="ln"></span>
