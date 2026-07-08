@@ -199,6 +199,15 @@ const APPTS=[
 const APPTS_KEY='luma_salon_appts';
 try{(JSON.parse(localStorage.getItem(APPTS_KEY))||[]).forEach(a=>{if(a&&a.staff&&!APPTS.some(x=>x.id&&x.id===a.id))APPTS.push(a);});}catch(e){}
 function saveAppts(){try{localStorage.setItem(APPTS_KEY,JSON.stringify(APPTS.filter(a=>a.custom)));}catch(e){}}
+APPTS.forEach((a,i)=>{if(!a.id)a.id='s'+i;});
+/* دفعات وفواتير الحجوزات */
+const PAID_KEY='luma_paid', INV_SEQ_KEY='luma_inv_seq';
+const paidAll=()=>{try{return JSON.parse(localStorage.getItem(PAID_KEY))||{}}catch(e){return{}}};
+const paidOf=id=>paidAll()[id]||null;
+function markPaid(id,rec){const all=paidAll();all[id]=rec;try{localStorage.setItem(PAID_KEY,JSON.stringify(all));}catch(e){}}
+function nextInvNo(){let n=parseInt(localStorage.getItem(INV_SEQ_KEY))||1000;n++;try{localStorage.setItem(INV_SEQ_KEY,n);}catch(e){}return 'INV-'+n;}
+const SVC_CATALOG=[['مكياج سهرة',2,350],['مكياج عروس',4,850],['مكياج ناعم',2,250],['صبغة + قص',3,550],['تسريحة',2,200],['كيراتين',4,700],['هيدرافيشل',3,480],['تنظيف بشرة',2,320],['تقشير',2,280],['منيكير جل',2,160],['منيكير + بديكير',3,240],['تركيب أظافر',3,220]];
+const svcPrice=n=>{const x=SVC_CATALOG.find(s=>s[0]===n);return x?x[2]:350;};
 const ST_STYLE={confirmed:{bg:'rgba(111,168,106,0.16)',bd:'#6fa86a',lb:'مؤكد'},pending:{bg:'rgba(205,172,80,0.16)',bd:'#ccab64',lb:'بانتظار الدفع'},walkin:{bg:'rgba(125,155,192,0.16)',bd:'#7d9bc0',lb:'حضور مباشر'},blocked:{bg:'rgba(134,129,141,0.16)',bd:'#86818d',lb:'وقت محجوب'}};
 
 const SCREENS={};
@@ -273,9 +282,9 @@ SCREENS.board=()=>{
     const blocks=live.filter(a=>a.staff===s.id).map(a=>{
       const st=ST_STYLE[a.st];
       const top=a.start*ROW_H+2, h=a.dur*ROW_H-4;
-      const own=a.custom?`onclick="event.stopPropagation();SALON.apptActions(${a.id})"`:'';
-      return `<div class="appt" ${own} style="top:${top}px;height:${h}px;background:${st.bg};border-color:${st.bd}${a.st==='blocked'?';border-style:dashed':''}">
-        <div class="ap-t">${slotLabel(a.start)} – ${slotLabel(a.start+a.dur)}</div>
+      const paid=a.st!=='blocked'&&paidOf(a.id);
+      return `<div class="appt" onclick="event.stopPropagation();SALON.apptDetail('${a.id}')" style="top:${top}px;height:${h}px;background:${st.bg};border-color:${st.bd}${a.st==='blocked'?';border-style:dashed':''}">
+        <div class="ap-t">${slotLabel(a.start)} – ${slotLabel(a.start+a.dur)}${paid?' <span style="color:#9fce99">· مدفوعة ✓</span>':''}</div>
         <div class="ap-c">${a.st==='blocked'?'⛔ '+a.client:a.client}</div>
         <div class="ap-s">${a.service}</div>
       </div>`;
@@ -288,11 +297,12 @@ SCREENS.board=()=>{
   /* agenda view: compact time+client bars sorted by start (like a month-cell) */
   const agenda=live.slice().sort((a,b)=>a.start-b.start).map(a=>{
     const st=ST_STYLE[a.st];const s=STAFF.find(x=>x.id===a.staff)||{n:'—'};
-    return `<div class="agitem" ${a.custom?`onclick="SALON.apptActions(${a.id})"`:''} style="background:${st.bg};border-color:${st.bd}${a.st==='blocked'?';border-style:dashed':''}">
+    const pd=a.st!=='blocked'&&paidOf(a.id);
+    return `<div class="agitem" onclick="SALON.apptDetail('${a.id}')" style="background:${st.bg};border-color:${st.bd}${a.st==='blocked'?';border-style:dashed':''}">
       <span class="ag-t">${slotLabel(a.start)}</span>
       <b>${a.st==='blocked'?'وقت محجوب — '+a.client:a.client}</b>
       <span class="ag-s">${a.service} · ${s.n}</span>
-      <span class="badge ${a.st==='pending'?'gold':a.st==='blocked'?'soft':'green'}" style="margin-right:auto;font-size:10px">${st.lb}</span>
+      <span class="badge ${pd?'green':a.st==='pending'?'gold':a.st==='blocked'?'soft':'green'}" style="margin-right:auto;font-size:10px">${pd?'مدفوعة ✓':st.lb}</span>
     </div>`;
   }).join('')||'<div class="card" style="text-align:center;color:var(--muted)">لا حجوزات اليوم.</div>';
   const view=SALON.boardView||'grid';
@@ -1166,7 +1176,7 @@ const SALON={
   newBooking(pre){SALON.bookingForm((pre&&pre.kind)||'appt',pre||{});},
   bookingForm(kind,pre){
     pre=pre||{};
-    const SVC=[['مكياج سهرة',2,350],['مكياج عروس',4,850],['صبغة + قص',3,550],['تسريحة',2,200],['كيراتين',4,700],['هيدرافيشل',3,480],['تنظيف بشرة',2,320],['منيكير جل',2,160],['تركيب أظافر',3,220]];
+    const SVC=SVC_CATALOG;
     const reasons=['بريك / استراحة','اجتماع','حجز خارجي','تدريب','مشغولة — أخرى'];
     const durs=[[1,'30 دقيقة'],[2,'ساعة'],[3,'ساعة ونصف'],[4,'ساعتان']];
     const body=`
@@ -1256,26 +1266,110 @@ const SALON={
       };
     }});
   },
-  apptActions(id){
-    const a=APPTS.find(x=>x.id===id);if(!a)return;
+  apptDetail(id){
+    const a=APPTS.find(x=>String(x.id)===String(id));if(!a)return;
     const s=STAFF.find(x=>x.id===a.staff)||{n:'—'};
     const block=a.st==='blocked';
-    LUX.modal(block?'وقت محجوب':'تفاصيل الحجز',`
+    const paid=block?null:paidOf(a.id);
+    const price=block?0:svcPrice(a.service);
+    LUX.modal(block?'وقت محجوب':'تفاصيل الموعد',`
       <div class="lux-row"><span class="k">${block?'السبب':'العميلة'}</span><span class="v">${a.client}</span></div>
       ${block?'':`<div class="lux-row"><span class="k">الخدمة</span><span class="v">${a.service}</span></div>`}
       <div class="lux-row"><span class="k">الموظفة</span><span class="v">${s.n}</span></div>
-      <div class="lux-row"><span class="k">الوقت</span><span class="v" dir="ltr">${slotLabel(a.start)} · ${a.dur*30} دقيقة</span></div>
-      <div class="lux-foot" style="margin-top:14px">
+      <div class="lux-row"><span class="k">الوقت</span><span class="v" dir="ltr">${slotLabel(a.start)} – ${slotLabel(a.start+a.dur)}</span></div>
+      ${block?'':`<div class="lux-row"><span class="k">قيمة الخدمة</span><span class="v" style="color:var(--gold-light,#ccab64)">${price} ر.س</span></div>`}
+      ${paid?`<div class="lux-row"><span class="k">حالة الدفع</span><span class="v" style="color:#9fce99">مدفوعة ✓ · ${paid.method} · فاتورة ${paid.no}</span></div>`:''}
+      <div class="lux-foot" style="margin-top:16px;flex-wrap:wrap">
         <button class="lux-btn lux-ghost" data-c style="flex:1">إغلاق</button>
-        <button class="lux-btn" data-del style="flex:1;background:#b14a5c22;border:1px solid #b14a5c;color:#e29aa6">${block?'إزالة الحجب':'إلغاء الحجز'}</button>
+        ${block?`<button class="lux-btn" data-del style="flex:1;background:#b14a5c22;border:1px solid #b14a5c;color:#e29aa6">إزالة الحجب</button>`
+          :paid?`<button class="lux-btn lux-gold" data-inv style="flex:1.4">🖨 عرض / طباعة الفاتورة</button>`
+          :`<button class="lux-btn lux-ghost" data-del style="flex:1;border-color:#7c4a55;color:#e29aa6">إلغاء الحجز</button>
+             <button class="lux-btn lux-gold" data-pay style="flex:1.6">💳 الدفع وإصدار الفاتورة</button>`}
       </div>`,{onMount(ov,close){
       ov.querySelector('[data-c]').onclick=close;
-      ov.querySelector('[data-del]').onclick=()=>{
-        const i=APPTS.findIndex(x=>x.id===id);if(i>-1)APPTS.splice(i,1);
+      const del=ov.querySelector('[data-del]');
+      if(del)del.onclick=()=>{
+        const i=APPTS.findIndex(x=>String(x.id)===String(id));if(i>-1)APPTS.splice(i,1);
         saveAppts();close();SALON.go('board');
         LUX.toast(block?'أُزيل الوقت المحجوب ✓':'أُلغي الحجز','ok');
       };
+      const pay=ov.querySelector('[data-pay]');
+      if(pay)pay.onclick=()=>{close();SALON.payFlow(a.id);};
+      const inv=ov.querySelector('[data-inv]');
+      if(inv)inv.onclick=()=>{close();SALON.showInvoice(a.id);};
     }});
+  },
+  payFlow(id){
+    const a=APPTS.find(x=>String(x.id)===String(id));if(!a)return;
+    const price=svcPrice(a.service);
+    const METHODS=[['mada','مدى'],['apple','Apple Pay'],['card','بطاقة ائتمانية'],['cash','نقداً']];
+    LUX.modal('إتمام الدفع',`
+      <div class="lux-lead">${a.client} · ${a.service} · <b style="color:var(--gold-light,#ccab64)">${price} ر.س</b></div>
+      <div class="lux-f"><label>طريقة الدفع</label>
+        <div class="lux-chips" id="payM">${METHODS.map(([v,l],i)=>`<button type="button" class="lux-chip ${i===0?'on':''}" data-v="${l}">${l}</button>`).join('')}</div></div>
+      <div class="lux-f"><label>بقشيش إلكتروني للموظفة (اختياري)</label><input name="tip" dir="ltr" style="text-align:right" placeholder="0"/></div>
+      <div class="lux-row"><span class="k">قيمة الخدمة</span><span class="v" dir="ltr">${price.toFixed(2)} SAR</span></div>
+      <div class="lux-row"><span class="k">ضريبة القيمة المضافة 15٪</span><span class="v" dir="ltr">${(price*0.15).toFixed(2)} SAR</span></div>
+      <div class="lux-row"><span class="k" style="color:var(--gold-light,#ccab64);font-weight:700">الإجمالي</span><span class="v" id="payT" style="color:var(--gold-light,#ccab64);font-weight:700" dir="ltr">${(price*1.15).toFixed(2)} SAR</span></div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:12px">تأكيد الدفع</button>`,{onMount(ov,close){
+      ov.querySelectorAll('#payM .lux-chip').forEach(c=>c.onclick=()=>{ov.querySelectorAll('#payM .lux-chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');});
+      const tipEl=ov.querySelector('[name=tip]');
+      tipEl.oninput=()=>{const t=parseFloat(tipEl.value)||0;ov.querySelector('#payT').textContent=(price*1.15+t).toFixed(2)+' SAR';};
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const method=ov.querySelector('#payM .lux-chip.on').dataset.v;
+        const tip=Math.max(0,parseFloat(tipEl.value)||0);
+        const btn=ov.querySelector('[data-ok]');btn.disabled=true;btn.innerHTML='<span class="lux-spin" style="width:18px;height:18px;border-width:2px;margin:0 auto;display:block"></span>';
+        setTimeout(()=>{
+          a.st='confirmed';saveAppts();
+          markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total:+(price*1.15+tip).toFixed(2),date:new Date().toISOString().slice(0,10)});
+          close();SALON.go('board');
+          LUX.toast('تم الدفع بنجاح عبر '+method+' ✓ — جاري إصدار الفاتورة','ok');
+          setTimeout(()=>SALON.showInvoice(a.id),650);
+        },900);
+      };
+    }});
+  },
+  invoiceHTML(id){
+    const a=APPTS.find(x=>String(x.id)===String(id));const p=paidOf(id);if(!a||!p)return '';
+    const s=STAFF.find(x=>x.id===a.staff)||{n:'—'};
+    return `
+    <div id="lumaInv" style="background:#fdfbf7;color:#2e241b;border-radius:14px;padding:28px 26px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #c9ac7e;padding-bottom:14px">
+        <div><div style="font-family:'Bodoni Moda',serif;font-size:26px;letter-spacing:.22em;color:#9a7238">LUMA</div>
+          <div style="font-size:11px;color:#8d8172;margin-top:2px">صالون لمسة · جدة — حي الشاطئ</div></div>
+        <div style="text-align:left;font-size:11.5px;color:#54473a"><div style="font-weight:700;font-size:13px;color:#2e241b">فاتورة ضريبية مبسطة</div>
+          <div dir="ltr">${p.no}</div><div dir="ltr">${p.date}</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:12px 0;border-bottom:1px solid #e4daca">
+        <span>العميلة: <b>${a.client}</b></span><span>الموظفة: <b>${s.n}</b></span><span dir="ltr">${slotLabel(a.start)}</span>
+      </div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse;margin-top:6px">
+        <tr style="color:#9a7238;font-size:11.5px"><td style="padding:9px 0">الخدمة</td><td style="text-align:left">المبلغ</td></tr>
+        <tr style="border-top:1px solid #efe8db"><td style="padding:9px 0">${a.service}</td><td style="text-align:left" dir="ltr">${p.amount.toFixed(2)} SAR</td></tr>
+        <tr style="border-top:1px solid #efe8db;color:#54473a;font-size:12px"><td style="padding:8px 0">ضريبة القيمة المضافة (15٪)</td><td style="text-align:left" dir="ltr">${p.vat.toFixed(2)} SAR</td></tr>
+        ${p.tip?`<tr style="color:#54473a;font-size:12px"><td style="padding:8px 0">بقشيش الموظفة</td><td style="text-align:left" dir="ltr">${p.tip.toFixed(2)} SAR</td></tr>`:''}
+        <tr style="border-top:2px solid #c9ac7e;font-weight:700;font-size:15px"><td style="padding:11px 0">الإجمالي المدفوع · ${p.method}</td><td style="text-align:left;color:#9a7238" dir="ltr">${p.total.toFixed(2)} SAR</td></tr>
+      </table>
+      <div style="text-align:center;font-size:11px;color:#8d8172;margin-top:16px">شكراً لكِ 🌸 نسعد بزيارتك دائماً · luma-delta-five.vercel.app</div>
+    </div>`;
+  },
+  showInvoice(id){
+    const html=SALON.invoiceHTML(id);if(!html)return;
+    LUX.modal('الفاتورة',html+`
+      <div class="lux-foot" style="margin-top:14px">
+        <button class="lux-btn lux-ghost" data-c style="flex:1">إغلاق</button>
+        <button class="lux-btn lux-gold" data-pr style="flex:1.4">🖨 طباعة الفاتورة</button>
+      </div>`,{onMount(ov,close){
+      ov.querySelector('[data-c]').onclick=close;
+      ov.querySelector('[data-pr]').onclick=()=>SALON.printInvoice(id);
+    }});
+  },
+  printInvoice(id){
+    const w=window.open('','_blank','width=430,height=640');
+    if(!w){LUX.toast('اسمحي بالنوافذ المنبثقة للطباعة','err');return;}
+    w.document.write('<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>فاتورة LUMA</title><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;700&family=Bodoni+Moda&display=swap" rel="stylesheet"><style>body{margin:0;padding:18px;background:#fff}</style></head><body>'+SALON.invoiceHTML(id)+'</body></html>');
+    w.document.close();
+    w.onload=()=>setTimeout(()=>{w.focus();w.print();},350);
   },
   addStaff(editId){
     const roles=['مكياج','شعر','بشرة','أظافر','رموش','سبا'];
