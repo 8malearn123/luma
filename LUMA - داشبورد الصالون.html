@@ -266,18 +266,21 @@ SCREENS.overview=()=>{
 /* ── THE BOOKING BOARD: staff columns × time rows + agenda view ── */
 SCREENS.board=()=>{
   const live=APPTS.filter(a=>a.st!=='cancelled');
+  /* «الآن»: خط الوقت الحالي داخل ساعات الدوام */
+  const nowMin=(()=>{const d=new Date();return (d.getHours()*60+d.getMinutes())-START_HOUR*60;})();
+  const nowLine=(nowMin>0&&nowMin<SLOTS*30)?`<div class="nowline" style="top:${Math.round(nowMin/30*ROW_H)}px"></div>`:'';
   const colTracks=STAFF.map(s=>{
     const blocks=live.filter(a=>a.staff===s.id).map(a=>{
       const st=ST_STYLE[a.st];
       const top=a.start*ROW_H+2, h=a.dur*ROW_H-4;
       const own=a.custom?`onclick="event.stopPropagation();SALON.apptActions(${a.id})"`:'';
       return `<div class="appt" ${own} style="top:${top}px;height:${h}px;background:${st.bg};border-color:${st.bd}${a.st==='blocked'?';border-style:dashed':''}">
-        <div class="ap-t">${slotLabel(a.start)}</div>
+        <div class="ap-t">${slotLabel(a.start)} – ${slotLabel(a.start+a.dur)}</div>
         <div class="ap-c">${a.st==='blocked'?'⛔ '+a.client:a.client}</div>
         <div class="ap-s">${a.service}</div>
       </div>`;
     }).join('');
-    return `<div class="col"><div class="col-track" style="height:${SLOTS*ROW_H}px">${gridLines()}${blocks}</div></div>`;
+    return `<div class="col"><div class="col-track" data-staff="${s.id}" title="اضغطي على خانة فارغة لحجز موعد" onclick="if(!event.target.closest('.appt'))SALON.newBooking({staff:this.dataset.staff,start:Math.floor(event.offsetY/${ROW_H})})" style="height:${SLOTS*ROW_H}px">${gridLines()}${nowLine}${blocks}</div></div>`;
   }).join('');
   const heads=STAFF.map(s=>{const blocked=hrOnLeaveToday(s.id)?'في إجازة — محظورة الحجز':(spOf(s.id).status!=='active'?'موقوفة — محظورة الحجز':null);
     return `<div class="col-h" ${blocked?'style="opacity:.55"':''}><span class="ch-av" style="border-color:${s.color};color:${s.color}">${s.n.charAt(0)}</span><div><div class="ch-n">${s.n}</div><div class="ch-r">${blocked?'<span style="color:#ccab64">'+blocked+'</span>':s.role}</div></div></div>`;}).join('');
@@ -318,7 +321,11 @@ SCREENS.board=()=>{
     .col-track{position:relative;}
     .gl{position:absolute;left:0;right:0;border-bottom:1px solid var(--line-soft);}
     .appt{position:absolute;left:5px;right:5px;border-radius:8px;border:1px solid;border-right-width:3px;padding:7px 9px;overflow:hidden;cursor:pointer;transition:transform .15s;}
-    .appt:hover{transform:scale(1.015);z-index:5;}
+    .appt:hover{transform:scale(1.015);z-index:5;box-shadow:0 10px 26px rgba(0,0,0,.4);}
+    .col-track{cursor:cell;}
+    .col-track:hover .gl{border-bottom-color:var(--line);}
+    .nowline{position:absolute;left:0;right:0;height:0;border-top:2px solid #c2705f;z-index:4;pointer-events:none;}
+    .nowline::before{content:'الآن';position:absolute;right:4px;top:-9px;background:#c2705f;color:#fff;font-size:8.5px;padding:1px 7px;border-radius:8px;}
     .appt .ap-t{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-pale);direction:ltr;}
     .appt .ap-c{font-size:12.5px;color:var(--white);font-weight:600;margin-top:1px;} .appt .ap-s{font-size:11px;color:var(--cream);opacity:0.85;margin-top:1px;}
     .agitem{display:flex;align-items:center;gap:11px;border:1px solid;border-right-width:4px;border-radius:9px;padding:9px 13px;margin-bottom:7px;cursor:pointer;font-size:13px;color:var(--white);}
@@ -1155,57 +1162,97 @@ const SALON={
   },
   boardView:'grid',
   setBoardView(v){this.boardView=v;this.go('board');},
-  /* ─── new booking / blocked time ─── */
-  newBooking(){
-    LUX.modal('إضافة إلى اللوحة',`
-      <div class="lux-lead">اختاري نوع الإدخال:</div>
-      <button class="lux-btn lux-gold" data-appt style="width:100%;margin-bottom:9px">📅 موعد جديد — حجز عميلة</button>
-      <button class="lux-btn lux-ghost" data-block style="width:100%">⛔ وقت محجوب — بريك، اجتماع، حجز خارجي…</button>`,{onMount(ov,close){
-      ov.querySelector('[data-appt]').onclick=()=>{close();SALON.bookingForm('appt');};
-      ov.querySelector('[data-block]').onclick=()=>{close();SALON.bookingForm('block');};
-    }});
-  },
-  bookingForm(kind){
-    const block=kind==='block';
-    const slots=Array.from({length:SLOTS}).map((_,i)=>`<option value="${i}">${slotLabel(i)}</option>`).join('');
-    const durs=[[1,'30 دقيقة'],[2,'ساعة'],[3,'ساعة ونصف'],[4,'ساعتان']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  /* ─── unified booking / blocked-time modal (live availability) ─── */
+  newBooking(pre){SALON.bookingForm((pre&&pre.kind)||'appt',pre||{});},
+  bookingForm(kind,pre){
+    pre=pre||{};
+    const SVC=[['مكياج سهرة',2,350],['مكياج عروس',4,850],['صبغة + قص',3,550],['تسريحة',2,200],['كيراتين',4,700],['هيدرافيشل',3,480],['تنظيف بشرة',2,320],['منيكير جل',2,160],['تركيب أظافر',3,220]];
     const reasons=['بريك / استراحة','اجتماع','حجز خارجي','تدريب','مشغولة — أخرى'];
-    const body=block?`
-      <div class="lux-lead">احجبي فترة من جدول الموظفة — تظهر على اللوحة ولا تُحتسب ضمن الحجوزات.</div>
-      <div class="lux-f"><label>الموظفة / الفنانة</label><select name="staff">${STAFF.map(s=>`<option value="${s.id}">${s.n} · ${s.role}</option>`).join('')}</select></div>
-      <div class="lux-f"><label>السبب</label><select name="reason">${reasons.map(r=>`<option>${r}</option>`).join('')}</select></div>
-      <div class="lux-two">
-        <div class="lux-f"><label>من الساعة</label><select name="start">${slots}</select></div>
-        <div class="lux-f"><label>المدة</label><select name="dur">${durs}</select></div>
+    const durs=[[1,'30 دقيقة'],[2,'ساعة'],[3,'ساعة ونصف'],[4,'ساعتان']];
+    const body=`
+      <div class="lux-seg">
+        <button type="button" data-k="appt" class="${kind!=='block'?'on':''}">📅 موعد عميلة</button>
+        <button type="button" data-k="block" class="${kind==='block'?'on':''}">⛔ وقت محجوب</button>
       </div>
-      <button class="lux-btn lux-gold" data-ok style="width:100%">حجب الوقت</button>`
-    :`
-      <div class="lux-lead">حجز جديد يظهر فوراً على لوحة اليوم وفي عرض الأجندة.</div>
-      <div class="lux-f"><label>اسم العميلة</label><input name="client" placeholder="مثال: هيا العجمي"/></div>
-      <div class="lux-two">
-        <div class="lux-f"><label>الخدمة</label><select name="service"><option>مكياج سهرة</option><option>مكياج عروس</option><option>صبغة + قص</option><option>تسريحة</option><option>هيدرافيشل</option><option>تنظيف بشرة</option><option>منيكير جل</option><option>تركيب أظافر</option></select></div>
-        <div class="lux-f"><label>الموظفة</label><select name="staff">${STAFF.map(s=>`<option value="${s.id}">${s.n} · ${s.role}</option>`).join('')}</select></div>
+      <div id="bkAppt" style="${kind==='block'?'display:none':''}">
+        <div class="lux-f"><label>اسم العميلة</label><input name="client" list="bkClients" placeholder="اكتبي الاسم أو اختاري من عميلاتك…"/>
+          <datalist id="bkClients">${CLIENTS.map(c=>`<option value="${c.n}">`).join('')}</datalist></div>
+        <div class="lux-f"><label>الخدمة</label><select name="service">${SVC.map(([n,d,p])=>`<option value="${n}" data-d="${d}" data-p="${p}">${n} · ${p} ر.س</option>`).join('')}</select></div>
       </div>
-      <div class="lux-two">
-        <div class="lux-f"><label>الوقت</label><select name="start">${slots}</select></div>
-        <div class="lux-f"><label>المدة</label><select name="dur">${durs}</select></div>
+      <div id="bkBlock" style="${kind==='block'?'':'display:none'}">
+        <div class="lux-f"><label>السبب</label><select name="reason">${reasons.map(r=>`<option>${r}</option>`).join('')}</select></div>
       </div>
-      <div class="lux-f"><label>الحالة</label><select name="st"><option value="confirmed">مؤكد</option><option value="pending">بانتظار الدفع</option><option value="walkin">حضور مباشر</option></select></div>
-      <button class="lux-btn lux-gold" data-ok style="width:100%">إضافة الحجز</button>`;
-    LUX.modal(block?'وقت محجوب':'موعد جديد',body,{onMount(ov,close){
-      ov.querySelector('[data-ok]').onclick=()=>{
-        const q=n=>ov.querySelector('[name='+n+']');
+      <div class="lux-f"><label>الموظفة / الفنانة</label><select name="staff">${STAFF.map(s=>{
+        const off=hrOnLeaveToday(s.id)?' — في إجازة':(spOf(s.id).status!=='active'?' — موقوفة':'');
+        return `<option value="${s.id}" ${pre.staff===s.id?'selected':''} ${off?'data-off="1"':''}>${s.n} · ${s.role}${off}</option>`;}).join('')}</select></div>
+      <div class="lux-two">
+        <div class="lux-f"><label>الوقت</label><select name="start"></select></div>
+        <div class="lux-f"><label>المدة</label><select name="dur">${durs.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div>
+      </div>
+      <div id="bkAvail" style="font-size:12.5px;margin:-4px 0 12px"></div>
+      <div id="bkSum" style="background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:9px;padding:11px 14px;font-size:13px;color:var(--gold-pale,#e6ce95);margin-bottom:14px"></div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%"></button>`;
+    LUX.modal('إضافة إلى لوحة اليوم',body,{onMount(ov,close){
+      let k=kind==='block'?'block':'appt';
+      const q=n=>ov.querySelector('[name='+n+']');
+      const seg=ov.querySelectorAll('.lux-seg button');
+      const okBtn=ov.querySelector('[data-ok]');
+      const clash=(staff,start,dur)=>APPTS.some(b=>b.staff===staff&&b.st!=='cancelled'&&b.start<start+dur&&start<b.start+b.dur);
+      /* rebuild the time list: busy slots are visible but disabled */
+      function refreshTimes(){
+        const staff=q('staff').value, dur=+q('dur').value, cur=q('start').value;
+        q('start').innerHTML=Array.from({length:SLOTS}).map((_,i)=>{
+          const busy=i+dur>SLOTS||clash(staff,i,dur);
+          return `<option value="${i}" ${busy?'disabled':''}>${slotLabel(i)}${busy?' — مشغول':''}</option>`;
+        }).join('');
+        const want=pre.start!=null&&q('start').dataset.init!=='1'?String(pre.start):cur;
+        q('start').dataset.init='1';
+        const opt=[...q('start').options].find(o=>o.value===want&&!o.disabled)||[...q('start').options].find(o=>!o.disabled);
+        if(opt)q('start').value=opt.value;
+        refreshSummary();
+      }
+      function refreshSummary(){
         const staff=q('staff').value, start=+q('start').value, dur=+q('dur').value;
-        if(!block&&!q('client').value.trim()){q('client').style.borderColor='#c0566a';q('client').focus();return;}
-        if(!block&&(hrOnLeaveToday(staff)||spOf(staff).status!=='active')){LUX.toast(hrStaffName(staff)+' محظورة الحجز اليوم (إجازة أو موقوفة)','err');return;}
-        if(start+dur>SLOTS){LUX.toast('المدة تتجاوز نهاية الدوام','err');return;}
-        const clash=APPTS.some(b=>b.staff===staff&&b.st!=='cancelled'&&b.start<start+dur&&start<b.start+b.dur);
-        if(clash){LUX.toast('يوجد تعارض — لدى '+hrStaffName(staff)+' إدخال آخر في هذا الوقت','err');return;}
-        APPTS.push(block
+        const sName=hrStaffName(staff);
+        const offOpt=q('staff').selectedOptions[0].dataset.off;
+        const ok=!isNaN(start)&&!clash(staff,start,dur)&&start+dur<=SLOTS&&(k==='block'||!offOpt);
+        const av=ov.querySelector('#bkAvail');
+        av.innerHTML=k!=='block'&&offOpt?'<span style="color:#e29aa6">✗ '+sName+' محظورة الحجز اليوم (إجازة أو موقوفة)</span>'
+          :isNaN(start)?'<span style="color:#e29aa6">✗ لا يوجد وقت متاح بهذه المدة</span>'
+          :'<span style="color:#9fce99">✓ الوقت متاح</span>';
+        const range=isNaN(start)?'—':slotLabel(start)+' – '+slotLabel(start+dur);
+        if(k==='block'){
+          ov.querySelector('#bkSum').innerHTML=`⛔ حجب <b style="color:var(--white,#f6f2ec)">${q('reason').value}</b> · ${sName} · <bdo dir="ltr">${range}</bdo>`;
+          okBtn.textContent='حجب الوقت';
+        }else{
+          const so=q('service').selectedOptions[0];
+          ov.querySelector('#bkSum').innerHTML=`📅 <b style="color:var(--white,#f6f2ec)">${q('client').value.trim()||'…'}</b> · ${so.value} · ${sName} · <bdo dir="ltr">${range}</bdo> · <b style="color:var(--gold-light,#ccab64)">${so.dataset.p} ر.س</b>`;
+          okBtn.textContent='تأكيد الحجز';
+        }
+        okBtn.style.opacity=ok?'1':'0.45';okBtn.dataset.ok2=ok?'1':'';
+      }
+      seg.forEach(b=>b.onclick=()=>{
+        k=b.dataset.k;seg.forEach(x=>x.classList.toggle('on',x===b));
+        ov.querySelector('#bkAppt').style.display=k==='appt'?'':'none';
+        ov.querySelector('#bkBlock').style.display=k==='block'?'':'none';
+        refreshSummary();
+      });
+      q('staff').onchange=refreshTimes;q('dur').onchange=refreshTimes;
+      q('start').onchange=refreshSummary;q('reason').onchange=refreshSummary;
+      q('client').oninput=refreshSummary;
+      q('service').onchange=()=>{const d=q('service').selectedOptions[0].dataset.d;q('dur').value=d;refreshTimes();};
+      refreshTimes();
+      okBtn.onclick=()=>{
+        if(!okBtn.dataset.ok2){LUX.toast('اختاري وقتاً متاحاً أولاً','err');return;}
+        const staff=q('staff').value, start=+q('start').value, dur=+q('dur').value;
+        if(k==='appt'&&!q('client').value.trim()){q('client').style.borderColor='#c0566a';q('client').focus();return;}
+        APPTS.push(k==='block'
           ?{id:Date.now(),staff,start,dur,client:q('reason').value,service:'وقت محجوب',st:'blocked',custom:true}
-          :{id:Date.now(),staff,start,dur,client:q('client').value.trim(),service:q('service').value,st:q('st').value,custom:true});
-        saveAppts();close();SALON.boardView=SALON.boardView||'grid';SALON.go('board');
-        LUX.toast(block?'حُجب الوقت لـ '+hrStaffName(staff)+' ✓':'أُضيف حجز '+q('client').value.trim()+' ✓','ok');
+          :{id:Date.now(),staff,start,dur,client:q('client').value.trim(),service:q('service').value,st:'confirmed',custom:true});
+        saveAppts();close();SALON.go('board');
+        LUX.toast(k==='block'
+          ?'حُجب وقت '+hrStaffName(staff)+' <bdo dir="ltr">'+slotLabel(start)+'</bdo> ✓'
+          :'تم حجز '+q('client').value.trim()+' مع '+hrStaffName(staff)+' الساعة '+slotLabel(start)+' ✓','ok');
       };
     }});
   },
