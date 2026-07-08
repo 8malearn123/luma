@@ -465,8 +465,7 @@ const SALON={
     const s=STAFF.find(x=>x.id===a.staff)||{n:'—'};
     /* هوية الفاتورة تُقرأ من «صفحتي والرابط»: الاسم، الشعار، العنوان، الرقم الضريبي، ولون الثيم */
     const c=pageCfg();
-    const th=PAGE_THEMES.find(t=>t[0]===c.theme)||PAGE_THEMES[0];
-    const ac=th[3];
+    const ac=pageThemeOf(c).ac;   /* يشمل الثيم المخصص من محرر المظهر */
     return `
     <div id="lumaInv" style="background:#fdfbf7;color:#2e241b;border-radius:14px;padding:28px 26px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid ${ac};padding-bottom:14px">

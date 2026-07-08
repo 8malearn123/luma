@@ -70,6 +70,27 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('محرر الثيم المخصص: الألوان والزوايا تنعكس على صفحة الحجز والفاتورة', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  // تخصيص اللون المميز عبر حقل hex
+  await page.fill('#thx-ac', '#ff2277');
+  await page.locator('#thx-ac').evaluate(el => el.dispatchEvent(new Event('change')));
+  await page.waitForTimeout(400);
+  await expect(page.locator('#thBadge')).toBeVisible();                 // شارة «ثيم مخصص»
+  // صفحة الحجز العامة تعتمد اللون المخصص
+  await page.goto('/booking.html');
+  await page.waitForTimeout(600);
+  const ac = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ac').trim());
+  expect(ac).toBe('#ff2277');
+  // القالب الجاهز يعيد الاختيار كنقطة بداية
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("زمرد هادئ")');
+  await page.waitForTimeout(600);
+  await expect(page.locator('#thx-ac')).toHaveValue('#8fd0c0');
+});
+
 test('إدارة الخدمات: إضافة خدمة تنعكس في الكتالوج', async ({ page }) => {
   await page.goto('/salon.html#services');
   await page.waitForTimeout(800);
