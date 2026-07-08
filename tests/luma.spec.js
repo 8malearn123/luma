@@ -70,6 +70,36 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('معرض الأعمال: صور وفيديو من المحرر إلى صفحة الحجز', async ({ page }) => {
+  const PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await expect(page.getByText('معرض الأعمال')).toBeVisible();
+  // 1) رفع صورة من الجهاز (تُضغط عبر canvas)
+  await page.setInputFiles('#galFile', { name: 'work.png', mimeType: 'image/png', buffer: Buffer.from(PX.split(',')[1], 'base64') });
+  await page.waitForTimeout(800);
+  await expect(page.locator('.gal-thumb')).toHaveCount(1);
+  // 2) إضافة صورة برابط
+  await page.fill('#galUrl', PX);
+  await page.click('#galAdd');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.gal-thumb')).toHaveCount(2);
+  // 3) فيديو يوتيوب — يظهر بشارة تشغيل
+  await page.fill('#galUrl', 'https://youtu.be/dQw4w9WgXcQ');
+  await page.click('#galAdd');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.gal-thumb', { hasText: '▶' })).toHaveCount(1);
+  // 4) المعرض يظهر في صفحة الحجز العامة مع عارض مكبّر
+  await page.goto('/booking.html');
+  await page.waitForTimeout(600);
+  await expect(page.getByText(/من أعمال/)).toBeVisible();
+  await expect(page.locator('.gal-it')).toHaveCount(3);
+  await page.locator('.gal-it').first().click();
+  await expect(page.locator('.gal-lb img')).toBeVisible();
+  await page.locator('.gal-lb .gx').click();
+  await expect(page.locator('.gal-lb')).toHaveCount(0);
+});
+
 test('محرر الثيم المخصص: الألوان والزوايا تنعكس على صفحة الحجز والفاتورة', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
