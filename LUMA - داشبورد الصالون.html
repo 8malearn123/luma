@@ -137,6 +137,47 @@ const STAFF_KEY='luma_salon_staff';
 try{(JSON.parse(localStorage.getItem(STAFF_KEY))||[]).forEach(s=>{if(s&&s.id&&!STAFF.some(x=>x.id===s.id))STAFF.push(s);});}catch(e){}
 function saveStaff(){try{localStorage.setItem(STAFF_KEY,JSON.stringify(STAFF.filter(s=>s.custom)));}catch(e){}}
 const STAFF_COLORS=['#c98ab6','#8ac9b8','#9b8ac9','#c97f6f','#6fb0c9','#b8c96f'];
+
+/* ── staff profile overlay: photo, contact, documents, status — the full HR file ── */
+const SP_KEY='luma_staff_profiles', SP_ARCH_KEY='luma_staff_archived';
+const spLoad=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}};
+const spSave=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const spAll=()=>spLoad(SP_KEY,{});
+const spOf=id=>({status:'active',docs:[],...(spAll()[id]||{})});
+function spSet(id,patch){const all=spAll();all[id]={...spOf(id),...patch};spSave(SP_KEY,all);}
+/* archived staff disappear everywhere; name/role overrides apply at load */
+{
+  const arch=spLoad(SP_ARCH_KEY,[]);
+  for(let i=STAFF.length-1;i>=0;i--){
+    if(arch.includes(STAFF[i].id)){STAFF.splice(i,1);continue;}
+    const p=spAll()[STAFF[i].id];
+    if(p&&p.n)STAFF[i].n=p.n;
+    if(p&&p.role2)STAFF[i].role=p.role2;
+  }
+}
+function spArchive(id){
+  const arch=spLoad(SP_ARCH_KEY,[]);if(!arch.includes(id))arch.push(id);
+  spSave(SP_ARCH_KEY,arch);
+  const i=STAFF.findIndex(s=>s.id===id);if(i>-1)STAFF.splice(i,1);
+  saveStaff();
+}
+/* compress an image file → dataURL (photo + document uploads) */
+function spReadImage(file,maxPx,cb){
+  const rd=new FileReader();
+  rd.onload=()=>{const im=new Image();im.onload=()=>{
+    const sc=Math.min(1,maxPx/Math.max(im.width,im.height));
+    const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+    cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+    cb(cv.toDataURL('image/jpeg',0.72));
+  };im.src=rd.result;};
+  rd.readAsDataURL(file);
+}
+function spAvatar(s,size){
+  const p=spOf(s.id);
+  return p.photo
+    ?`<img src="${p.photo}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1px solid ${s.color};flex-shrink:0"/>`
+    :`<span style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface3);border:1px solid ${s.color};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:${s.color};font-size:${Math.round(size*0.42)}px;flex-shrink:0">${s.n.charAt(0)}</span>`;
+}
 const START_HOUR=10, SLOTS=20, ROW_H=44; /* 10:00 → 20:00, 30-min slots */
 function slotLabel(i){const t=START_HOUR*60+i*30;let h=Math.floor(t/60),m=t%60;const ap=h>=12?'م':'ص';let h12=h>12?h-12:h;return `${h12}:${m===0?'00':'30'} ${ap}`;}
 /* appts: {staff, start(slot index), dur(slots), client, service, st} */
@@ -232,7 +273,8 @@ SCREENS.board=()=>{
     }).join('');
     return `<div class="col"><div class="col-track" style="height:${SLOTS*ROW_H}px">${gridLines()}${blocks}</div></div>`;
   }).join('');
-  const heads=STAFF.map(s=>`<div class="col-h" ${hrOnLeaveToday(s.id)?'style="opacity:.55"':''}><span class="ch-av" style="border-color:${s.color};color:${s.color}">${s.n.charAt(0)}</span><div><div class="ch-n">${s.n}</div><div class="ch-r">${hrOnLeaveToday(s.id)?'<span style="color:#ccab64">في إجازة — محظورة الحجز</span>':s.role}</div></div></div>`).join('');
+  const heads=STAFF.map(s=>{const blocked=hrOnLeaveToday(s.id)?'في إجازة — محظورة الحجز':(spOf(s.id).status!=='active'?'موقوفة — محظورة الحجز':null);
+    return `<div class="col-h" ${blocked?'style="opacity:.55"':''}><span class="ch-av" style="border-color:${s.color};color:${s.color}">${s.n.charAt(0)}</span><div><div class="ch-n">${s.n}</div><div class="ch-r">${blocked?'<span style="color:#ccab64">'+blocked+'</span>':s.role}</div></div></div>`;}).join('');
   const timeCol=Array.from({length:SLOTS}).map((_,i)=>`<div class="tl" style="height:${ROW_H}px">${i%2===0?slotLabel(i):''}</div>`).join('');
   return `
   <style>
@@ -272,25 +314,32 @@ SCREENS.board=()=>{
 };
 function gridLines(){let g='';for(let i=1;i<SLOTS;i++)g+=`<div class="gl" style="top:${i*ROW_H}px"></div>`;return g;}
 
-/* ── STAFF management ── */
+/* ── STAFF management: full employee files ── */
 SCREENS.staff=()=>{
-  const rows=STAFF.map(s=>{const cnt=APPTS.filter(a=>a.staff===s.id).length;const rev=cnt*380;return `<div class="card" style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
-    <span style="width:52px;height:52px;border-radius:50%;background:var(--surface3);border:1px solid ${s.color};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:${s.color};font-size:22px">${s.n.charAt(0)}</span>
-    <div style="flex:1"><div style="font-size:16px;color:var(--white);font-weight:600">${s.n}</div><div style="font-size:12.5px;color:var(--gold-pale)">${s.role} · ${s.shift||'دوام كامل'}</div></div>
+  const active=STAFF.filter(s=>spOf(s.id).status==='active').length;
+  const rows=STAFF.map(s=>{
+    const p=spOf(s.id);
+    const cnt=APPTS.filter(a=>a.staff===s.id).length;const rev=cnt*380;
+    const susp=p.status!=='active';
+    return `<div class="card" style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;${susp?'opacity:.65':''}">
+    ${spAvatar(s,52)}
+    <div style="flex:1;min-width:170px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:16px;color:var(--white);font-weight:600">${s.n}</span>${susp?'<span class="badge soft">موقوفة</span>':'<span class="badge green">نشطة</span>'}${p.docs.length?`<span class="badge gold" style="font-size:10px">📎 ${p.docs.length} مستند</span>`:''}</div>
+      <div style="font-size:12.5px;color:var(--gold-pale);margin-top:2px">${s.role} · ${s.shift||'دوام كامل'}${p.phone?` · <span dir="ltr">${p.phone}</span>`:''}</div>
+    </div>
     <div style="text-align:center"><div class="num" style="font-size:22px;color:var(--white)">${cnt}</div><div style="font-size:11px;color:var(--muted)">مواعيد اليوم</div></div>
     <div style="text-align:center"><div class="num" style="font-size:22px;color:var(--gold-light)">${rev.toLocaleString('en')}</div><div style="font-size:11px;color:var(--muted)">دخل اليوم (ر.س)</div></div>
-    <div style="text-align:center"><div style="color:var(--gold-light);font-size:14px">★ 4.9</div><div style="font-size:11px;color:var(--muted)">التقييم</div></div>
-    <button class="btn btn-ghost" style="padding:8px 16px">الجدول</button>
+    <button class="btn btn-gold" style="padding:8px 18px" onclick="SALON.viewStaff('${s.id}')">الملف الكامل</button>
   </div>`;}).join('');
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-    <div><div style="font-weight:600;font-size:19px;color:var(--white)">طاقم الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${STAFF.length} موظفات · جميعهن على رأس العمل اليوم</div></div>
+    <div><div style="font-weight:600;font-size:19px;color:var(--white)">طاقم الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${STAFF.length} موظفات · ${active} على رأس العمل</div></div>
     <button class="btn btn-gold" onclick="SALON.addStaff()">+ إضافة موظفة</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('staff',19)}</div></div><div class="val">${STAFF.length}</div><div class="k">إجمالي الطاقم</div></div>
-    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">25<span class="u">%</span></div><div class="k">متوسط نسبة العمولة</div></div>
-    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">4.9<span class="u">/5</span></div><div class="k">متوسط تقييم الطاقم</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div></div><div class="val">${active}</div><div class="k">نشطات</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('invoice',19)}</div></div><div class="val">${STAFF.reduce((t,s)=>t+spOf(s.id).docs.length,0)}</div><div class="k">مستندات محفوظة</div></div>
   </div>
   <div class="sec-label">الموظفات <span class="ln"></span></div>
   ${rows}`;
@@ -390,7 +439,7 @@ const HR={
       ov.querySelector('[data-dist]').onclick=()=>{
         let moved=0,stuck=0;
         cf.forEach(a=>{
-          const target=STAFF.find(s=>s.id!==l.staff&&!hrOnLeaveToday(s.id)&&
+          const target=STAFF.find(s=>s.id!==l.staff&&!hrOnLeaveToday(s.id)&&spOf(s.id).status==='active'&&
             !APPTS.some(b=>b.staff===s.id&&b.st!=='cancelled'&&b.start<a.start+a.dur&&a.start<b.start+b.dur));
           if(target){a.staff=target.id;moved++;}else{a.st='cancelled';stuck++;}
         });
@@ -853,30 +902,132 @@ const SALON={
     else host.innerHTML=`<div class="empty-screen"><div class="ico">${icon(it.icon,30)}</div><h3>${it.label}</h3><p>هذه الشاشة ضمن المراحل القادمة. القائمة ولوحة الحجوزات تعمل بالكامل.</p></div>`;
     window.scrollTo({top:0});
   },
-  addStaff(){
+  addStaff(editId){
     const roles=['مكياج','شعر','بشرة','أظافر','رموش','سبا'];
+    const s=editId?STAFF.find(x=>x.id===editId):null;
+    const p=editId?spOf(editId):{};
+    const g=v=>v||'';
     const body=`
-      <div class="lux-lead">أدخلي بيانات الموظفة الجديدة — ستظهر مباشرة في قائمة الطاقم وفي لوحة الحجوزات.</div>
-      <div class="lux-f"><label>اسم الموظفة</label><input name="name" placeholder="مثال: لينا"/></div>
-      <div class="lux-two">
-        <div class="lux-f"><label>التخصص</label><select name="role">${roles.map(r=>`<option>${r}</option>`).join('')}</select></div>
-        <div class="lux-f"><label>الدوام</label><select name="shift"><option>دوام كامل</option><option>دوام جزئي</option></select></div>
+      <div class="lux-lead">${editId?'تحديث بيانات الموظفة وملفها الوظيفي.':'أدخلي بيانات الموظفة — ستظهر في قائمة الطاقم ولوحة الحجوزات فوراً.'}</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <span id="spPhotoPrev">${s?spAvatar(s,58):'<span style="width:58px;height:58px;border-radius:50%;background:#0e0d11;border:1px dashed var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-size:22px">📷</span>'}</span>
+        <input type="file" id="spPhotoFile" accept="image/*" style="display:none"/>
+        <button type="button" class="lux-btn lux-ghost" style="padding:9px 16px;font-size:12.5px" onclick="document.getElementById('spPhotoFile').click()">${p.photo?'تغيير الصورة':'رفع صورة شخصية'}</button>
       </div>
-      <div class="lux-f"><label>رقم الجوال (اختياري)</label><input name="phone" dir="ltr" style="text-align:right" placeholder="05xxxxxxxx"/></div>
-      <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">إضافة الموظفة</button></div>`;
-    LUX.modal('إضافة موظفة جديدة',body,{onMount(ov,close){
+      <div class="lux-f"><label>اسم الموظفة</label><input name="name" value="${g(s&&s.n)}" placeholder="مثال: لينا الدوسري"/></div>
+      <div class="lux-two">
+        <div class="lux-f"><label>التخصص</label><select name="role">${roles.map(r=>`<option ${s&&s.role===r?'selected':''}>${r}</option>`).join('')}</select></div>
+        <div class="lux-f"><label>الدوام</label><select name="shift"><option ${s&&s.shift==='دوام كامل'?'selected':''}>دوام كامل</option><option ${s&&s.shift==='دوام جزئي'?'selected':''}>دوام جزئي</option></select></div>
+      </div>
+      <div class="lux-two">
+        <div class="lux-f"><label>رقم الجوال</label><input name="phone" dir="ltr" style="text-align:right" value="${g(p.phone)}" placeholder="05xxxxxxxx"/></div>
+        <div class="lux-f"><label>البريد الإلكتروني</label><input name="email" dir="ltr" style="text-align:right" value="${g(p.email)}" placeholder="name@mail.com"/></div>
+      </div>
+      <div class="lux-two">
+        <div class="lux-f"><label>رقم الهوية / الإقامة</label><input name="nid" dir="ltr" style="text-align:right" value="${g(p.nid)}" placeholder="1xxxxxxxxx"/></div>
+        <div class="lux-f"><label>تاريخ التعيين</label><input type="date" name="hired" value="${g(p.hired)}"/></div>
+      </div>
+      <div class="lux-f"><label>ملاحظات إدارية (اختياري)</label><textarea name="notes" rows="2" placeholder="شهادات، مهارات، اتفاقات خاصة…">${g(p.notes)}</textarea></div>
+      <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">${editId?'حفظ التعديلات':'إضافة الموظفة'}</button></div>`;
+    LUX.modal(editId?'تعديل ملف '+s.n:'إضافة موظفة جديدة',body,{onMount(ov,close){
+      let photo=p.photo||null;
+      ov.querySelector('#spPhotoFile').onchange=e=>{
+        const f=e.target.files&&e.target.files[0];if(!f)return;
+        spReadImage(f,400,url=>{photo=url;ov.querySelector('#spPhotoPrev').innerHTML=`<img src="${url}" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid var(--gold-light)"/>`;});
+      };
       ov.querySelector('[data-c]').onclick=close;
       ov.querySelector('[data-ok]').onclick=()=>{
-        const name=ov.querySelector('[name=name]');
-        if(!name.value.trim()){name.style.borderColor='#c0566a';name.focus();return;}
-        const color=STAFF_COLORS[STAFF.filter(s=>s.custom).length%STAFF_COLORS.length];
-        STAFF.push({id:'s'+Date.now(),n:name.value.trim(),role:ov.querySelector('[name=role]').value,
-          shift:ov.querySelector('[name=shift]').value,phone:ov.querySelector('[name=phone]').value.trim(),
-          color,custom:true});
-        saveStaff();close();SALON.go('staff');
-        LUX.toast('تمت إضافة '+name.value.trim()+' إلى الطاقم ✓','ok');
+        const q=n=>ov.querySelector('[name='+n+']');
+        if(!q('name').value.trim()){q('name').style.borderColor='#c0566a';q('name').focus();return;}
+        const ph=q('phone').value.trim();
+        if(ph&&!/^0?5\d{8}$/.test(ph.replace(/[\s-]/g,''))){q('phone').style.borderColor='#c0566a';LUX.toast('رقم الجوال غير صحيح — مثال: 0551234567','err');return;}
+        const prof={photo,phone:ph,email:q('email').value.trim(),nid:q('nid').value.trim(),hired:q('hired').value,notes:q('notes').value.trim()};
+        if(editId){
+          s.n=q('name').value.trim();s.role=q('role').value;s.shift=q('shift').value;
+          if(s.custom)saveStaff();else spSet(editId,{n:s.n,role2:s.role});
+          spSet(editId,prof);
+          close();SALON.go('staff');LUX.toast('تم حفظ التعديلات ✓','ok');
+        }else{
+          const color=STAFF_COLORS[STAFF.filter(x=>x.custom).length%STAFF_COLORS.length];
+          const id='s'+Date.now();
+          STAFF.push({id,n:q('name').value.trim(),role:q('role').value,shift:q('shift').value,color,custom:true});
+          saveStaff();spSet(id,prof);
+          close();SALON.go('staff');LUX.toast('تمت إضافة '+q('name').value.trim()+' إلى الطاقم ✓','ok');
+        }
       };
     }});
+  },
+  viewStaff(id){
+    const s=STAFF.find(x=>x.id===id);if(!s)return;
+    const p=spOf(id);
+    const susp=p.status!=='active';
+    const cnt=APPTS.filter(a=>a.staff===id).length;
+    const L=hrLedger(id);
+    const row=(k,v)=>v?`<div class="lux-row"><span class="k">${k}</span><span class="v">${v}</span></div>`:'';
+    const docs=p.docs.map((d,i)=>`
+      <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        ${d.img?`<img src="${d.img}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid var(--gold-deep,#7c6335);cursor:zoom-in" onclick="SALON.zoomDoc(${i},'${id}')"/>`:`<span style="width:44px;height:44px;border-radius:8px;background:#0e0d11;border:1px solid #26242d;display:flex;align-items:center;justify-content:center">📄</span>`}
+        <div style="flex:1;min-width:0"><div style="font-size:13px;color:#f6f2ec;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.name}</div><div style="font-size:10.5px;color:#86818d">${d.date}</div></div>
+        <button style="background:none;border:none;color:#c0566a;cursor:pointer;font-size:15px" title="حذف المستند" onclick="SALON.delDoc('${id}',${i})">🗑</button>
+      </div>`).join('')||'<div style="color:#86818d;font-size:12.5px;padding:10px 0">لا مستندات بعد — ارفعي الهوية، العقد، أو الشهادات.</div>';
+    LUX.modal('ملف '+s.n,`
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        ${spAvatar(s,64)}
+        <div style="flex:1"><div style="font-size:17px;color:#f6f2ec;font-weight:700">${s.n} ${susp?'<span style="font-size:11px;color:#e29aa6">· موقوفة</span>':'<span style="font-size:11px;color:#9fce99">· نشطة</span>'}</div>
+        <div style="font-size:12.5px;color:#e6ce95">${s.role} · ${s.shift||'دوام كامل'}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;text-align:center">
+        <div style="background:#0e0d11;border-radius:9px;padding:9px"><div style="color:#ccab64;font-size:16px;font-weight:700">${cnt}</div><div style="font-size:10px;color:#86818d">مواعيد اليوم</div></div>
+        <div style="background:#0e0d11;border-radius:9px;padding:9px"><div style="color:#ccab64;font-size:16px;font-weight:700">${L.net.toLocaleString('en')}</div><div style="font-size:10px;color:#86818d">صافي الشهر (ر.س)</div></div>
+        <div style="background:#0e0d11;border-radius:9px;padding:9px"><div style="color:${L.late||L.abs?'#e29aa6':'#9fce99'};font-size:16px;font-weight:700">${L.late||L.abs?L.late+' د':'✓'}</div><div style="font-size:10px;color:#86818d">${L.abs?L.abs+' غياب':'الانضباط'}</div></div>
+      </div>
+      ${row('رقم الجوال',p.phone?`<bdo dir="ltr">${p.phone}</bdo>`:'')}
+      ${row('البريد',p.email?`<bdo dir="ltr">${p.email}</bdo>`:'')}
+      ${row('الهوية / الإقامة',p.nid?`<bdo dir="ltr">${p.nid}</bdo>`:'')}
+      ${row('تاريخ التعيين',p.hired?`<bdo dir="ltr">${p.hired}</bdo>`:'')}
+      ${row('رصيد الإجازات',hrBalance(id)+' يوماً')}
+      ${row('ملاحظات',p.notes)}
+      <div style="font-size:12px;color:#9c8047;font-weight:700;margin:14px 0 4px">المستندات (هوية، عقد، شهادات…)</div>
+      ${docs}
+      <input type="file" id="spDocFile" accept="image/*,.pdf" style="display:none"/>
+      <button class="lux-btn lux-ghost" style="width:100%;margin-top:10px" onclick="document.getElementById('spDocFile').click()">📎 رفع مستند جديد</button>
+      <div class="lux-foot" style="margin-top:12px">
+        <button class="lux-btn lux-ghost" data-edit style="flex:1">تعديل البيانات</button>
+        <button class="lux-btn lux-ghost" data-tgl style="flex:1;${susp?'':'border-color:#7c6335;color:#e6ce95'}">${susp?'إعادة تفعيل':'إيقاف مؤقت'}</button>
+        <button class="lux-btn" data-del style="flex:1;background:#b14a5c22;border:1px solid #b14a5c;color:#e29aa6">حذف الملف</button>
+      </div>`,{onMount(ov,close){
+      ov.querySelector('#spDocFile').onchange=e=>{
+        const f=e.target.files&&e.target.files[0];if(!f)return;
+        const add=img=>{
+          const docs2=spOf(id).docs;docs2.push({name:f.name,img,date:new Date().toISOString().slice(0,10)});
+          spSet(id,{docs:docs2});close();SALON.viewStaff(id);LUX.toast('رُفع المستند وحُفظ في ملف '+s.n+' ✓','ok');
+        };
+        if(f.type.startsWith('image/'))spReadImage(f,900,add);else add(null);
+      };
+      ov.querySelector('[data-edit]').onclick=()=>{close();SALON.addStaff(id);};
+      ov.querySelector('[data-tgl]').onclick=()=>{
+        spSet(id,{status:susp?'active':'suspended'});close();SALON.go('staff');
+        LUX.toast(susp?'أُعيد تفعيل '+s.n+' ✓':'أُوقفت '+s.n+' مؤقتاً — لن تستقبل حجوزات جديدة','ok');
+      };
+      ov.querySelector('[data-del]').onclick=()=>{
+        close();
+        LUX.confirm('حذف ملف '+s.n+' نهائياً من الطاقم؟ ستُزال من لوحة الحجوزات وكل الشاشات.',()=>{
+          spArchive(id);SALON.go('staff');LUX.toast('حُذف ملف '+s.n,'err');
+        },true);
+      };
+    }});
+  },
+  zoomDoc(i,id){
+    const d=spOf(id).docs[i];if(!d||!d.img)return;
+    const z=document.createElement('div');
+    z.style.cssText='position:fixed;inset:0;z-index:9300;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:26px;cursor:zoom-out';
+    z.innerHTML=`<img src="${d.img}" style="max-width:92vw;max-height:88vh;border-radius:12px"/>`;
+    z.onclick=()=>z.remove();document.body.appendChild(z);
+  },
+  delDoc(id,i){
+    const docs=spOf(id).docs;docs.splice(i,1);spSet(id,{docs});
+    document.querySelectorAll('.lux-ov').forEach(o=>o.remove());
+    SALON.viewStaff(id);LUX.toast('حُذف المستند','ok');
   },
   addClient(){
     const body=`
