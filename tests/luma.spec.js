@@ -48,7 +48,7 @@ test('لوحة الصالون: حجز جديد بتوفر حي', async ({ page }
   await expect(page.locator('.appt', { hasText: 'عميلة الاختبار' })).toBeVisible();
 });
 
-test('رحلة الدفع تُصدر فاتورة بهوية الصالون', async ({ page }) => {
+test('رحلة الدفع تُصدر فاتورة بهوية الصالون ورمز ZATCA', async ({ page }) => {
   await page.goto('/salon.html#board');
   await page.waitForTimeout(800);
   await page.locator('.appt', { hasText: 'نوف العتيبي' }).first().click();
@@ -57,6 +57,17 @@ test('رحلة الدفع تُصدر فاتورة بهوية الصالون', as
   await page.waitForTimeout(1900);
   await expect(page.locator('#lumaInv')).toContainText('فاتورة ضريبية مبسطة');
   await expect(page.locator('#lumaInv')).toContainText(/INV-\d+/);
+  await expect(page.locator('#lumaInv img[alt="ZATCA QR"]')).toBeVisible();   // رمز الفوترة الإلكترونية
+});
+
+test('شاشة التقارير بأرقام حية', async ({ page }) => {
+  await page.goto('/salon.html#reports');
+  await page.waitForTimeout(800);
+  await expect(page.getByText('الإيراد الشهري المقدّر')).toBeVisible();
+  await expect(page.getByText('أفضل الخدمات')).toBeVisible();
+  await expect(page.getByText('مصادر العميلات')).toBeVisible();
+  await expect(page.getByText('أداء الموظفات اليوم')).toBeVisible();
+  await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
 test('الموارد البشرية: رصيد الإجازات وسلسلة الموافقات', async ({ page }) => {
