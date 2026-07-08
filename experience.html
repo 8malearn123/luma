@@ -6,6 +6,7 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script src="luma-verify.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>LUMA — احجزي موعدكِ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -293,8 +294,9 @@
       <p id="revSum"></p>
     </div>
     <div id="revList"></div>
-    <div class="rv" style="margin-top:18px">
-      <div style="font-weight:600;font-size:14.5px;color:var(--white);margin-bottom:12px">شاركي تجربتك ✍️</div>
+    <div id="expGate"></div>
+    <div class="rv" id="rvFormBox" style="margin-top:18px">
+      <div style="font-weight:600;font-size:14.5px;color:var(--white);margin-bottom:12px">شاركي تجربتك ✍️ <span id="rvAs" style="font-size:11.5px;color:var(--green);font-weight:400"></span></div>
       <div class="st-pick" id="stPick" style="margin-bottom:10px"></div>
       <input id="rvName" placeholder="اسمك" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;margin-bottom:10px"/>
       <textarea id="rvText" rows="3" placeholder="اكتبي تجربتك مع الخبيرة…" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;resize:vertical;margin-bottom:12px"></textarea>
@@ -455,7 +457,7 @@ function renderExpertRevs(){
   document.getElementById('revList').innerHTML=list.map(r=>`
     <div class="rv"><div class="rtop">
       <span class="av2">${escR(r.n).charAt(0)}</span>
-      <div><div class="rn">${escR(r.n)}${r.vf?' <span style="font-size:10px;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:1px 8px;opacity:.85">زيارة موثقة ✓</span>':''}</div><div class="rd">${escR(r.d)}</div></div>
+      <div><div class="rn">${escR(r.n)}${r.vf?' <span style="font-size:10px;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:1px 8px;opacity:.85">زيارة موثقة ✓</span>':r.cv?' <span style="font-size:10px;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:1px 8px;opacity:.85">عميلة موثقة ✓</span>':''}</div><div class="rd">${escR(r.d)}</div></div>
       <span class="rstars">${'★'.repeat(r.r)}${'☆'.repeat(5-r.r)}</span></div>
       <div class="rt">${escR(r.t)}</div></div>`).join('')
     ||'<div style="color:var(--muted);font-size:13.5px;padding:14px 4px">لا تقييمات بعد — كوني أول من يشارك تجربتها 🌸</div>';
@@ -464,16 +466,30 @@ function drawStars(){
   document.getElementById('stPick').innerHTML=[1,2,3,4,5].map(i=>`<span class="${i<=rvStars?'on':''}" data-s="${i}">★</span>`).join('');
   document.querySelectorAll('#stPick span').forEach(s=>s.onclick=()=>{rvStars=+s.dataset.s;drawStars();});
 }
+/* التقييم مرتبط برقم جوال موثق لعميلة مسجّلة فقط */
+function wireExpGate(){
+  const box=document.getElementById('rvFormBox'),gate=document.getElementById('expGate');
+  const v=window.LumaVerify&&LumaVerify.current();
+  if(v){
+    box.style.display='';gate.innerHTML='';
+    document.getElementById('rvAs').innerHTML='— تُنشرين باسم '+escR(v.name)+' (رقم موثق ✓) <button type="button" onclick="LumaVerify.logout();wireExpGate()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:11px;text-decoration:underline">تغيير</button>';
+    const nm=document.getElementById('rvName');nm.value=v.name;nm.readOnly=true;nm.style.opacity='.7';
+  }else{
+    box.style.display='none';
+    LumaVerify.gate(gate,()=>wireExpGate());
+  }
+}
 document.getElementById('rvSend').onclick=()=>{
-  const nm=document.getElementById('rvName'),tx=document.getElementById('rvText');
-  if(!nm.value.trim()){nm.style.borderColor='#c0566a';nm.focus();return;}
+  const v=window.LumaVerify&&LumaVerify.current();
+  if(!v){wireExpGate();return;}
+  const tx=document.getElementById('rvText');
   if(!tx.value.trim()){tx.style.borderColor='#c0566a';tx.focus();return;}
   const mine=loadRevs();
-  mine.unshift({n:nm.value.trim(),r:rvStars,t:tx.value.trim(),d:'الآن'});
+  mine.unshift({n:v.name,r:rvStars,t:tx.value.trim(),d:'الآن',cv:1});
   try{localStorage.setItem(REV_KEY,JSON.stringify(mine));}catch(e){}
-  nm.value='';tx.value='';rvStars=5;drawStars();renderExpertRevs();
+  tx.value='';rvStars=5;drawStars();renderExpertRevs();
 };
-drawStars();renderExpertRevs();
+drawStars();renderExpertRevs();wireExpGate();
 
 function renderStepper(){
   let h='';

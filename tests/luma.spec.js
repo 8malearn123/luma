@@ -371,11 +371,48 @@ test('صفحة الخبيرة: نبذة ورابط أعمالها وتقييما
   // تبويب التقييمات بالبذور
   await page.click('#tab-revs');
   await expect(page.locator('#revList .rv', { hasText: 'أريج الدوسري' })).toBeVisible();
-  // إضافة تقييم جديد
-  await page.fill('#rvName', 'عميلة الاختبار');
+  // النموذج مقفل حتى توثيق رقم عميلة
+  await expect(page.locator('#rvFormBox')).toBeHidden();
+  await page.fill('#vfPhone', '0555101101');
+  await page.click('#vfSend');
+  const code = (await page.locator('#vfCodeDemo').textContent()).match(/\d{4}/)[0];
+  await page.fill('#vfCode', code);
+  await page.click('#vfOk');
+  await expect(page.locator('#rvFormBox')).toBeVisible();
+  await expect(page.locator('#rvName')).toHaveValue('نوف العتيبي');
   await page.fill('#rvText', 'تجربة راقية والنتيجة فاقت التوقع.');
   await page.click('#rvSend');
-  await expect(page.locator('#revList .rv', { hasText: 'عميلة الاختبار' })).toBeVisible();
+  await expect(page.locator('#revList .rv', { hasText: 'تجربة راقية والنتيجة فاقت التوقع' })).toBeVisible();
+  await expect(page.locator('#revList').getByText('عميلة موثقة ✓').first()).toBeVisible();
+});
+
+test('تعليقات المتجر للعميلات فقط: رقم غير مسجل يُرفض والموثق ينشر', async ({ page }) => {
+  await page.goto('/store.html');
+  await page.waitForTimeout(700);
+  await page.locator('.card.salon').first().click();
+  await page.waitForTimeout(500);
+  // النموذج مقفل والبوابة ظاهرة
+  await expect(page.locator('.rv-form')).toBeHidden();
+  await expect(page.locator('#rvGate')).toContainText('للعميلات فقط');
+  // رقم غير مسجل: يمر بالرمز ثم يُرفض
+  await page.fill('#vfPhone', '0500000000');
+  await page.click('#vfSend');
+  let code = (await page.locator('#vfCodeDemo').textContent()).match(/\d{4}/)[0];
+  await page.fill('#vfCode', code);
+  await page.click('#vfOk');
+  await expect(page.locator('#rvGate')).toContainText('غير مسجّل');
+  // رقم عميلة معروفة: يُوثق ويُفتح النموذج باسمها
+  await page.fill('#vfPhone', '0555303303');
+  await page.click('#vfSend');
+  code = (await page.locator('#vfCodeDemo').textContent()).match(/\d{4}/)[0];
+  await page.fill('#vfCode', code);
+  await page.click('#vfOk');
+  await expect(page.locator('.rv-form')).toBeVisible();
+  await expect(page.locator('#rv-name')).toHaveValue('لطيفة المطيري');
+  await page.fill('#rv-text', 'تقييم من عميلة موثقة بالرقم.');
+  await page.click('.rv-send');
+  await expect(page.locator('.sv-review', { hasText: 'تقييم من عميلة موثقة بالرقم' })).toBeVisible();
+  await expect(page.locator('#sv-revlist').getByText('عميلة موثقة ✓').first()).toBeVisible();
 });
 
 test('المتجر: نافذة الصالون بالتعليقات والاستفسارات', async ({ page }) => {
