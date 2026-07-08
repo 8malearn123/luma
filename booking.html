@@ -109,6 +109,16 @@ const BOOKED=load('luma_public_bookings',[]);
 
 /* ═══ حالة المعالج ═══ */
 let step=1,svc=null,staff=null,date='',time='';
+/* ── كوبونات الخصم — تُدار من لوحة الصالون (برنامج الولاء) ── */
+let coupon=null,cpnMsg='';
+const COUPONS=()=>load('luma_coupons',[{code:'LUMA10',type:'percent',value:10,active:true}]);
+const discount=()=>!coupon?0:coupon.type==='percent'?Math.round(svc.p*coupon.value/100):Math.min(coupon.value,svc.p);
+window.applyCoupon=()=>{
+  const code=(document.getElementById('cpn').value||'').trim().toUpperCase();
+  const c=COUPONS().find(x=>x.active&&x.code.toUpperCase()===code);
+  if(c){coupon=c;cpnMsg='';}else{coupon=null;cpnMsg=code?'الكود غير صحيح أو منتهي':'';}
+  render();
+};
 const days=Array.from({length:3},(_,i)=>{const d=new Date();d.setDate(d.getDate()+i);
   return {iso:d.toISOString().slice(0,10),wd:d.getDay(),
     lb:i===0?'اليوم':d.toLocaleDateString('ar-SA',{weekday:'long'}),
@@ -184,8 +194,15 @@ function render(){
         <div class="trow2"><span class="k">التاريخ</span><b>${date}</b></div>
         <div class="trow2"><span class="k">الوقت</span><b dir="ltr">${time}</b></div>
         <div class="trow2"><span class="k">المدة</span><b>${svc.d} دقيقة</b></div>
-        <div class="trow2 total"><span>الإجمالي</span><b>${svc.p} ر.س</b></div>
+        ${coupon?`<div class="trow2" style="color:#6fa86a"><span class="k">كوبون <bdo dir="ltr">${coupon.code}</bdo></span><b>− ${discount()} ر.س</b></div>`:''}
+        <div class="trow2 total"><span>الإجمالي</span><b>${svc.p-discount()} ر.س</b></div>
       </div></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input id="cpn" placeholder="كود خصم؟ (اختياري)" dir="ltr" value="${coupon?coupon.code:''}"
+          style="flex:1;text-align:right;padding:12px 14px;border-radius:12px;border:1px solid rgba(150,130,90,.35);background:transparent;color:inherit;font-family:inherit;font-size:13px;text-transform:uppercase"/>
+        <button class="btn ghost" style="margin:0;padding:12px 18px;font-size:13px" onclick="applyCoupon()">تطبيق</button>
+      </div>
+      ${cpnMsg?`<div style="font-size:12px;color:#c97b88;margin-top:6px">${cpnMsg}</div>`:coupon?`<div style="font-size:12px;color:#6fa86a;margin-top:6px">تم تطبيق الخصم ✓</div>`:''}
       <button class="btn" onclick="confirmBooking()">تأكيد الحجز ✓</button>`;
   }
   app.innerHTML=header()+`<div class="step">${s}</div>`;
@@ -204,7 +221,7 @@ function showReroute(){
     </div></div>`;
 }
 window.go=n=>{step=n;render();};
-window.restart=()=>{step=1;svc=staff=null;date=time='';render();};
+window.restart=()=>{step=1;svc=staff=null;date=time='';coupon=null;cpnMsg='';render();};
 window.pickSvc=id=>{svc=SERVICES.find(x=>x.id===id);
   /* اقتراح الأخصائية المناسبة للتصنيف تلقائياً */
   step=2;render();};
@@ -214,7 +231,7 @@ window.pickAlt=id=>{staff=STAFF.find(x=>x.id===id);step=3;render();};
 window.pickDate=i=>{date=days[i].iso;time='';render();};
 window.pickTime=t=>{time=t;render();};
 window.confirmBooking=()=>{
-  const rec={staff:staff.id,staffName:staff.n,client:'حجز أونلاين',service:svc.n,price:svc.p,date,time,at:new Date().toISOString()};
+  const rec={staff:staff.id,staffName:staff.n,client:'حجز أونلاين',service:svc.n,price:svc.p-discount(),coupon:coupon?coupon.code:null,date,time,at:new Date().toISOString()};
   BOOKED.push(rec);LumaStore.set('luma_public_bookings',BOOKED);
   /* الحجز بتاريخ اليوم يظهر مباشرة على لوحة حجوزات الصالون */
   if(date===days[0].iso){

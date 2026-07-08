@@ -19,14 +19,14 @@ SCREENS.clients=()=>{
   const total=CLIENTS_BASE_TOTAL+CLIENTS.length;
   return `
   <style>.ctab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.cth,.ctr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 40px;gap:12px;align-items:center;padding:14px 20px}.cth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.ctr{border-bottom:1px solid var(--line-soft)}.ctr:last-child{border-bottom:none}.ctr:hover{background:var(--surface2)}.cnm{display:flex;align-items:center;gap:11px}.cnm .av{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px}.cc{font-size:13px;color:var(--cream)}.cc .num{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr}@media(max-width:1080px){.cth{display:none}.ctr{grid-template-columns:1fr auto}.ctr .hide{display:none}}</style>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><button class="btn btn-gold" onclick="SALON.addClient()">+ عميلة جديدة</button></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="LOY.settings()">★ برنامج الولاء</button><button class="btn btn-gold" onclick="SALON.addClient()">+ عميلة جديدة</button></div></div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div><div class="delta">▲ 8</div></div><div class="val">${total}</div><div class="k">إجمالي العملاء</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">68<span class="u">%</span></div><div class="k">عميلات متكررات</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">486<span class="u">ر.س</span></div><div class="k">متوسط إنفاق العميلة</div></div>
   </div>
   <div class="ctab"><div class="cth"><span>العميلة</span><span>الزيارات</span><span>الإنفاق</span><span>آخر زيارة</span><span>الموظفة المفضّلة</span><span></span></div>
-  ${C.map(c=>`<div class="ctr"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span>${c.phone?` <span style="font-size:11px;color:var(--muted);direction:ltr;display:inline-block;margin-right:6px">${c.phone}</span>`:''}</div></div><div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${c.sp}</span> ر.س</div><div class="cc hide">${c.last}</div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`).join('')}
+  ${C.map(c=>`<div class="ctr"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span> <button class="badge gold loypts" onclick="LOY.redeem('${c.n.replace(/'/g,"\\'")}')" style="cursor:pointer;border:none;margin-top:3px" title="استبدال نقاط الولاء">★ ${loyPts(c.n).toLocaleString('en')}</button>${c.phone?` <span style="font-size:11px;color:var(--muted);direction:ltr;display:inline-block;margin-right:6px">${c.phone}</span>`:''}</div></div><div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${c.sp}</span> ر.س</div><div class="cc hide">${c.last}</div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`).join('')}
   </div>`;
 };
 
@@ -443,9 +443,11 @@ const SALON={
         const btn=ov.querySelector('[data-ok]');btn.disabled=true;btn.innerHTML='<span class="lux-spin" style="width:18px;height:18px;border-width:2px;margin:0 auto;display:block"></span>';
         setTimeout(()=>{
           a.st='confirmed';saveAppts();
-          markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total:+(price*1.15+tip).toFixed(2),date:new Date().toISOString().slice(0,10)});
+          const total=+(price*1.15+tip).toFixed(2);
+          markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
+          const pts=typeof loyAward==='function'?loyAward(a.client,total):0;
           close();SALON.go('board');
-          LUX.toast('تم الدفع بنجاح عبر '+method+' ✓ — جاري إصدار الفاتورة','ok');
+          LUX.toast('تم الدفع بنجاح عبر '+method+' ✓'+(pts?' — أُضيفت '+pts+' نقطة ولاء لرصيد '+a.client:''),'ok');
           setTimeout(()=>SALON.showInvoice(a.id),650);
         },900);
       };
