@@ -237,6 +237,21 @@ SCREENS.inventory=()=>{
   </div>`;
 };
 
+
+/* ── فاتورة ZATCA (المرحلة الأولى): TLV بالحقول الخمسة → Base64 → QR ── */
+function zatcaQR(seller,vatno,p){
+  try{
+    const enc=new TextEncoder();
+    const tlv=(tag,str)=>{const b=enc.encode(str);const out=new Uint8Array(2+b.length);out[0]=tag;out[1]=b.length;out.set(b,2);return out;};
+    const parts=[tlv(1,seller),tlv(2,vatno),tlv(3,p.date+'T12:00:00Z'),tlv(4,p.total.toFixed(2)),tlv(5,p.vat.toFixed(2))];
+    const all=new Uint8Array(parts.reduce((t,x)=>t+x.length,0));
+    let o=0;parts.forEach(x=>{all.set(x,o);o+=x.length;});
+    const b64=btoa(String.fromCharCode(...all));
+    const qr=window.qrcode(0,'M');qr.addData(b64);qr.make();
+    return `<img src="${qr.createDataURL(3,2)}" alt="ZATCA QR" style="width:88px;height:88px;border-radius:8px;border:1px solid #e4daca"/>`;
+  }catch(e){return '';}
+}
+
 const NAV=[
   {id:'overview',label:'نظرة عامة',icon:'grid',crumb:'SALON'},
   {id:'board',label:'لوحة الحجوزات',icon:'board',crumb:'SALON'},
@@ -250,6 +265,7 @@ const NAV=[
   {id:'invoices',label:'الفواتير البيعية',icon:'invoice',crumb:'FINANCE'},
   {id:'marketing',label:'التسويق',icon:'mega',crumb:'GROWTH'},
   {id:'finance',label:'المالية',icon:'wallet',crumb:'FINANCE'},
+  {id:'reports',label:'التقارير',icon:'chart',crumb:'FINANCE'},
   {id:'branches',label:'الفروع',icon:'pin',crumb:'SALON'},
   {id:'settings',label:'الإعدادات',icon:'gear',crumb:'SYSTEM'},
 ];
@@ -466,7 +482,11 @@ const SALON={
         ${p.tip?`<tr style="color:#54473a;font-size:12px"><td style="padding:8px 0">بقشيش الموظفة</td><td style="text-align:left" dir="ltr">${p.tip.toFixed(2)} SAR</td></tr>`:''}
         <tr style="border-top:2px solid ${ac};font-weight:700;font-size:15px"><td style="padding:11px 0">الإجمالي المدفوع · ${p.method}</td><td style="text-align:left;color:${ac}" dir="ltr">${p.total.toFixed(2)} SAR</td></tr>
       </table>
-      <div style="text-align:center;font-size:11px;color:#8d8172;margin-top:16px">شكراً لكِ 🌸 نسعد بزيارتك دائماً${c.slug?` · luma.beauty/${c.slug}`:''}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:16px;border-top:1px dashed #e4daca;padding-top:12px">
+        <div style="font-size:10.5px;color:#8d8172;line-height:1.9">رمز الفاتورة الإلكترونية<br><span style="color:#b3a794">متوافق مع «فاتورة» — المرحلة الأولى (ZATCA)</span></div>
+        ${zatcaQR(c.title||'LUMA',c.vatno||'000000000000000',p)}
+      </div>
+      <div style="text-align:center;font-size:11px;color:#8d8172;margin-top:12px">شكراً لكِ 🌸 نسعد بزيارتك دائماً${c.slug?` · luma.beauty/${c.slug}`:''}</div>
     </div>`;
   },
   showInvoice(id){

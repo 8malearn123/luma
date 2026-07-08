@@ -1,6 +1,13 @@
 {
   "name": "luma",
   "private": true,
-  "scripts": { "test": "playwright test" },
-  "devDependencies": { "@playwright/test": "^1.49.0" }
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  },
+  "dependencies": {
+    "qrcode-generator": "^2.0.4"
+  }
 }
