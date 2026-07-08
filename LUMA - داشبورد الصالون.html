@@ -923,7 +923,7 @@ SCREENS.page=()=>{
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
     <div><div style="font-weight:600;font-size:19px;color:var(--white)">مُنشئ الرابط والصفحة الخاصة</div>
-    <div style="font-size:13px;color:var(--gold-pale);margin-top:2px">رابطك المخصص وصفحة حجز فاخرة لعميلاتك — المعاينة حقيقية وتفتح فعلاً</div></div>
+    <div style="font-size:13px;color:var(--gold-pale);margin-top:2px">رابطك المخصص وصفحة حجز فاخرة — وهذه الهوية نفسها تظهر على فواتيرك المطبوعة</div></div>
     <a class="btn btn-gold" href="booking.html" target="_blank" style="text-decoration:none">فتح صفحتي ↗</a>
   </div>
   <div style="display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start">
@@ -942,6 +942,8 @@ SCREENS.page=()=>{
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="lux-f"><label>اسم الصالون</label><input value="${c.title}" oninput="PAGE.field('title',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none"/></div>
           <div class="lux-f"><label>رقم التواصل</label><input value="${c.phone}" oninput="PAGE.field('phone',this)" dir="ltr" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:right"/></div>
+          <div class="lux-f"><label>العنوان</label><input value="${c.address||''}" oninput="PAGE.field('address',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none"/></div>
+          <div class="lux-f"><label>الرقم الضريبي <span style="font-size:10px;color:var(--muted)">— يظهر في الفاتورة</span></label><input value="${c.vatno||''}" oninput="PAGE.field('vatno',this)" dir="ltr" placeholder="310123456700003" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:right"/></div>
         </div>
         <div class="lux-f"><label>نبذة مختصرة</label><textarea rows="2" oninput="PAGE.field('bio',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;resize:vertical">${c.bio}</textarea></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -1248,6 +1250,7 @@ const SALON={
     const SVC=SVC_CATALOG;
     const reasons=['بريك / استراحة','اجتماع','حجز خارجي','تدريب','مشغولة — أخرى'];
     const durs=[[1,'30 دقيقة'],[2,'ساعة'],[3,'ساعة ونصف'],[4,'ساعتان']];
+    const preStaff=pre.staff?STAFF.find(s=>s.id===pre.staff):null;
     const body=`
       <div class="lux-seg">
         <button type="button" data-k="appt" class="${kind!=='block'?'on':''}">📅 موعد عميلة</button>
@@ -1256,14 +1259,18 @@ const SALON={
       <div id="bkAppt" style="${kind==='block'?'display:none':''}">
         <div class="lux-f"><label>اسم العميلة</label><input name="client" list="bkClients" placeholder="اكتبي الاسم أو اختاري من عميلاتك…"/>
           <datalist id="bkClients">${CLIENTS.map(c=>`<option value="${c.n}">`).join('')}</datalist></div>
-        <div class="lux-f"><label>الخدمة</label><select name="service">${SVC.map(([n,d,p])=>`<option value="${n}" data-d="${d}" data-p="${p}">${n} · ${p} ر.س</option>`).join('')}</select></div>
+        <div class="lux-f"><label>الخدمة <span style="font-size:10px;color:var(--muted)">— اكتبي للبحث</span></label>
+          <input name="service" list="bkSvc" placeholder="اكتبي اسم الخدمة…" value="${SVC[0][0]}"/>
+          <datalist id="bkSvc">${SVC.map(([n,d,p])=>`<option value="${n}">${p} ر.س · ${d*30} دقيقة</option>`).join('')}</datalist></div>
       </div>
       <div id="bkBlock" style="${kind==='block'?'':'display:none'}">
         <div class="lux-f"><label>السبب</label><select name="reason">${reasons.map(r=>`<option>${r}</option>`).join('')}</select></div>
       </div>
-      <div class="lux-f"><label>الموظفة / الفنانة</label><select name="staff">${STAFF.map(s=>{
-        const off=hrOnLeaveToday(s.id)?' — في إجازة':(spOf(s.id).status!=='active'?' — موقوفة':'');
-        return `<option value="${s.id}" ${pre.staff===s.id?'selected':''} ${off?'data-off="1"':''}>${s.n} · ${s.role}${off}</option>`;}).join('')}</select></div>
+      <div class="lux-f"><label>الموظفة / الفنانة <span style="font-size:10px;color:var(--muted)">— اكتبي للبحث</span></label>
+        <input name="staffq" list="bkStaff" placeholder="اكتبي اسم الفنانة…" value="${preStaff?preStaff.n:STAFF[0].n}"/>
+        <datalist id="bkStaff">${STAFF.map(s=>{
+          const off=hrOnLeaveToday(s.id)?' — في إجازة':(spOf(s.id).status!=='active'?' — موقوفة':'');
+          return `<option value="${s.n}">${s.role}${off}</option>`;}).join('')}</datalist></div>
       <div class="lux-two">
         <div class="lux-f"><label>الوقت</label><select name="start"></select></div>
         <div class="lux-f"><label>المدة</label><select name="dur">${durs.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div>
@@ -1276,12 +1283,15 @@ const SALON={
       const q=n=>ov.querySelector('[name='+n+']');
       const seg=ov.querySelectorAll('.lux-seg button');
       const okBtn=ov.querySelector('[data-ok]');
+      /* البحث بالاسم: نحوّل نص الحقل إلى سجل فعلي */
+      const staffOf=()=>{const v=q('staffq').value.trim();return STAFF.find(s=>s.n===v)||STAFF.find(s=>v&&s.n.startsWith(v))||null;};
+      const svcOf=()=>{const v=q('service').value.trim();return SVC.find(s=>s[0]===v)||SVC.find(s=>v&&s[0].startsWith(v))||null;};
       const clash=(staff,start,dur)=>APPTS.some(b=>b.staff===staff&&b.st!=='cancelled'&&b.start<start+dur&&start<b.start+b.dur);
-      /* rebuild the time list: busy slots are visible but disabled */
       function refreshTimes(){
-        const staff=q('staff').value, dur=+q('dur').value, cur=q('start').value;
+        const st=staffOf();const dur=+q('dur').value;const cur=q('start').value;
+        if(!st){q('start').innerHTML='';refreshSummary();return;}
         q('start').innerHTML=Array.from({length:SLOTS}).map((_,i)=>{
-          const busy=i+dur>SLOTS||clash(staff,i,dur);
+          const busy=i+dur>SLOTS||clash(st.id,i,dur);
           return `<option value="${i}" ${busy?'disabled':''}>${slotLabel(i)}${busy?' — مشغول':''}</option>`;
         }).join('');
         const want=pre.start!=null&&q('start').dataset.init!=='1'?String(pre.start):cur;
@@ -1291,21 +1301,21 @@ const SALON={
         refreshSummary();
       }
       function refreshSummary(){
-        const staff=q('staff').value, start=+q('start').value, dur=+q('dur').value;
-        const sName=hrStaffName(staff);
-        const offOpt=q('staff').selectedOptions[0].dataset.off;
-        const ok=!isNaN(start)&&!clash(staff,start,dur)&&start+dur<=SLOTS&&(k==='block'||!offOpt);
+        const st=staffOf();const sv=svcOf();const start=+q('start').value;const dur=+q('dur').value;
         const av=ov.querySelector('#bkAvail');
-        av.innerHTML=k!=='block'&&offOpt?'<span style="color:#e29aa6">✗ '+sName+' محظورة الحجز اليوم (إجازة أو موقوفة)</span>'
+        const offToday=st?(hrOnLeaveToday(st.id)||spOf(st.id).status!=='active'):false;
+        const ok=st&&(k==='block'||sv)&&!isNaN(start)&&!clash(st.id,start,dur)&&start+dur<=SLOTS&&(k==='block'||!offToday);
+        av.innerHTML=!st?'<span style="color:#e29aa6">✗ اكتبي اسم فنانة من القائمة</span>'
+          :k!=='block'&&!sv?'<span style="color:#e29aa6">✗ اكتبي اسم خدمة من القائمة</span>'
+          :k!=='block'&&offToday?'<span style="color:#e29aa6">✗ '+st.n+' محظورة الحجز اليوم (إجازة أو موقوفة)</span>'
           :isNaN(start)?'<span style="color:#e29aa6">✗ لا يوجد وقت متاح بهذه المدة</span>'
           :'<span style="color:#9fce99">✓ الوقت متاح</span>';
         const range=isNaN(start)?'—':slotLabel(start)+' – '+slotLabel(start+dur);
         if(k==='block'){
-          ov.querySelector('#bkSum').innerHTML=`⛔ حجب <b style="color:var(--white,#f6f2ec)">${q('reason').value}</b> · ${sName} · <bdo dir="ltr">${range}</bdo>`;
+          ov.querySelector('#bkSum').innerHTML=`⛔ حجب <b style="color:var(--white,#f6f2ec)">${q('reason').value}</b> · ${st?st.n:'—'} · <bdo dir="ltr">${range}</bdo>`;
           okBtn.textContent='حجب الوقت';
         }else{
-          const so=q('service').selectedOptions[0];
-          ov.querySelector('#bkSum').innerHTML=`📅 <b style="color:var(--white,#f6f2ec)">${q('client').value.trim()||'…'}</b> · ${so.value} · ${sName} · <bdo dir="ltr">${range}</bdo> · <b style="color:var(--gold-light,#ccab64)">${so.dataset.p} ر.س</b>`;
+          ov.querySelector('#bkSum').innerHTML=`📅 <b style="color:var(--white,#f6f2ec)">${q('client').value.trim()||'…'}</b> · ${sv?sv[0]:'—'} · ${st?st.n:'—'} · <bdo dir="ltr">${range}</bdo> · <b style="color:var(--gold-light,#ccab64)">${sv?sv[2]:'—'} ر.س</b>`;
           okBtn.textContent='تأكيد الحجز';
         }
         okBtn.style.opacity=ok?'1':'0.45';okBtn.dataset.ok2=ok?'1':'';
@@ -1316,22 +1326,23 @@ const SALON={
         ov.querySelector('#bkBlock').style.display=k==='block'?'':'none';
         refreshSummary();
       });
-      q('staff').onchange=refreshTimes;q('dur').onchange=refreshTimes;
+      q('staffq').oninput=refreshTimes;q('dur').onchange=refreshTimes;
       q('start').onchange=refreshSummary;q('reason').onchange=refreshSummary;
       q('client').oninput=refreshSummary;
-      q('service').onchange=()=>{const d=q('service').selectedOptions[0].dataset.d;q('dur').value=d;refreshTimes();};
+      q('service').oninput=()=>{const sv=svcOf();if(sv){q('service').value=sv[0];q('dur').value=sv[1];}refreshTimes();};
       refreshTimes();
       okBtn.onclick=()=>{
-        if(!okBtn.dataset.ok2){LUX.toast('اختاري وقتاً متاحاً أولاً','err');return;}
-        const staff=q('staff').value, start=+q('start').value, dur=+q('dur').value;
+        const st=staffOf();const sv=svcOf();
+        if(!okBtn.dataset.ok2){LUX.toast(!st?'اختاري فنانة من القائمة':k==='appt'&&!sv?'اختاري خدمة من القائمة':'اختاري وقتاً متاحاً أولاً','err');return;}
+        const start=+q('start').value, dur=+q('dur').value;
         if(k==='appt'&&!q('client').value.trim()){q('client').style.borderColor='#c0566a';q('client').focus();return;}
         APPTS.push(k==='block'
-          ?{id:Date.now(),staff,start,dur,client:q('reason').value,service:'وقت محجوب',st:'blocked',custom:true}
-          :{id:Date.now(),staff,start,dur,client:q('client').value.trim(),service:q('service').value,st:'confirmed',custom:true});
+          ?{id:Date.now(),staff:st.id,start,dur,client:q('reason').value,service:'وقت محجوب',st:'blocked',custom:true}
+          :{id:Date.now(),staff:st.id,start,dur,client:q('client').value.trim(),service:sv[0],st:'confirmed',custom:true});
         saveAppts();close();SALON.go('board');
         LUX.toast(k==='block'
-          ?'حُجب وقت '+hrStaffName(staff)+' <bdo dir="ltr">'+slotLabel(start)+'</bdo> ✓'
-          :'تم حجز '+q('client').value.trim()+' مع '+hrStaffName(staff)+' الساعة '+slotLabel(start)+' ✓','ok');
+          ?'حُجب وقت '+st.n+' <bdo dir="ltr">'+slotLabel(start)+'</bdo> ✓'
+          :'تم حجز '+q('client').value.trim()+' مع '+st.n+' الساعة '+slotLabel(start)+' ✓','ok');
       };
     }});
   },
@@ -1401,25 +1412,35 @@ const SALON={
   invoiceHTML(id){
     const a=APPTS.find(x=>String(x.id)===String(id));const p=paidOf(id);if(!a||!p)return '';
     const s=STAFF.find(x=>x.id===a.staff)||{n:'—'};
+    /* هوية الفاتورة تُقرأ من «صفحتي والرابط»: الاسم، الشعار، العنوان، الرقم الضريبي، ولون الثيم */
+    const c=pageCfg();
+    const th=PAGE_THEMES.find(t=>t[0]===c.theme)||PAGE_THEMES[0];
+    const ac=th[3];
     return `
     <div id="lumaInv" style="background:#fdfbf7;color:#2e241b;border-radius:14px;padding:28px 26px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #c9ac7e;padding-bottom:14px">
-        <div><div style="font-family:'Bodoni Moda',serif;font-size:26px;letter-spacing:.22em;color:#9a7238">LUMA</div>
-          <div style="font-size:11px;color:#8d8172;margin-top:2px">صالون لمسة · جدة — حي الشاطئ</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid ${ac};padding-bottom:14px">
+        <div style="display:flex;align-items:center;gap:12px">
+          ${c.logo?`<img src="${c.logo}" alt="" style="width:46px;height:46px;border-radius:12px;object-fit:cover;border:1px solid ${ac}"/>`
+            :`<span style="width:46px;height:46px;border-radius:12px;border:1px solid ${ac};color:${ac};display:inline-flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:21px">${(c.title||'L').charAt(0)}</span>`}
+          <div><div style="font-weight:700;font-size:17px;color:#2e241b">${c.title||'LUMA'}</div>
+            <div style="font-size:10.5px;color:#8d8172;margin-top:2px">${c.address||''}${c.phone?` · <bdo dir="ltr">${c.phone}</bdo>`:''}</div>
+            <div style="font-family:'Bodoni Moda',serif;font-size:10px;letter-spacing:.24em;color:${ac};margin-top:3px">LUMA BEAUTY SYSTEMS</div></div>
+        </div>
         <div style="text-align:left;font-size:11.5px;color:#54473a"><div style="font-weight:700;font-size:13px;color:#2e241b">فاتورة ضريبية مبسطة</div>
-          <div dir="ltr">${p.no}</div><div dir="ltr">${p.date}</div></div>
+          <div dir="ltr">${p.no}</div><div dir="ltr">${p.date}</div>
+          ${c.vatno?`<div style="font-size:10px;color:#8d8172;margin-top:2px">الرقم الضريبي: <bdo dir="ltr">${c.vatno}</bdo></div>`:''}</div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:12px 0;border-bottom:1px solid #e4daca">
         <span>العميلة: <b>${a.client}</b></span><span>الموظفة: <b>${s.n}</b></span><span dir="ltr">${slotLabel(a.start)}</span>
       </div>
       <table style="width:100%;font-size:13px;border-collapse:collapse;margin-top:6px">
-        <tr style="color:#9a7238;font-size:11.5px"><td style="padding:9px 0">الخدمة</td><td style="text-align:left">المبلغ</td></tr>
+        <tr style="color:${ac};font-size:11.5px"><td style="padding:9px 0">الخدمة</td><td style="text-align:left">المبلغ</td></tr>
         <tr style="border-top:1px solid #efe8db"><td style="padding:9px 0">${a.service}</td><td style="text-align:left" dir="ltr">${p.amount.toFixed(2)} SAR</td></tr>
         <tr style="border-top:1px solid #efe8db;color:#54473a;font-size:12px"><td style="padding:8px 0">ضريبة القيمة المضافة (15٪)</td><td style="text-align:left" dir="ltr">${p.vat.toFixed(2)} SAR</td></tr>
         ${p.tip?`<tr style="color:#54473a;font-size:12px"><td style="padding:8px 0">بقشيش الموظفة</td><td style="text-align:left" dir="ltr">${p.tip.toFixed(2)} SAR</td></tr>`:''}
-        <tr style="border-top:2px solid #c9ac7e;font-weight:700;font-size:15px"><td style="padding:11px 0">الإجمالي المدفوع · ${p.method}</td><td style="text-align:left;color:#9a7238" dir="ltr">${p.total.toFixed(2)} SAR</td></tr>
+        <tr style="border-top:2px solid ${ac};font-weight:700;font-size:15px"><td style="padding:11px 0">الإجمالي المدفوع · ${p.method}</td><td style="text-align:left;color:${ac}" dir="ltr">${p.total.toFixed(2)} SAR</td></tr>
       </table>
-      <div style="text-align:center;font-size:11px;color:#8d8172;margin-top:16px">شكراً لكِ 🌸 نسعد بزيارتك دائماً · luma-delta-five.vercel.app</div>
+      <div style="text-align:center;font-size:11px;color:#8d8172;margin-top:16px">شكراً لكِ 🌸 نسعد بزيارتك دائماً${c.slug?` · luma.beauty/${c.slug}`:''}</div>
     </div>`;
   },
   showInvoice(id){
