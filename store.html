@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
 <script src="luma-verify.js"></script>
+<script src="luma-teams.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>LUMA — المتجر · اكتشفي خبيرتكِ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -126,6 +127,8 @@
   .card .cover .pat{position:absolute;inset:0;opacity:0.5;}
   .card .cover .mono-lg{position:relative;font-family:'Bodoni Moda',serif;font-size:66px;color:var(--gold);direction:ltr;opacity:0.85;}
   .card .cover .motif{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.55;transform:translateX(-74px);}
+  .offer-rb{position:relative;flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:linear-gradient(120deg,#d98a93,#b25a6c);color:#fff;font-size:10.5px;font-weight:700;padding:5px 10px 5px 12px;border-radius:4px 4px 4px 12px;box-shadow:0 5px 14px rgba(178,90,108,.35);white-space:nowrap;}
+  .offer-rb::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%) rotate(45deg);width:8px;height:8px;background:#c9707f;}
   .card .cover .cvimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
   .card .cover .cvshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,8,6,.18),rgba(10,8,6,.42));}
   .cvcam{position:absolute;bottom:10px;left:10px;z-index:3;display:flex;align-items:center;gap:6px;border-radius:20px;border:1px solid rgba(200,170,110,.55);background:rgba(11,10,8,.66);color:var(--gold-light);font-size:11px;font-family:inherit;padding:6px 12px;cursor:pointer;line-height:1;opacity:.88;transition:opacity .2s,border-color .2s;backdrop-filter:blur(6px);}
@@ -268,7 +271,7 @@ const DATA=[
   {type:'salon',n:'صالون رؤى',role:'صالون نسائي شامل',city:'جدة · الروضة',rating:4.9,reviews:431,price:220,verified:true,cat:'متكامل',branches:3,staff:9,tags:['عرائس','سبا']},
   {type:'salon',n:'مركز لازوردي',role:'سبا ومركز تجميل',city:'الرياض',rating:5.0,reviews:178,price:350,verified:true,cat:'سبا',branches:2,staff:7,tags:['مساج','عناية']},
   {type:'salon',n:'استوديو نون',role:'صالون شعر ومكياج',city:'الدمام',rating:4.7,reviews:264,price:180,verified:true,cat:'شعر',branches:1,staff:5,tags:['صبغات','تسريحات']},
-  {type:'salon',n:'الجوهرة سبأ',role:'صالون نسائي متكامل',city:'جازان · صبيا — حي المحمدية',rating:4.8,reviews:87,price:150,verified:true,cat:'متكامل',branches:1,staff:5,tags:['مكياج','شعر','عرائس']},
+  {type:'salon',n:'الجوهرة سبأ',role:'صالون نسائي متكامل',city:'جازان · صبيا — حي المحمدية',rating:4.8,reviews:87,price:150,verified:true,cat:'متكامل',branches:1,staff:5,tags:['مكياج','شعر','عرائس'],offer:{pct:30,occ:'التخرج'}},
   {type:'salon',n:'صالون ضي',role:'صالون أظافر وعناية',city:'مكة',rating:4.6,reviews:142,price:150,verified:false,cat:'أظافر',branches:1,staff:3,tags:['منيكير','تركيب']},
 ];
 
@@ -396,14 +399,14 @@ function render(){
         <span class="ptag ${isSalon?'salon':'expert'}">${isSalon?'⬢ صالون':'◆ خبيرة مستقلة'}</span>
       </div>
       <div class="body">
-        <div class="nm">${e.n}</div>
+        <div class="nm" style="display:flex;align-items:center;justify-content:space-between;gap:8px">${e.n}${e.offer?`<span class="offer-rb">🎓 خصم ${e.offer.pct}% · ${e.offer.occ}</span>`:''}</div>
         <div class="role">${e.role}</div>
         <div class="loc">⌖ ${e.city}${userLoc&&isFinite(provDist(e))?` <span style="color:var(--gold-light)">· ${fmtDist(provDist(e))}</span>`:''}</div>
         ${isSalon?`<div class="facts"><span>⬢ ${e.branches} ${e.branches===1?'فرع':'فروع'}</span><span>● ${e.staff} خبيرات</span></div>`:''}
         <div class="tags">${e.tags.map(t=>`<span>${t}</span>`).join('')}</div>
         <div class="foot">
           <div class="rating"><span class="star">★</span> ${e.rating.toFixed(1)} <span class="cnt">(${e.reviews})</span></div>
-          <div class="price"><div class="from">${isSalon?'خدمات تبدأ من':'يبدأ من'}</div><div class="v">${e.price} <span class="u">ر.س</span></div></div>
+          <div class="price"><div class="from">${isSalon?'خدمات تبدأ من':'يبدأ من'}</div><div class="v">${e.offer?`<s style="opacity:.45;font-size:16px">${e.price}</s> ${Math.round(e.price*(100-e.offer.pct)/100)}`:e.price} <span class="u">ر.س</span></div></div>
         </div>
       </div>
     </a>`;
@@ -490,10 +493,20 @@ function openSalon(name,ev){
   document.getElementById('sv-logo').style.borderColor=hue.ac;
   document.getElementById('sv-logo').style.color=hue.ac;
   document.getElementById('sv-logo').textContent=name.replace('صالون ','').replace('مركز ','').replace('استوديو ','').charAt(0);
-  document.getElementById('sv-name').textContent=SV.n;
+  document.getElementById('sv-name').innerHTML=esc(SV.n)+(SV.offer?` <span class="offer-rb" style="font-size:10px;vertical-align:3px">🎓 خصم ${SV.offer.pct}% · ${SV.offer.occ}</span>`:'');
   document.getElementById('sv-role').textContent=SV.role+' · ⌖ '+SV.city;
   document.getElementById('sv-rate').innerHTML='★ '+SV.rating.toFixed(1)+' <span style="color:var(--muted);font-size:12px">('+SV.reviews+' تقييم)</span>';
   document.getElementById('sv-book').setAttribute('href',link);
+  /* طاقم الخبيرات: الاسم ووظيفة كل واحدة */
+  const team=(window.SALON_TEAMS||{})[SV.n]||[];
+  document.getElementById('sv-team').innerHTML=team.length?`
+    <div style="font-size:12px;color:var(--gold);font-weight:600;margin:18px 0 10px;text-align:right">طاقم الخبيرات (${team.length})</div>
+    <div style="display:flex;gap:9px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none">
+      ${team.map(m=>`<div style="flex:0 0 auto;display:flex;align-items:center;gap:9px;border:0.5px solid var(--line);background:var(--panel3);border-radius:30px;padding:7px 14px 7px 16px">
+        <span style="width:32px;height:32px;border-radius:50%;background:var(--panel);border:0.5px solid ${hue.ac};color:${hue.ac};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:14px;flex-shrink:0">${esc(m.n).charAt(0)}</span>
+        <span style="text-align:right"><b style="display:block;font-size:12.5px;color:var(--white)">${esc(m.n)}</b><span style="font-size:10.5px;color:var(--muted)">${esc(m.role)}</span></span>
+      </div>`).join('')}
+    </div>`:'';
   svTab('rev');
   renderRevs();renderChat();wireRevGate();
   const ov=document.getElementById('sview');ov.style.display='flex';requestAnimationFrame(()=>ov.classList.add('show'));
@@ -648,6 +661,7 @@ html[data-theme="light"] .sview{background:rgba(59,47,43,.35);}
       <div class="rl" id="sv-role"></div>
       <div class="rt" id="sv-rate"></div>
       <a class="sv-book" id="sv-book" href="#">احجزي الآن ←</a>
+      <div id="sv-team"></div>
     </div>
     <div class="sv-tabs">
       <button class="sv-tab on" data-t="rev" onclick="svTab('rev')">💬 التعليقات</button>
