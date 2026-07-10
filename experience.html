@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
 <script src="luma-verify.js"></script>
+<script src="luma-teams.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>LUMA — احجزي موعدكِ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -405,6 +406,19 @@ const PROF=EXPERT_PROFILES[EXPERT.name]||{
   work:'',rating:4.9,jobs:180,revs:[]};
 document.getElementById('exp-rate').textContent=PROF.rating.toFixed(1);
 document.getElementById('exp-jobs').textContent='('+PROF.jobs+' حجز)';
+
+/* ═══ عروض الخصم النشطة لكل مزوّدة — تُطبق تلقائياً على أسعار الحجز ═══ */
+const SALON_OFFERS={'الجوهرة سبأ':{pct:30,occ:'التخرج'}};
+const OFFER=SALON_OFFERS[EXPERT.name]||null;
+const effPrice=p=>OFFER?Math.round(p*(100-OFFER.pct)/100):p;
+if(OFFER){
+  document.getElementById('bioCard').insertAdjacentHTML('afterend',`
+    <div style="margin-top:14px;display:flex;align-items:center;gap:12px;border:1px solid rgba(217,138,147,.5);background:linear-gradient(120deg,rgba(217,138,147,.12),rgba(178,90,108,.06));border-radius:14px;padding:13px 18px">
+      <span style="font-size:24px">🎓</span>
+      <div style="flex:1;font-size:13.5px;color:var(--white)"><b style="color:#e8a2ae">خصم ${OFFER.pct}% بمناسبة ${OFFER.occ}</b> — مطبَّق تلقائياً على جميع الخدمات أدناه، لفترة محدودة.</div>
+      <span style="font-family:'Bodoni Moda',serif;font-size:26px;color:#e8a2ae" dir="ltr">-${OFFER.pct}%</span>
+    </div>`);
+}
 document.getElementById('bioTitle').textContent=IS_SALON?'نبذة عن الصالون':'نبذة عنها';
 document.getElementById('bioTxt').textContent=PROF.bio;
 if(PROF.work){const w=document.getElementById('bioWork');w.href=PROF.work;w.style.display='inline-flex';}
@@ -419,7 +433,8 @@ const TIMES=['11:00 ص','12:30 م','2:00 م','3:30 م','5:00 م','6:30 م','8:00
 const OFF=new Set(['2:00 م']); /* الصالون مغلق */
 
 /* salon staff (each has her own schedule) */
-const STAFF=[
+/* طاقم الصالون الفعلي (أسماء ووظائف من سجل الصوالين) — أو طاقم افتراضي */
+const STAFF=(window.SALON_TEAMS&&SALON_TEAMS[EXPERT.name])||[
   {n:'ندى',role:'خبيرة مكياج وعرائس'},
   {n:'مها',role:'مصففة وخبيرة شعر'},
   {n:'العنود',role:'أخصائية عناية بالبشرة'},
@@ -535,7 +550,7 @@ function stepService(){
     ${SERVICES.map(s=>`<div class="opt ${state.service&&state.service.id===s.id?'sel':''}" onclick="BK.pickService('${s.id}')">
       <span class="radio"></span>
       <div class="info"><div class="t">${s.t}</div><div class="d">◷ ${s.dur}</div></div>
-      <div class="price"><span class="v">${money(s.price)}</span> <span class="u">ر.س</span></div>
+      <div class="price">${OFFER?`<s style="opacity:.45;font-size:14px" dir="ltr">${money(s.price)}</s> `:''}<span class="v">${money(effPrice(s.price))}</span> <span class="u">ر.س</span>${OFFER?`<div style="font-size:9.5px;color:#e8a2ae;font-weight:700">خصم ${OFFER.pct}٪</div>`:''}</div>
     </div>`).join('')}
     <div class="actions">
       <a class="btn btn-ghost" href="store.html">إلغاء</a>
@@ -607,7 +622,7 @@ function stepStaffTime(){
 function dateLabel(key){const d=DAYS.find(x=>x.key===key);return d?`${d.dow} ${d.dnum} ${d.mon}`:key;}
 
 function stepConfirm(){
-  const s=state.service;const deposit=Math.round(s.price*0.25);
+  const s=state.service;const deposit=Math.round(effPrice(s.price)*0.25);
   return `<div class="panel">
     <h2>تأكيد الحجز</h2>
     <div class="hint">راجعي تفاصيل موعدكِ قبل الدفع.</div>
@@ -618,7 +633,8 @@ function stepConfirm(){
     <div class="sumrow"><span class="k">التاريخ</span><span class="v">${dateLabel(state.date)}</span></div>
     <div class="sumrow"><span class="k">الوقت</span><span class="v">${state.time}</span></div>
     <div class="sumrow"><span class="k">الموقع</span><span class="v">${EXPERT.city}</span></div>
-    <div class="total"><span class="k">الإجمالي</span><span class="v">${money(s.price)} ر.س</span></div>
+    ${OFFER?`<div class="sumrow"><span class="k">خصم ${OFFER.occ} (${OFFER.pct}٪)</span><span class="v" style="color:#e8a2ae" dir="ltr">− ${money(s.price-effPrice(s.price))} ر.س</span></div>`:''}
+    <div class="total"><span class="k">الإجمالي</span><span class="v">${OFFER?`<s style="opacity:.4;font-size:14px" dir="ltr">${money(s.price)}</s> `:''}${money(effPrice(s.price))} ر.س</span></div>
     <div class="label" style="margin-top:22px">طريقة الدفع</div>
     <div class="pay">
       <div class="m ${state.pay==='mada'?'sel':''}" onclick="BK.pickPay('mada')">mada</div>
