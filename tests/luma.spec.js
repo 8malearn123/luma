@@ -103,6 +103,16 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('سهم الرجوع في صفحة الحجز يعيد للصفحة السابقة', async ({ page }) => {
+  await page.goto('/store.html');
+  await page.waitForTimeout(500);
+  await page.goto('/booking.html');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.backTop')).toBeVisible();
+  await page.click('.backTop');
+  await page.waitForURL(/store\.html/);
+});
+
 test('حجز أكثر من خدمة في موعد واحد مع مجموع السعر والمدة', async ({ page }) => {
   await page.goto('/booking.html');
   await page.waitForTimeout(600);
