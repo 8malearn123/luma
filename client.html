@@ -102,6 +102,7 @@ const IC={
   help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .3c0 1.7-2.5 2-2.5 3.7"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/>',
   out:'<path d="M14 21H5a2 2 0 01-2-2V5a2 2 0 012-2h9"/><path d="M18 16l4-4-4-4M22 12H9"/>',
   chev:'<path d="M15 6l-6 6 6 6"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.4-4.4"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   whatsapp:'<path d="M3.5 20.5l1.4-4.1A8.5 8.5 0 1112 20.5a8.4 8.4 0 01-3.8-.9z"/><path d="M8.8 9.2c.7 1.9 2.1 3.3 4 4 .5.2.9 0 1.2-.4"/>',
 };
@@ -134,6 +135,30 @@ const RECO=[
 /* SCREENS */
 function tile(h){return `<div style="height:${h}px;border-radius:11px;background:linear-gradient(150deg,#2a2218,#131217);border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg class="lat" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#clat)"/></svg><span style="position:relative;color:var(--gold-deep)">◆</span></div>`;}
 function expertCard(e){return `<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px;cursor:pointer">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="text-align:left"><div style="font-size:10px;color:var(--muted)">يبدأ من</div><div class="num" style="font-size:18px;color:var(--gold-light)">${e.from} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:10px;color:var(--muted)">ر.س</span></div></div></div>`;}
+/* ── دليل المزوّدات الكامل (نفس بيانات المتجر) للاستكشاف داخل التطبيق ── */
+const PROVIDERS=[
+  {type:'expert',n:'رهف العتيبي',role:'خبيرة مكياج',city:'جدة',rating:4.9,reviews:213,price:350,cat:'مكياج',tags:['عرائس','سهرات']},
+  {type:'expert',n:'لمياء الزهراني',role:'أخصائية بشرة',city:'الرياض',rating:5.0,reviews:98,price:280,cat:'بشرة',tags:['هيدرافيشل']},
+  {type:'expert',n:'نورة القحطاني',role:'مصففة شعر',city:'جازان',rating:4.8,reviews:156,price:220,cat:'شعر',tags:['تسريحات','صبغات']},
+  {type:'expert',n:'دانة الشهري',role:'خبيرة مكياج',city:'الرياض',rating:4.7,reviews:187,price:420,cat:'مكياج',tags:['ناعم','خليجي']},
+  {type:'expert',n:'جواهر الدوسري',role:'فنانة أظافر',city:'جدة',rating:4.9,reviews:142,price:160,cat:'أظافر',tags:['جل','رسم فني']},
+  {type:'expert',n:'سارة الغامدي',role:'مصورة بورتريه',city:'مكة',rating:4.8,reviews:76,price:600,cat:'تصوير',tags:['نسائي','مناسبات']},
+  {type:'expert',n:'ريم العنزي',role:'فنية رموش',city:'الدمام',rating:5.0,reviews:121,price:190,cat:'رموش',tags:['كلاسيك','حجم روسي']},
+  {type:'expert',n:'وجدان الحربي',role:'خبيرة شعر',city:'جدة',rating:4.9,reviews:203,price:300,cat:'شعر',tags:['كيراتين','قص']},
+  {type:'expert',n:'أمل السبيعي',role:'خبيرة مكياج',city:'الدمام',rating:4.7,reviews:134,price:380,cat:'مكياج',tags:['سهرات','تخرّج']},
+  {type:'salon',n:'صالون لمسة',role:'صالون متكامل',city:'جدة · الشاطئ',rating:4.9,reviews:512,price:200,cat:'متكامل',branches:2,staff:4,tags:['مكياج','شعر','بشرة'],live:true},
+  {type:'salon',n:'مركز إشراقة',role:'مركز عناية بالبشرة',city:'الرياض · العليا',rating:4.8,reviews:389,price:280,cat:'بشرة',branches:1,staff:6,tags:['ليزر','هيدرافيشل']},
+  {type:'salon',n:'صالون رؤى',role:'صالون نسائي شامل',city:'جدة · الروضة',rating:4.9,reviews:431,price:220,cat:'متكامل',branches:3,staff:9,tags:['عرائس','سبا']},
+  {type:'salon',n:'مركز لازوردي',role:'سبا ومركز تجميل',city:'الرياض',rating:5.0,reviews:178,price:350,cat:'سبا',branches:2,staff:7,tags:['مساج','عناية']},
+  {type:'salon',n:'استوديو نون',role:'صالون شعر ومكياج',city:'الدمام',rating:4.7,reviews:264,price:180,cat:'شعر',branches:1,staff:5,tags:['صبغات','تسريحات']},
+  {type:'salon',n:'الجوهرة سبأ',role:'صالون نسائي متكامل',city:'جازان · صبيا',rating:4.8,reviews:87,price:150,cat:'متكامل',branches:2,staff:5,tags:['مكياج','شعر','عرائس'],offer:{pct:30,occ:'التخرج'}},
+  {type:'salon',n:'صالون ضي',role:'صالون أظافر وعناية',city:'مكة',rating:4.6,reviews:142,price:150,cat:'أظافر',branches:1,staff:3,tags:['منيكير','تركيب']},
+];
+function providerURL(p){
+  if(p.type==='salon')return p.live?'booking.html':'experience.html?name='+encodeURIComponent(p.n)+'&type=salon&role='+encodeURIComponent('صالون · '+p.cat)+'&city='+encodeURIComponent(p.city);
+  return 'experience.html?name='+encodeURIComponent(p.n)+'&role='+encodeURIComponent(p.role)+'&city='+encodeURIComponent(p.city.split('·')[0].trim());
+}
+
 /* ── الحجز من تطبيق العميلة: روابط حجز فعلية للصوالين والخبيرات ── */
 const BOOK_SALONS=[
   {n:'صالون لمسة',role:'صالون متكامل',city:'جدة · الشاطئ',live:true},
@@ -156,7 +181,58 @@ function expertBookURL(e){
 function waLink(msg){return 'https://wa.me/966501234567?text='+encodeURIComponent(msg);}
 function waBtn(msg,label){return `<a href="${waLink(msg)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#06351c;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:13px;border-radius:9px;padding:11px;text-decoration:none;margin-top:12px">${icon('whatsapp',16)} ${label||'تواصل عبر واتساب'}</a>`;}
 
+/* ── استكشفي: دليل كامل بالفلاتر داخل التطبيق (نفس الموقع) ── */
+function exFiltered(){
+  return PROVIDERS.filter(p=>
+    (CLI.ftype==='all'||p.type===CLI.ftype)&&
+    (CLI.fcat==='all'||p.cat===CLI.fcat)&&
+    (CLI.fcity==='all'||p.city.startsWith(CLI.fcity))&&
+    (!CLI.q||(p.n+' '+p.role+' '+p.city+' '+(p.tags||[]).join(' ')).includes(CLI.q)));
+}
+function exCard(p){
+  const isS=p.type==='salon';
+  const eff=p.offer?Math.round(p.price*(100-p.offer.pct)/100):p.price;
+  return `<div class="card" style="margin-bottom:11px">
+    <div style="display:flex;align-items:center;gap:12px">
+      ${av(p.n.replace('صالون ','').replace('مركز ','').replace('استوديو ',''),46,18)}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:14.5px;color:var(--white);font-weight:600">${p.n}</span>
+          ${p.offer?`<span style="font-size:9px;color:#fff;background:linear-gradient(120deg,#d98a93,#b25a6c);border-radius:12px;padding:2px 8px">🎓 خصم ${p.offer.pct}%</span>`:''}
+          <span class="badge ${isS?'blue':'gold'}" style="font-size:9px">${isS?'⬢ صالون':'◆ خبيرة'}</span></div>
+        <div style="font-size:11.5px;color:var(--gold-pale);margin-top:1px">${p.role} · ⌖ ${p.city}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:5px;font-size:11px;color:var(--cream)">${stars(Math.round(p.rating),11)} ${p.rating} (${p.reviews})${isS?` · ⬢ ${p.branches} ${p.branches===1?'فرع':'فروع'} · ● ${p.staff} خبيرات`:''}</div>
+        <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">${(p.tags||[]).map(t=>`<span style="font-size:9.5px;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:2px 8px">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px solid var(--line-soft)">
+      <div><span style="font-size:10px;color:var(--muted)">${isS?'خدمات تبدأ من':'يبدأ من'}</span>
+        <span class="num" style="font-size:18px;color:var(--gold-light);margin-right:5px">${p.offer?`<s style="opacity:.45;font-size:12px">${p.price}</s> `:''}${eff}</span>
+        <span style="font-size:10px;color:var(--muted)">ر.س</span></div>
+      <a class="gbtn" style="width:auto;padding:8px 18px;font-size:12px;text-decoration:none;display:inline-block" href="${providerURL(p)}" target="_blank" rel="noopener">احجزي ←</a>
+    </div>
+  </div>`;
+}
+function exChips(list,cur,key){
+  return `<div style="display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;margin-top:8px">
+    ${list.map(([v,l])=>`<button onclick="CLI.exf('${key}','${v}')" style="flex:0 0 auto;font-family:inherit;font-size:11.5px;padding:7px 14px;border-radius:20px;cursor:pointer;
+      border:1px solid ${cur===v?'var(--gold-light)':'var(--line)'};
+      background:${cur===v?'linear-gradient(120deg,#dbbd81,#9c8047)':'var(--surface)'};
+      color:${cur===v?'#131217':'var(--cream)'};font-weight:${cur===v?'700':'400'}">${l}</button>`).join('')}</div>`;
+}
+
 const SCREENS={
+  explore(){
+    const P=exFiltered();
+    return `
+    <div class="greet" style="padding-bottom:4px"><div class="h" style="font-size:21px">استكشفي</div>
+      <div class="s"><span id="exCount">${P.length}</span> مزوّدة موثّقة — فلترة كالموقع تماماً</div></div>
+    <input value="${CLI.q.replace(/"/g,'&quot;')}" oninput="CLI.exq(this.value)" placeholder="⌕ ابحثي عن خبيرة، صالون، خدمة…"
+      style="width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none;margin-top:10px"/>
+    ${exChips([['all','الكل'],['expert','خبيرات مستقلات'],['salon','صوالين']],CLI.ftype,'ftype')}
+    ${exChips([['all','كل التخصصات'],['مكياج','مكياج'],['بشرة','بشرة'],['شعر','شعر'],['أظافر','أظافر'],['رموش','رموش'],['تصوير','تصوير'],['متكامل','متكامل'],['سبا','سبا']],CLI.fcat,'fcat')}
+    ${exChips([['all','كل المدن'],['جدة','جدة'],['الرياض','الرياض'],['جازان','جازان'],['مكة','مكة'],['الدمام','الدمام']],CLI.fcity,'fcity')}
+    <div id="exList" style="margin-top:12px">${P.map(exCard).join('')||'<div style="text-align:center;color:var(--muted);font-size:13px;padding:30px 0">لا نتائج مطابقة — جرّبي تعديل الفلاتر ⌕</div>'}</div>`;
+  },
   home(){return `
   <div class="greet"><div class="h">مرحباً، <span class="w">سارة</span> ✦</div><div class="s">لديكِ موعد قادم بعد يومين.</div></div>
 
@@ -188,7 +264,7 @@ const SCREENS={
   <div class="seclab"><span class="t">خبيراتكِ المفضلة</span><span class="m" onclick="CLI.go('favs')">الكل</span></div>
   ${FAVS.slice(0,2).map(expertCard).join('')}
 
-  <div class="seclab"><span class="t">مقترحة لكِ</span><span class="m">اكتشفي</span></div>
+  <div class="seclab"><span class="t">مقترحة لكِ</span><span class="m" onclick="CLI.go('explore')">اكتشفي الكل</span></div>
   ${RECO.map(expertCard).join('')}
   `;},
 
@@ -232,10 +308,18 @@ const SCREENS={
   `;},
 };
 
-const TABS=[['home','الرئيسية','home'],['bookings','حجوزاتي','cal'],['favs','المفضلة','heart'],['account','حسابي','user']];
-const TABOF={home:'home',bookings:'bookings',favs:'favs',account:'account'};
+const TABS=[['home','الرئيسية','home'],['explore','استكشفي','search'],['bookings','حجوزاتي','cal'],['favs','المفضلة','heart'],['account','حسابي','user']];
+const TABOF={home:'home',explore:'explore',bookings:'bookings',favs:'favs',account:'account'};
 const CLI={
   tab:'home',
+  q:'',ftype:'all',fcat:'all',fcity:'all',
+  exf(k,v){this[k]=v;this.go('explore');},
+  exq(v){this.q=v.trim();
+    const L=document.getElementById('exList'),C=document.getElementById('exCount');
+    const P=exFiltered();
+    if(L)L.innerHTML=P.map(exCard).join('')||'<div style="text-align:center;color:var(--muted);font-size:13px;padding:30px 0">لا نتائج مطابقة ⌕</div>';
+    if(C)C.textContent=P.length;
+  },
   go(t){
     this.tab=t; try{localStorage.setItem('luma_cli_tab',t);}catch(e){}
     const v=document.getElementById('view');
