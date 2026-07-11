@@ -35,9 +35,15 @@
   .gal-lb img,.gal-lb video{max-width:94vw;max-height:82vh;border-radius:14px}
   .gal-lb iframe{width:min(94vw,760px);aspect-ratio:16/9;border:none;border-radius:14px}
   .gal-lb .gx{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:17px;cursor:pointer}
-  .wbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:10px;background:var(--ac);color:var(--bg);padding:10px 16px;font-size:12.5px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25)}
-  .wbar .wt{flex:1;text-align:center;line-height:1.7}
-  .wbar .wx{border:none;background:rgba(0,0,0,.16);color:inherit;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px;flex-shrink:0;line-height:1}
+  .wpop{position:fixed;inset:0;z-index:70;background:rgba(8,6,10,.66);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .25s}
+  .wpop.show{opacity:1}
+  .wpop .wcard{position:relative;width:360px;max-width:92vw;background:var(--card);color:var(--tx);border:1px solid color-mix(in srgb,var(--ac) 40%,transparent);border-radius:calc(var(--rad,16px) + 6px);padding:34px 26px 26px;text-align:center;box-shadow:0 34px 90px rgba(0,0,0,.55);transform:translateY(14px) scale(.97);transition:transform .3s cubic-bezier(.2,1.4,.4,1)}
+  .wpop.show .wcard{transform:none}
+  .wpop .wx{position:absolute;top:12px;left:12px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(128,128,128,.18);color:var(--tx);cursor:pointer;font-size:12px;line-height:1}
+  .wpop .wlogo{width:56px;height:56px;border-radius:16px;border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:25px;margin:0 auto 12px}
+  .wpop .wsalon{font-size:11px;color:var(--ac);font-weight:700;letter-spacing:.04em;margin-bottom:8px}
+  .wpop .wmsg{font-size:15.5px;font-weight:600;line-height:2;color:var(--tx)}
+  .wpop .wok{width:100%;margin-top:20px;border:none;border-radius:calc(var(--rad,16px) - 2px);padding:13px;background:var(--ac);color:var(--bg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
   .feat{display:inline-block;font-size:9.5px;font-weight:700;color:var(--bg);background:var(--ac);border-radius:20px;padding:2px 9px;margin-bottom:5px}
   .mapc{background:var(--card);border:1px solid rgba(128,128,128,.18);border-radius:var(--rad,16px);padding:15px 16px;margin-top:20px}
   .mapc .mt{font-size:12px;color:var(--ac);font-weight:700;margin-bottom:10px}
@@ -136,13 +142,25 @@ if(FK&&(CFG.font||'plex')!=='plex'){
   document.body.style.fontFamily=FK[0];
 }
 
-/* ═══ شريط رسالة الترحيب — اختياري، يُغلق لبقية الجلسة ═══ */
+/* ═══ رسالة الترحيب — نافذة منبثقة أول ما تُفتح الصفحة، تُغلق لبقية الجلسة ═══ */
 if(CFG.welcome&&String(CFG.welcome).trim()&&!(()=>{try{return sessionStorage.getItem('luma_wb_x');}catch(e){return null;}})()){
-  const wb=document.createElement('div');wb.className='wbar';
-  wb.innerHTML='<span class="wt"></span><button class="wx" aria-label="إغلاق">✕</button>';
-  wb.querySelector('.wt').textContent=CFG.welcome;
-  wb.querySelector('.wx').onclick=()=>{try{sessionStorage.setItem('luma_wb_x','1');}catch(e){}wb.remove();};
-  document.body.prepend(wb);
+  const wp=document.createElement('div');wp.className='wpop';
+  wp.innerHTML=`<div class="wcard" role="dialog" aria-label="رسالة ترحيب">
+    <button class="wx" aria-label="إغلاق">✕</button>
+    <div class="wlogo"></div>
+    <div class="wsalon"></div>
+    <div class="wmsg"></div>
+    <button class="wok">حسناً، أكملي 🌸</button>
+  </div>`;
+  wp.querySelector('.wlogo').textContent=String(CFG.title||'L').replace('صالون ','').charAt(0);
+  wp.querySelector('.wsalon').textContent=CFG.title||'';
+  wp.querySelector('.wmsg').textContent=CFG.welcome;
+  const closeWp=()=>{try{sessionStorage.setItem('luma_wb_x','1');}catch(e){}wp.classList.remove('show');setTimeout(()=>wp.remove(),250);};
+  wp.querySelector('.wx').onclick=closeWp;
+  wp.querySelector('.wok').onclick=closeWp;
+  wp.addEventListener('click',e=>{if(e.target===wp)closeWp();});
+  document.body.appendChild(wp);
+  requestAnimationFrame(()=>wp.classList.add('show'));
 }
 
 /* ═══ بيانات الصالون: الخدمات من الكتالوج الحي (تديره المالكة من شاشة «الخدمات») ═══ */
