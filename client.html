@@ -192,46 +192,70 @@ function exFiltered(){
 function exCard(p){
   const isS=p.type==='salon';
   const eff=p.offer?Math.round(p.price*(100-p.offer.pct)/100):p.price;
-  return `<div class="card" style="margin-bottom:11px">
+  return `<div class="card" style="margin-bottom:11px;padding:14px">
     <div style="display:flex;align-items:center;gap:12px">
       ${av(p.n.replace('صالون ','').replace('مركز ','').replace('استوديو ',''),46,18)}
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:14.5px;color:var(--white);font-weight:600">${p.n}</span>
-          ${p.offer?`<span style="font-size:9px;color:#fff;background:linear-gradient(120deg,#d98a93,#b25a6c);border-radius:12px;padding:2px 8px">🎓 خصم ${p.offer.pct}%</span>`:''}
-          <span class="badge ${isS?'blue':'gold'}" style="font-size:9px">${isS?'⬢ صالون':'◆ خبيرة'}</span></div>
-        <div style="font-size:11.5px;color:var(--gold-pale);margin-top:1px">${p.role} · ⌖ ${p.city}</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:5px;font-size:11px;color:var(--cream)">${stars(Math.round(p.rating),11)} ${p.rating} (${p.reviews})${isS?` · ⬢ ${p.branches} ${p.branches===1?'فرع':'فروع'} · ● ${p.staff} خبيرات`:''}</div>
-        <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">${(p.tags||[]).map(t=>`<span style="font-size:9.5px;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:2px 8px">${t}</span>`).join('')}</div>
+          <span class="badge ${isS?'blue':'gold'}" style="font-size:9px">${isS?'صالون':'خبيرة'}</span>
+          ${p.offer?`<span style="font-size:9px;color:#fff;background:linear-gradient(120deg,#d98a93,#b25a6c);border-radius:12px;padding:2px 8px">🎓 خصم ${p.offer.pct}%</span>`:''}</div>
+        <div style="font-size:11.5px;color:var(--gold-pale);margin-top:2px">${p.role} · ⌖ ${p.city}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;font-size:11px;color:var(--cream)">${stars(Math.round(p.rating),11)} <b>${p.rating}</b> <span style="color:var(--muted)">(${p.reviews})</span>${isS?`<span style="color:var(--muted)">· ${p.branches} ${p.branches===1?'فرع':'فروع'} · ${p.staff} خبيرات</span>`:''}</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px solid var(--line-soft)">
-      <div><span style="font-size:10px;color:var(--muted)">${isS?'خدمات تبدأ من':'يبدأ من'}</span>
-        <span class="num" style="font-size:18px;color:var(--gold-light);margin-right:5px">${p.offer?`<s style="opacity:.45;font-size:12px">${p.price}</s> `:''}${eff}</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--line-soft)">
+      <div style="display:flex;align-items:baseline;gap:5px"><span style="font-size:10px;color:var(--muted)">يبدأ من</span>
+        <span class="num" style="font-size:18px;color:var(--gold-light)">${p.offer?`<s style="opacity:.45;font-size:12px">${p.price}</s> `:''}${eff}</span>
         <span style="font-size:10px;color:var(--muted)">ر.س</span></div>
-      <a class="gbtn" style="width:auto;padding:8px 18px;font-size:12px;text-decoration:none;display:inline-block" href="${providerURL(p)}" target="_blank" rel="noopener">احجزي ←</a>
+      <a class="gbtn" style="width:auto;padding:9px 22px;font-size:12.5px;text-decoration:none;display:inline-block" href="${providerURL(p)}" target="_blank" rel="noopener">احجزي ←</a>
     </div>
   </div>`;
 }
-function exChips(list,cur,key){
-  return `<div style="display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;margin-top:8px">
-    ${list.map(([v,l])=>`<button onclick="CLI.exf('${key}','${v}')" style="flex:0 0 auto;font-family:inherit;font-size:11.5px;padding:7px 14px;border-radius:20px;cursor:pointer;
-      border:1px solid ${cur===v?'var(--gold-light)':'var(--line)'};
-      background:${cur===v?'linear-gradient(120deg,#dbbd81,#9c8047)':'var(--surface)'};
-      color:${cur===v?'#131217':'var(--cream)'};font-weight:${cur===v?'700':'400'}">${l}</button>`).join('')}</div>`;
+/* مبدّل النوع — ثلاثة أزرار متساوية واضحة */
+function exSeg(){
+  return `<div style="display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-top:10px">
+    ${[['all','الكل'],['expert','خبيرات'],['salon','صوالين']].map(([v,l])=>`<button onclick="CLI.exf('ftype','${v}')" style="flex:1;font-family:inherit;font-size:12.5px;padding:9px 0;border-radius:9px;border:none;cursor:pointer;transition:background .2s;${CLI.ftype===v?'background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-weight:700':'background:transparent;color:var(--cream)'}">${l}</button>`).join('')}</div>`;
+}
+/* شريط الفلاتر — زر واحد يفتح اللوحة + وسوم الفلاتر النشطة قابلة للإزالة */
+const EX_CATS=[['مكياج','مكياج'],['بشرة','بشرة'],['شعر','شعر'],['أظافر','أظافر'],['رموش','رموش'],['تصوير','تصوير'],['متكامل','متكامل'],['سبا','سبا']];
+const EX_CITIES=[['جدة','جدة'],['الرياض','الرياض'],['جازان','جازان'],['مكة','مكة'],['الدمام','الدمام']];
+function exFilterBar(){
+  const pills=[];
+  if(CLI.fcat!=='all')pills.push(['fcat',CLI.fcat]);
+  if(CLI.fcity!=='all')pills.push(['fcity',CLI.fcity]);
+  return `<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px">
+    <button onclick="CLI.exSheet()" style="display:flex;align-items:center;gap:6px;font-family:inherit;font-size:12px;padding:8px 15px;border-radius:20px;cursor:pointer;border:1px solid ${pills.length?'var(--gold-light)':'var(--line)'};background:var(--surface);color:${pills.length?'var(--gold-light)':'var(--cream)'};font-weight:${pills.length?'700':'400'}">⚙ فلترة${pills.length?` · ${pills.length}`:''}</button>
+    ${pills.map(([k,v])=>`<button onclick="CLI.exf('${k}','all')" style="font-family:inherit;font-size:11.5px;padding:8px 13px;border-radius:20px;cursor:pointer;border:1px solid var(--gold-deep);background:rgba(219,189,129,.12);color:var(--gold-light)">${v} ✕</button>`).join('')}
+    ${pills.length?`<button onclick="CLI.fcat='all';CLI.fcity='all';CLI.go('explore')" style="font-family:inherit;font-size:11.5px;padding:8px 4px;border:none;background:none;cursor:pointer;color:var(--muted);text-decoration:underline">مسح</button>`:''}
+  </div>`;
+}
+/* لوحة الفلاتر السفلية — التخصص والمدينة في مكان واحد */
+function exSheetBody(){
+  const n=exFiltered().length;
+  const chip=(k,v,l)=>`<button onclick="CLI.exs('${k}','${v}')" style="font-family:inherit;font-size:12px;padding:9px 16px;border-radius:20px;cursor:pointer;border:1px solid ${CLI[k]===v?'var(--gold-light)':'var(--line)'};background:${CLI[k]===v?'linear-gradient(120deg,#dbbd81,#9c8047)':'var(--bg,#131217)'};color:${CLI[k]===v?'#131217':'var(--cream)'};font-weight:${CLI[k]===v?'700':'400'}">${l}</button>`;
+  return `<div class="bk-grab"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:16.5px;color:var(--white);font-weight:700">الفلاتر</div>
+      <button onclick="CLI.exClear()" style="font-family:inherit;font-size:11.5px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline">مسح الكل</button></div>
+    <div class="seclab" style="margin-top:12px"><span class="t">التخصص</span></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">${[['all','كل التخصصات'],...EX_CATS].map(([v,l])=>chip('fcat',v,l)).join('')}</div>
+    <div class="seclab" style="margin-top:14px"><span class="t">المدينة</span></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">${[['all','كل المدن'],...EX_CITIES].map(([v,l])=>chip('fcity',v,l)).join('')}</div>
+    <button class="gbtn" style="margin-top:18px" onclick="CLI.exApply()">عرض النتائج (${n})</button>`;
 }
 
 const SCREENS={
   explore(){
     const P=exFiltered();
     return `
-    <div class="greet" style="padding-bottom:4px"><div class="h" style="font-size:21px">استكشفي</div>
-      <div class="s"><span id="exCount">${P.length}</span> مزوّدة موثّقة — فلترة كالموقع تماماً</div></div>
+    <div class="greet" style="padding-bottom:4px;display:flex;align-items:center;justify-content:space-between">
+      <div class="h" style="font-size:21px">استكشفي</div>
+      <span style="font-size:11.5px;color:var(--gold-pale);background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:5px 12px"><b id="exCount" class="num" style="color:var(--gold-light)">${P.length}</b> نتيجة</span></div>
     <input value="${CLI.q.replace(/"/g,'&quot;')}" oninput="CLI.exq(this.value)" placeholder="⌕ ابحثي عن خبيرة، صالون، خدمة…"
-      style="width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none;margin-top:10px"/>
-    ${exChips([['all','الكل'],['expert','خبيرات مستقلات'],['salon','صوالين']],CLI.ftype,'ftype')}
-    ${exChips([['all','كل التخصصات'],['مكياج','مكياج'],['بشرة','بشرة'],['شعر','شعر'],['أظافر','أظافر'],['رموش','رموش'],['تصوير','تصوير'],['متكامل','متكامل'],['سبا','سبا']],CLI.fcat,'fcat')}
-    ${exChips([['all','كل المدن'],['جدة','جدة'],['الرياض','الرياض'],['جازان','جازان'],['مكة','مكة'],['الدمام','الدمام']],CLI.fcity,'fcity')}
-    <div id="exList" style="margin-top:12px">${P.map(exCard).join('')||'<div style="text-align:center;color:var(--muted);font-size:13px;padding:30px 0">لا نتائج مطابقة — جرّبي تعديل الفلاتر ⌕</div>'}</div>`;
+      style="width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none;margin-top:8px"/>
+    ${exSeg()}
+    ${exFilterBar()}
+    <div id="exList" style="margin-top:12px">${P.map(exCard).join('')||'<div style="text-align:center;color:var(--muted);font-size:13px;padding:34px 0">لا نتائج مطابقة<br><button onclick="CLI.exReset()" style="font-family:inherit;font-size:12px;color:var(--gold-light);background:none;border:1px solid var(--gold-deep);border-radius:20px;padding:7px 18px;cursor:pointer;margin-top:12px">مسح الفلاتر</button></div>'}</div>`;
   },
   home(){return `
   <div class="greet"><div class="h">مرحباً، <span class="w">سارة</span> ✦</div><div class="s">لديكِ موعد قادم بعد يومين.</div></div>
@@ -314,6 +338,30 @@ const CLI={
   tab:'home',
   q:'',ftype:'all',fcat:'all',fcity:'all',
   exf(k,v){this[k]=v;this.go('explore');},
+  exReset(){this.fcat='all';this.fcity='all';this.ftype='all';this.q='';this.go('explore');},
+  /* لوحة الفلاتر السفلية */
+  exSheet(){
+    const scr=document.querySelector('.scr');
+    const old=scr.querySelector('.bk-sheet-bg');if(old)old.remove();
+    const bg=document.createElement('div');bg.className='bk-sheet-bg';
+    bg.innerHTML=`<style>
+      .bk-sheet-bg{position:absolute;inset:0;z-index:60;background:rgba(8,6,10,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-end;opacity:0;transition:opacity .25s}
+      .bk-sheet-bg.show{opacity:1}
+      .bk-sheet{width:100%;max-height:78%;background:var(--surface);border:1px solid var(--line);border-bottom:none;border-radius:24px 24px 0 0;padding:14px 18px 20px;overflow-y:auto;transform:translateY(40px);transition:transform .3s cubic-bezier(.2,1.2,.4,1)}
+      .bk-sheet-bg.show .bk-sheet{transform:none}
+      .bk-grab{width:44px;height:4px;border-radius:4px;background:var(--line);margin:0 auto 14px}
+    </style><div class="bk-sheet" id="exSheetIn">${exSheetBody()}</div>`;
+    bg.addEventListener('click',e=>{if(e.target===bg)CLI.exApply();});
+    scr.appendChild(bg);
+    requestAnimationFrame(()=>bg.classList.add('show'));
+  },
+  exs(k,v){this[k]=v;const s=document.getElementById('exSheetIn');if(s)s.innerHTML=exSheetBody();},
+  exClear(){this.fcat='all';this.fcity='all';const s=document.getElementById('exSheetIn');if(s)s.innerHTML=exSheetBody();},
+  exApply(){
+    const bg=document.querySelector('.bk-sheet-bg');
+    if(bg){bg.classList.remove('show');setTimeout(()=>bg.remove(),250);}
+    this.go('explore');
+  },
   exq(v){this.q=v.trim();
     const L=document.getElementById('exList'),C=document.getElementById('exCount');
     const P=exFiltered();

@@ -144,19 +144,27 @@ test('تطبيق العميلة: تبويب استكشفي بالتفاصيل و
   await expect(jaw).toContainText('خصم 30%');
   await expect(jaw).toContainText('105');
   expect(await jaw.locator('a').getAttribute('href')).toContain('experience.html');
-  // فلتر النوع: صوالين فقط
+  // فلتر النوع: صوالين فقط (مبدّل مقسّم)
   await page.click('button:has-text("صوالين")');
   await page.waitForTimeout(400);
   await expect(page.locator('#exCount')).toHaveText('7');
-  // فلتر المدينة: جازان
-  await page.click('button:has-text("جازان")');
+  // فلتر المدينة: جازان — من لوحة الفلاتر السفلية
+  await page.click('button:has-text("فلترة")');
+  await page.waitForTimeout(400);
+  await page.click('#exSheetIn button:has-text("جازان")');
+  await page.waitForTimeout(250);
+  await expect(page.locator('#exSheetIn button:has-text("عرض النتائج")')).toContainText('(1)');
+  await page.click('#exSheetIn button:has-text("عرض النتائج")');
   await page.waitForTimeout(400);
   await expect(page.locator('#exCount')).toHaveText('1');
-  // البحث الحي (بعد تصفير الفلاتر)
+  // وسم الفلتر النشط ظاهر بالشريط ويمكن إزالته
+  await expect(page.locator('button:has-text("جازان ✕")')).toBeVisible();
+  // البحث الحي (بعد تصفير الفلاتر بزر مسح)
+  await page.click('button:has-text("مسح")');
+  await page.waitForTimeout(400);
+  await expect(page.locator('#exCount')).toHaveText('7');
   await page.click('button:has-text("الكل")');
   await page.waitForTimeout(300);
-  await page.click('button:has-text("كل المدن")');
-  await page.waitForTimeout(400);
   await page.fill('input[placeholder*="ابحثي"]', 'رهف');
   await page.waitForTimeout(300);
   await expect(page.locator('#exList .card')).toHaveCount(1);
