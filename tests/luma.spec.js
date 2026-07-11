@@ -81,6 +81,27 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('«من نحن» نافذة منبثقة اختيارية في صفحة الحجز', async ({ page }) => {
+  // بدون نص: لا زر
+  await page.goto('/booking.html');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.aboutBtn')).toHaveCount(0);
+  // كتابة «من نحن» من المحرر
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.fill('#aboutIn', 'بدأنا في 2019 برؤية بسيطة: جمالك يستحق مستوى آخر.\nطاقمنا خبيرات معتمدات بشهادات عالمية.');
+  await page.waitForTimeout(400);
+  // الزر يظهر والنافذة تعرض الفقرات
+  await page.goto('/booking.html');
+  await page.waitForTimeout(500);
+  await page.click('.aboutBtn');
+  await expect(page.locator('.wpop .wabout')).toContainText('بدأنا في 2019');
+  await expect(page.locator('.wpop .wabout')).toContainText('خبيرات معتمدات');
+  await page.click('.wpop .wok');
+  await page.waitForTimeout(400);
+  await expect(page.locator('.wpop')).toHaveCount(0);
+});
+
 test('موقعي بالخريطة: من المحرر إلى خريطة مدمجة في صفحة الحجز', async ({ page }) => {
   // بدون موقع: لا خريطة
   await page.goto('/booking.html');

@@ -53,6 +53,8 @@
   .policy .pt{font-size:12px;color:var(--ac);font-weight:700;margin-bottom:9px}
   .policy .pl{display:flex;gap:8px;font-size:11.8px;opacity:.78;line-height:2}
   .policy .pl span{color:var(--ac);font-size:8px;line-height:2.6}
+  .aboutBtn{margin-right:6px;border:1px solid color-mix(in srgb,var(--ac) 55%,transparent);background:color-mix(in srgb,var(--ac) 10%,transparent);color:var(--ac);border-radius:20px;padding:3px 12px;font-family:inherit;font-size:10.5px;font-weight:700;cursor:pointer;vertical-align:1px}
+  .wpop .wabout p:last-child{margin-bottom:0}
   .socs{display:flex;gap:9px;margin-top:11px}
   .soc{width:34px;height:34px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);color:var(--ac);display:flex;align-items:center;justify-content:center;transition:transform .15s,background .2s}
   .soc:hover{transform:translateY(-2px);background:color-mix(in srgb,var(--ac) 14%,transparent)}
@@ -248,11 +250,37 @@ function socialRow(){
     </a>`).join('')}</div>`;
 }
 
+/* ═══ «من نحن» — نافذة منبثقة عند الطلب، نصها من «صفحتي والرابط» ═══ */
+window.showAbout=()=>{
+  const txt=String(CFG.about||'').trim();if(!txt)return;
+  const ov=document.createElement('div');ov.className='wpop';
+  ov.innerHTML=`<div class="wcard" role="dialog" aria-label="من نحن">
+    <button class="wx" aria-label="إغلاق">✕</button>
+    <div class="wlogo"></div>
+    <div class="wsalon"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:10px">من نحن ✨</div>
+    <div class="wabout"></div>
+    <div style="font-size:11px;opacity:.55;margin-top:14px">${esc(CFG.address||'')}${CFG.phone?` · <bdo dir="ltr">${esc(CFG.phone)}</bdo>`:''}</div>
+    <button class="wok">إغلاق</button>
+  </div>`;
+  ov.querySelector('.wlogo').textContent=String(CFG.title||'L').replace('صالون ','').charAt(0);
+  ov.querySelector('.wsalon').textContent=CFG.title||'';
+  ov.querySelector('.wabout').innerHTML=txt.split('\n').map(l=>l.trim()).filter(Boolean)
+    .map(l=>`<p style="font-size:13.5px;line-height:2.1;opacity:.85;margin-bottom:8px;text-align:right">${esc(l)}</p>`).join('');
+  const close=()=>{ov.classList.remove('show');setTimeout(()=>ov.remove(),250);};
+  ov.querySelector('.wx').onclick=close;
+  ov.querySelector('.wok').onclick=close;
+  ov.addEventListener('click',e=>{if(e.target===ov)close();});
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>ov.classList.add('show'));
+};
+
 function header(){
   return `<div class="cover">${CFG.cover?`<img src="${CFG.cover}" alt=""/>`:''}
     <div class="logo">${CFG.logo?`<img src="${CFG.logo}" alt=""/>`:esc(CFG.title).charAt(0)}</div></div>
   <div class="head"><h1>${esc(CFG.title)}</h1><div class="bio">${esc(CFG.bio)}</div>
-    <div class="meta">${esc(CFG.address||'')} · <bdo dir="ltr">${esc(CFG.phone||'')}</bdo> · ★ 4.9 (512)</div>
+    <div class="meta">${esc(CFG.address||'')} · <bdo dir="ltr">${esc(CFG.phone||'')}</bdo> · ★ 4.9 (512)
+      ${String(CFG.about||'').trim()?`<button class="aboutBtn" onclick="showAbout()">من نحن ✨</button>`:''}</div>
     ${socialRow()}</div>
   <div class="prog">${[1,2,3,4].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div>`;
 }
