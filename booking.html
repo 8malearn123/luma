@@ -65,6 +65,9 @@
   .cat{font-size:11.5px;color:var(--ac);font-weight:700;margin:16px 0 8px}
   .svc,.stf{width:100%;text-align:right;background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--rad,16px);padding:14px;margin-bottom:8px;color:var(--tx);font-family:inherit;cursor:pointer;transition:transform .12s,border-color .2s}
   .svc:active{transform:scale(.98)} .svc:hover,.stf:hover{border-color:var(--ac)}
+  .svc.sel{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 9%,var(--card))}
+  .svc .tick{width:22px;height:22px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ac) 55%,transparent);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  .svc.sel .tick{background:var(--ac)}
   .svc{display:flex;justify-content:space-between;align-items:center}
   .svc .n{font-size:13.5px;font-weight:600} .svc .d{font-size:10.5px;opacity:.5;margin-top:2px}
   .svc .p{color:var(--ac);font-weight:700;font-size:13.5px}
@@ -189,12 +192,21 @@ const SHIFTS=load('luma_hr_shifts',{});
 function shiftOf(sid,weekday){const s=(SHIFTS[sid]||{})[weekday];return s||((weekday===5)?{off:true}:{off:false,start:'10:00',end:'20:00'});}
 const BOOKED=load('luma_public_bookings',[]);
 
-/* ═══ حالة المعالج ═══ */
-let step=1,svc=null,staff=null,date='',time='';
+/* ═══ حالة المعالج — يمكن اختيار أكثر من خدمة في الحجز الواحد ═══ */
+let step=1,svcs=[],staff=null,date='',time='';
+/* إسناد لكل خدمة: {svcId: {staff, time}} + مؤشر الخدمة الجاري إسنادها */
+let assigns={},curIdx=0,curStaff=null;
+const assignedList=()=>selSvcs().map(x=>({svc:x,a:assigns[x.id]})).filter(r=>r.a);
+/* اليوم معطّل إن كانت كل الأخصائيات خارج الدوام أو في إجازة */
+const dayAllOff=d=>STAFF.every(x=>shiftOf(x.id,d.wd).off||onLeave(x.id,d.iso));
+const selSvcs=()=>svcs.map(id=>SERVICES.find(x=>x.id===id)).filter(Boolean);
+const selTotal=()=>selSvcs().reduce((t,s)=>t+s.p,0);
+const selDur=()=>selSvcs().reduce((t,s)=>t+s.d,0);
+const selName=()=>selSvcs().map(s=>s.n).join(' + ');
 /* ── كوبونات الخصم — تُدار من لوحة الصالون (برنامج الولاء) ── */
 let coupon=null,cpnMsg='';
 const COUPONS=()=>load('luma_coupons',[{code:'LUMA10',type:'percent',value:10,active:true}]);
-const discount=()=>!coupon?0:coupon.type==='percent'?Math.round(svc.p*coupon.value/100):Math.min(coupon.value,svc.p);
+const discount=()=>!coupon?0:coupon.type==='percent'?Math.round(selTotal()*coupon.value/100):Math.min(coupon.value,selTotal());
 window.applyCoupon=()=>{
   const code=(document.getElementById('cpn').value||'').trim().toUpperCase();
   const c=COUPONS().find(x=>x.active&&x.code.toUpperCase()===code);
@@ -340,50 +352,69 @@ function render(){
   if(step===5){
     app.innerHTML=header()+`<div class="success">
       <div class="ok">✓</div><h1 style="margin-top:18px">تم تأكيد حجزك 🎉</h1>
-      <p style="font-size:13px;opacity:.7;margin-top:8px">${esc(svc.n)} · مع ${esc(staff.n)}<br>${date} · <bdo dir="ltr">${time}</bdo></p>
-      <div class="wa"><span class="ic">💬</span><div><b>واتساب · ${esc(CFG.title)}</b><br>أهلاً 🌸 حجزك مؤكد يوم ${date} الساعة <bdo dir="ltr">${time}</bdo>. نراكِ قريباً!</div></div>
+      <p style="font-size:13px;opacity:.7;margin-top:8px">${esc(selName())} · مع ${esc([...new Set(assignedList().map(r=>(STAFF.find(z=>z.id===r.a.staff)||{}).n))].join(' و'))}<br>${date} · <bdo dir="ltr">${(assignedList()[0]||{a:{}}).a.time||''}</bdo></p>
+      <div class="wa"><span class="ic">💬</span><div><b>واتساب · ${esc(CFG.title)}</b><br>أهلاً 🌸 حجزك مؤكد يوم ${date} الساعة <bdo dir="ltr">${(assignedList()[0]||{a:{}}).a.time||''}</bdo>. نراكِ قريباً!</div></div>
       <button class="btn ghost" onclick="restart()">حجز موعد آخر</button></div>`;
     window.scrollTo({top:0});return;
   }
   let s='';
   if(step===1){
-    s=gallery()+`<h1 style="font-size:18px">اختاري خدمتك</h1>`+CATS.map(([k,ar])=>{
+    s=gallery()+`<h1 style="font-size:18px">اختاري خدمتك <span style="font-size:11px;opacity:.55;font-weight:400">— تقدرين تختارين أكثر من خدمة</span></h1>`+CATS.map(([k,ar])=>{
       const list=SERVICES.filter(x=>x.cat===k);if(!list.length)return'';
-      return `<div class="cat">${ar}</div>`+list.map(x=>`<button class="svc" onclick="pickSvc(${x.id})">
-        <span>${FEAT[x.n]?`<span class="feat">⭐ ${esc(FEAT[x.n])}</span>`:''}<span class="n">${x.n}</span><div class="d">${x.d} دقيقة</div></span><span class="p">${x.p} ر.س</span></button>`).join('');
-    }).join('')+mapCard()+policyBox();
+      return `<div class="cat">${ar}</div>`+list.map(x=>`<button class="svc ${svcs.includes(x.id)?'sel':''}" onclick="pickSvc(${x.id})">
+        <span>${FEAT[x.n]?`<span class="feat">⭐ ${esc(FEAT[x.n])}</span>`:''}<span class="n">${x.n}</span><div class="d">${x.d} دقيقة</div></span>
+        <span style="display:flex;align-items:center;gap:10px"><span class="p">${x.p} ر.س</span><span class="tick">${svcs.includes(x.id)?'✓':''}</span></span></button>`).join('');
+    }).join('')
+    +(selSvcs().length?`<button class="btn" onclick="go(2)">متابعة — ${selSvcs().length>1?selSvcs().length+' خدمات':'خدمة واحدة'} · ${selTotal()} ر.س · ${selDur()} دقيقة</button>`:'')
+    +mapCard()+policyBox();
   }
   if(step===2){
-    const iso=date||days[0].iso;
-    s=back('اختاري الأخصائية',1)+`<div class="grid2">`+STAFF.map(x=>{
-      const lv=onLeave(x.id,iso);
-      return `<button class="stf ${lv?'leave':''} ${staff&&staff.id===x.id?'sel':''}" onclick="pickStaff('${x.id}')">
-        <span class="av">${x.n.charAt(0)}</span><span class="nm">${x.n}</span><div class="rl">${x.role}</div>
-        ${lv?'<div class="lv">في إجازة معتمدة</div>':''}</button>`;}).join('')+`</div><div id="reroute"></div>`;
+    s=back('اختاري تاريخ الزيارة',1)+`<div class="days">`+days.map((d,i)=>{
+      const off=dayAllOff(d);
+      return `<button class="day ${date===d.iso?'sel':''}" ${off?'disabled':''} onclick="pickDate(${i})">
+        <div class="lb">${d.lb}</div><div class="dt">${d.dt}</div>${off?'<div class="lv">مغلق</div>':''}</button>`;}).join('')+`</div>
+      <button class="btn" ${date?'':'disabled'} onclick="startAssign()">متابعة — اختيار الخبيرة والوقت لكل خدمة</button>`;
   }
   if(step===3){
-    s=back('التاريخ والوقت',2)+`<div class="days">`+days.map((d,i)=>{
-      const lv=onLeave(staff.id,d.iso);
-      return `<button class="day ${date===d.iso?'sel':''}" ${lv?'disabled':''} onclick="pickDate(${i})">
-        <div class="lb">${d.lb}</div><div class="dt">${d.dt}</div>${lv?'<div class="lv">إجازة</div>':''}</button>`;}).join('')+`</div>`;
-    if(date){
+    const list=selSvcs();const cur=list[curIdx];
+    s=back('الخبيرة والوقت لكل خدمة',2)
+      +`<div style="font-size:12px;opacity:.6;margin-bottom:10px">زيارة ${date} — لكل خدمة اختاري الخبيرة ثم وقتها المتاح.</div>`
+      +list.map((x,i)=>{
+        const a=assigns[x.id];const on=i===curIdx;
+        const st=a?STAFF.find(z=>z.id===a.staff):null;
+        return `<div style="display:flex;align-items:center;gap:9px;border:1px solid ${on?'var(--ac)':'rgba(128,128,128,.2)'};border-radius:12px;padding:9px 13px;margin-bottom:7px;${a?'opacity:.85':''}">
+          <span style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;${a?'background:var(--ac);color:var(--bg)':'border:1px solid var(--ac);color:var(--ac)'}">${a?'✓':i+1}</span>
+          <span style="flex:1;font-size:12.5px;font-weight:600">${esc(x.n)}</span>
+          ${a?`<span style="font-size:11px;opacity:.75">${esc(st.n)} · <bdo dir="ltr">${a.time}</bdo></span><button onclick="redoAssign('${x.id}',${i})" style="background:none;border:none;color:var(--ac);font-family:inherit;font-size:10.5px;cursor:pointer;text-decoration:underline">تغيير</button>`:(on?'<span style="font-size:10.5px;color:var(--ac);font-weight:700">الآن ↓</span>':'')}
+        </div>`;}).join('');
+    if(cur){
       const day=days.find(d=>d.iso===date);
-      const sl=slotsFor(staff.id,day);
-      s+=sl.length?`<div class="slots">${sl.map(x=>`<button class="slot ${time===x.t?'sel':''}" ${x.taken?'disabled':''} onclick="pickTime('${x.t}')">${x.t}</button>`).join('')}</div>`
-        :`<div style="text-align:center;opacity:.55;font-size:13px;padding:18px">لا أوقات متاحة هذا اليوم</div>`;
+      s+=`<div class="cat" style="margin-top:14px">من تنفّذ «${esc(cur.n)}»؟</div><div class="grid2">`+STAFF.map(x=>{
+        const lv=onLeave(x.id,date)||shiftOf(x.id,day.wd).off;
+        return `<button class="stf ${lv?'leave':''} ${curStaff===x.id?'sel':''}" ${lv?'disabled':''} onclick="pickStaff('${x.id}')">
+          <span class="av">${x.n.charAt(0)}</span><span class="nm">${x.n}</span><div class="rl">${x.role}</div>
+          ${lv?'<div class="lv">غير متاحة اليوم</div>':''}</button>`;}).join('')+`</div>`;
+      if(curStaff){
+        const sl=slotsFor(curStaff,day).map(x=>({...x,taken:x.taken||Object.values(assigns).some(a=>a.staff===curStaff&&a.time===x.t)}));
+        s+=sl.length?`<div class="cat" style="margin-top:12px">الأوقات المتاحة</div><div class="slots">${sl.map(x=>`<button class="slot" ${x.taken?'disabled':''} onclick="pickTime('${x.t}')">${x.t}</button>`).join('')}</div>`
+          :`<div style="text-align:center;opacity:.55;font-size:13px;padding:18px">لا أوقات متاحة لها هذا اليوم — جرّبي خبيرة أخرى</div>`;
+      }else{
+        s+=`<div style="text-align:center;opacity:.5;font-size:12px;padding:12px">اختاري الخبيرة لعرض أوقاتها المتاحة</div>`;
+      }
+    }else{
+      s+=`<button class="btn" onclick="go(4)">متابعة للتأكيد</button>`;
     }
-    s+=`<button class="btn" ${!date||!time?'disabled':''} onclick="go(4)">متابعة</button>`;
   }
   if(step===4){
     s=back('تأكيد الموعد',3)+`<div class="ticket">
-      <div class="th"><div class="k">تذكرة الحجز · ${esc(CFG.title)}</div><h2>${esc(svc.n)}</h2></div>
+      <div class="th"><div class="k">تذكرة الحجز · ${esc(CFG.title)}</div><h2 style="font-size:15.5px;line-height:1.8">${esc(selName())}</h2></div>
       <div class="rows">
-        <div class="trow2"><span class="k">الأخصائية</span><b>${esc(staff.n)} · ${esc(staff.role)}</b></div>
         <div class="trow2"><span class="k">التاريخ</span><b>${date}</b></div>
-        <div class="trow2"><span class="k">الوقت</span><b dir="ltr">${time}</b></div>
-        <div class="trow2"><span class="k">المدة</span><b>${svc.d} دقيقة</b></div>
+        ${selSvcs().map(x=>{const a=assigns[x.id];const st=a?STAFF.find(z=>z.id===a.staff):null;
+          return `<div class="trow2"><span class="k">${esc(x.n)}${st?`<div style="font-size:10px;opacity:.55">${esc(st.n)} · <bdo dir="ltr">${a.time}</bdo></div>`:''}</span><b>${x.p} ر.س</b></div>`;}).join('')}
+        <div class="trow2"><span class="k">المدة الإجمالية</span><b>${selDur()} دقيقة</b></div>
         ${coupon?`<div class="trow2" style="color:#6fa86a"><span class="k">كوبون <bdo dir="ltr">${coupon.code}</bdo></span><b>− ${discount()} ر.س</b></div>`:''}
-        <div class="trow2 total"><span>الإجمالي</span><b>${svc.p-discount()} ر.س</b></div>
+        <div class="trow2 total"><span>الإجمالي</span><b>${selTotal()-discount()} ر.س</b></div>
       </div></div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <input id="cpn" placeholder="كود خصم؟ (اختياري)" dir="ltr" value="${coupon?coupon.code:''}"
@@ -395,7 +426,6 @@ function render(){
       <button class="btn" onclick="confirmBooking()">تأكيد الحجز ✓</button>`;
   }
   app.innerHTML=header()+`<div class="step">${s}</div>`;
-  if(step===2&&staff&&onLeave(staff.id,date||days[0].iso))showReroute();
   window.scrollTo({top:0});
 }
 function showReroute(){
@@ -410,22 +440,35 @@ function showReroute(){
     </div></div>`;
 }
 window.go=n=>{step=n;render();};
-window.restart=()=>{step=1;svc=staff=null;date=time='';coupon=null;cpnMsg='';render();};
-window.pickSvc=id=>{svc=SERVICES.find(x=>x.id===id);
-  /* اقتراح الأخصائية المناسبة للتصنيف تلقائياً */
-  step=2;render();};
-window.pickStaff=id=>{staff=STAFF.find(x=>x.id===id);
-  if(onLeave(id,date||days[0].iso)){render();}else{step=3;render();}};
-window.pickAlt=id=>{staff=STAFF.find(x=>x.id===id);step=3;render();};
-window.pickDate=i=>{date=days[i].iso;time='';render();};
-window.pickTime=t=>{time=t;render();};
+window.startAssign=()=>{assigns={};curIdx=0;curStaff=null;step=3;render();};
+window.redoAssign=(id,i)=>{delete assigns[id];curIdx=i;curStaff=null;render();};
+window.restart=()=>{step=1;svcs=[];assigns={};curIdx=0;curStaff=null;staff=null;date=time='';coupon=null;cpnMsg='';render();};
+window.pickSvc=id=>{
+  /* تبديل الاختيار — يمكن جمع أكثر من خدمة في الموعد الواحد */
+  const i=svcs.indexOf(id);if(i>-1)svcs.splice(i,1);else svcs.push(id);
+  const y=window.scrollY;render();window.scrollTo({top:y});
+};
+window.pickStaff=id=>{curStaff=id;const y=window.scrollY;render();window.scrollTo({top:y});};
+window.pickDate=i=>{date=days[i].iso;assigns={};curIdx=0;curStaff=null;render();};
+window.pickTime=t=>{
+  const cur=selSvcs()[curIdx];if(!cur||!curStaff)return;
+  assigns[cur.id]={staff:curStaff,time:t};
+  curStaff=null;
+  /* الخدمة التالية غير المُسندة، وإلا التأكيد */
+  const nxt=selSvcs().findIndex(x=>!assigns[x.id]);
+  if(nxt===-1){step=4;}else{curIdx=nxt;}
+  render();
+};
 window.confirmBooking=()=>{
-  const rec={staff:staff.id,staffName:staff.n,client:'حجز أونلاين',service:svc.n,price:svc.p-discount(),coupon:coupon?coupon.code:null,date,time,at:new Date().toISOString()};
-  BOOKED.push(rec);LumaStore.set('luma_public_bookings',BOOKED);
-  /* الحجز بتاريخ اليوم يظهر مباشرة على لوحة حجوزات الصالون */
+  const items=selSvcs().map(x=>({n:x.n,p:x.p,d:x.d,staff:assigns[x.id].staff,time:assigns[x.id].time}));
+  items.forEach(it=>{BOOKED.push({staff:it.staff,staffName:(STAFF.find(z=>z.id===it.staff)||{}).n,client:'حجز أونلاين',service:it.n,price:it.p,coupon:coupon?coupon.code:null,date,time:it.time,at:new Date().toISOString()});});
+  LumaStore.set('luma_public_bookings',BOOKED);
+  /* حجوزات اليوم تظهر مباشرة على لوحة الصالون — موعد لكل خدمة بخبيرتها ووقتها */
   if(date===days[0].iso){
     try{
-      LumaStore.update('luma_salon_appts',a=>{a.push({id:Date.now(),staff:staff.id,start:(parseInt(time)-10)*2,dur:Math.max(1,Math.round(svc.d/30)),client:'حجز أونلاين — '+svc.n.split(' ')[0],service:svc.n,st:'pending',custom:true});return a;},[]);
+      LumaStore.update('luma_salon_appts',a=>{
+        items.forEach((it,ix)=>a.push({id:Date.now()+ix,staff:it.staff,start:(parseInt(it.time)-10)*2,dur:Math.max(1,Math.round(it.d/30)),client:'حجز أونلاين — '+it.n.split(' ')[0],service:it.n,st:'pending',custom:true}));
+        return a;},[]);
     }catch(e){}
   }
   step=5;render();

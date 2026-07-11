@@ -15,6 +15,28 @@ test.beforeEach(async ({ context }) => {
 });
 
 // معالج الحجز العام: بعض الأيام عطلة (الجمعة) — نختار أول يوم فيه مواعيد متاحة
+// التدفق الجديد: يوم مشترك للزيارة ثم إسناد (خبيرة + وقت) لكل خدمة حتى تظهر التذكرة
+async function wizardAssign(page) {
+  await page.locator('.day:not([disabled])').first().click();
+  await page.click('button:has-text("متابعة")');
+  for (let g = 0; g < 8; g++) {
+    await page.waitForTimeout(250);
+    if (await page.locator('.ticket').count()) return;
+    const staff = page.locator('.stf:not(.leave)');
+    const n = await staff.count();
+    let done = false;
+    for (let i = 0; i < n && !done; i++) {
+      await staff.nth(i).click();
+      await page.waitForTimeout(200);
+      if (await page.locator('.slot:not([disabled])').count()) {
+        await page.locator('.slot:not([disabled])').first().click();
+        done = true;
+      }
+    }
+    if (!done) break;
+  }
+}
+
 async function pickDayWithSlots(page) {
   const days = page.locator('.day:not([disabled])');
   const n = await days.count();
@@ -79,6 +101,40 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText('مصادر العميلات')).toBeVisible();
   await expect(page.getByText('أداء الموظفات اليوم')).toBeVisible();
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
+});
+
+test('حجز أكثر من خدمة في موعد واحد مع مجموع السعر والمدة', async ({ page }) => {
+  await page.goto('/booking.html');
+  await page.waitForTimeout(600);
+  // اختيار خدمتين — تظهر علامتا ✓ وزر متابعة بالمجموع
+  await page.locator('.svc', { hasText: 'مكياج سهرة' }).click();      // 350 · 60د
+  await page.locator('.svc', { hasText: 'منيكير جل' }).click();       // 160 · 60د
+  await expect(page.locator('.svc.sel')).toHaveCount(2);
+  await expect(page.locator('button', { hasText: 'متابعة' })).toContainText('خدمات');
+  await expect(page.locator('button', { hasText: 'متابعة' })).toContainText('510');
+  await page.click('button:has-text("متابعة")');
+  await wizardAssign(page);
+  // التذكرة: الخدمتان + المدة الإجمالية + المجموع
+  await expect(page.getByText('مكياج سهرة + منيكير جل')).toBeVisible();
+  await expect(page.getByText('120 دقيقة')).toBeVisible();
+  await expect(page.locator('.total')).toContainText('510');
+  await page.click('button:has-text("تأكيد الحجز")');
+  await expect(page.getByText('تم تأكيد حجزك')).toBeVisible();
+});
+
+test('تطبيق العميلة: حجز جديد من لوحة الوجهات وروابط حجز فعلية', async ({ page }) => {
+  await page.goto('/client.html');
+  await page.waitForTimeout(700);
+  await page.click('button:has-text("حجز جديد")');
+  await page.waitForTimeout(400);
+  await expect(page.getByText('اختاري وجهتك')).toBeVisible();
+  // صالون لمسة → صفحته الحية، والجوهرة سبأ → معالج الصالون (مع شارة الخصم)
+  const rows = page.locator('.bk-row');
+  expect(await rows.filter({ hasText: 'صالون لمسة' }).locator('a').getAttribute('href')).toBe('booking.html');
+  expect(await rows.filter({ hasText: 'الجوهرة سبأ' }).locator('a').getAttribute('href')).toContain('experience.html');
+  await expect(rows.filter({ hasText: 'الجوهرة سبأ' })).toContainText('خصم 30%');
+  // المفضلات داخل اللوحة أيضاً
+  expect(await rows.filter({ hasText: 'رهف العتيبي' }).locator('a').getAttribute('href')).toContain('experience.html');
 });
 
 test('«من نحن» نافذة منبثقة اختيارية في صفحة الحجز', async ({ page }) => {
@@ -180,10 +236,8 @@ test('سياسة الحجز والخدمات المميزة تظهر في صفح
   await expect(page.getByText(/إلغاء أو تعديل الحجز مجاناً/).first()).toBeVisible();
   // البنود تظهر أيضاً في خطوة التأكيد
   await page.locator('.svc').first().click();
-  await page.locator('.stf:not(.leave)').first().click();
-  await pickDayWithSlots(page);
-  await page.locator('.slot:not([disabled])').first().click();
   await page.click('button:has-text("متابعة")');
+  await wizardAssign(page);
   await expect(page.locator('.policy.compact')).toBeVisible();
 });
 
@@ -336,10 +390,8 @@ test('كوبون الخصم يعمل في صفحة الحجز العامة', asy
   await page.goto('/booking.html');
   await page.waitForTimeout(600);
   await page.locator('.svc').first().click();
-  await page.locator('.stf:not(.leave)').first().click();
-  await pickDayWithSlots(page);
-  await page.locator('.slot:not([disabled])').first().click();
   await page.click('button:has-text("متابعة")');
+  await wizardAssign(page);
   await page.fill('#cpn', 'LUMA10');
   await page.click('button:has-text("تطبيق")');
   await expect(page.getByText('تم تطبيق الخصم ✓')).toBeVisible();
@@ -360,10 +412,8 @@ test('صفحة الحجز العامة: المعالج حتى النجاح', asy
   await page.goto('/booking.html');
   await page.waitForTimeout(600);
   await page.locator('.svc').first().click();
-  await page.locator('.stf:not(.leave)').first().click();
-  await pickDayWithSlots(page);
-  await page.locator('.slot:not([disabled])').first().click();
   await page.click('button:has-text("متابعة")');
+  await wizardAssign(page);
   await expect(page.getByText('تذكرة الحجز')).toBeVisible();
   await page.click('button:has-text("تأكيد الحجز")');
   await expect(page.getByText('تم تأكيد حجزك')).toBeVisible();
