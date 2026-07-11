@@ -271,7 +271,7 @@ const DATA=[
   {type:'salon',n:'صالون رؤى',role:'صالون نسائي شامل',city:'جدة · الروضة',rating:4.9,reviews:431,price:220,verified:true,cat:'متكامل',branches:3,staff:9,tags:['عرائس','سبا']},
   {type:'salon',n:'مركز لازوردي',role:'سبا ومركز تجميل',city:'الرياض',rating:5.0,reviews:178,price:350,verified:true,cat:'سبا',branches:2,staff:7,tags:['مساج','عناية']},
   {type:'salon',n:'استوديو نون',role:'صالون شعر ومكياج',city:'الدمام',rating:4.7,reviews:264,price:180,verified:true,cat:'شعر',branches:1,staff:5,tags:['صبغات','تسريحات']},
-  {type:'salon',n:'الجوهرة سبأ',role:'صالون نسائي متكامل',city:'جازان · صبيا — حي المحمدية',rating:4.8,reviews:87,price:150,verified:true,cat:'متكامل',branches:1,staff:5,tags:['مكياج','شعر','عرائس'],offer:{pct:30,occ:'التخرج'}},
+  {type:'salon',n:'الجوهرة سبأ',role:'صالون نسائي متكامل',city:'جازان · صبيا — حي المحمدية',rating:4.8,reviews:87,price:150,verified:true,cat:'متكامل',branches:2,staff:5,tags:['مكياج','شعر','عرائس'],offer:{pct:30,occ:'التخرج'}},
   {type:'salon',n:'صالون ضي',role:'صالون أظافر وعناية',city:'مكة',rating:4.6,reviews:142,price:150,verified:false,cat:'أظافر',branches:1,staff:3,tags:['منيكير','تركيب']},
 ];
 
@@ -507,6 +507,15 @@ function openSalon(name,ev){
         <span style="text-align:right"><b style="display:block;font-size:12.5px;color:var(--white)">${esc(m.n)}</b><span style="font-size:10.5px;color:var(--muted)">${esc(m.role)}</span></span>
       </div>`).join('')}
     </div>`:'';
+  /* فروع الصالون بعناوينها */
+  const brs=(window.SALON_BRANCHES||{})[SV.n]||[];
+  const brHost=document.getElementById('sv-branches');
+  if(brHost)brHost.innerHTML=brs.length?`
+    <div style="font-size:12px;color:var(--gold);font-weight:600;margin:16px 0 9px;text-align:right">الفروع (${brs.length})</div>
+    ${brs.map(b=>`<div style="display:flex;align-items:center;gap:10px;border:0.5px solid var(--line);background:var(--panel3);border-radius:11px;padding:10px 14px;margin-bottom:7px;text-align:right">
+      <span style="color:${hue.ac};flex-shrink:0">⌖</span>
+      <span style="flex:1"><b style="display:block;font-size:12.5px;color:var(--white)">${esc(b.n)}</b><span style="font-size:11px;color:var(--muted)">${esc(b.c)}</span></span>
+    </div>`).join('')}`:'';
   svTab('rev');
   renderRevs();renderChat();wireRevGate();
   const ov=document.getElementById('sview');ov.style.display='flex';requestAnimationFrame(()=>ov.classList.add('show'));
@@ -661,6 +670,7 @@ html[data-theme="light"] .sview{background:rgba(59,47,43,.35);}
       <div class="rl" id="sv-role"></div>
       <div class="rt" id="sv-rate"></div>
       <a class="sv-book" id="sv-book" href="#">احجزي الآن ←</a>
+      <div id="sv-branches"></div>
       <div id="sv-team"></div>
     </div>
     <div class="sv-tabs">
