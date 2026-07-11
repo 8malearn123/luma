@@ -285,7 +285,7 @@ SCREENS.page=()=>{
           </div>
         </div>
         <div style="margin-top:16px">
-          <div style="font-size:12.5px;color:var(--gold-pale);margin-bottom:7px">شريط رسالة الترحيب <span style="font-size:10px;color:var(--muted)">— اختياري، يظهر أعلى الصفحة أول ما تفتحها العميلة</span></div>
+          <div style="font-size:12.5px;color:var(--gold-pale);margin-bottom:7px">رسالة الترحيب <span style="font-size:10px;color:var(--muted)">— اختيارية، تظهر نافذةً منبثقة أول ما تفتح العميلة صفحتك</span></div>
           <input id="wbIn" value="${(c.welcome||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('welcome',this)" placeholder="مثال: 🌸 أهلاً بك! خصم 10٪ على أول حجز بكود LUMA10 — اتركيه فارغاً للإخفاء" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
