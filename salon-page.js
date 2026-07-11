@@ -50,7 +50,9 @@ const PAGE_FONTS=[
 const ytIdOf=u=>{const m=String(u||'').match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);return m?m[1]:null;};
 const isVideoUrl=u=>!!ytIdOf(u)||/\.(mp4|webm|mov)(\?|$)/i.test(String(u||''));
 const slugClean=v=>v.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-{2,}/g,'-');
+let PAGE_TAB='basics';
 const PAGE={
+  showTab(t){PAGE_TAB=t;SALON.go('page');},
   save(patch,silent){const c={...pageCfg(),...patch};hrSave(PAGE_KEY,c);
     const fr=document.getElementById('pagePrev');if(fr)fr.contentWindow.location.reload();
     if(!silent)LUX.toast('حُفظت التغييرات وانعكست على المعاينة ✓','ok');},
@@ -157,6 +159,13 @@ SCREENS.page=()=>{
   </div>
   <div style="display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start">
     <div>
+      ${(()=>{const T=[['basics','🪪','الأساسية'],['content','🖼','المحتوى والوسائط'],['booking','📋','الحجز والخدمات'],['look','🎨','المظهر']];
+        return `<div style="display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap">${T.map(([k,ic,l])=>`
+          <button onclick="PAGE.showTab('${k}')" style="flex:1;min-width:130px;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:${PAGE_TAB===k?'700':'400'};
+            border:1.5px solid ${PAGE_TAB===k?'var(--gold-light)':'var(--line)'};
+            background:${PAGE_TAB===k?'linear-gradient(100deg,rgba(156,124,58,0.18),rgba(156,124,58,0.05))':'var(--surface)'};
+            color:${PAGE_TAB===k?'var(--gold-light)':'var(--cream)'}">${ic} ${l}</button>`).join('')}</div>`;})()}
+      <div style="${PAGE_TAB==='basics'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">إعداد الرابط الخاص <span class="ln"></span></div>
         <div style="display:flex;align-items:stretch;border:1px solid var(--line);border-radius:11px;overflow:hidden" dir="ltr">
@@ -191,6 +200,8 @@ SCREENS.page=()=>{
             </div></div>`;}).join('')}
         </div>
       </div>
+      </div>
+      <div style="${PAGE_TAB==='content'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">روابط السوشل ميديا <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختيارية — تظهر كأيقونات في صفحتك فقط عند تعبئتها</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -230,6 +241,8 @@ SCREENS.page=()=>{
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:9px">الصور المرفوعة تُضغط تلقائياً · الفيديو برابط يوتيوب أو ملف mp4</div>
       </div>
+      </div>
+      <div style="${PAGE_TAB==='booking'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">سياسة الحجز والخدمات المميزة <span class="ln"></span></div>
         <div class="lux-f"><label>سياسة الحجز — كل سطر يظهر كبند في صفحة الحجز وعند التأكيد</label>
@@ -246,6 +259,8 @@ SCREENS.page=()=>{
             </div>`;}).join('')}
           </div></div>
       </div>
+      </div>
+      <div style="${PAGE_TAB==='look'?'':'display:none'}">
       <div class="card">
         <div class="sec-label">مظهر وتصميم الصفحة <span class="ln"></span>
           <span id="thBadge" style="display:${c.theme==='custom'?'inline-block':'none'};font-size:10.5px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:2px 10px">ثيم مخصص ✓</span></div>
@@ -293,6 +308,7 @@ SCREENS.page=()=>{
           <span style="font-size:11px;color:var(--muted)">كل تغيير يُحفظ فوراً وينعكس على المعاينة والفاتورة</span>
           <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px" onclick="PAGE.resetTheme()">استعادة الافتراضي</button>
         </div>`;})()}
+      </div>
       </div>
     </div>
     <div style="position:sticky;top:90px">
