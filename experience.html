@@ -433,6 +433,9 @@ const TIMES=['11:00 ص','12:30 م','2:00 م','3:30 م','5:00 م','6:30 م','8:00
 const OFF=new Set(['2:00 م']); /* الصالون مغلق */
 
 /* salon staff (each has her own schedule) */
+/* فروع الصالون — إن كان متعدد الفروع تختار العميلة فرعها عند الحجز */
+const BRANCHES=(window.SALON_BRANCHES&&SALON_BRANCHES[EXPERT.name])||[];
+
 /* طاقم الصالون الفعلي (أسماء ووظائف من سجل الصوالين) — أو طاقم افتراضي */
 const STAFF=(window.SALON_TEAMS&&SALON_TEAMS[EXPERT.name])||[
   {n:'ندى',role:'خبيرة مكياج وعرائس'},
@@ -448,7 +451,7 @@ function freeTimes(staffIdx,dateKey){
 }
 function staffRating(i){return (4.6 + ((hashStr(STAFF[i].n)%5)/10)).toFixed(1);}
 
-const state={step:1,services:[],date:null,time:null,staff:null,pay:'mada'};
+const state={step:1,services:[],date:null,time:null,staff:null,pay:'mada',branch:0};
 /* يمكن اختيار أكثر من خدمة في الموعد الواحد — مجاميع الاختيار */
 const selE=()=>state.services.map(id=>SERVICES.find(x=>x.id===id)).filter(Boolean);
 const selEName=()=>selE().map(s=>s.t).join(' + ');
@@ -553,6 +556,14 @@ function stepService(){
   return `<div class="panel">
     <h2>اختاري الخدمة</h2>
     <div class="hint">حدّدي الخدمة التي ترغبين بحجزها مع ${EXPERT.name}.</div>
+    ${BRANCHES.length>1?`<div class="label" style="margin-top:4px">الفرع</div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px">${BRANCHES.map((b,i)=>`
+      <button type="button" class="br-chip" onclick="BK.pickBranch(${i})" style="flex:1;min-width:170px;text-align:right;padding:11px 14px;border-radius:11px;cursor:pointer;font-family:inherit;
+        border:1.5px solid ${state.branch===i?'var(--gold-light)':'var(--line)'};
+        background:${state.branch===i?'rgba(147,115,53,0.12)':'var(--panel3)'};color:var(--white)">
+        <b style="display:block;font-size:12.5px;color:${state.branch===i?'var(--gold-light)':'var(--white)'}">${b.n} ${state.branch===i?'●':''}</b>
+        <span style="font-size:10.5px;color:var(--muted)">⌖ ${b.c}</span>
+      </button>`).join('')}</div>`:''}
     ${SERVICES.map(s=>`<div class="opt ${state.services.includes(s.id)?'sel':''}" onclick="BK.pickService('${s.id}')">
       <span class="radio"></span>
       <div class="info"><div class="t">${s.t}</div><div class="d">◷ ${s.dur}</div></div>
@@ -638,7 +649,7 @@ function stepConfirm(){
     <div class="sumrow"><span class="k">المدة الإجمالية</span><span class="v">${selEDur()}</span></div>
     <div class="sumrow"><span class="k">التاريخ</span><span class="v">${dateLabel(state.date)}</span></div>
     <div class="sumrow"><span class="k">الوقت</span><span class="v">${state.time}</span></div>
-    <div class="sumrow"><span class="k">الموقع</span><span class="v">${EXPERT.city}</span></div>
+    <div class="sumrow"><span class="k">${BRANCHES.length?'الفرع':'الموقع'}</span><span class="v">${BRANCHES.length?(BRANCHES[state.branch].n+' · '+BRANCHES[state.branch].c):EXPERT.city}</span></div>
     ${OFFER?`<div class="sumrow"><span class="k">خصم ${OFFER.occ} (${OFFER.pct}٪)</span><span class="v" style="color:#e8a2ae" dir="ltr">− ${money(selEBase()-selETotal())} ر.س</span></div>`:''}
     <div class="total"><span class="k">الإجمالي</span><span class="v">${OFFER?`<s style="opacity:.4;font-size:14px" dir="ltr">${money(selEBase())}</s> `:''}${money(selETotal())} ر.س</span></div>
     <div class="label" style="margin-top:22px">طريقة الدفع</div>
@@ -675,6 +686,7 @@ function stepDone(){
 }
 
 const BK={
+  pickBranch(i){state.branch=i;render();},
   pickService(id){const i=state.services.indexOf(id);if(i>-1)state.services.splice(i,1);else state.services.push(id);render();},
   pickDate(k){ if(state.date!==k){state.date=k;state.time=null;state.staff=null;} render();},
   pickTime(t){state.time=t;render();},
