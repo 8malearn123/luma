@@ -17,7 +17,7 @@ function pageThemeOf(c){
   return PAGE_PRESETS.find(p=>p.k===c.theme)||PAGE_PRESETS[0];
 }
 const PAGE_POLICY_DEFAULT='الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.';
-const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},...hrLoad(PAGE_KEY,{})});
+const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},map:'',...hrLoad(PAGE_KEY,{})});
 /* شبكات التواصل المدعومة: [المفتاح، الاسم، نص المساعدة] */
 const PAGE_SOCIALS=[
   ['ig','إنستقرام','@اسم_الحساب أو الرابط الكامل'],
@@ -81,6 +81,17 @@ const PAGE={
     const v=el.value.trim();
     if(v)s[k]=v;else delete s[k];
     PAGE.save({social:s},true);
+  },
+  /* التقاط الموقع الحالي من المتصفح وتعبئته كإحداثيات */
+  geoPick(){
+    if(!navigator.geolocation)return LUX.toast('المتصفح لا يدعم تحديد الموقع','warn');
+    LUX.toast('جارٍ التقاط موقعك…','ok');
+    navigator.geolocation.getCurrentPosition(p=>{
+      const v=p.coords.latitude.toFixed(6)+','+p.coords.longitude.toFixed(6);
+      const el=document.getElementById('mapIn');if(el)el.value=v;
+      PAGE.save({map:v},true);
+      LUX.toast('التُقط موقعك وظهر على الخريطة ✓','ok');
+    },()=>LUX.toast('تعذر تحديد الموقع — اسمحي بالوصول للموقع أو الصقي رابط خرائط Google','warn'),{enableHighAccuracy:true,timeout:8000});
   },
   resetTheme(){PAGE.save({theme:'dark-luxury',themeCustom:null},true);SALON.go('page');LUX.toast('عاد المظهر للافتراضي','ok');},
   /* ── الشعار والغلاف: رفع من الجهاز (مضغوط) أو رابط ── */
@@ -186,6 +197,14 @@ SCREENS.page=()=>{
           <div class="lux-f"><label>${lb}</label>
             <input id="soc-${k}" value="${((c.social||{})[k]||'').replace(/"/g,'&quot;')}" oninput="PAGE.setSocial('${k}',this)" dir="ltr" placeholder="${ph}" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none;text-align:right"/></div>`).join('')}
         </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">موقعي على الخريطة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختياري — خريطة مدمجة وزر اتجاهات في صفحتك</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-gold" style="white-space:nowrap" onclick="PAGE.geoPick()">📍 التقاط موقعي الحالي</button>
+          <input id="mapIn" value="${(c.map||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('map',this)" dir="ltr" placeholder="إحداثيات (مثال 21.5433,39.1728) أو رابط خرائط Google" style="flex:1;min-width:280px;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:9px">تظهر للعميلات كخريطة مدمجة أسفل صفحة الحجز مع زر «الاتجاهات» — اتركيه فارغاً للإخفاء.</div>
       </div>
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">معرض الأعمال — صور وفيديوهات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">${(c.gallery||[]).length} / ${PAGE.GAL_MAX}</span></div>
