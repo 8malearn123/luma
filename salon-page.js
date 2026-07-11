@@ -17,7 +17,7 @@ function pageThemeOf(c){
   return PAGE_PRESETS.find(p=>p.k===c.theme)||PAGE_PRESETS[0];
 }
 const PAGE_POLICY_DEFAULT='الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.';
-const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},map:'',...hrLoad(PAGE_KEY,{})});
+const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},map:'',about:'',...hrLoad(PAGE_KEY,{})});
 /* شبكات التواصل المدعومة: [المفتاح، الاسم، نص المساعدة] */
 const PAGE_SOCIALS=[
   ['ig','إنستقرام','@اسم_الحساب أو الرابط الكامل'],
@@ -175,6 +175,7 @@ SCREENS.page=()=>{
           <div class="lux-f"><label>الرقم الضريبي <span style="font-size:10px;color:var(--muted)">— يظهر في الفاتورة</span></label><input value="${c.vatno||''}" oninput="PAGE.field('vatno',this)" dir="ltr" placeholder="310123456700003" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:right"/></div>
         </div>
         <div class="lux-f"><label>نبذة مختصرة</label><textarea rows="2" oninput="PAGE.field('bio',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;resize:vertical">${c.bio}</textarea></div>
+        <div class="lux-f"><label>من نحن <span style="font-size:10px;color:var(--muted)">— اختياري، يظهر بنافذة منبثقة عند ضغط العميلة زر «من نحن» في صفحتك · كل سطر فقرة</span></label><textarea id="aboutIn" rows="4" oninput="PAGE.field('about',this)" placeholder="قصتكم، رؤيتكم، ما يميز صالونكم…" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;line-height:2;outline:none;resize:vertical">${c.about||''}</textarea></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           ${[['logo','الشعار','https://…/logo.png'],['cover','صورة الغلاف الفاخرة','https://…/cover.jpg']].map(([k,lb,ph])=>{
             const v=c[k]||'';const isData=v.startsWith('data:');
