@@ -264,11 +264,20 @@ test('الشعار والغلاف: رفع صورة من الجهاز ينعكس 
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
   await page.setInputFiles('#up-logo', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
-  await page.waitForTimeout(800);
+  await expect(page.getByText('تعديل الصورة — قص وتكبير')).toBeVisible();   // محرر القص يفتح
+  await page.click('button:has-text("✂ حفظ الصورة")');
+  await page.waitForTimeout(700);
   await expect(page.locator('#pv-logo')).toBeVisible();                 // معاينة الشعار في المحرر
   await page.setInputFiles('#up-cover', { name: 'cover.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
-  await page.waitForTimeout(800);
+  await expect(page.getByText('تعديل الصورة — قص وتكبير')).toBeVisible();
+  await page.click('button:has-text("✂ حفظ الصورة")');
+  await page.waitForTimeout(700);
   await expect(page.locator('#pv-cover')).toBeVisible();
+  // زر ✂ على المعاينة يعيد فتح المحرر
+  await page.locator('.crop-btn').first().click();
+  await expect(page.getByText('تعديل الصورة — قص وتكبير')).toBeVisible();
+  await page.locator('.x').click();
+  await page.waitForTimeout(400);
   // صفحة الحجز تعرضهما
   await page.goto('/booking.html');
   await page.waitForTimeout(600);

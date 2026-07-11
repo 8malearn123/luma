@@ -96,19 +96,64 @@ const PAGE={
     },()=>LUX.toast('تعذر تحديد الموقع — اسمحي بالوصول للموقع أو الصقي رابط خرائط Google','warn'),{enableHighAccuracy:true,timeout:8000});
   },
   resetTheme(){PAGE.save({theme:'dark-luxury',themeCustom:null},true);SALON.go('page');LUX.toast('عاد المظهر للافتراضي','ok');},
-  /* ── الشعار والغلاف: رفع من الجهاز (مضغوط) أو رابط ── */
+  /* ── الشعار والغلاف: رفع ثم محرر قص وتكبير قبل الحفظ ── */
   imgUpload(key,inp){
     const f=inp.files&&inp.files[0];if(!f)return;
-    const MAX=key==='logo'?300:1400;
     const rd=new FileReader();
     rd.onload=()=>{const im=new Image();im.onload=()=>{
-      const sc=Math.min(1,MAX/Math.max(im.width,im.height));
-      const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
-      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
-      PAGE.save({[key]:cv.toDataURL('image/jpeg',0.78)},true);
-      SALON.go('page');LUX.toast(key==='logo'?'رُفع الشعار ✓':'رُفعت صورة الغلاف ✓','ok');
+      /* تصغير أولي للأداء ثم فتح المحرر */
+      const MAX=1600,sc=Math.min(1,MAX/Math.max(im.width,im.height));
+      let src=rd.result;
+      if(sc<1){const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+        cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);src=cv.toDataURL('image/jpeg',0.86);}
+      PAGE.imgCrop(key,src);
     };im.src=rd.result;};
     rd.readAsDataURL(f);inp.value='';
+  },
+  /* محرر القص: سحب لتحريك الصورة + منزلق تكبير داخل إطار بنسبة الوجهة */
+  imgCrop(key,src){
+    src=src||pageCfg()[key];if(!src)return;
+    const aspect=key==='logo'?1:2.9, outW=key==='logo'?400:1200;
+    const frameW=key==='logo'?250:390, frameH=Math.round(frameW/aspect);
+    LUX.modal('تعديل الصورة — قص وتكبير',`
+      <div class="lux-lead">اسحبي الصورة لتحريكها واستخدمي المنزلق للتكبير — ما بداخل الإطار هو ما سيظهر في ${key==='logo'?'الشعار':'الغلاف'}.</div>
+      <div id="crFrame" style="position:relative;width:${frameW}px;height:${frameH}px;margin:0 auto;overflow:hidden;border-radius:${key==='logo'?'18px':'12px'};border:1.5px dashed var(--gold-light,#ccab64);cursor:grab;touch-action:none;background:#101014">
+        <img id="crImg" src="${src}" alt="" draggable="false" style="position:absolute;left:50%;top:50%;max-width:none;user-select:none;pointer-events:none"/>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
+        <span style="font-size:13px;opacity:.6">تصغير −</span>
+        <input id="crZoom" type="range" min="100" max="300" value="100" style="flex:1;accent-color:var(--gold-light,#ccab64)"/>
+        <span style="font-size:13px;opacity:.6">+ تكبير</span>
+      </div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:14px">✂ حفظ الصورة</button>`,
+    {onMount(ov,close){
+      const img=ov.querySelector('#crImg'),frame=ov.querySelector('#crFrame'),zoom=ov.querySelector('#crZoom');
+      let iw=0,ih=0,z=1,ox=0,oy=0,drag=null;
+      const scale=()=>Math.max(frameW/iw,frameH/ih)*z;
+      const clamp=()=>{const s=scale();
+        const mx=Math.max(0,(iw*s-frameW)/2),my=Math.max(0,(ih*s-frameH)/2);
+        ox=Math.min(mx,Math.max(-mx,ox));oy=Math.min(my,Math.max(-my,oy));};
+      const apply=()=>{if(!iw)return;const s=scale();clamp();
+        img.style.width=(iw*s)+'px';img.style.height=(ih*s)+'px';
+        img.style.transform='translate(calc(-50% + '+ox+'px),calc(-50% + '+oy+'px))';};
+      const init=()=>{iw=img.naturalWidth;ih=img.naturalHeight;apply();};
+      img.complete&&img.naturalWidth?init():(img.onload=init);
+      zoom.oninput=()=>{z=zoom.value/100;apply();};
+      frame.onpointerdown=e=>{drag={x:e.clientX-ox,y:e.clientY-oy};try{frame.setPointerCapture(e.pointerId);}catch(err){}frame.style.cursor='grabbing';};
+      frame.onpointermove=e=>{if(!drag)return;ox=e.clientX-drag.x;oy=e.clientY-drag.y;apply();};
+      frame.onpointerup=frame.onpointercancel=()=>{drag=null;frame.style.cursor='grab';};
+      ov.querySelector('[data-ok]').onclick=()=>{
+        if(!iw)return;
+        const s=scale();
+        const fx=frameW/2-(iw*s)/2+ox, fy=frameH/2-(ih*s)/2+oy;
+        const outH=Math.round(outW/aspect);
+        const cv=document.createElement('canvas');cv.width=outW;cv.height=outH;
+        cv.getContext('2d').drawImage(img,-fx/s,-fy/s,frameW/s,frameH/s,0,0,outW,outH);
+        PAGE.save({[key]:cv.toDataURL('image/jpeg',0.82)},true);
+        close();SALON.go('page');
+        LUX.toast((key==='logo'?'الشعار':'الغلاف')+' حُفظ بالقص الجديد ✓','ok');
+      };
+    }});
   },
   imgClear(key){PAGE.save({[key]:''},true);SALON.go('page');},
   /* شارة مميزة لخدمة (الأكثر طلباً…) — تظهر في صفحة الحجز */
@@ -193,7 +238,8 @@ SCREENS.page=()=>{
             <div style="display:flex;gap:8px;align-items:center">
               ${v?`<span style="position:relative;flex-shrink:0">
                 <img id="pv-${k}" src="${v}" alt="" style="width:${k==='logo'?'42px':'66px'};height:42px;border-radius:9px;object-fit:cover;border:1px solid var(--gold-deep)" onerror="this.style.display='none'"/>
-                <button onclick="PAGE.imgClear('${k}')" title="إزالة" style="position:absolute;top:-7px;left:-7px;width:19px;height:19px;border-radius:50%;border:none;background:rgba(0,0,0,.75);color:#f0a3b0;cursor:pointer;font-size:10px;line-height:1">✕</button></span>`:''}
+                <button onclick="PAGE.imgClear('${k}')" title="إزالة" style="position:absolute;top:-7px;left:-7px;width:19px;height:19px;border-radius:50%;border:none;background:rgba(0,0,0,.75);color:#f0a3b0;cursor:pointer;font-size:10px;line-height:1">✕</button>
+                <button class="crop-btn" onclick="PAGE.imgCrop('${k}')" title="قص وتكبير" style="position:absolute;bottom:-7px;left:-7px;width:19px;height:19px;border-radius:50%;border:none;background:var(--gold-deep);color:#fff;cursor:pointer;font-size:9px;line-height:1">✂</button></span>`:''}
               <label class="btn btn-ghost" style="cursor:pointer;padding:9px 12px;font-size:12px;white-space:nowrap">⬆ رفع
                 <input id="up-${k}" type="file" accept="image/*" onchange="PAGE.imgUpload('${k}',this)" style="display:none"/></label>
               <input value="${isData?'':v}" oninput="PAGE.field('${k}',this)" dir="ltr" placeholder="${isData?'صورة مرفوعة ✓ — أو الصقي رابطاً':ph}" style="flex:1;min-width:0;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/>
