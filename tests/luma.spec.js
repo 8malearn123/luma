@@ -81,6 +81,25 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('روابط السوشل ميديا الاختيارية تظهر في صفحة الحجز', async ({ page }) => {
+  // بدون روابط: لا أيقونات
+  await page.goto('/booking.html');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.socs')).toHaveCount(0);
+  // تعبئة إنستقرام (باسم مستخدم) وواتساب (برقم) من المحرر
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.fill('#soc-ig', '@lamsa.beauty');
+  await page.fill('#soc-wa', '0555123456');
+  await page.waitForTimeout(400);
+  // الأيقونتان تظهران بروابط مطبَّعة
+  await page.goto('/booking.html');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.socs .soc')).toHaveCount(2);
+  expect(await page.locator('.soc-ig').getAttribute('href')).toBe('https://instagram.com/lamsa.beauty');
+  expect(await page.locator('.soc-wa').getAttribute('href')).toBe('https://wa.me/966555123456');
+});
+
 test('نوع الخط وشريط الترحيب من المحرر إلى صفحة الحجز', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
