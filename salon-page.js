@@ -17,7 +17,15 @@ function pageThemeOf(c){
   return PAGE_PRESETS.find(p=>p.k===c.theme)||PAGE_PRESETS[0];
 }
 const PAGE_POLICY_DEFAULT='الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.';
-const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',...hrLoad(PAGE_KEY,{})});
+const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},...hrLoad(PAGE_KEY,{})});
+/* شبكات التواصل المدعومة: [المفتاح، الاسم، نص المساعدة] */
+const PAGE_SOCIALS=[
+  ['ig','إنستقرام','@اسم_الحساب أو الرابط الكامل'],
+  ['tk','تيك توك','@اسم_الحساب أو الرابط'],
+  ['sc','سناب شات','اسم المستخدم أو الرابط'],
+  ['x','إكس (تويتر)','@اسم_الحساب أو الرابط'],
+  ['wa','واتساب','رقم الجوال 05xxxxxxxx'],
+];
 const PAGE_BADGES=['الأكثر طلباً','جديدة','عرض خاص','اختيار الخبيرات'];
 /* خطوط عربية لصفحة الحجز — [مفتاح، الاسم، عائلة CSS، استعلام Google Fonts] */
 const PAGE_FONTS=[
@@ -68,6 +76,12 @@ const PAGE={
   },
   preset(k){PAGE.save({theme:k,themeCustom:null},true);SALON.go('page');LUX.toast('طُبّق قالب البداية — عدّلي ألوانه كما تحبين','ok');},
   setFont(k){PAGE.save({font:k},true);SALON.go('page');LUX.toast('تغيّر خط الصفحة ✓','ok');},
+  setSocial(k,el){
+    const s={...(pageCfg().social||{})};
+    const v=el.value.trim();
+    if(v)s[k]=v;else delete s[k];
+    PAGE.save({social:s},true);
+  },
   resetTheme(){PAGE.save({theme:'dark-luxury',themeCustom:null},true);SALON.go('page');LUX.toast('عاد المظهر للافتراضي','ok');},
   /* ── الشعار والغلاف: رفع من الجهاز (مضغوط) أو رابط ── */
   imgUpload(key,inp){
@@ -163,6 +177,14 @@ SCREENS.page=()=>{
                 <input id="up-${k}" type="file" accept="image/*" onchange="PAGE.imgUpload('${k}',this)" style="display:none"/></label>
               <input value="${isData?'':v}" oninput="PAGE.field('${k}',this)" dir="ltr" placeholder="${isData?'صورة مرفوعة ✓ — أو الصقي رابطاً':ph}" style="flex:1;min-width:0;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/>
             </div></div>`;}).join('')}
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">روابط السوشل ميديا <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختيارية — تظهر كأيقونات في صفحتك فقط عند تعبئتها</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          ${PAGE_SOCIALS.map(([k,lb,ph])=>`
+          <div class="lux-f"><label>${lb}</label>
+            <input id="soc-${k}" value="${((c.social||{})[k]||'').replace(/"/g,'&quot;')}" oninput="PAGE.setSocial('${k}',this)" dir="ltr" placeholder="${ph}" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none;text-align:right"/></div>`).join('')}
         </div>
       </div>
       <div class="card" style="margin-bottom:14px">
