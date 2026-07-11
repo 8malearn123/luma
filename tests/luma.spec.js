@@ -81,6 +81,25 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('موقعي بالخريطة: من المحرر إلى خريطة مدمجة في صفحة الحجز', async ({ page }) => {
+  // بدون موقع: لا خريطة
+  await page.goto('/booking.html');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.mapc')).toHaveCount(0);
+  // إدخال إحداثيات من المحرر
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.fill('#mapIn', '21.543333,39.172779');
+  await page.waitForTimeout(400);
+  // صفحة الحجز: خريطة مدمجة + زر اتجاهات بالإحداثيات
+  await page.goto('/booking.html');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.mapc .mapf')).toHaveCount(1);
+  expect(await page.locator('.mapc .mapf').getAttribute('src')).toContain('21.543333,39.172779');
+  expect(await page.locator('.mapc a').getAttribute('href')).toContain('query=21.543333,39.172779');
+  await expect(page.getByText('موقعنا 📍')).toBeVisible();
+});
+
 test('روابط السوشل ميديا الاختيارية تظهر في صفحة الحجز', async ({ page }) => {
   // بدون روابط: لا أيقونات
   await page.goto('/booking.html');
