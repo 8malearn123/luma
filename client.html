@@ -134,6 +134,24 @@ const RECO=[
 /* SCREENS */
 function tile(h){return `<div style="height:${h}px;border-radius:11px;background:linear-gradient(150deg,#2a2218,#131217);border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg class="lat" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#clat)"/></svg><span style="position:relative;color:var(--gold-deep)">◆</span></div>`;}
 function expertCard(e){return `<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px;cursor:pointer">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="text-align:left"><div style="font-size:10px;color:var(--muted)">يبدأ من</div><div class="num" style="font-size:18px;color:var(--gold-light)">${e.from} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:10px;color:var(--muted)">ر.س</span></div></div></div>`;}
+/* ── الحجز من تطبيق العميلة: روابط حجز فعلية للصوالين والخبيرات ── */
+const BOOK_SALONS=[
+  {n:'صالون لمسة',role:'صالون متكامل',city:'جدة · الشاطئ',live:true},
+  {n:'الجوهرة سبأ',role:'صالون نسائي متكامل',city:'جازان · صبيا',offer:'🎓 خصم 30%'},
+  {n:'صالون رؤى',role:'صالون نسائي شامل',city:'جدة · الروضة'},
+  {n:'مركز إشراقة',role:'عناية بالبشرة',city:'الرياض · العليا'},
+  {n:'مركز لازوردي',role:'سبا ومركز تجميل',city:'الرياض'},
+  {n:'استوديو نون',role:'شعر ومكياج',city:'الدمام'},
+  {n:'صالون ضي',role:'أظافر وعناية',city:'مكة'},
+];
+function salonBookURL(x){
+  if(x.live)return 'booking.html';   /* صفحة صالون لمسة الحية — حجزها يصل للوحة الصالون */
+  return 'experience.html?name='+encodeURIComponent(x.n)+'&type=salon&role='+encodeURIComponent('صالون · '+x.role)+'&city='+encodeURIComponent(x.city);
+}
+function expertBookURL(e){
+  const parts=String(e.role||'').split('·').map(s=>s.trim());
+  return 'experience.html?name='+encodeURIComponent(e.n)+'&role='+encodeURIComponent('خبيرة '+(parts[0]||'تجميل'))+'&city='+encodeURIComponent(parts[1]||'جدة');
+}
 /* WhatsApp is the client's main channel on LUMA */
 function waLink(msg){return 'https://wa.me/966501234567?text='+encodeURIComponent(msg);}
 function waBtn(msg,label){return `<a href="${waLink(msg)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#06351c;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:13px;border-radius:9px;padding:11px;text-decoration:none;margin-top:12px">${icon('whatsapp',16)} ${label||'تواصل عبر واتساب'}</a>`;}
@@ -141,6 +159,8 @@ function waBtn(msg,label){return `<a href="${waLink(msg)}" target="_blank" rel="
 const SCREENS={
   home(){return `
   <div class="greet"><div class="h">مرحباً، <span class="w">سارة</span> ✦</div><div class="s">لديكِ موعد قادم بعد يومين.</div></div>
+
+  <button class="gbtn" style="display:flex;align-items:center;justify-content:center;gap:9px;margin-top:12px" onclick="CLI.book()">${icon('plus',17)} حجز جديد — صالون أو خبيرة</button>
 
   <div style="display:flex;align-items:center;gap:10px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.32);border-radius:12px;padding:11px 13px;margin-top:12px">
     <span style="color:#25D366;display:flex;flex-shrink:0">${icon('whatsapp',19)}</span>
@@ -173,7 +193,7 @@ const SCREENS={
   `;},
 
   bookings(){return `
-  <div class="greet" style="padding-bottom:8px"><div class="h" style="font-size:21px">حجوزاتي</div></div>
+  <div class="greet" style="padding-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div class="h" style="font-size:21px">حجوزاتي</div><button class="gbtn" style="width:auto;padding:9px 16px;font-size:12.5px" onclick="CLI.book()">+ حجز جديد</button></div>
   <div style="display:flex;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px;margin:4px 0 16px">
     <button class="seg-b on" onclick="CLI.seg(this,'up')">قادمة</button>
     <button class="seg-b" onclick="CLI.seg(this,'pa')">سابقة</button>
@@ -189,7 +209,7 @@ const SCREENS={
 
   favs(){return `
   <div class="greet" style="padding-bottom:8px"><div class="h" style="font-size:21px">المفضلة</div><div class="s">${FAVS.length} خبيرات محفوظات</div></div>
-  <div style="margin-top:10px">${FAVS.map(e=>`<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span style="color:var(--rose);font-size:19px">♥</span><button class="gbtn" style="width:auto;padding:8px 16px;font-size:12px">احجزي</button></div></div>`).join('')}</div>
+  <div style="margin-top:10px">${FAVS.map(e=>`<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span style="color:var(--rose);font-size:19px">♥</span><a class="gbtn" style="width:auto;padding:8px 16px;font-size:12px;text-decoration:none;display:inline-block" href="${expertBookURL(e)}" target="_blank" rel="noopener">احجزي</a></div></div>`).join('')}</div>
   `;},
 
   account(){return `
@@ -228,7 +248,42 @@ const CLI={
     el.parentElement.querySelectorAll('.seg-b').forEach(b=>b.classList.remove('on'));el.classList.add('on');
     document.getElementById('bk-up').style.display=which==='up'?'block':'none';
     document.getElementById('bk-pa').style.display=which==='pa'?'block':'none';
-  }
+  },
+  /* لوحة «حجز جديد» — تنزلق داخل شاشة الجوال وتفتح صفحة الحجز الفعلية */
+  book(){
+    const scr=document.querySelector('.scr');
+    const old=scr.querySelector('.bk-sheet-bg');if(old)old.remove();
+    const bg=document.createElement('div');bg.className='bk-sheet-bg';
+    bg.innerHTML=`
+    <style>
+      .bk-sheet-bg{position:absolute;inset:0;z-index:60;background:rgba(8,6,10,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-end;opacity:0;transition:opacity .25s}
+      .bk-sheet-bg.show{opacity:1}
+      .bk-sheet{width:100%;max-height:78%;background:var(--surface);border:1px solid var(--line);border-bottom:none;border-radius:24px 24px 0 0;padding:14px 18px 20px;overflow-y:auto;transform:translateY(40px);transition:transform .3s cubic-bezier(.2,1.2,.4,1)}
+      .bk-sheet-bg.show .bk-sheet{transform:none}
+      .bk-grab{width:44px;height:4px;border-radius:4px;background:var(--line);margin:0 auto 14px}
+      .bk-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+      .bk-row:last-child{border-bottom:none}
+      .bk-go{background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-family:inherit;font-weight:700;font-size:11.5px;border-radius:20px;padding:8px 16px;text-decoration:none;white-space:nowrap}
+    </style>
+    <div class="bk-sheet">
+      <div class="bk-grab"></div>
+      <div style="font-size:16.5px;color:var(--white);font-weight:700;margin-bottom:2px">حجز جديد ✨</div>
+      <div style="font-size:12px;color:var(--gold-pale);margin-bottom:12px">اختاري وجهتك — صالوناً أو خبيرتك المفضلة</div>
+      <div class="seclab" style="margin-top:4px"><span class="t">الصوالين</span></div>
+      ${BOOK_SALONS.map(x=>`<div class="bk-row">${av(x.n.replace('صالون ','').replace('مركز ','').replace('استوديو ',''),40,16)}
+        <div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--white);font-weight:600">${x.n} ${x.offer?`<span style="font-size:9.5px;color:#fff;background:linear-gradient(120deg,#d98a93,#b25a6c);border-radius:12px;padding:2px 8px">${x.offer}</span>`:''}</div>
+        <div style="font-size:11px;color:var(--muted)">${x.role} · ${x.city}</div></div>
+        <a class="bk-go" href="${salonBookURL(x)}" target="_blank" rel="noopener">احجزي ←</a></div>`).join('')}
+      <div class="seclab"><span class="t">خبيراتكِ المفضلات</span></div>
+      ${FAVS.map(e=>`<div class="bk-row">${av(e.n,40,16)}
+        <div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--white);font-weight:600">${e.n}</div>
+        <div style="font-size:11px;color:var(--muted)">${e.role} · من ${e.from} ر.س</div></div>
+        <a class="bk-go" href="${expertBookURL(e)}" target="_blank" rel="noopener">احجزي ←</a></div>`).join('')}
+    </div>`;
+    bg.addEventListener('click',e=>{if(e.target===bg){bg.classList.remove('show');setTimeout(()=>bg.remove(),250);}});
+    scr.appendChild(bg);
+    requestAnimationFrame(()=>bg.classList.add('show'));
+  },
 };
 window.CLI=CLI;
 document.getElementById('tabbar').innerHTML=TABS.map(t=>`<button class="tab" data-t="${t[0]}" onclick="CLI.go('${t[0]}')"><span class="ic">${icon(t[2],23)}</span><span class="lb">${t[1]}</span></button>`).join('');

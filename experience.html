@@ -448,7 +448,13 @@ function freeTimes(staffIdx,dateKey){
 }
 function staffRating(i){return (4.6 + ((hashStr(STAFF[i].n)%5)/10)).toFixed(1);}
 
-const state={step:1,service:null,date:null,time:null,staff:null,pay:'mada'};
+const state={step:1,services:[],date:null,time:null,staff:null,pay:'mada'};
+/* يمكن اختيار أكثر من خدمة في الموعد الواحد — مجاميع الاختيار */
+const selE=()=>state.services.map(id=>SERVICES.find(x=>x.id===id)).filter(Boolean);
+const selEName=()=>selE().map(s=>s.t).join(' + ');
+const selEBase=()=>selE().reduce((t,s)=>t+s.price,0);
+const selETotal=()=>selE().reduce((t,s)=>t+effPrice(s.price),0);
+const selEDur=()=>selE().reduce((t,s)=>t+(parseInt(s.dur)||60),0)+' دقيقة';
 const STEPS = IS_SALON ? ['الخدمة','التاريخ','الموظفة والوقت','التأكيد','تم'] : ['الخدمة','الموعد','التأكيد','تم'];
 const LAST=STEPS.length; // done step
 const DOW=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
@@ -547,14 +553,14 @@ function stepService(){
   return `<div class="panel">
     <h2>اختاري الخدمة</h2>
     <div class="hint">حدّدي الخدمة التي ترغبين بحجزها مع ${EXPERT.name}.</div>
-    ${SERVICES.map(s=>`<div class="opt ${state.service&&state.service.id===s.id?'sel':''}" onclick="BK.pickService('${s.id}')">
+    ${SERVICES.map(s=>`<div class="opt ${state.services.includes(s.id)?'sel':''}" onclick="BK.pickService('${s.id}')">
       <span class="radio"></span>
       <div class="info"><div class="t">${s.t}</div><div class="d">◷ ${s.dur}</div></div>
       <div class="price">${OFFER?`<s style="opacity:.45;font-size:14px" dir="ltr">${money(s.price)}</s> `:''}<span class="v">${money(effPrice(s.price))}</span> <span class="u">ر.س</span>${OFFER?`<div style="font-size:9.5px;color:#e8a2ae;font-weight:700">خصم ${OFFER.pct}٪</div>`:''}</div>
     </div>`).join('')}
     <div class="actions">
       <a class="btn btn-ghost" href="store.html">إلغاء</a>
-      <button class="btn btn-gold" ${state.service?'':'disabled'} onclick="BK.go(2)">التالي ←</button>
+      <button class="btn btn-gold" ${state.services.length?'':'disabled'} onclick="BK.go(2)">التالي ←${state.services.length>1?' ('+state.services.length+' خدمات · '+selETotal()+' ر.س)':''}</button>
     </div>
   </div>`;
 }
@@ -563,7 +569,7 @@ function stepService(){
 function stepDateTime(){
   return `<div class="panel">
     <h2>اختاري التاريخ والوقت</h2>
-    <div class="hint">${state.service.t} · ${state.service.dur}</div>
+    <div class="hint">${selEName()} · ${selEDur()}</div>
     <div class="label">التاريخ</div>
     <div class="dates">${DAYS.map(d=>`<div class="date ${state.date===d.key?'sel':''}" onclick="BK.pickDate('${d.key}')"><div class="dow">${d.dow}</div><div class="dnum">${d.dnum}</div><div class="mon">${d.mon}</div></div>`).join('')}</div>
     <div class="label" style="margin-top:24px">الوقت المتاح</div>
@@ -579,7 +585,7 @@ function stepDateTime(){
 function stepDateOnly(){
   return `<div class="panel">
     <h2>اختاري التاريخ</h2>
-    <div class="hint">${state.service.t} · ${state.service.dur} — ثم نعرض لكِ الموظفات المتاحات في هذا اليوم.</div>
+    <div class="hint">${selEName()} · ${selEDur()} — ثم نعرض لكِ الموظفات المتاحات في هذا اليوم.</div>
     <div class="label">التاريخ</div>
     <div class="dates">${DAYS.map(d=>`<div class="date ${state.date===d.key?'sel':''}" onclick="BK.pickDate('${d.key}')"><div class="dow">${d.dow}</div><div class="dnum">${d.dnum}</div><div class="mon">${d.mon}</div></div>`).join('')}</div>
     <div class="actions">
@@ -622,19 +628,19 @@ function stepStaffTime(){
 function dateLabel(key){const d=DAYS.find(x=>x.key===key);return d?`${d.dow} ${d.dnum} ${d.mon}`:key;}
 
 function stepConfirm(){
-  const s=state.service;const deposit=Math.round(effPrice(s.price)*0.25);
+  const deposit=Math.round(selETotal()*0.25);
   return `<div class="panel">
     <h2>تأكيد الحجز</h2>
     <div class="hint">راجعي تفاصيل موعدكِ قبل الدفع.</div>
     <div class="sumrow"><span class="k">${IS_SALON?'الصالون':'الخبيرة'}</span><span class="v">${EXPERT.name}</span></div>
     ${IS_SALON?`<div class="sumrow"><span class="k">الموظفة</span><span class="v">${STAFF[state.staff].n} · ${STAFF[state.staff].role}</span></div>`:''}
-    <div class="sumrow"><span class="k">الخدمة</span><span class="v">${s.t}</span></div>
-    <div class="sumrow"><span class="k">المدة</span><span class="v">${s.dur}</span></div>
+    ${selE().map(x=>`<div class="sumrow"><span class="k">${x.t}</span><span class="v">${money(effPrice(x.price))} ر.س</span></div>`).join('')}
+    <div class="sumrow"><span class="k">المدة الإجمالية</span><span class="v">${selEDur()}</span></div>
     <div class="sumrow"><span class="k">التاريخ</span><span class="v">${dateLabel(state.date)}</span></div>
     <div class="sumrow"><span class="k">الوقت</span><span class="v">${state.time}</span></div>
     <div class="sumrow"><span class="k">الموقع</span><span class="v">${EXPERT.city}</span></div>
-    ${OFFER?`<div class="sumrow"><span class="k">خصم ${OFFER.occ} (${OFFER.pct}٪)</span><span class="v" style="color:#e8a2ae" dir="ltr">− ${money(s.price-effPrice(s.price))} ر.س</span></div>`:''}
-    <div class="total"><span class="k">الإجمالي</span><span class="v">${OFFER?`<s style="opacity:.4;font-size:14px" dir="ltr">${money(s.price)}</s> `:''}${money(effPrice(s.price))} ر.س</span></div>
+    ${OFFER?`<div class="sumrow"><span class="k">خصم ${OFFER.occ} (${OFFER.pct}٪)</span><span class="v" style="color:#e8a2ae" dir="ltr">− ${money(selEBase()-selETotal())} ر.س</span></div>`:''}
+    <div class="total"><span class="k">الإجمالي</span><span class="v">${OFFER?`<s style="opacity:.4;font-size:14px" dir="ltr">${money(selEBase())}</s> `:''}${money(selETotal())} ر.س</span></div>
     <div class="label" style="margin-top:22px">طريقة الدفع</div>
     <div class="pay">
       <div class="m ${state.pay==='mada'?'sel':''}" onclick="BK.pickPay('mada')">mada</div>
@@ -649,7 +655,7 @@ function stepConfirm(){
 }
 
 function stepDone(){
-  const s=state.service;const ref='LMA-'+Math.floor(100000+Math.random()*900000);
+  const ref='LMA-'+Math.floor(100000+Math.random()*900000);
   return `<div class="panel success">
     <div class="check">✓</div>
     <h2>تمّ تأكيد حجزكِ! ✨</h2>
@@ -657,7 +663,7 @@ function stepDone(){
     <div class="ticket">
       <div class="sumrow"><span class="k">رقم الحجز</span><span class="v mono" style="color:var(--gold-light)">${ref}</span></div>
       ${IS_SALON?`<div class="sumrow"><span class="k">الموظفة</span><span class="v">${STAFF[state.staff].n}</span></div>`:''}
-      <div class="sumrow"><span class="k">الخدمة</span><span class="v">${s.t}</span></div>
+      <div class="sumrow"><span class="k">الخدمة</span><span class="v">${selEName()}</span></div>
       <div class="sumrow"><span class="k">الموعد</span><span class="v">${dateLabel(state.date)} · ${state.time}</span></div>
       <div class="sumrow"><span class="k">${IS_SALON?'الصالون':'الخبيرة'}</span><span class="v">${EXPERT.name}</span></div>
     </div>
@@ -669,13 +675,13 @@ function stepDone(){
 }
 
 const BK={
-  pickService(id){state.service=SERVICES.find(s=>s.id===id);render();},
+  pickService(id){const i=state.services.indexOf(id);if(i>-1)state.services.splice(i,1);else state.services.push(id);render();},
   pickDate(k){ if(state.date!==k){state.date=k;state.time=null;state.staff=null;} render();},
   pickTime(t){state.time=t;render();},
   pickStaffTime(i,t){state.staff=i;state.time=t;render();},
   pickPay(p){state.pay=p;render();},
   go(n){
-    if(n===2&&!state.service)return;
+    if(n===2&&!state.services.length)return;
     if(IS_SALON){
       if(n===3&&!state.date)return;
       if(n===4&&!(state.staff!==null&&state.time))return;
