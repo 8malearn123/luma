@@ -19,6 +19,12 @@ const IC={
   mega:'<path d="M3 11v3a1 1 0 001 1h2l8 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M16 9a3 3 0 010 6M18.5 6.5a6 6 0 010 11"/>',
   boxes:'<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
+  flower:'<circle cx="12" cy="12" r="2.1"/><circle cx="12" cy="6.4" r="2.5"/><circle cx="17.3" cy="10.2" r="2.5"/><circle cx="15.3" cy="16.4" r="2.5"/><circle cx="8.7" cy="16.4" r="2.5"/><circle cx="6.7" cy="10.2" r="2.5"/>',
+  idcard:'<rect x="2.5" y="5" width="19" height="14" rx="2"/><circle cx="16.5" cy="10.5" r="1.9"/><path d="M13.8 15.5a2.7 2.7 0 015.4 0M5 9h5M5 12.5h5M5 16h3"/>',
+  image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.7"/><path d="M21 15.5l-4.8-4.8L7 20"/>',
+  clipboard:'<rect x="5" y="4.5" width="14" height="17" rx="2"/><rect x="9" y="2.5" width="6" height="3.6" rx="1.2"/><path d="M9 11h6M9 14.5h6M9 18h3"/>',
+  palette:'<path d="M12 3a9 9 0 100 18c1.6 0 2.1-1.1 1.4-2.2-.8-1.3.2-2.8 1.9-2.8H18a3.5 3.5 0 003.5-3.5A9 9 0 0012 3z"/><circle cx="7.6" cy="10.5" r="1.05"/><circle cx="12" cy="7.6" r="1.05"/><circle cx="16.4" cy="10.5" r="1.05"/>',
+  upload:'<path d="M12 15.5V5M8.2 8.5L12 5l3.8 3.5"/><path d="M4.5 15.5V18a2.5 2.5 0 002.5 2.5h10a2.5 2.5 0 002.5-2.5v-2.5"/>',
 };
 const icon=(n,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 window.icon=icon;

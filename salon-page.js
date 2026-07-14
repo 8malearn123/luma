@@ -125,7 +125,7 @@ const PAGE={
         <input id="crZoom" type="range" min="100" max="300" value="100" style="flex:1;accent-color:var(--gold-light,#ccab64)"/>
         <span style="font-size:13px;opacity:.6">+ تكبير</span>
       </div>
-      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:14px">✂ حفظ الصورة</button>`,
+      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px">${icon('scissors',15)} حفظ الصورة</button>`,
     {onMount(ov,close){
       const img=ov.querySelector('#crImg'),frame=ov.querySelector('#crFrame'),zoom=ov.querySelector('#crZoom');
       let iw=0,ih=0,z=1,ox=0,oy=0,drag=null;
@@ -204,12 +204,12 @@ SCREENS.page=()=>{
   </div>
   <div style="display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start">
     <div>
-      ${(()=>{const T=[['basics','🪪','الأساسية'],['content','🖼','المحتوى والوسائط'],['booking','📋','الحجز والخدمات'],['look','🎨','المظهر']];
+      ${(()=>{const T=[['basics','idcard','الأساسية'],['content','image','المحتوى والوسائط'],['booking','clipboard','الحجز والخدمات'],['look','palette','المظهر']];
         return `<div style="display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap">${T.map(([k,ic,l])=>`
           <button onclick="PAGE.showTab('${k}')" style="flex:1;min-width:130px;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:${PAGE_TAB===k?'700':'400'};
             border:1.5px solid ${PAGE_TAB===k?'var(--gold-light)':'var(--line)'};
             background:${PAGE_TAB===k?'linear-gradient(100deg,rgba(156,124,58,0.18),rgba(156,124,58,0.05))':'var(--surface)'};
-            color:${PAGE_TAB===k?'var(--gold-light)':'var(--cream)'}">${ic} ${l}</button>`).join('')}</div>`;})()}
+            color:${PAGE_TAB===k?'var(--gold-light)':'var(--cream)'}">${icon(ic,17)} ${l}</button>`).join('')}</div>`;})()}
       <div style="${PAGE_TAB==='basics'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">إعداد الرابط الخاص <span class="ln"></span></div>
@@ -239,8 +239,8 @@ SCREENS.page=()=>{
               ${v?`<span style="position:relative;flex-shrink:0">
                 <img id="pv-${k}" src="${v}" alt="" style="width:${k==='logo'?'42px':'66px'};height:42px;border-radius:9px;object-fit:cover;border:1px solid var(--gold-deep)" onerror="this.style.display='none'"/>
                 <button onclick="PAGE.imgClear('${k}')" title="إزالة" style="position:absolute;top:-7px;left:-7px;width:19px;height:19px;border-radius:50%;border:none;background:rgba(0,0,0,.75);color:#f0a3b0;cursor:pointer;font-size:10px;line-height:1">✕</button>
-                <button class="crop-btn" onclick="PAGE.imgCrop('${k}')" title="قص وتكبير" style="position:absolute;bottom:-7px;left:-7px;width:19px;height:19px;border-radius:50%;border:none;background:var(--gold-deep);color:#fff;cursor:pointer;font-size:9px;line-height:1">✂</button></span>`:''}
-              <label class="btn btn-ghost" style="cursor:pointer;padding:9px 12px;font-size:12px;white-space:nowrap">⬆ رفع
+                <button class="crop-btn" onclick="PAGE.imgCrop('${k}')" title="قص وتكبير" style="position:absolute;bottom:-7px;left:-7px;width:19px;height:19px;border-radius:50%;border:none;background:var(--gold-deep);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">${icon('scissors',11)}</button></span>`:''}
+              <label class="btn btn-ghost" style="cursor:pointer;padding:9px 12px;font-size:12px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px">${icon('upload',13)} رفع
                 <input id="up-${k}" type="file" accept="image/*" onchange="PAGE.imgUpload('${k}',this)" style="display:none"/></label>
               <input value="${isData?'':v}" oninput="PAGE.field('${k}',this)" dir="ltr" placeholder="${isData?'صورة مرفوعة ✓ — أو الصقي رابطاً':ph}" style="flex:1;min-width:0;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/>
             </div></div>`;}).join('')}
@@ -259,7 +259,7 @@ SCREENS.page=()=>{
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">موقعي على الخريطة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختياري — خريطة مدمجة وزر اتجاهات في صفحتك</span></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-gold" style="white-space:nowrap" onclick="PAGE.geoPick()">📍 التقاط موقعي الحالي</button>
+          <button class="btn btn-gold" style="white-space:nowrap;display:inline-flex;align-items:center;gap:7px" onclick="PAGE.geoPick()">${icon('pin',15)} التقاط موقعي الحالي</button>
           <input id="mapIn" value="${(c.map||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('map',this)" dir="ltr" placeholder="إحداثيات (مثال 21.5433,39.1728) أو رابط خرائط Google" style="flex:1;min-width:280px;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/>
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:9px">تظهر للعميلات كخريطة مدمجة أسفل صفحة الحجز مع زر «الاتجاهات» — اتركيه فارغاً للإخفاء.</div>
@@ -278,7 +278,7 @@ SCREENS.page=()=>{
           </div>`).join('')}
         </div>`:`<div style="font-size:12.5px;color:var(--muted);margin-bottom:14px">أضيفي صور أعمالك (مكياج، تسريحات، أظافر…) وفيديوهات قصيرة — تظهر كمعرض أنيق في صفحة الحجز.</div>`}
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <label class="btn btn-gold" style="cursor:pointer">⬆ رفع صورة من الجهاز
+          <label class="btn btn-gold" style="cursor:pointer;display:inline-flex;align-items:center;gap:7px">${icon('upload',14)} رفع صورة من الجهاز
             <input id="galFile" type="file" accept="image/*" onchange="PAGE.galAddFile(this)" style="display:none"/></label>
           <div style="flex:1;display:flex;gap:8px;min-width:260px">
             <input id="galUrl" dir="ltr" placeholder="رابط صورة أو فيديو (YouTube / mp4)…" style="flex:1;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12px;outline:none;text-align:right"/>
@@ -297,7 +297,7 @@ SCREENS.page=()=>{
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
             ${SVC_CATALOG.map(s=>{const cur=(c.featured||{})[s[0]]||'';return `
             <div style="display:flex;align-items:center;gap:9px;border:1px solid ${cur?'var(--gold-deep)':'var(--line)'};border-radius:10px;padding:8px 11px">
-              <span style="flex:1;font-size:12.5px;color:var(--white)">${cur?'⭐ ':''}${s[0]}</span>
+              <span style="flex:1;display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--white)">${cur?`<span style="color:var(--gold-light);display:inline-flex">${icon('star',13)}</span>`:''}${s[0]}</span>
               <select class="feat-sel" onchange="PAGE.setFeat('${s[0].replace(/'/g,"\\'")}',this.value)" style="background:var(--bg);border:1px solid var(--line);border-radius:7px;color:${cur?'var(--gold-light)':'var(--muted)'};font-family:inherit;font-size:11.5px;padding:6px 8px;outline:none">
                 <option value="">بدون شارة</option>
                 ${PAGE_BADGES.map(b=>`<option ${cur===b?'selected':''}>${b}</option>`).join('')}
@@ -341,7 +341,7 @@ SCREENS.page=()=>{
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
             ${PAGE_FONTS.map(([k,lb,fam])=>`
             <button class="font-chip" onclick="PAGE.setFont('${k}')" style="font-family:${fam.replace(/"/g,'&quot;')};background:var(--surface2);border:1.5px solid ${(c.font||'plex')===k?'var(--gold-light)':'var(--line)'};border-radius:11px;padding:10px 6px;cursor:pointer;text-align:center;color:var(--white)">
-              <span style="display:block;font-size:17px;line-height:1.5">أهلاً بك 🌸</span>
+              <span style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:17px;line-height:1.5">أهلاً بك <span style="color:var(--gold-light);display:inline-flex">${icon('flower',15)}</span></span>
               <span style="display:block;font-size:9.5px;color:${(c.font||'plex')===k?'var(--gold-light)':'var(--muted)'};margin-top:4px">${lb}</span>
             </button>`).join('')}
           </div>
