@@ -143,6 +143,7 @@
             <button type="button" class="eye" onclick="togglePw(this)" aria-label="إظهار كلمة المرور">◉</button>
           </div>
         </div>
+        <div id="loginErr" style="display:none;color:#c0566a;font-size:12.5px;margin-top:-6px;margin-bottom:10px">كلمة المرور غير صحيحة.</div>
         <div class="rowx">
           <div class="remember on" id="remember" onclick="this.classList.toggle('on')"><span class="box"><span class="ck">✓</span></span> تذكّرني</div>
           <span class="forgot" onclick="alert('سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدكِ.')">نسيتِ كلمة المرور؟</span>
@@ -150,29 +151,29 @@
         <button class="btn btn-gold" type="submit">دخول</button>
       </form>
 
-      <!-- DEMO ACCOUNTS -->
+      <!-- UNIFIED ACCOUNT -->
       <div class="demo">
-        <div class="dt">◆ حسابات تجريبية (ديمو)</div>
-        <div class="ds">اضغطي على أي حساب للدخول مباشرة إلى لوحته. كلمة المرور للجميع: <b style="color:var(--gold-pale)">123456</b></div>
+        <div class="dt">◆ الدخول الموحّد — حساب واحد لكل اللوحات</div>
+        <div class="ds">البريد <b style="color:var(--gold-pale)" dir="ltr">8ma.learn@gmail.com</b> وكلمة المرور <b style="color:var(--gold-pale)">123654</b> — سجّلي مرة واحدة ثم اختاري لوحتك، أو اضغطي على أي لوحة للدخول مباشرة.</div>
         <div class="dgrid">
           <div class="dacc" onclick="quick('client')">
             <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></span> عميلة</div>
-            <div class="e">client@luma.sa</div>
+            <div class="e">8ma.learn@gmail.com</div>
             <div class="go">دخول لوحة العميلة ←</div>
           </div>
           <div class="dacc" onclick="quick('expert')">
             <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l2.4 6.9H22l-6 4.6 2.3 7L12 16.9 5.7 20.5 8 13.5l-6-4.6h7.6z"/></svg></span> خبيرة</div>
-            <div class="e">expert@luma.sa</div>
+            <div class="e">8ma.learn@gmail.com</div>
             <div class="go">دخول لوحة الخبيرة ←</div>
           </div>
           <div class="dacc" onclick="quick('salon')">
             <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l2-5h14l2 5M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg></span> صالون</div>
-            <div class="e">salon@luma.sa</div>
+            <div class="e">8ma.learn@gmail.com</div>
             <div class="go">دخول لوحة الصالون ←</div>
           </div>
           <div class="dacc" onclick="quick('admin')">
             <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg></span> الإدارة</div>
-            <div class="e">admin@luma.sa</div>
+            <div class="e">8ma.learn@gmail.com</div>
             <div class="go">دخول لوحة الأدمن ←</div>
           </div>
           <div class="dacc" onclick="location.href='staff-portal.html'" style="grid-column:1/-1">
@@ -195,6 +196,8 @@
     salon :'salon.html',
     admin :'admin.html'
   };
+  /* الحساب الموحّد — بريد واحد وكلمة مرور واحدة لكل اللوحات */
+  const MASTER={email:'8ma.learn@gmail.com', pw:'123654'};
   /* known demo accounts — the system recognises the role from the account itself */
   const ACCOUNTS={
     'client@luma.sa':'client', '0500000001':'client',
@@ -215,20 +218,70 @@
 
   function togglePw(btn){ const i=document.getElementById('pw'); i.type=i.type==='password'?'text':'password'; btn.style.color=i.type==='text'?'#ccab64':''; }
 
+  function showErr(msg){
+    const el=document.getElementById('loginErr');
+    el.textContent=msg; el.style.display='block';
+    document.getElementById('pw').focus();
+  }
+
   function doLogin(e){
     if(e&&e.preventDefault)e.preventDefault();
     const id=document.getElementById('identifier').value;
+    const pw=document.getElementById('pw').value;
     if(!id.trim()){ document.getElementById('identifier').focus(); return false; }
+    document.getElementById('loginErr').style.display='none';
+    const k=id.trim().toLowerCase().replace(/\s/g,'');
+    /* الحساب الموحّد: تحقق من كلمة المرور ثم اختيار اللوحة */
+    if(k===MASTER.email){
+      if(pw!==MASTER.pw){ showErr('كلمة المرور غير صحيحة — كلمة مرور الحساب الموحّد: 123654'); return false; }
+      showChooser(); return false;
+    }
     const role=resolveRole(id);
     window.location.href=DEST[role];
     return false;
   }
 
-  /* demo quick login */
-  const DEMO_EMAIL={client:'client@luma.sa',expert:'expert@luma.sa',salon:'salon@luma.sa',admin:'admin@luma.sa'};
+  /* بعد الدخول الموحّد: اختيار اللوحة */
+  function showChooser(){
+    const old=document.getElementById('panelPick'); if(old)old.remove();
+    const PANELS=[
+      ['client.html','عميلة','تصفّح، حجوزات، مفضلة','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>'],
+      ['expert.html','خبيرة','لوحة الخبيرة المستقلة','<path d="M12 2l2.4 6.9H22l-6 4.6 2.3 7L12 16.9 5.7 20.5 8 13.5l-6-4.6h7.6z"/>'],
+      ['salon.html','صالون','الحجوزات والفريق والتقارير','<path d="M3 9l2-5h14l2 5M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/>'],
+      ['admin.html','الإدارة','لوحة إدارة المنصة','<path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/>'],
+      ['staff-portal.html','بوابة الموظفة','جدولي · أرباحي · حضوري','<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.2a3.4 3.4 0 010 6M21.5 20a6.5 6.5 0 00-4-6"/>'],
+    ];
+    const ov=document.createElement('div'); ov.id='panelPick';
+    ov.innerHTML=`
+    <style>
+      #panelPick{position:fixed;inset:0;z-index:200;background:rgba(12,10,8,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .25s}
+      #panelPick.show{opacity:1}
+      #panelPick .pp{width:100%;max-width:480px;background:var(--surface,#fdf9f1);border:1px solid var(--gold-deep,#9c8047);border-radius:20px;padding:26px 24px;transform:translateY(16px);transition:transform .3s cubic-bezier(.2,1.2,.4,1);max-height:88vh;overflow-y:auto}
+      #panelPick.show .pp{transform:none}
+      #panelPick .pc{display:flex;align-items:center;gap:13px;width:100%;text-align:right;background:var(--bg,#fff);border:1.5px solid var(--line,#e5dcc8);border-radius:13px;padding:13px 15px;margin-top:10px;cursor:pointer;font-family:inherit;transition:border-color .2s,transform .15s;text-decoration:none;color:inherit}
+      #panelPick .pc:hover{border-color:var(--gold-light,#ccab64);transform:translateY(-1px)}
+      #panelPick .pi{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,rgba(204,171,100,.2),rgba(156,128,71,.08));display:flex;align-items:center;justify-content:center;color:var(--gold-deep,#9c8047);flex-shrink:0}
+    </style>
+    <div class="pp">
+      <div style="font-size:19px;font-weight:700;color:var(--white,#231d15)">أهلاً بكِ ✦</div>
+      <div style="font-size:13px;color:var(--gold-pale,#9c8047);margin-top:3px;margin-bottom:6px">دخولك موحّد — اختاري اللوحة التي تريدين فتحها الآن.</div>
+      ${PANELS.map(([href,t,s,ic])=>`
+      <a class="pc" href="${href}">
+        <span class="pi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></span>
+        <span style="flex:1;min-width:0"><span style="display:block;font-size:14.5px;font-weight:600;color:var(--white,#231d15)">${t}</span>
+        <span style="display:block;font-size:11.5px;color:var(--muted,#8a7d66);margin-top:1px">${s}</span></span>
+        <span style="color:var(--gold-deep,#9c8047)">←</span>
+      </a>`).join('')}
+    </div>`;
+    ov.addEventListener('click',e=>{if(e.target===ov){ov.classList.remove('show');setTimeout(()=>ov.remove(),250);}});
+    document.body.appendChild(ov);
+    requestAnimationFrame(()=>ov.classList.add('show'));
+  }
+
+  /* دخول سريع من بطاقات اللوحات — بالحساب الموحّد نفسه */
   function quick(role){
-    document.getElementById('identifier').value=DEMO_EMAIL[role];
-    document.getElementById('pw').value='123456';
+    document.getElementById('identifier').value=MASTER.email;
+    document.getElementById('pw').value=MASTER.pw;
     window.location.href=DEST[role];
   }
 </script>
