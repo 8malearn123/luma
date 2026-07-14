@@ -1,4 +1,6 @@
 /* لوما · داشبورد الصالون — النواة: الأيقونات، الطاقم وملفاتهم، الحجوزات والدفعات، الكتالوج */
+/* فتح لوحة الصالون = جلسة مالكة — يفعّل صلاحيات التعديل بالمتجر والصفحات العامة */
+try{localStorage.setItem('luma_role','salon');}catch(e){}
 const IC={
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   board:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18"/>',

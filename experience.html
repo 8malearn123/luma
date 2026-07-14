@@ -772,7 +772,8 @@ const PRODUCT_ART={
 };
 const productArt=id=>PRODUCT_ART[id]||'';
 
-/* خاصية إضافة صورة لكل منتج — تُرفع وتُحفظ وتحل محل الرسمة الافتراضية */
+/* خاصية إضافة صورة لكل منتج — صلاحية للمالكة فقط (جلسة صالون أو خبيرة)، الزائرات يشاهدن فقط */
+const LUMA_OWNER=(()=>{try{return ['salon','expert'].includes(localStorage.getItem('luma_role'));}catch(e){return false;}})();
 const PIMG_KEY='luma_prod_img';
 const prodImgs=()=>{try{return JSON.parse(localStorage.getItem(PIMG_KEY))||{};}catch(e){return{};}};
 function prodImgSet(id,src){
@@ -781,6 +782,7 @@ function prodImgSet(id,src){
   renderProducts();
 }
 window.prodImgPick=id=>{
+  if(!LUMA_OWNER)return;
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
   inp.onchange=()=>{
     const f=inp.files&&inp.files[0];if(!f)return;
@@ -795,7 +797,7 @@ window.prodImgPick=id=>{
   };
   inp.click();
 };
-window.prodImgClear=id=>{prodImgSet(id,null);toast('عادت الصورة الافتراضية');};
+window.prodImgClear=id=>{if(!LUMA_OWNER)return;prodImgSet(id,null);toast('عادت الصورة الافتراضية');};
 document.getElementById('prod-h').textContent='منتجات '+EXPERT.name;
 document.getElementById('prod-p').textContent='منتجات عناية وتجميل تختارها وتضمن جودتها '+EXPERT.name+' بنفسها — أضيفي ما تشائين للسلة ثم أتمّي طلبكِ.';
 
@@ -807,8 +809,8 @@ function renderProducts(){
         ${prodImgs()[p.id]
           ?`<img class="pimg" src="${prodImgs()[p.id]}" alt="${p.nm}"/>`
           :`<div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div><div class="art">${productArt(p.id)||`<span class="em">${p.em}</span>`}</div>`}
-        <button type="button" class="pcam" title="إضافة صورة للمنتج" onclick="event.stopPropagation();prodImgPick('${p.id}')">📷</button>
-        ${prodImgs()[p.id]?`<button type="button" class="pcam del" title="إزالة الصورة — العودة للرسمة" onclick="event.stopPropagation();prodImgClear('${p.id}')">✕</button>`:''}
+        ${LUMA_OWNER?`<button type="button" class="pcam" title="إضافة صورة للمنتج" onclick="event.stopPropagation();prodImgPick('${p.id}')">📷</button>
+        ${prodImgs()[p.id]?`<button type="button" class="pcam del" title="إزالة الصورة — العودة للرسمة" onclick="event.stopPropagation();prodImgClear('${p.id}')">✕</button>`:''}`:''}
       </div>
       <div class="b"><div class="cat">${p.cat}</div><div class="nm">${p.nm}</div>
         <div class="row"><span class="pr">${p.price} ر.س</span><button class="add ${inCart?'in':''}" onclick="CART.add('${p.id}')">${inCart?('في السلة · '+CART.data[p.id]):'+ أضيفي'}</button></div>
