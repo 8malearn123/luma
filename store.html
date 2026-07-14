@@ -393,7 +393,7 @@ function render(){
           :`<div class="pat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
              ${isSalon?`<span class="motif">${salonMotif(e.cat,salonHue(e.n).ac)}</span>`:''}`}
         ${isSalon?`<span class="logo" style="border-color:${salonHue(e.n).ac};color:${salonHue(e.n).ac}">${e.n.replace('صالون ','').replace('مركز ','').replace('استوديو ','').charAt(0)}</span>`:`<span class="mono-lg">${e.n.charAt(0)}</span>`}
-        ${isSalon?`<button type="button" class="cvcam" title="إضافة صورة للصالون" onclick="salonCoverPick('${e.n}',event)">📷 ${cvr?'تغيير الصورة':'إضافة صورة'}</button>
+        ${isSalon&&LUMA_OWNER?`<button type="button" class="cvcam" title="إضافة صورة للصالون" onclick="salonCoverPick('${e.n}',event)">📷 ${cvr?'تغيير الصورة':'إضافة صورة'}</button>
         ${cvr?`<button type="button" class="cvcam del" title="إزالة الصورة" onclick="salonCoverClear('${e.n}',event)">✕</button>`:''}`:''}
         <span class="fav ${state.fav.has(k)?'on':''}" onclick="toggleFav('${k}',event)">${state.fav.has(k)?'♥':'♡'}</span>
         <span class="ptag ${isSalon?'salon':'expert'}">${isSalon?'⬢ صالون':'◆ خبيرة مستقلة'}</span>
@@ -427,6 +427,8 @@ function salonHue(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))>>>0;retur
 window.salonHue=salonHue;
 
 /* ═══ صورة لكل صالون: رسم مميز حسب التخصص افتراضياً + رفع صورة حقيقية ═══ */
+/* إضافة/تغيير صور الصالونات صلاحية للمالكة فقط (جلسة صالون أو خبيرة) — الزائرات والعميلات يشاهدن فقط */
+const LUMA_OWNER=(()=>{try{return ['salon','expert'].includes(localStorage.getItem('luma_role'));}catch(e){return false;}})();
 const SCOVER_KEY='luma_salon_covers';
 const salonCovers=()=>{try{return JSON.parse(localStorage.getItem(SCOVER_KEY))||{};}catch(e){return{};}};
 function salonCoverSet(n,src){
@@ -436,6 +438,7 @@ function salonCoverSet(n,src){
 }
 window.salonCoverPick=(n,ev)=>{
   if(ev){ev.preventDefault();ev.stopPropagation();}
+  if(!LUMA_OWNER)return;
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
   inp.onchange=()=>{
     const f=inp.files&&inp.files[0];if(!f)return;
@@ -450,7 +453,7 @@ window.salonCoverPick=(n,ev)=>{
   };
   inp.click();
 };
-window.salonCoverClear=(n,ev)=>{if(ev){ev.preventDefault();ev.stopPropagation();}salonCoverSet(n,null);};
+window.salonCoverClear=(n,ev)=>{if(ev){ev.preventDefault();ev.stopPropagation();}if(!LUMA_OWNER)return;salonCoverSet(n,null);};
 
 /* رسوم خطية أنيقة حسب تخصص الصالون */
 function salonMotif(cat,ac){

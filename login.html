@@ -176,7 +176,7 @@
             <div class="e">8ma.learn@gmail.com</div>
             <div class="go">دخول لوحة الأدمن ←</div>
           </div>
-          <div class="dacc" onclick="location.href='staff-portal.html'" style="grid-column:1/-1">
+          <div class="dacc" onclick="try{localStorage.setItem('luma_role','staff')}catch(e){};location.href='staff-portal.html'" style="grid-column:1/-1">
             <div class="r"><span class="i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.2a3.4 3.4 0 010 6M21.5 20a6.5 6.5 0 00-4-6"/></svg></span> موظفة صالون</div>
             <div class="e">بوابة الموظفة — جدولي · أرباحي · طلباتي · حضوري</div>
             <div class="go">دخول بوابة الموظفة ←</div>
@@ -237,6 +237,7 @@
       showChooser(); return false;
     }
     const role=resolveRole(id);
+    try{localStorage.setItem('luma_role',role);}catch(err){}
     window.location.href=DEST[role];
     return false;
   }
@@ -245,11 +246,11 @@
   function showChooser(){
     const old=document.getElementById('panelPick'); if(old)old.remove();
     const PANELS=[
-      ['client.html','عميلة','تصفّح، حجوزات، مفضلة','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>'],
-      ['expert.html','خبيرة','لوحة الخبيرة المستقلة','<path d="M12 2l2.4 6.9H22l-6 4.6 2.3 7L12 16.9 5.7 20.5 8 13.5l-6-4.6h7.6z"/>'],
-      ['salon.html','صالون','الحجوزات والفريق والتقارير','<path d="M3 9l2-5h14l2 5M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/>'],
-      ['admin.html','الإدارة','لوحة إدارة المنصة','<path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/>'],
-      ['staff-portal.html','بوابة الموظفة','جدولي · أرباحي · حضوري','<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.2a3.4 3.4 0 010 6M21.5 20a6.5 6.5 0 00-4-6"/>'],
+      ['client.html','client','عميلة','تصفّح، حجوزات، مفضلة','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>'],
+      ['expert.html','expert','خبيرة','لوحة الخبيرة المستقلة','<path d="M12 2l2.4 6.9H22l-6 4.6 2.3 7L12 16.9 5.7 20.5 8 13.5l-6-4.6h7.6z"/>'],
+      ['salon.html','salon','صالون','الحجوزات والفريق والتقارير','<path d="M3 9l2-5h14l2 5M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/>'],
+      ['admin.html','admin','الإدارة','لوحة إدارة المنصة','<path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/>'],
+      ['staff-portal.html','staff','بوابة الموظفة','جدولي · أرباحي · حضوري','<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.2a3.4 3.4 0 010 6M21.5 20a6.5 6.5 0 00-4-6"/>'],
     ];
     const ov=document.createElement('div'); ov.id='panelPick';
     ov.innerHTML=`
@@ -265,8 +266,8 @@
     <div class="pp">
       <div style="font-size:19px;font-weight:700;color:var(--white,#231d15)">أهلاً بكِ ✦</div>
       <div style="font-size:13px;color:var(--gold-pale,#9c8047);margin-top:3px;margin-bottom:6px">دخولك موحّد — اختاري اللوحة التي تريدين فتحها الآن.</div>
-      ${PANELS.map(([href,t,s,ic])=>`
-      <a class="pc" href="${href}">
+      ${PANELS.map(([href,role,t,s,ic])=>`
+      <a class="pc" href="${href}" onclick="try{localStorage.setItem('luma_role','${role}')}catch(e){}">
         <span class="pi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></span>
         <span style="flex:1;min-width:0"><span style="display:block;font-size:14.5px;font-weight:600;color:var(--white,#231d15)">${t}</span>
         <span style="display:block;font-size:11.5px;color:var(--muted,#8a7d66);margin-top:1px">${s}</span></span>
@@ -282,6 +283,7 @@
   function quick(role){
     document.getElementById('identifier').value=MASTER.email;
     document.getElementById('pw').value=MASTER.pw;
+    try{localStorage.setItem('luma_role',role);}catch(err){}
     window.location.href=DEST[role];
   }
 </script>
