@@ -320,8 +320,8 @@ const SALON={
     const preStaff=pre.staff?STAFF.find(s=>s.id===pre.staff):null;
     const body=`
       <div class="lux-seg">
-        <button type="button" data-k="appt" class="${kind!=='block'?'on':''}">📅 موعد عميلة</button>
-        <button type="button" data-k="block" class="${kind==='block'?'on':''}">⛔ وقت محجوب</button>
+        <button type="button" data-k="appt" class="${kind!=='block'?'on':''}">${icon('calendar',15)} موعد عميلة</button>
+        <button type="button" data-k="block" class="${kind==='block'?'on':''}">${icon('ban',15)} وقت محجوب</button>
       </div>
       <div id="bkAppt" style="${kind==='block'?'display:none':''}">
         <div class="lux-f"><label>اسم العميلة</label><input name="client" list="bkClients" placeholder="اكتبي الاسم أو اختاري من عميلاتك…"/>
@@ -379,10 +379,10 @@ const SALON={
           :'<span style="color:#9fce99">✓ الوقت متاح</span>';
         const range=isNaN(start)?'—':slotLabel(start)+' – '+slotLabel(start+dur);
         if(k==='block'){
-          ov.querySelector('#bkSum').innerHTML=`⛔ حجب <b style="color:var(--white,#f6f2ec)">${q('reason').value}</b> · ${st?st.n:'—'} · <bdo dir="ltr">${range}</bdo>`;
+          ov.querySelector('#bkSum').innerHTML=`<span style="display:inline-flex;vertical-align:-3px;color:#e29aa6">${icon('ban',14)}</span> حجب <b style="color:var(--white,#f6f2ec)">${q('reason').value}</b> · ${st?st.n:'—'} · <bdo dir="ltr">${range}</bdo>`;
           okBtn.textContent='حجب الوقت';
         }else{
-          ov.querySelector('#bkSum').innerHTML=`📅 <b style="color:var(--white,#f6f2ec)">${q('client').value.trim()||'…'}</b> · ${sv?sv[0]:'—'} · ${st?st.n:'—'} · <bdo dir="ltr">${range}</bdo> · <b style="color:var(--gold-light,#ccab64)">${sv?sv[2]:'—'} ر.س</b>`;
+          ov.querySelector('#bkSum').innerHTML=`<span style="display:inline-flex;vertical-align:-3px;color:var(--gold-light,#ccab64)">${icon('calendar',14)}</span> <b style="color:var(--white,#f6f2ec)">${q('client').value.trim()||'…'}</b> · ${sv?sv[0]:'—'} · ${st?st.n:'—'} · <bdo dir="ltr">${range}</bdo> · <b style="color:var(--gold-light,#ccab64)">${sv?sv[2]:'—'} ر.س</b>`;
           okBtn.textContent='تأكيد الحجز';
         }
         okBtn.style.opacity=ok?'1':'0.45';okBtn.dataset.ok2=ok?'1':'';
