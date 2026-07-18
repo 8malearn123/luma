@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>LUMA — أنتِ أكبر من واتساب</title>
+<title>LUMA — أنتِ علامة فاخرة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
@@ -50,12 +50,21 @@
 
   /* hero */
   .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:140px 48px 100px;overflow:hidden;}
-  .hero .lattice{position:absolute;inset:0;opacity:0.32;}
+  .hero .lattice{position:absolute;inset:0;opacity:0.32;-webkit-mask-image:radial-gradient(ellipse 72% 62% at 50% 44%,rgba(0,0,0,.28),#000 78%);mask-image:radial-gradient(ellipse 72% 62% at 50% 44%,rgba(0,0,0,.28),#000 78%);}
   .hero .glow{position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% 42%,rgba(147,115,53,0.10),transparent 60%),radial-gradient(ellipse at 50% 50%,transparent 35%,var(--bg) 78%);}
+  /* توهّجات ذهبية عائمة تُثري الخلفية */
+  .hero .orb{position:absolute;border-radius:50%;filter:blur(72px);pointer-events:none;animation:orbF 15s ease-in-out infinite;}
+  .hero .orb.o1{width:430px;height:430px;background:rgba(204,171,100,.17);top:-100px;right:-70px;}
+  .hero .orb.o2{width:360px;height:360px;background:rgba(196,146,96,.13);bottom:-80px;left:-50px;animation-delay:5s;}
+  .hero .orb.o3{width:260px;height:260px;background:rgba(219,189,129,.10);top:34%;left:12%;animation-delay:9s;}
+  @keyframes orbF{0%,100%{transform:translateY(0)}50%{transform:translateY(28px)}}
+  .hero .spk{position:absolute;color:var(--gold-light);pointer-events:none;z-index:1;animation:spkF 6.5s ease-in-out infinite;}
+  @keyframes spkF{0%,100%{transform:translateY(0) scale(1);opacity:.3}50%{transform:translateY(-12px) scale(1.15);opacity:.85}}
+  .hero .ornament{color:var(--gold);margin-top:26px;opacity:.85;}
   .hero-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;max-width:1000px;}
   .hero .eyebrow{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--gold-pale);margin-bottom:38px;}
   .hero .eyebrow .l{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
-  .hero h1{font-family:'Amiri','IBM Plex Sans Arabic',serif;font-weight:700;font-size:clamp(44px,7.4vw,92px);line-height:1.35;color:var(--white);}
+  .hero h1{font-family:'Amiri','IBM Plex Sans Arabic',serif;font-weight:700;font-size:clamp(40px,6.2vw,78px);line-height:1.42;color:var(--white);}
   .hero h1 .em{font-family:inherit;font-weight:700;color:inherit;}
   .hero .sub{font-size:clamp(16px,2.2vw,21px);color:var(--gold-pale);font-weight:300;margin-top:30px;max-width:54ch;line-height:1.85;}
   .hero .actions{display:flex;gap:16px;margin-top:48px;flex-wrap:wrap;justify-content:center;}
@@ -198,10 +207,17 @@
 <header class="hero">
   <div class="lattice"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
   <div class="glow"></div>
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+  <svg class="spk" style="top:22%;right:16%" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>
+  <svg class="spk" style="top:30%;left:14%;animation-delay:2.2s" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>
+  <svg class="spk" style="bottom:26%;right:22%;animation-delay:4s" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>
   <div class="hero-inner">
     <div class="eyebrow"><span class="l"></span><span style="letter-spacing:0.06em">منصة الخبيرات المحترفات</span><span class="l" style="transform:scaleX(-1)"></span></div>
-    <h1>أنتِ <span class="em">أكبر</span> من واتساب.</h1>
-    <p class="sub">منصة واحدة تتحول فيها الخبيرة من رقمٍ في المحادثات إلى علامةٍ مستقلة لها حضور وهوية وعملاء أوفياء — وتجد فيها العميلة خبيرتها المثالية وتحجز بثقة.</p>
+    <h1>أنتِ علامةٌ فاخرة،<br/>لا مجرّد رقمٍ في واتساب.</h1>
+    <p class="sub">مع لوما تتحوّل موهبتكِ إلى علامةٍ لها صفحتها ورابطها وحجوزاتها ودخلها المنتظم — وتجد العميلة خبيرتها المثالية وتحجز في ثوانٍ بكل ثقة.</p>
+    <svg class="ornament" width="150" height="16" viewBox="0 0 150 16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round">
+      <path d="M2 8h48M100 8h48"/><path d="M75 2l4.2 6-4.2 6-4.2-6z"/><circle cx="60" cy="8" r="1.6"/><circle cx="90" cy="8" r="1.6"/>
+    </svg>
     <div class="actions">
       <a class="btn btn-gold" href="store.html">ابدئي الحجز الآن</a>
       <a class="btn btn-ghost" href="#experts">أنشئي استوديوكِ</a>
