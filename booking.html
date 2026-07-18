@@ -289,7 +289,18 @@ window.showAbout=()=>{
   requestAnimationFrame(()=>ov.classList.add('show'));
 };
 
-window.goBack=()=>{if(history.length>1)history.back();else location.href='store.html';};
+/* الرجوع للصفحة السابقة فعلياً: سجل التصفح أولاً، وإن فُتحت الصفحة بتبويب جديد
+   نعود لصفحة الإحالة نفسها (التطبيق/المتجر/الرابط) — ولا نلجأ للمتجر إلا كخيار أخير */
+window.goBack=()=>{
+  const ref=document.referrer&&document.referrer!==location.href?document.referrer:'';
+  if(history.length>1){
+    history.back();
+    /* لو ما تحرّك السجل (تبويب جديد) خلال لحظة — نرجع لصفحة الإحالة */
+    if(ref)setTimeout(()=>{location.href=ref;},400);
+  }
+  else if(ref)location.href=ref;
+  else location.href='store.html';
+};
 function header(){
   return `<div class="cover">${CFG.cover?`<img src="${CFG.cover}" alt=""/>`:''}
     <button class="backTop" onclick="goBack()" aria-label="الرجوع للصفحة السابقة" title="رجوع">→</button>
