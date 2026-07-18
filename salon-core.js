@@ -27,6 +27,8 @@ const IC={
   clipboard:'<rect x="5" y="4.5" width="14" height="17" rx="2"/><rect x="9" y="2.5" width="6" height="3.6" rx="1.2"/><path d="M9 11h6M9 14.5h6M9 18h3"/>',
   palette:'<path d="M12 3a9 9 0 100 18c1.6 0 2.1-1.1 1.4-2.2-.8-1.3.2-2.8 1.9-2.8H18a3.5 3.5 0 003.5-3.5A9 9 0 0012 3z"/><circle cx="7.6" cy="10.5" r="1.05"/><circle cx="12" cy="7.6" r="1.05"/><circle cx="16.4" cy="10.5" r="1.05"/>',
   upload:'<path d="M12 15.5V5M8.2 8.5L12 5l3.8 3.5"/><path d="M4.5 15.5V18a2.5 2.5 0 002.5 2.5h10a2.5 2.5 0 002.5-2.5v-2.5"/>',
+  calendar:'<rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 2v4M16 2v4"/><circle cx="12" cy="15" r="1.6"/>',
+  ban:'<circle cx="12" cy="12" r="9"/><path d="M5.9 5.9l12.2 12.2"/>',
 };
 const icon=(n,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 window.icon=icon;
