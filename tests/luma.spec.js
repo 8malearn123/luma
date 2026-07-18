@@ -73,7 +73,10 @@ test('لوحة الصالون: حجز جديد بتوفر حي', async ({ page }
   await page.waitForTimeout(800);
   await page.click('button:has-text("+ موعد / وقت محجوب")');
   await page.fill('.lux-modal [name=client]', 'عميلة الاختبار');
-  await page.fill('.lux-modal [name=staffq]', 'ريم');
+  await page.selectOption('.lux-modal [name=staffq]', 'ريم');
+  // القائمتان تعرضان كل الخبيرات وكل الخدمات
+  expect(await page.locator('.lux-modal [name=staffq] option').count()).toBeGreaterThanOrEqual(4);
+  expect(await page.locator('.lux-modal [name=service] option').count()).toBeGreaterThanOrEqual(6);
   await page.waitForTimeout(300);
   await expect(page.locator('#bkAvail')).toContainText('متاح');
   await page.click('.lux-modal [data-ok]');

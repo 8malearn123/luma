@@ -326,18 +326,17 @@ const SALON={
       <div id="bkAppt" style="${kind==='block'?'display:none':''}">
         <div class="lux-f"><label>اسم العميلة</label><input name="client" list="bkClients" placeholder="اكتبي الاسم أو اختاري من عميلاتك…"/>
           <datalist id="bkClients">${CLIENTS.map(c=>`<option value="${c.n}">`).join('')}</datalist></div>
-        <div class="lux-f"><label>الخدمة <span style="font-size:10px;color:var(--muted)">— اكتبي للبحث</span></label>
-          <input name="service" list="bkSvc" placeholder="اكتبي اسم الخدمة…" value="${SVC[0][0]}"/>
-          <datalist id="bkSvc">${SVC.map(([n,d,p])=>`<option value="${n}">${p} ر.س · ${d*30} دقيقة</option>`).join('')}</datalist></div>
+        <div class="lux-f"><label>الخدمة <span style="font-size:10px;color:var(--muted)">— كل خدمات الصالون</span></label>
+          <select name="service">${SVC.map(([n,d,p],i)=>`<option value="${n}" ${i===0?'selected':''}>${n} — ${p} ر.س · ${d*30} دقيقة</option>`).join('')}</select></div>
       </div>
       <div id="bkBlock" style="${kind==='block'?'':'display:none'}">
         <div class="lux-f"><label>السبب</label><select name="reason">${reasons.map(r=>`<option>${r}</option>`).join('')}</select></div>
       </div>
-      <div class="lux-f"><label>الموظفة / الفنانة <span style="font-size:10px;color:var(--muted)">— اكتبي للبحث</span></label>
-        <input name="staffq" list="bkStaff" placeholder="اكتبي اسم الفنانة…" value="${preStaff?preStaff.n:STAFF[0].n}"/>
-        <datalist id="bkStaff">${STAFF.map(s=>{
+      <div class="lux-f"><label>الموظفة / الفنانة <span style="font-size:10px;color:var(--muted)">— كل الخبيرات</span></label>
+        <select name="staffq">${STAFF.map(s=>{
           const off=hrOnLeaveToday(s.id)?' — في إجازة':(spOf(s.id).status!=='active'?' — موقوفة':'');
-          return `<option value="${s.n}">${s.role}${off}</option>`;}).join('')}</datalist></div>
+          const sel=(preStaff?preStaff.id===s.id:s===STAFF[0])?'selected':'';
+          return `<option value="${s.n}" ${sel}>${s.n} — ${s.role}${off}</option>`;}).join('')}</select></div>
       <div class="lux-two">
         <div class="lux-f"><label>الوقت</label><select name="start"></select></div>
         <div class="lux-f"><label>المدة</label><select name="dur">${durs.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div>
@@ -393,10 +392,12 @@ const SALON={
         ov.querySelector('#bkBlock').style.display=k==='block'?'':'none';
         refreshSummary();
       });
-      q('staffq').oninput=refreshTimes;q('dur').onchange=refreshTimes;
+      q('staffq').onchange=refreshTimes;q('dur').onchange=refreshTimes;
       q('start').onchange=refreshSummary;q('reason').onchange=refreshSummary;
       q('client').oninput=refreshSummary;
-      q('service').oninput=()=>{const sv=svcOf();if(sv){q('service').value=sv[0];q('dur').value=sv[1];}refreshTimes();};
+      q('service').onchange=()=>{const sv=svcOf();if(sv)q('dur').value=sv[1];refreshTimes();};
+      /* مزامنة المدة مع الخدمة المختارة عند الفتح */
+      if(k!=='block'){const sv0=svcOf();if(sv0)q('dur').value=sv0[1];}
       refreshTimes();
       okBtn.onclick=()=>{
         const st=staffOf();const sv=svcOf();
