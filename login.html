@@ -36,12 +36,17 @@
   .brandside .wm{font-size:64px;color:var(--gold-light);}
   .brandside .sep{display:flex;align-items:center;gap:16px;color:var(--gold);font-size:13px;margin:26px 0;}
   .brandside .sep .l{width:54px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
-  .brandside h2{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:30px;line-height:1.35;color:var(--white);max-width:18ch;}
-  .brandside h2 .em{font-family:'Bodoni Moda',serif;font-style:italic;font-weight:400;direction:ltr;color:var(--gold-light);}
-  .brandside p{font-size:15px;color:var(--gold-pale);margin-top:18px;max-width:40ch;line-height:1.9;}
-  .brandside .feats{margin-top:32px;display:flex;flex-direction:column;gap:14px;}
-  .brandside .feats .f{display:flex;align-items:center;gap:13px;font-size:14px;color:var(--cream);}
-  .brandside .feats .f .d{color:var(--gold);font-size:9px;}
+  .brandside h2{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:31px;line-height:1.4;color:var(--white);max-width:18ch;}
+  .brandside h2 .em{font-family:inherit;font-weight:700;background:linear-gradient(115deg,#dbbd81,#caa85f 40%,#937842 70%,#dbbd81);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .brandside p{font-size:15px;color:var(--gold-pale);margin-top:18px;max-width:42ch;line-height:2;}
+  .brandside .feats{margin-top:30px;display:flex;flex-direction:column;gap:11px;max-width:380px;}
+  .brandside .feats .f{display:flex;align-items:center;gap:13px;font-size:13.5px;color:var(--cream);background:var(--panel);border:0.5px solid var(--line);border-radius:13px;padding:12px 15px;backdrop-filter:blur(4px);}
+  .brandside .feats .f .ic{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,rgba(204,171,100,.22),rgba(147,120,66,.08));display:flex;align-items:center;justify-content:center;color:var(--gold-light);flex-shrink:0;}
+  /* الرسومات التزيينية — مرآة وورد وعطر وزخارف */
+  .brandside .art{position:absolute;bottom:-8px;left:-6px;width:min(330px,42%);color:var(--gold);opacity:.5;pointer-events:none;z-index:1;}
+  .brandside .corner{position:absolute;color:var(--gold);opacity:.5;pointer-events:none;z-index:1;}
+  .brandside .spark{position:absolute;color:var(--gold-light);pointer-events:none;z-index:1;animation:spk 5.5s ease-in-out infinite;}
+  @keyframes spk{0%,100%{transform:translateY(0) scale(1);opacity:.35}50%{transform:translateY(-10px) scale(1.12);opacity:.9}}
 
   /* form side */
   .formside{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 28px;}
@@ -107,15 +112,52 @@
   <!-- BRAND SIDE -->
   <div class="brandside">
     <div class="lattice"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+
+    <!-- زخرفتا الأركان -->
+    <svg class="corner" style="top:58px;right:24px;transform:scaleX(-1)" width="110" height="110" viewBox="0 0 110 110" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+      <path d="M6 104V46C6 24 24 6 46 6h58"/>
+      <path d="M18 104V52c0-18 14-32 32-32h54" opacity=".5"/>
+      <path d="M6 104l6-10M6 104l10-6" opacity=".7"/><circle cx="104" cy="6" r="2.6"/>
+    </svg>
+    <svg class="corner" style="bottom:24px;right:24px;transform:scale(-1,-1)" width="86" height="86" viewBox="0 0 110 110" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+      <path d="M6 104V46C6 24 24 6 46 6h58"/>
+      <path d="M18 104V52c0-18 14-32 32-32h54" opacity=".5"/><circle cx="104" cy="6" r="2.6"/>
+    </svg>
+
+    <!-- لمعات متحركة -->
+    <svg class="spark" style="top:18%;left:16%" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>
+    <svg class="spark" style="top:36%;left:34%;animation-delay:1.8s" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>
+    <svg class="spark" style="top:64%;left:12%;animation-delay:3.2s" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>
+
+    <!-- رسمة مرآة التسريحة والورد والعطر -->
+    <svg class="art" viewBox="0 0 300 300" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="150" cy="118" rx="60" ry="76"/>
+      <ellipse cx="150" cy="118" rx="49" ry="64" opacity=".45"/>
+      <path d="M150 194v48"/>
+      <path d="M120 260c9-11 51-11 60 0"/>
+      <path d="M132 243h36"/>
+      <path d="M133 92l3.6 7.6 7.6 3.6-7.6 3.6-3.6 7.6-3.6-7.6-7.6-3.6 7.6-3.6z" opacity=".85"/>
+      <path d="M168 136l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4z" opacity=".55"/>
+      <path d="M56 240c14-30 10-66 27-92"/>
+      <path d="M69 202c-8-6-20-6-26 2 10 4 20 3 26-2z" opacity=".7"/>
+      <path d="M77 176c-9-3-19 0-23 8 10 2 19-1 23-8z" opacity=".7"/>
+      <circle cx="85" cy="140" r="7"/>
+      <circle cx="85" cy="140" r="2.4" opacity=".6"/>
+      <rect x="215" y="198" width="46" height="52" rx="11"/>
+      <rect x="228" y="182" width="20" height="15" rx="3"/>
+      <rect x="232" y="170" width="12" height="11" rx="2.5"/>
+      <path d="M224 216h28M224 228h28" opacity=".45"/>
+    </svg>
+
     <div class="inner">
       <div class="word wm gold-fill">LUMA</div>
       <div class="sep"><span class="l"></span><span>◆</span><span class="l" style="transform:scaleX(-1)"></span></div>
-      <h2>دخول واحد إلى <span class="em">لوما</span></h2>
-      <p>سجّلي دخولكِ ببياناتكِ، والنظام يتعرّف تلقائيًا على نوع حسابكِ ويوجّهكِ إلى لوحتكِ الصحيحة — عميلة، خبيرة، صالون، أو إدارة.</p>
+      <h2>أهلاً بعودتكِ إلى <span class="em">لوما</span></h2>
+      <p>مساحة واحدة تجمع عالمكِ كلّه — حجوزاتكِ وصفحتكِ وعميلاتكِ وأرباحكِ. سجّلي دخولكِ واتركي الباقي على لوما.</p>
       <div class="feats">
-        <div class="f"><span class="d">◆</span> دخول موحّد بلا اختيار نوع الحساب</div>
-        <div class="f"><span class="d">◆</span> توجيه ذكي إلى اللوحة المناسبة</div>
-        <div class="f"><span class="d">◆</span> دخول آمن وموثّق</div>
+        <div class="f"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="14" r="4.5"/><path d="M11.5 10.5L20 2M16 6l3 3M13 9l2.5 2.5"/></svg></span> حساب واحد لكل اللوحات</div>
+        <div class="f"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></span> توجيه ذكي إلى لوحتكِ المناسبة</div>
+        <div class="f"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M8.8 12l2.2 2.2 4.2-4.4"/></svg></span> دخولٌ آمن وبياناتكِ محفوظة</div>
       </div>
     </div>
   </div>
