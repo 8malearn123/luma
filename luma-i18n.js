@@ -11,6 +11,9 @@
   const DICT={
     /* أجزاء عناوين تحتوي عناصر تنسيق داخلية */
     'أنتِ':'You are','أكبر':'bigger','من واتساب.':'than WhatsApp.',
+    'أنتِ علامةٌ فاخرة،':'You are a luxury brand,','لا مجرّد رقمٍ في واتساب.':'not just a WhatsApp number.',
+    'LUMA — أنتِ علامة فاخرة':'LUMA — You are a luxury brand',
+    'مع لوما تتحوّل موهبتكِ إلى علامةٍ لها صفحتها ورابطها وحجوزاتها ودخلها المنتظم — وتجد العميلة خبيرتها المثالية وتحجز في ثوانٍ بكل ثقة.':'With LUMA your talent becomes a brand with its own page, link, bookings and steady income — and every client finds her perfect expert and books in seconds with confidence.',
     'دخول واحد إلى':'One sign-in to','لوما':'LUMA','أهلاً بعودتكِ إلى':'Welcome back to',
     'LUMA — أنتِ أكبر من واتساب':'LUMA — You are bigger than WhatsApp',
     'LUMA — المتجر · اكتشفي خبيرتكِ':'LUMA — Marketplace · Discover your expert',
