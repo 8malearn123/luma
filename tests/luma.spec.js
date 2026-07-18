@@ -566,7 +566,7 @@ test('الترجمة: تبديل اللغة للإنجليزية يعم المو
   // الاختيار يتبع الزائرة لبقية الصفحات
   await page.goto('/login.html');
   await page.waitForTimeout(600);
-  await expect(page.getByText('One sign-in to LUMA')).toBeVisible();
+  await expect(page.getByText('Welcome back to')).toBeVisible();
   await page.goto('/booking.html');
   await page.waitForTimeout(700);
   await expect(page.getByText('Choose your service')).toBeVisible();

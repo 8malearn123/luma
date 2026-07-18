@@ -11,7 +11,7 @@
   const DICT={
     /* أجزاء عناوين تحتوي عناصر تنسيق داخلية */
     'أنتِ':'You are','أكبر':'bigger','من واتساب.':'than WhatsApp.',
-    'دخول واحد إلى':'One sign-in to','لوما':'LUMA',
+    'دخول واحد إلى':'One sign-in to','لوما':'LUMA','أهلاً بعودتكِ إلى':'Welcome back to',
     'LUMA — أنتِ أكبر من واتساب':'LUMA — You are bigger than WhatsApp',
     'LUMA — المتجر · اكتشفي خبيرتكِ':'LUMA — Marketplace · Discover your expert',
     /* عام / تنقل */
@@ -76,7 +76,11 @@
 
     /* تسجيل الدخول */
     'دخول واحد إلى لوما':'One sign-in to LUMA',
-    'سجّلي دخولكِ ببياناتكِ، والنظام يتعرّف تلقائيًا على نوع حسابكِ ويوجّهكِ إلى لوحتكِ الصحيحة — عميلة، خبيرة، صالون، أو إدارة.':'Sign in with your credentials and the system detects your account type automatically — client, expert, salon, or admin.',
+    'أهلاً بعودتكِ إلى لوما':'Welcome back to LUMA',
+    'مساحة واحدة تجمع عالمكِ كلّه — حجوزاتكِ وصفحتكِ وعميلاتكِ وأرباحكِ. سجّلي دخولكِ واتركي الباقي على لوما.':'One place for your whole world — bookings, page, clients and earnings. Sign in and leave the rest to LUMA.',
+    'حساب واحد لكل اللوحات':'One account for every dashboard',
+    'توجيه ذكي إلى لوحتكِ المناسبة':'Smart routing to your dashboard',
+    'دخولٌ آمن وبياناتكِ محفوظة':'Secure sign-in — your data stays safe',
     'دخول موحّد بلا اختيار نوع الحساب':'Unified sign-in, no account-type selection',
     'توجيه ذكي إلى اللوحة المناسبة':'Smart routing to the right dashboard',
     'دخول آمن وموثّق':'Secure, verified access',
