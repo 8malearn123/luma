@@ -580,7 +580,7 @@ test('الترجمة: تبديل اللغة للإنجليزية يعم المو
   await expect(page.locator('.luma-lang-btn')).toHaveText('EN');
   await page.click('.luma-lang-btn');                       // → English (يعيد التحميل)
   await page.waitForTimeout(900);
-  await expect(page.getByText('You are a luxury brand,')).toBeVisible();
+  await expect(page.getByText('From talent… to a luxury brand.')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.dir)).toBe('ltr');
   // الاختيار يتبع الزائرة لبقية الصفحات
   await page.goto('/login.html');
