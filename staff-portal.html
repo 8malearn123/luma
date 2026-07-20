@@ -318,7 +318,7 @@ window.newReq=()=>{
       }
       S.update('luma_requests',rs=>{rs.unshift({id:Date.now(),type:tid,staff:SID,values,step:0,status:'pending',at:new Date().toISOString().slice(0,10)});return rs;},[]);
     }
-    try{const who=(allStaff().find(s=>s.id===SID)||{}).n||'موظفة';window.LumaEvents&&LumaEvents.push('hr','طلب جديد من الموظفة '+who+' ببوابة صالون لمسة — بانتظار الموافقات');}catch(e){}
+    try{const who=(allStaff().find(s=>s.id===SID)||{}).n||'موظفة';window.LumaEvents&&LumaEvents.push('hr','طلب جديد من الموظفة '+who+' ببوابة صالون لمسة — بانتظار الموافقات','salon.html#hr');}catch(e){}
     wrap.remove();toast('أُرسل طلبك — بانتظار الموافقات ✓');render();
   };
 };

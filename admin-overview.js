@@ -113,7 +113,7 @@
       const NTFI={booking:'calendar',pay:'wallet',order:'box',review:'star',hr:'users',block:'gear'};
       const evs=(window.LumaEvents?LumaEvents.list():[]).slice(0,6);
       return evs.length
-        ?evs.map(e=>`<div class="alert"><div class="ic-box gold">${icon(NTFI[e.type]||'pulse',18)}</div><div class="tx"><div class="t" style="font-weight:400;font-size:12.5px;line-height:1.7">${e.msg}</div><div class="d">${LumaEvents.ago(e.at)}</div></div></div>`).join('')
+        ?evs.map(e=>`<div class="alert" ${e.href?`style="cursor:pointer" onclick="LumaEvents.markRead();location.href='${e.href}'" title="فتح صفحة الحدث"`:''}><div class="ic-box gold">${icon(NTFI[e.type]||'pulse',18)}</div><div class="tx"><div class="t" style="font-weight:400;font-size:12.5px;line-height:1.7">${e.msg}</div><div class="d">${LumaEvents.ago(e.at)}</div></div>${e.href?'<div class="go">فتح</div>':''}</div>`).join('')
         :'<div style="font-size:12px;color:var(--muted);padding:8px 0 14px;line-height:1.9">لا إشعارات بعد — أي حجز أو دفعة أو تقييم أو طلب يحدث بالمنصة سيظهر هنا فوراً.</div>';
     })()}
     <div class="sec-label" style="margin-top:14px">تنبيهات تشغيلية <span class="ln"></span></div>

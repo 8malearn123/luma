@@ -53,9 +53,9 @@
   const EV_KEY='luma_events', EV_SEEN='luma_events_seen', EV_MAX=60;
   window.LumaEvents={
     KEY:EV_KEY,
-    push(type,msg){
+    push(type,msg,href){
       window.LumaStore.update(EV_KEY,l=>{
-        l.unshift({type,msg,at:Date.now()});
+        l.unshift({type,msg,at:Date.now(),...(href?{href}:{})});
         return l.slice(0,EV_MAX);
       },[]);
     },
