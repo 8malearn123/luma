@@ -746,9 +746,9 @@ test('صورة لكل صالون: رسم مميز افتراضي والرفع ص
   await page.locator('.card.salon .cvcam.del').first().click();
   await page.waitForTimeout(500);
   await expect(page.locator('.card.salon .cvimg')).toHaveCount(0);
-  // لوقو الخبيرة: زر «إضافة لوقو» على بطاقة الخبيرة، الرفع يعرض اللوقو مكان الحرف
+  // صورة الخبيرة: زر «إضافة صورة» على بطاقة الخبيرة، الرفع يعرض الصورة مكان الحرف
   const exCam = page.locator('.card:not(.salon) .cvcam').first();
-  await expect(exCam).toContainText('إضافة لوقو');
+  await expect(exCam).toContainText('إضافة صورة');
   const [fc2] = await Promise.all([page.waitForEvent('filechooser'), exCam.click()]);
   await fc2.setFiles({ name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
   await page.waitForTimeout(700);
