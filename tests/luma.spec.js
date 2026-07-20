@@ -736,16 +736,26 @@ test('صورة لكل صالون: رسم مميز افتراضي والرفع ص
   await page.evaluate(() => localStorage.setItem('luma_role', 'salon'));
   await page.reload();
   await page.waitForTimeout(700);
-  await expect(page.locator('.cvcam').first()).toBeVisible();
+  await expect(page.locator('.card.salon .cvcam').first()).toBeVisible();
   const PX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
-  const [fc] = await Promise.all([page.waitForEvent('filechooser'), page.locator('.cvcam').first().click()]);
+  const [fc] = await Promise.all([page.waitForEvent('filechooser'), page.locator('.card.salon .cvcam').first().click()]);
   await fc.setFiles({ name: 'salon.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
   await page.waitForTimeout(700);
   await expect(page.locator('.card.salon .cvimg').first()).toBeVisible();
   // الإزالة تعيد الرسم
-  await page.locator('.cvcam.del').first().click();
+  await page.locator('.card.salon .cvcam.del').first().click();
   await page.waitForTimeout(500);
   await expect(page.locator('.card.salon .cvimg')).toHaveCount(0);
+  // لوقو الخبيرة: زر «إضافة لوقو» على بطاقة الخبيرة، الرفع يعرض اللوقو مكان الحرف
+  const exCam = page.locator('.card:not(.salon) .cvcam').first();
+  await expect(exCam).toContainText('إضافة لوقو');
+  const [fc2] = await Promise.all([page.waitForEvent('filechooser'), exCam.click()]);
+  await fc2.setFiles({ name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
+  await page.waitForTimeout(700);
+  await expect(page.locator('.card .explogo').first()).toBeVisible();
+  await page.locator('.card:not(.salon) .cvcam.del').first().click();
+  await page.waitForTimeout(500);
+  await expect(page.locator('.card .explogo')).toHaveCount(0);
 });
 
 test('المتجر: نافذة الصالون بالتعليقات والاستفسارات', async ({ page }) => {
