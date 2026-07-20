@@ -618,6 +618,7 @@ function addReview(){
   if(pickedImg)rec.img=pickedImg;
   mine.unshift(rec);
   try{saveJ(revKey(SV.n),mine);}catch(e){}
+  try{window.LumaEvents&&LumaEvents.push('review','تقييم جديد ('+pickedStars+'★) على '+SV.n+' من '+v.name);}catch(e){}
   tx.value='';pickStars(5);clearImage();renderRevs();
 }
 function zoomImg(src){

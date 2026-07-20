@@ -408,6 +408,9 @@ const SALON={
           ?{id:Date.now(),staff:st.id,start,dur,client:q('reason').value,service:'وقت محجوب',st:'blocked',custom:true}
           :{id:Date.now(),staff:st.id,start,dur,client:q('client').value.trim(),service:sv[0],st:'confirmed',custom:true});
         saveAppts();close();SALON.go('board');
+        try{window.LumaEvents&&LumaEvents.push(k==='block'?'block':'booking',k==='block'
+          ?'وقت محجوب بلوحة صالون لمسة: '+st.n+' — '+q('reason').value+' ('+slotLabel(start)+')'
+          :'حجز من لوحة صالون لمسة: '+q('client').value.trim()+' · '+sv[0]+' مع '+st.n+' ('+slotLabel(start)+')');}catch(e){}
         LUX.toast(k==='block'
           ?'حُجب وقت '+st.n+' <bdo dir="ltr">'+slotLabel(start)+'</bdo> ✓'
           :'تم حجز '+q('client').value.trim()+' مع '+st.n+' الساعة '+slotLabel(start)+' ✓','ok');
@@ -477,6 +480,7 @@ const SALON={
           try{LumaStore.update('luma_review_reqs',l=>{l.push({id:'rv'+a.id+'_'+Date.now(),client:a.client,service:a.service,staff:(STAFF.find(x=>x.id===a.staff)||{n:''}).n,salon:'صالون لمسة',date:new Date().toISOString().slice(0,10),st:'sent'});return l;},[]);}catch(e){}
           setTimeout(()=>LUX.toast('📱 أُرسل للعميلة رابط تقييم الزيارة عبر واتساب (محاكاة)','ok'),2800);
           close();SALON.go('board');
+          try{window.LumaEvents&&LumaEvents.push('pay','دفعة مستلمة بصالون لمسة: '+a.client+' · '+a.service+' — '+total.toLocaleString('en')+' ر.س ('+method+')');}catch(e){}
           LUX.toast('تم الدفع بنجاح عبر '+method+' ✓'+(pts?' — أُضيفت '+pts+' نقطة ولاء لرصيد '+a.client:''),'ok');
           if(stk.alerts.length)setTimeout(()=>LUX.toast('⚠ اقترب النفاد: '+stk.alerts.join('، ')+' — اطلبي من المورّد','warn'),1500);
           setTimeout(()=>SALON.showInvoice(a.id),650);

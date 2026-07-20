@@ -108,7 +108,15 @@
     ${revChart()}
   </div>
   <div class="card">
-    <div class="sec-label">تنبيهات تشغيلية <span class="ln"></span></div>
+    <div class="sec-label">الإشعارات الحية <span class="ln"></span><span style="font-size:10.5px;color:var(--muted)">كل حجز أو عملية تحدث بالمنصة</span></div>
+    ${(()=>{
+      const NTFI={booking:'calendar',pay:'wallet',order:'box',review:'star',hr:'users',block:'gear'};
+      const evs=(window.LumaEvents?LumaEvents.list():[]).slice(0,6);
+      return evs.length
+        ?evs.map(e=>`<div class="alert"><div class="ic-box gold">${icon(NTFI[e.type]||'pulse',18)}</div><div class="tx"><div class="t" style="font-weight:400;font-size:12.5px;line-height:1.7">${e.msg}</div><div class="d">${LumaEvents.ago(e.at)}</div></div></div>`).join('')
+        :'<div style="font-size:12px;color:var(--muted);padding:8px 0 14px;line-height:1.9">لا إشعارات بعد — أي حجز أو دفعة أو تقييم أو طلب يحدث بالمنصة سيظهر هنا فوراً.</div>';
+    })()}
+    <div class="sec-label" style="margin-top:14px">تنبيهات تشغيلية <span class="ln"></span></div>
     ${ALERTS.map(a=>`<div class="alert"><div class="ic-box ${a.c}">${icon(a.ic,18)}</div><div class="tx"><div class="t">${a.t}</div><div class="d">${a.d}</div></div><div class="go" onclick="ADMIN.go('${a.go}')">${a.cta}</div></div>`).join('')}
   </div>
 </div>
