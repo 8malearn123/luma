@@ -478,7 +478,7 @@ window.confirmBooking=()=>{
   const items=selSvcs().map(x=>({n:x.n,p:x.p,d:x.d,staff:assigns[x.id].staff,time:assigns[x.id].time}));
   items.forEach(it=>{BOOKED.push({staff:it.staff,staffName:(STAFF.find(z=>z.id===it.staff)||{}).n,client:'حجز أونلاين',service:it.n,price:it.p,coupon:coupon?coupon.code:null,date,time:it.time,at:new Date().toISOString()});});
   LumaStore.set('luma_public_bookings',BOOKED);
-  try{LumaEvents.push('booking','حجز أونلاين جديد لدى '+CFG.title+': '+items.map(i=>i.n).join(' + ')+' — '+date+' ('+(selTotal()-discount())+' ر.س)');}catch(e){}
+  try{LumaEvents.push('booking','حجز أونلاين جديد لدى '+CFG.title+': '+items.map(i=>i.n).join(' + ')+' — '+date+' ('+(selTotal()-discount())+' ر.س)','salon.html#board');}catch(e){}
   /* حجوزات اليوم تظهر مباشرة على لوحة الصالون — موعد لكل خدمة بخبيرتها ووقتها */
   if(date===days[0].iso){
     try{

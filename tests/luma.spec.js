@@ -135,9 +135,14 @@ test('الإشعارات: كل حجز أو عملية بالمنصة تظهر ب
   await page.waitForTimeout(300);
   await expect(page.locator('#ntfPanel')).toBeVisible();
   await expect(page.locator('#ntfPanel')).toContainText('مكياج سهرة');
-  // تحديد الكل كمقروء يخفي العداد
-  await page.click('#ntfPanel button:has-text("تحديد الكل كمقروء")');
-  await page.waitForTimeout(300);
+  // النقر على الإشعار يفتح صفحة الحدث نفسها (لوحة حجوزات الصالون)
+  await page.click('#ntfPanel .ev[data-href]');
+  await page.waitForURL(/salon\.html#board/);
+  await page.waitForTimeout(600);
+  await expect(page.getByText('لوحة الحجوزات').first()).toBeVisible();
+  // والنقرة تحتسب الإشعارات مقروءة — العداد يختفي
+  await page.goto('/admin.html');
+  await page.waitForTimeout(700);
   await expect(page.locator('#ntfPip')).toBeHidden();
 });
 
