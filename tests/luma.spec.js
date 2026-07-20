@@ -146,6 +146,16 @@ test('الإشعارات: كل حجز أو عملية بالمنصة تظهر ب
   await expect(page.locator('#ntfPip')).toBeHidden();
 });
 
+test('صفحة الصالون: قائمة خدمات موسّعة تشمل الأظافر والبشرة والفروة والحمام المغربي والمساج', async ({ page }) => {
+  await page.goto('/experience.html?name=' + encodeURIComponent('الجوهرة سبأ')
+    + '&type=salon&role=' + encodeURIComponent('صالون · متكامل') + '&city=' + encodeURIComponent('جازان'));
+  await page.waitForTimeout(600);
+  for (const s of ['مناكير', 'بدكير', 'تنظيف بشرة عميق', 'تنظيف فروة الرأس', 'حمام مغربي', 'مساج استرخائي'])
+    await expect(page.locator('.opt', { hasText: s }).first()).toBeVisible();
+  // خصم الجوهرة 30% ينطبق على الخدمات الجديدة أيضاً (320 → 224)
+  await expect(page.locator('.opt', { hasText: 'حمام مغربي' })).toContainText('224');
+});
+
 test('سهم الرجوع من تبويب جديد يعيد لصفحة المصدر نفسها لا للمتجر', async ({ page, context }) => {
   await page.goto('/client.html');
   await page.waitForTimeout(700);
