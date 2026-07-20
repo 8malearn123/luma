@@ -518,6 +518,7 @@ document.getElementById('rvSend').onclick=()=>{
   if(!tx.value.trim()){tx.style.borderColor='#c0566a';tx.focus();return;}
   const mine=loadRevs();
   mine.unshift({n:v.name,r:rvStars,t:tx.value.trim(),d:'الآن',cv:1});
+  try{window.LumaEvents&&LumaEvents.push('review','تقييم جديد ('+rvStars+'★) للخبيرة '+EXPERT.name+' من '+v.name);}catch(e){}
   try{localStorage.setItem(REV_KEY,JSON.stringify(mine));}catch(e){}
   tx.value='';rvStars=5;drawStars();renderExpertRevs();
 };
@@ -702,7 +703,10 @@ const BK={
     }
     state.step=n;render();
   },
-  confirm(){state.step=LAST;render();}
+  confirm(){
+    try{window.LumaEvents&&LumaEvents.push('booking','حجز جديد لدى '+EXPERT.name+(state.services&&state.services.length?': '+state.services.map(s=>s.n).join(' + '):'')+(state.date?' — '+state.date:''));}catch(e){}
+    state.step=LAST;render();
+  }
 };
 window.BK=BK;
 render();
@@ -896,6 +900,7 @@ const CART={
     if(!/^0?5\d{8}$/.test(phone.value.replace(/\s/g,''))){phone.classList.add('err');ok=false;} else phone.classList.remove('err');
     if(!ok){toast('أكملي الاسم ورقم الجوال الصحيح');return;}
     const ref='ORD-'+Math.floor(100000+Math.random()*900000);
+    try{window.LumaEvents&&LumaEvents.push('order','طلب منتجات جديد ('+ref+') لدى '+EXPERT.name+' — '+this.count()+' منتجات');}catch(e){}
     const ids=Object.keys(this.data).filter(id=>PRODUCTS.find(x=>x.id===id));
     const ship=this.total()>=200?0:20; const grand=this.total()+ship;
     const items=ids.map(id=>{const p=PRODUCTS.find(x=>x.id===id);return `${p.nm} × ${this.data[id]}`;}).join('، ');

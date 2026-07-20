@@ -47,4 +47,30 @@
       set(k,v){try{localStorage.setItem(k,String(v));}catch(e){}emit(k,v);},
     },
   };
+
+  /* ===== LumaEvents — سجل إشعارات مركزي لكل عمليات المنصة =====
+     أي صفحة تسجّل حدثاً (حجز، دفعة، تقييم، طلب…) وتعرضه لوحة الأدمن حيّاً. */
+  const EV_KEY='luma_events', EV_SEEN='luma_events_seen', EV_MAX=60;
+  window.LumaEvents={
+    KEY:EV_KEY,
+    push(type,msg){
+      window.LumaStore.update(EV_KEY,l=>{
+        l.unshift({type,msg,at:Date.now()});
+        return l.slice(0,EV_MAX);
+      },[]);
+    },
+    list(){return window.LumaStore.get(EV_KEY,[]);},
+    unread(){
+      const seen=parseInt(window.LumaStore.raw.get(EV_SEEN,'0'))||0;
+      return this.list().filter(e=>e.at>seen).length;
+    },
+    markRead(){window.LumaStore.raw.set(EV_SEEN,String(Date.now()));},
+    ago(t){
+      const s=Math.max(1,Math.round((Date.now()-t)/1000));
+      if(s<60)return 'الآن';
+      const m=Math.round(s/60);if(m<60)return 'قبل '+m+' دقيقة';
+      const h=Math.round(m/60);if(h<24)return 'قبل '+h+(h===1?' ساعة':' ساعات');
+      const d=Math.round(h/24);return 'قبل '+d+(d===1?' يوم':' أيام');
+    },
+  };
 })();
