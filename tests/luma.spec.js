@@ -146,6 +146,23 @@ test('الإشعارات: كل حجز أو عملية بالمنصة تظهر ب
   await expect(page.locator('#ntfPip')).toBeHidden();
 });
 
+test('صالون بليجر سبأ: بالمتجر وبقائمة خدماته الخاصة (حمامات ومساجات)', async ({ page }) => {
+  // البطاقة بالمتجر
+  await page.goto('/store.html');
+  await page.waitForTimeout(700);
+  const card = page.locator('.card.salon', { hasText: 'بليجر سبأ' });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('حي الرحاب');
+  await expect(card).toContainText('حمام مغربي');
+  // صفحة الحجز: القائمة الخاصة كاملة والفريق من طاقمه
+  await page.goto('/experience.html?name=' + encodeURIComponent('بليجر سبأ')
+    + '&type=salon&role=' + encodeURIComponent('صالون · سبا') + '&city=' + encodeURIComponent('جازان'));
+  await page.waitForTimeout(600);
+  for (const s of ['تصفيف الشعر', 'العناية بالأظافر', 'الحمام المغربي', 'الحمام السوداني', 'مساج الأخشاب', 'المساج التايلندي', 'مساج الأحجار الساخنة'])
+    await expect(page.locator('.opt', { hasText: s }).first()).toBeVisible();
+  expect(await page.locator('.opt').count()).toBe(7);
+});
+
 test('صفحة الصالون: قائمة خدمات موسّعة تشمل الأظافر والبشرة والفروة والحمام المغربي والمساج', async ({ page }) => {
   await page.goto('/experience.html?name=' + encodeURIComponent('الجوهرة سبأ')
     + '&type=salon&role=' + encodeURIComponent('صالون · متكامل') + '&city=' + encodeURIComponent('جازان'));
@@ -220,7 +237,7 @@ test('تطبيق العميلة: تبويب استكشفي بالتفاصيل و
   await page.waitForTimeout(700);
   await page.click('.tab[data-t="explore"]');
   await page.waitForTimeout(400);
-  await expect(page.locator('#exCount')).toHaveText('16');
+  await expect(page.locator('#exCount')).toHaveText('17');
   // تفاصيل البطاقة: تقييم وفروع وخبيرات ووسوم وخصم
   const jaw = page.locator('#exList .card', { hasText: 'الجوهرة سبأ' });
   await expect(jaw).toContainText('2 فروع');
@@ -230,22 +247,23 @@ test('تطبيق العميلة: تبويب استكشفي بالتفاصيل و
   // فلتر النوع: صوالين فقط (مبدّل مقسّم)
   await page.click('button:has-text("صوالين")');
   await page.waitForTimeout(400);
-  await expect(page.locator('#exCount')).toHaveText('7');
-  // فلتر المدينة: جازان — من لوحة الفلاتر السفلية
+  await expect(page.locator('#exCount')).toHaveText('8');
+  // فلتر المدينة: جازان — من لوحة الفلاتر السفلية (الجوهرة + بليجر)
   await page.click('button:has-text("فلترة")');
   await page.waitForTimeout(400);
   await page.click('#exSheetIn button:has-text("جازان")');
   await page.waitForTimeout(250);
-  await expect(page.locator('#exSheetIn button:has-text("عرض النتائج")')).toContainText('(1)');
+  await expect(page.locator('#exSheetIn button:has-text("عرض النتائج")')).toContainText('(2)');
   await page.click('#exSheetIn button:has-text("عرض النتائج")');
   await page.waitForTimeout(400);
-  await expect(page.locator('#exCount')).toHaveText('1');
+  await expect(page.locator('#exCount')).toHaveText('2');
+  await expect(page.locator('#exList')).toContainText('بليجر سبأ');
   // وسم الفلتر النشط ظاهر بالشريط ويمكن إزالته
   await expect(page.locator('button:has-text("جازان ✕")')).toBeVisible();
   // البحث الحي (بعد تصفير الفلاتر بزر مسح)
   await page.click('button:has-text("مسح")');
   await page.waitForTimeout(400);
-  await expect(page.locator('#exCount')).toHaveText('7');
+  await expect(page.locator('#exCount')).toHaveText('8');
   await page.click('button:has-text("الكل")');
   await page.waitForTimeout(300);
   await page.fill('input[placeholder*="ابحثي"]', 'رهف');
