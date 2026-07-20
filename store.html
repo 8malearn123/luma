@@ -398,8 +398,8 @@ function render(){
           :elg?`<img class="explogo" src="${elg}" alt="لوقو ${e.n}"/>`:`<span class="mono-lg">${e.n.charAt(0)}</span>`}
         ${isSalon&&LUMA_OWNER?`<button type="button" class="cvcam" title="إضافة صورة للصالون" onclick="salonCoverPick('${e.n}',event)">📷 ${cvr?'تغيير الصورة':'إضافة صورة'}</button>
         ${cvr?`<button type="button" class="cvcam del" title="إزالة الصورة" onclick="salonCoverClear('${e.n}',event)">✕</button>`:''}`:''}
-        ${!isSalon&&LUMA_OWNER?`<button type="button" class="cvcam" title="لوقو الخبيرة" onclick="expertLogoPick('${e.n}',event)">📷 ${elg?'تغيير اللوقو':'إضافة لوقو'}</button>
-        ${elg?`<button type="button" class="cvcam del" title="إزالة اللوقو" onclick="expertLogoClear('${e.n}',event)">✕</button>`:''}`:''}
+        ${!isSalon&&LUMA_OWNER?`<button type="button" class="cvcam" title="صورة الخبيرة" onclick="expertLogoPick('${e.n}',event)">📷 ${elg?'تغيير الصورة':'إضافة صورة'}</button>
+        ${elg?`<button type="button" class="cvcam del" title="إزالة الصورة" onclick="expertLogoClear('${e.n}',event)">✕</button>`:''}`:''}
         <span class="fav ${state.fav.has(k)?'on':''}" onclick="toggleFav('${k}',event)">${state.fav.has(k)?'♥':'♡'}</span>
         <span class="ptag ${isSalon?'salon':'expert'}">${isSalon?'⬢ صالون':'◆ خبيرة مستقلة'}</span>
       </div>
