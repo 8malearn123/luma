@@ -423,7 +423,19 @@ document.getElementById('bioTitle').textContent=IS_SALON?'نبذة عن الصا
 document.getElementById('bioTxt').textContent=PROF.bio;
 if(PROF.work){const w=document.getElementById('bioWork');w.href=PROF.work;w.style.display='inline-flex';}
 
-const SERVICES=[
+/* قوائم خدمات خاصة ببعض الصوالين — تتقدّم على القائمة العامة */
+const SALON_SVC_MENU={
+  'بليجر سبأ':[
+    {id:'hair',t:'تصفيف الشعر',dur:'60 دقيقة',price:180},
+    {id:'nails',t:'العناية بالأظافر — مناكير وبدكير',dur:'90 دقيقة',price:220},
+    {id:'hammam',t:'الحمام المغربي',dur:'90 دقيقة',price:320},
+    {id:'sudani',t:'الحمام السوداني',dur:'90 دقيقة',price:300},
+    {id:'wood',t:'مساج الأخشاب',dur:'60 دقيقة',price:280},
+    {id:'thai',t:'المساج التايلندي',dur:'60 دقيقة',price:290},
+    {id:'stone',t:'مساج الأحجار الساخنة',dur:'75 دقيقة',price:310},
+  ],
+};
+const SERVICES=SALON_SVC_MENU[EXPERT.name]||[
   {id:'soiree',t:'مكياج سهرة',dur:'60 دقيقة',price:350},
   {id:'bride',t:'مكياج عروس كامل',dur:'120 دقيقة',price:850},
   {id:'soft',t:'مكياج ناعم / نهاري',dur:'45 دقيقة',price:250},
