@@ -154,7 +154,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--gold)"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input placeholder="ابحثي عن حجز، عميلة، خدمة…" />
       </div>
-      <button class="ic-btn" title="الإشعارات"><span class="pip"></span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></button>
+      <button class="ic-btn" id="ntfBell" title="الإشعارات" onclick="EXP_NOTIF()"><span class="pip" id="ntfPip" style="display:none;width:auto;height:auto;min-width:16px;padding:1px 4px;border-radius:9px;font-size:9px;line-height:1.3;background:var(--red,#c0566a);color:#fff;text-align:center;top:5px;left:6px"></span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></button>
       <div class="me">
         <div class="av">ر</div>
         <div class="nm"><b>رهف العتيبي</b><span>خبيرة مكياج · جدة</span></div>
@@ -258,6 +258,54 @@ addEventListener('DOMContentLoaded',()=>{
 <script src="dash-advanced.js"></script>
 <script src="dash-site.js"></script>
 <script>if(window.LUMA && window.LUMA.current===null){const s=(location.hash||'').replace('#','')||'overview';LUMA.go(NAV_FLAT[s]?s:'overview');}</script>
+<script>
+/* ═══ إشعارات لوحة الخبيرة — نفس سجل LumaEvents الحي، والنقر يفتح صفحة الحدث ═══ */
+(function(){
+  const NTF_ICON={booking:'calendar',pay:'wallet',order:'services',review:'star',hr:'users',block:'shield'};
+  const ico=n=>window.icon?icon(NTF_ICON[n]||'chart',15):'';
+  function badge(){
+    const n=window.LumaEvents?LumaEvents.unread():0;
+    const p=document.getElementById('ntfPip');
+    if(p){p.style.display=n?'block':'none';p.textContent=n>9?'9+':String(n);}
+  }
+  window.EXP_NOTIF=function(){
+    const old=document.getElementById('ntfPanel');
+    if(old){old.remove();return;}
+    const evs=window.LumaEvents?LumaEvents.list():[];
+    const pn=document.createElement('div');pn.id='ntfPanel';
+    pn.innerHTML=`
+    <style>
+      #ntfPanel{position:fixed;top:72px;left:26px;z-index:120;width:380px;max-width:92vw;background:var(--surface,#1b1a20);border:1px solid var(--gold-deep,#846a38);border-radius:16px;box-shadow:0 22px 60px rgba(8,6,4,.45);overflow:hidden;animation:ntfIn .22s ease}
+      @keyframes ntfIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+      #ntfPanel .hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+      #ntfPanel .hd .t{font-weight:700;font-size:14.5px;color:var(--white)}
+      #ntfPanel .hd button{background:none;border:none;font-family:inherit;font-size:11.5px;color:var(--gold-light);cursor:pointer;text-decoration:underline}
+      #ntfPanel .bd{max-height:52vh;overflow-y:auto}
+      #ntfPanel .ev{display:flex;gap:11px;padding:12px 16px;border-bottom:0.5px solid var(--line);align-items:flex-start}
+      #ntfPanel .ev:last-child{border-bottom:none}
+      #ntfPanel .ev[data-href]{cursor:pointer;transition:background .18s}
+      #ntfPanel .ev[data-href]:hover{background:rgba(204,171,100,.08)}
+      #ntfPanel .ev .ib{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(204,171,100,.18),rgba(147,120,66,.06));display:flex;align-items:center;justify-content:center;color:var(--gold-light);flex-shrink:0}
+      #ntfPanel .ev .m{flex:1;font-size:12.5px;color:var(--cream);line-height:1.7}
+      #ntfPanel .ev .w{font-size:10.5px;color:var(--muted);margin-top:2px}
+      #ntfPanel .ev .arr{color:var(--gold-deep);flex-shrink:0;align-self:center;font-size:13px}
+      #ntfPanel .empty{padding:30px 16px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.9}
+    </style>
+    <div class="hd"><span class="t">الإشعارات</span><button onclick="LumaEvents.markRead();EXP_NOTIF();EXP_NOTIF();">تحديد الكل كمقروء</button></div>
+    <div class="bd">${evs.length?evs.slice(0,25).map(e=>`
+      <div class="ev" ${e.href?`data-href="${e.href}" onclick="LumaEvents.markRead();location.href='${e.href}'" title="فتح صفحة الحدث"`:''}><span class="ib">${ico(e.type)}</span>
+        <span class="m">${e.msg}<div class="w">${LumaEvents.ago(e.at)}</div></span>${e.href?'<span class="arr">←</span>':''}</div>`).join('')
+      :'<div class="empty">لا إشعارات بعد — أي حجز أو دفعة أو تقييم أو طلب يحدث بالمنصة سيظهر هنا فوراً.</div>'}</div>`;
+    document.body.appendChild(pn);
+    badge();
+    const away=ev=>{if(!pn.contains(ev.target)&&ev.target.closest&&!ev.target.closest('#ntfBell')){pn.remove();removeEventListener('click',away,true);}};
+    setTimeout(()=>addEventListener('click',away,true),0);
+  };
+  if(window.LumaStore){LumaStore.subscribe('luma_events',()=>{badge();const p=document.getElementById('ntfPanel');if(p){p.remove();EXP_NOTIF();}});}
+  badge();
+  setInterval(badge,15000);
+})();
+</script>
 <script src="luma-ui.js"></script>
 <script src="luma-theme.js"></script>
 <script src="luma-i18n.js"></script>
