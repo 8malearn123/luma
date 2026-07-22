@@ -106,6 +106,14 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('زر «ابدئي مجاناً 14 يوماً» يوجّه لصفحة الباقات', async ({ page }) => {
+  await page.goto('/index.html');
+  await page.waitForTimeout(500);
+  await page.locator('a:has-text("ابدئي مجاناً 14 يوماً")').click();
+  await page.waitForURL(/pricing\.html/);
+  await expect(page.getByText('وثيقة الباقات والأسعار').first()).toBeVisible();
+});
+
 test('سهم الرجوع في صفحة الحجز يعيد للصفحة السابقة', async ({ page }) => {
   await page.goto('/store.html');
   await page.waitForTimeout(500);
