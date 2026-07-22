@@ -32,8 +32,11 @@
   /* brand side */
   .brandside{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:60px 56px;border-left:0.5px solid var(--line);background:radial-gradient(ellipse 80% 70% at 30% 30%,rgba(147,115,53,0.14),transparent 60%);}
   .brandside .lattice{position:absolute;inset:0;opacity:0.3;}
-  .brandside .inner{position:relative;z-index:2;}
-  .brandside .wm{font-size:64px;color:var(--gold-light);}
+  .brandside .inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;}
+  .brandside .wm-row{display:flex;align-items:center;gap:20px;}
+  .brandside .wm-row .l{width:70px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+  .brandside .wm{font-size:clamp(52px,5.6vw,74px);color:var(--gold-light);letter-spacing:0.32em;text-indent:0.32em;filter:drop-shadow(0 4px 18px rgba(156,124,58,.35));}
+  .brandside .wm-sub{font-size:12.5px;color:var(--gold-pale);letter-spacing:0.28em;margin-top:14px;}
   .brandside .sep{display:flex;align-items:center;gap:16px;color:var(--gold);font-size:13px;margin:26px 0;}
   .brandside .sep .l{width:54px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
   .brandside h2{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:31px;line-height:1.4;color:var(--white);max-width:18ch;}
@@ -150,7 +153,9 @@
     </svg>
 
     <div class="inner">
-      <div class="word wm gold-fill">LUMA</div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="color:var(--gold-light);margin-bottom:16px"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg>
+      <div class="wm-row"><span class="l"></span><div class="word wm gold-fill">LUMA</div><span class="l" style="transform:scaleX(-1)"></span></div>
+      <div class="wm-sub">منصة الجمال الفاخرة</div>
       <div class="sep"><span class="l"></span><span>◆</span><span class="l" style="transform:scaleX(-1)"></span></div>
       <h2>أهلاً بعودتكِ إلى <span class="em">لوما</span></h2>
       <p>مساحة واحدة تجمع عالمكِ كلّه — حجوزاتكِ وصفحتكِ وعميلاتكِ وأرباحكِ. سجّلي دخولكِ واتركي الباقي على لوما.</p>

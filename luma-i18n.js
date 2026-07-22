@@ -85,6 +85,7 @@
     /* تسجيل الدخول */
     'دخول واحد إلى لوما':'One sign-in to LUMA',
     'أهلاً بعودتكِ إلى لوما':'Welcome back to LUMA',
+    'منصة الجمال الفاخرة':'The luxury beauty platform',
     'مساحة واحدة تجمع عالمكِ كلّه — حجوزاتكِ وصفحتكِ وعميلاتكِ وأرباحكِ. سجّلي دخولكِ واتركي الباقي على لوما.':'One place for your whole world — bookings, page, clients and earnings. Sign in and leave the rest to LUMA.',
     'حساب واحد لكل اللوحات':'One account for every dashboard',
     'توجيه ذكي إلى لوحتكِ المناسبة':'Smart routing to your dashboard',
