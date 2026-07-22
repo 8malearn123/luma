@@ -16,6 +16,8 @@
     'كلُّ ما يليقُ بجمالكِ… في مكانٍ واحد.':'Everything your beauty deserves… in one place.',
     'أنتِ أكبرُ من واتساب…':'You are bigger than WhatsApp…','وجمالُكِ يستحقُّ الأجمل.':'and your beauty deserves the finest.',
     'أنتِ حكايةُ جمالٍ تُروى.':'you are a beauty story worth telling.',
+    'جمالُكِ يستحقُّ عنوانًا…':'Your beauty deserves an address…','لا مجرّد محادثة.':'not just a chat.',
+    'LUMA — جمالُكِ يستحق عنوانًا':'LUMA — Your beauty deserves an address',
     'مع لوما تتحوّل موهبتكِ إلى علامةٍ لها صفحتها ورابطها وحجوزاتها ودخلها المنتظم — وتجد العميلة خبيرتها المثالية وتحجز في ثوانٍ بكل ثقة.':'With LUMA your talent becomes a brand with its own page, link, bookings and steady income — and every client finds her perfect expert and books in seconds with confidence.',
     'دخول واحد إلى':'One sign-in to','لوما':'LUMA','أهلاً بعودتكِ إلى':'Welcome back to',
     'LUMA — أنتِ أكبر من واتساب':'LUMA — You are bigger than WhatsApp',
