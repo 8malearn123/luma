@@ -152,6 +152,13 @@ test('الإشعارات: كل حجز أو عملية بالمنصة تظهر ب
   await page.goto('/admin.html');
   await page.waitForTimeout(700);
   await expect(page.locator('#ntfPip')).toBeHidden();
+  // نفس الإشعارات تعمل بلوحة الخبيرة أيضاً
+  await page.goto('/expert.html');
+  await page.waitForTimeout(800);
+  await page.click('#ntfBell');
+  await page.waitForTimeout(300);
+  await expect(page.locator('#ntfPanel')).toBeVisible();
+  await expect(page.locator('#ntfPanel')).toContainText('مكياج سهرة');
 });
 
 test('صالون بليجر سبأ: بالمتجر وبقائمة خدماته الخاصة (حمامات ومساجات)', async ({ page }) => {
