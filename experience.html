@@ -282,7 +282,7 @@
       <div style="font-weight:600;font-size:16px;color:var(--white);margin:3px 0 6px" id="bioTitle">نبذة عنها</div>
       <p id="bioTxt" style="font-size:13.5px;color:var(--cream);line-height:2.1"></p>
     </div>
-    <a id="bioWork" class="btn btn-ghost" target="_blank" rel="noopener" style="display:none;align-self:center;border-radius:30px">🔗 شاهدي أعمالها</a>
+    <a id="bioWork" class="btn btn-ghost" style="display:none;align-self:center;border-radius:30px">🔗 شاهدي أعمالها</a>
   </div>
 
   <div class="tabs">
@@ -421,7 +421,10 @@ if(OFFER){
 }
 document.getElementById('bioTitle').textContent=IS_SALON?'نبذة عن الصالون':'نبذة عنها';
 document.getElementById('bioTxt').textContent=PROF.bio;
-if(PROF.work){const w=document.getElementById('bioWork');w.href=PROF.work;w.style.display='inline-flex';}
+/* «شاهدي أعمالها» يفتح صفحة أعمالها (اللاندنج بيج) أولاً — ورابط أعمالها الخارجي ظاهر داخلها */
+if(PROF.work&&!IS_SALON){const w=document.getElementById('bioWork');
+  w.href='expert-landing.html?name='+encodeURIComponent(EXPERT.name)+'&role='+encodeURIComponent(EXPERT.role)+'&city='+encodeURIComponent(EXPERT.city);
+  w.style.display='inline-flex';}
 
 /* قوائم خدمات خاصة ببعض الصوالين — تتقدّم على القائمة العامة */
 const SALON_SVC_MENU={

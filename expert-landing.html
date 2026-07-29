@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<script src="luma-store.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LUMA — أعمال الخبيرة</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900&family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#16151b;--surface:#1b1a20;--surface2:#201f26;
+    --gold:#9c8047;--gold-light:#ccab64;--gold-pale:#e6ce95;--gold-deep:#846a38;
+    --white:#f6f2ec;--cream:#ece6da;--muted:#86818d;--line:#26242d;
+  }
+  body{background:var(--bg);color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .word{font-family:'Bodoni Moda',serif;letter-spacing:.24em;direction:ltr}
+  .topnav{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:15px 30px;background:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:blur(14px);border-bottom:.5px solid var(--line)}
+  .topnav .b{font-family:'Bodoni Moda',serif;font-size:21px;letter-spacing:.26em;color:var(--gold-light);direction:ltr}
+  .backTop{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gold-pale);background:none;border:1px solid var(--line);border-radius:20px;padding:8px 16px;cursor:pointer;font-family:inherit;transition:border-color .2s}
+  .backTop:hover{border-color:var(--gold-light);color:var(--gold-light)}
+  .hero{position:relative;overflow:hidden;text-align:center;padding:56px 24px 40px}
+  .hero .lat{position:absolute;inset:0;opacity:.3;-webkit-mask-image:radial-gradient(ellipse 70% 70% at 50% 40%,rgba(0,0,0,.3),#000 80%);mask-image:radial-gradient(ellipse 70% 70% at 50% 40%,rgba(0,0,0,.3),#000 80%)}
+  .hero .glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(147,115,53,.12),transparent 65%)}
+  .hero .in{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
+  .av{width:92px;height:92px;border-radius:50%;background:linear-gradient(140deg,#26222b,#141317);border:1.5px solid var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--gold-light);font-weight:600;box-shadow:0 10px 32px rgba(10,8,6,.3)}
+  .hero h1{font-size:29px;font-weight:700;margin-top:16px}
+  .hero .role{font-size:14px;color:var(--gold-pale);margin-top:5px}
+  .hero .meta{display:flex;align-items:center;gap:14px;margin-top:12px;font-size:12.5px;color:var(--cream);flex-wrap:wrap;justify-content:center}
+  .hero .meta .star{color:var(--gold-light)}
+  .hero .vf{font-size:11px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:4px 12px}
+  .wrap{max-width:860px;margin:0 auto;padding:10px 22px 70px}
+  .card{background:var(--surface);border:.5px solid var(--line);border-radius:18px;padding:24px}
+  .seclab{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--gold);letter-spacing:.08em;margin:26px 0 14px}
+  .seclab .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .bio{font-size:14.5px;color:var(--cream);line-height:2.1}
+  .works{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:640px){.works{grid-template-columns:repeat(2,1fr)}}
+  .wk{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;border:.5px solid var(--line);display:flex;align-items:flex-end;background:linear-gradient(150deg,var(--surface2),var(--bg))}
+  .wk svg.pat{position:absolute;inset:0;opacity:.5}
+  .wk .ic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gold-light);opacity:.9}
+  .wk .lb{position:relative;z-index:2;width:100%;padding:9px 12px;font-size:11.5px;color:var(--gold-pale);background:linear-gradient(180deg,transparent,rgba(10,8,6,.55))}
+  .worklink{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);color:#131217;font-weight:700;font-size:15px;border-radius:12px;padding:16px;margin-top:22px;transition:filter .2s,transform .15s}
+  .worklink:hover{filter:brightness(1.07);transform:translateY(-1px)}
+  .ctas{display:flex;gap:12px;margin-top:12px}
+  .ctas a{flex:1;text-align:center;font-size:13.5px;padding:13px;border-radius:12px;border:1px solid var(--gold-deep);color:var(--gold-pale);transition:all .2s}
+  .ctas a:hover{border-color:var(--gold-light);color:var(--gold-light)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="lat" width="90" height="90" patternUnits="userSpaceOnUse"><g fill="none" stroke="#937842" stroke-width="1"><circle cx="0" cy="0" r="45"/><circle cx="90" cy="0" r="45"/><circle cx="0" cy="90" r="45"/><circle cx="90" cy="90" r="45"/><circle cx="45" cy="45" r="45"/></g></pattern>
+</defs></svg>
+
+<nav class="topnav">
+  <button class="backTop" onclick="goBack()">→ رجوع</button>
+  <span class="b">L U M A</span>
+</nav>
+
+<header class="hero">
+  <div class="lat"><svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg></div>
+  <div class="glow"></div>
+  <div class="in">
+    <div class="av" id="av">ر</div>
+    <h1 id="nm">—</h1>
+    <div class="role" id="rl">—</div>
+    <div class="meta"><span><span class="star">★</span> <b id="rt">—</b> (<span id="jb">—</span> حجز)</span><span>⌖ <span id="ct">—</span></span><span class="vf">◆ خبيرة موثّقة</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="seclab">نبذة عنها <span class="ln"></span></div>
+  <div class="card"><div class="bio" id="bio">—</div></div>
+
+  <div class="seclab">معرض أعمالها <span class="ln"></span></div>
+  <div class="works" id="works"></div>
+
+  <a class="worklink" id="workBtn" target="_blank" rel="noopener">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" stroke="none"/></svg>
+    رابط أعمالها على إنستقرام ↗
+  </a>
+  <div class="ctas">
+    <a id="bookBtn">✦ احجزي موعدًا معها</a>
+    <a href="store.html">تصفّحي بقية الخبيرات</a>
+  </div>
+</div>
+
+<script>
+/* بيانات الخبيرات — نفس ملفات صفحة الخبيرة */
+const PROFILES={
+  'رهف العتيبي':{bio:'خبيرة مكياج عرائس وسهرات بخبرة 9 سنوات، متخصصة في اللوك الخليجي الفاخر والمكياج الثابت للمناسبات الطويلة. حاصلة على شهادات معتمدة من أكاديميات عالمية، وجهّزت أكثر من 300 عروس.',work:'https://instagram.com/rahaf.beauty.sa',rating:4.9,jobs:213},
+  'لمياء الزهراني':{bio:'أخصائية بشرة معتمدة بخبرة 7 سنوات في العناية العميقة وجلسات الهيدرافيشل والتقشير الكيميائي الآمن. تبني لكل عميلة بروتوكولاً علاجياً خاصاً حسب نوع بشرتها، وتتابع النتائج جلسة بجلسة.',work:'https://instagram.com/lamia.skin.expert',rating:5.0,jobs:98},
+  'نورة القحطاني':{bio:'مصففة شعر متنقلة تغطي منطقة جازان، متخصصة في التسريحات والصبغات المنزلية باحترافية الصالونات. تصل بأدواتها كاملة، وخبيرة في شعر المناسبات والعرايس.',work:'https://instagram.com/noura.hair.jazan',rating:4.8,jobs:156},
+  'دانة الشهري':{bio:'خبيرة مكياج في الرياض متخصصة في اللوك الناعم والـSoft Glam — فلسفتها «مكياج يبرز جمالك ولا يغطيه». مثالية لمكياج الخطوبات والتخرج وجلسات التصوير الشخصية.',work:'https://instagram.com/dana.soft.glam',rating:4.7,jobs:187},
+  'جواهر الدوسري':{bio:'فنانة أظافر في جدة بخبرة 6 سنوات — تركيب، جل، ورسم فني يدوي بتصاميم لا تتكرر. تستخدم منتجات صحية معتمدة وتهتم بصحة الظفر قبل جماله.',work:'https://instagram.com/jawaher.nails.art',rating:4.9,jobs:142},
+  'سارة الغامدي':{bio:'مصورة بورتريه نسائية في مكة، متخصصة في جلسات التصوير الشخصية وتوثيق المناسبات بخصوصية تامة وطاقم نسائي كامل. أسلوبها سينمائي بإضاءة ناعمة.',work:'https://instagram.com/sara.portraits',rating:4.8,jobs:76},
+  'ريم العنزي':{bio:'فنية رموش معتمدة في الدمام — كلاسيك، هجين، وفوليوم روسي. تدرس شكل العين قبل التركيب لتختار التقنية الأنسب، مع التزام صارم بمعايير التعقيم.',work:'https://instagram.com/reem.lashes.dmm',rating:5.0,jobs:121},
+  'وجدان الحربي':{bio:'خبيرة شعر في جدة متخصصة في الكيراتين والبروتين المعالج وقصّات تناسب شكل الوجه. 8 سنوات خبرة وتحليل مجاني لحالة الشعر قبل أي جلسة.',work:'https://instagram.com/wijdan.hair.jed',rating:4.9,jobs:203},
+  'أمل السبيعي':{bio:'خبيرة مكياج سهرات وتخرج في الدمام — جريئة في الألوان، محترفة في السموكي والكات كريس. تجهز لوكات كاملة مع تثبيت يدوم 12 ساعة.',work:'https://instagram.com/amal.mua.dmm',rating:4.7,jobs:134}
+};
+const qp=new URLSearchParams(location.search);
+const NAME=qp.get('name')||'رهف العتيبي';
+const ROLE=qp.get('role')||'خبيرة تجميل';
+const CITY=qp.get('city')||'جدة';
+const P=PROFILES[NAME]||{bio:'خبيرة جمال موثّقة على منصة لوما — أعمالها تتحدث عنها.',work:'',rating:4.8,jobs:120};
+document.title='LUMA — أعمال '+NAME;
+document.getElementById('av').textContent=NAME.charAt(0);
+document.getElementById('nm').textContent=NAME;
+document.getElementById('rl').textContent=ROLE;
+document.getElementById('ct').textContent=CITY;
+document.getElementById('rt').textContent=P.rating.toFixed(1);
+document.getElementById('jb').textContent=P.jobs;
+document.getElementById('bio').textContent=P.bio;
+const wb=document.getElementById('workBtn');
+if(P.work)wb.href=P.work;else wb.style.display='none';
+document.getElementById('bookBtn').href='experience.html?name='+encodeURIComponent(NAME)+'&role='+encodeURIComponent(ROLE)+'&city='+encodeURIComponent(CITY);
+/* معرض رمزي أنيق — ستة أعمال بأيقونات خطية */
+const TILES=[
+  ['لوك عروس','M12 3l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L4.8 8.3l5-.7z'],
+  ['سهرة فاخرة','M12 2C8 6 5 9.6 5 14a7 7 0 0014 0c0-4.4-3-8-7-12z'],
+  ['لوك ناعم','M4 12c3-5.5 13-5.5 16 0-3 5.5-13 5.5-16 0z M12 12m-2.4 0a2.4 2.4 0 104.8 0 2.4 2.4 0 10-4.8 0'],
+  ['جلسة تصوير','M4 8h3l1.6-2.4h6.8L17 8h3v11H4z M12 13.2m-3 0a3 3 0 106 0 3 3 0 10-6 0'],
+  ['تفاصيل دقيقة','M6 3v7a6 6 0 0012 0V3 M6 21h12'],
+  ['قبل وبعد','M12 3v18 M5 8c2.5-2 4.5-2 7 0M5 16c2.5 2 4.5 2 7 0M19 8c-1.2-1-2.4-1.5-3.5-1.5M19 16c-1.2 1-2.4 1.5-3.5 1.5'],
+];
+document.getElementById('works').innerHTML=TILES.map(([lb,d])=>`
+  <div class="wk">
+    <svg class="pat" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#lat)"/></svg>
+    <span class="ic"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg></span>
+    <span class="lb">${lb}</span>
+  </div>`).join('');
+/* الرجوع للصفحة السابقة فعلياً */
+window.goBack=()=>{
+  const ref=document.referrer&&document.referrer!==location.href?document.referrer:'';
+  if(history.length>1){history.back();if(ref)setTimeout(()=>{location.href=ref;},400);}
+  else if(ref)location.href=ref;
+  else location.href='store.html';
+};
+</script>
+<script src="luma-ui.js"></script>
+<script src="luma-theme.js"></script>
+<script src="luma-i18n.js"></script>
+</body>
+</html>

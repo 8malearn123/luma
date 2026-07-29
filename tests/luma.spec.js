@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 
 const PAGES = [
   'index.html', 'login.html', 'booking.html', 'review.html', '404.html',
-  'store.html', 'market.html', 'salons.html', 'experience.html',
+  'store.html', 'market.html', 'salons.html', 'experience.html', 'expert-landing.html',
   'salon.html', 'expert.html', 'client.html', 'admin.html',
   'profile.html', 'pricing.html',
 ];
@@ -674,10 +674,21 @@ test('صفحة الخبيرة: نبذة ورابط أعمالها وتقييما
   await page.goto('/experience.html?name=' + encodeURIComponent('لمياء الزهراني')
     + '&role=' + encodeURIComponent('أخصائية بشرة') + '&city=' + encodeURIComponent('الرياض'));
   await page.waitForTimeout(600);
-  // النبذة ورابط الأعمال
+  // النبذة — «شاهدي أعمالها» يفتح اللاندنج بيج أولاً وفيها رابط أعمالها
   await expect(page.locator('#bioTxt')).toContainText('أخصائية بشرة');
   await expect(page.locator('#bioWork')).toBeVisible();
-  expect(await page.locator('#bioWork').getAttribute('href')).toContain('instagram.com');
+  expect(await page.locator('#bioWork').getAttribute('href')).toContain('expert-landing.html');
+  await page.click('#bioWork');
+  await page.waitForURL(/expert-landing\.html/);
+  await page.waitForTimeout(500);
+  await expect(page.locator('h1')).toHaveText('لمياء الزهراني');
+  await expect(page.locator('#workBtn')).toBeVisible();
+  expect(await page.locator('#workBtn').getAttribute('href')).toContain('instagram.com');
+  expect(await page.locator('#works .wk').count()).toBe(6);
+  // «احجزي موعدًا معها» يعيد لصفحة الحجز
+  await page.click('#bookBtn');
+  await page.waitForURL(/experience\.html/);
+  await page.waitForTimeout(600);
   await expect(page.locator('#exp-rate')).toHaveText('5.0');
   // تبويب التقييمات بالبذور
   await page.click('#tab-revs');
