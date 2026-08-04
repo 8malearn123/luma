@@ -25,6 +25,18 @@ SCREENS.clients=()=>{
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">68<span class="u">%</span></div><div class="k">عميلات متكررات</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">486<span class="u">ر.س</span></div><div class="k">متوسط إنفاق العميلة</div></div>
   </div>
+  <div class="card" style="margin-bottom:22px">
+    <div class="sec-label">تسجيل العملاء <span class="ln"></span><span style="font-size:11px;color:var(--muted)">تسجيل سريع — وبرقم جوالها تقدر تقيّم وتجمع نقاط الولاء</span></div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:10px;align-items:end">
+      <div><label style="display:block;font-size:12px;color:var(--gold-pale);margin-bottom:7px">اسم العميلة</label>
+        <input id="regName" placeholder="مثال: جوري السالم" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none"/></div>
+      <div><label style="display:block;font-size:12px;color:var(--gold-pale);margin-bottom:7px">رقم الجوال</label>
+        <input id="regPhone" dir="ltr" placeholder="05xxxxxxxx" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:right"/></div>
+      <div><label style="display:block;font-size:12px;color:var(--gold-pale);margin-bottom:7px">الموظفة المفضّلة</label>
+        <select id="regStaff" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 12px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none"><option>بدون تفضيل</option>${STAFF.map(s=>`<option>${s.n}</option>`).join('')}</select></div>
+      <button class="btn btn-gold" style="padding:12px 26px" onclick="SALON.regClient()">تسجيل</button>
+    </div>
+  </div>
   <div class="ctab"><div class="cth"><span>العميلة</span><span>الزيارات</span><span>الإنفاق</span><span>آخر زيارة</span><span>الموظفة المفضّلة</span><span></span></div>
   ${C.map(c=>`<div class="ctr"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span> <button class="badge gold loypts" onclick="LOY.redeem('${c.n.replace(/'/g,"\\'")}')" style="cursor:pointer;border:none;margin-top:3px" title="استبدال نقاط الولاء">★ ${loyPts(c.n).toLocaleString('en')}</button>${c.phone?` <span style="font-size:11px;color:var(--muted);direction:ltr;display:inline-block;margin-right:6px">${c.phone}</span>`:''}</div></div><div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${c.sp}</span> ر.س</div><div class="cc hide">${c.last}</div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`).join('')}
   </div>`;
@@ -764,6 +776,20 @@ const SALON={
     const docs=spOf(id).docs;docs.splice(i,1);spSet(id,{docs});
     document.querySelectorAll('.lux-ov').forEach(o=>o.remove());
     SALON.viewStaff(id);LUX.toast('حُذف المستند','ok');
+  },
+  /* التسجيل السريع من خانة تسجيل العملاء بشاشة العملاء */
+  regClient(){
+    const nm=document.getElementById('regName'),ph=document.getElementById('regPhone');
+    const name=nm.value.trim(),phone=ph.value.trim();
+    if(!name){nm.style.borderColor='#c0566a';nm.focus();return;}
+    if(phone&&!/^0?5\d{8}$/.test(phone.replace(/[\s-]/g,''))){ph.style.borderColor='#c0566a';ph.focus();LUX.toast('رقم الجوال غير صحيح — مثال: 0551234567','err');return;}
+    const staff=document.getElementById('regStaff').value;
+    CLIENTS.unshift({n:name,v:0,sp:'0',last:'—',staff:staff==='بدون تفضيل'?'—':staff,
+      tag:'جديدة',tc:'soft',phone,src:'تسجيل مباشر',custom:true});
+    saveClients();
+    try{window.LumaEvents&&LumaEvents.push('hr','تسجيل عميلة جديدة بصالون لمسة: '+name+(phone?' · '+phone:''),'salon.html#clients');}catch(e){}
+    SALON.go('clients');
+    LUX.toast('سُجّلت '+name+' في قاعدة العملاء ✓'+(phone?' — تقدر الآن توثّق رقمها وتقيّم':''),'ok');
   },
   addClient(){
     const body=`
