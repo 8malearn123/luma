@@ -376,9 +376,11 @@ function render(){
   if(step===1){
     s=gallery()+`<h1 style="font-size:18px">اختاري خدمتك <span style="font-size:11px;opacity:.55;font-weight:400">— تقدرين تختارين أكثر من خدمة</span></h1>`+CATS.map(([k,ar])=>{
       const list=SERVICES.filter(x=>x.cat===k);if(!list.length)return'';
-      return `<div class="cat">${ar}</div>`+list.map(x=>`<button class="svc ${svcs.includes(x.id)?'sel':''}" onclick="pickSvc(${x.id})">
-        <span>${FEAT[x.n]?`<span class="feat">⭐ ${esc(FEAT[x.n])}</span>`:''}<span class="n">${x.n}</span><div class="d">${x.d} دقيقة</div></span>
-        <span style="display:flex;align-items:center;gap:10px"><span class="p">${x.p} ر.س</span><span class="tick">${svcs.includes(x.id)?'✓':''}</span></span></button>`).join('');
+      return `<div class="cat">${ar}</div>`+list.map(x=>{
+        const im=(load('luma_svc_img')||{})[x.n];
+        return `<button class="svc ${svcs.includes(x.id)?'sel':''}" onclick="pickSvc(${x.id})">
+        <span style="display:flex;align-items:center;gap:12px">${im?`<img src="${im}" alt="" style="width:46px;height:46px;border-radius:10px;object-fit:cover;border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);flex-shrink:0"/>`:''}<span>${FEAT[x.n]?`<span class="feat">⭐ ${esc(FEAT[x.n])}</span>`:''}<span class="n">${x.n}</span><div class="d">${x.d} دقيقة</div></span></span>
+        <span style="display:flex;align-items:center;gap:10px"><span class="p">${x.p} ر.س</span><span class="tick">${svcs.includes(x.id)?'✓':''}</span></span></button>`;}).join('');
     }).join('')
     +(selSvcs().length?`<button class="btn" onclick="go(2)">متابعة — ${selSvcs().length>1?selSvcs().length+' خدمات':'خدمة واحدة'} · ${selTotal()} ر.س · ${selDur()} دقيقة</button>`:'')
     +mapCard()+policyBox();
