@@ -520,7 +520,7 @@ document.getElementById('names').innerHTML=NAMES.map(n=>`
 /* ── PACKAGE DATA ── */
 const PKGS=[
   {
-    tier:'TIER I · الباقة الأولى', nm:'سَناء', mean:'الرفعة والبريق في البدايات',
+    tier:'TIER I · الباقة الأولى', nm:'سَناء', aud:'للخبيرات المستقلات', mean:'الرفعة والبريق في البدايات',
     price:'199', alt:'أو 990 ر.س / 6 أشهر — وفّري 15%', comm:'عمولة الحجوزات: 12%',
     quote:'كل استوديو فاخر بدأ بخطوتها الأولى',
     tag:'لمن تبني حضورها بثقة وتريد أدوات احترافية حقيقية من اليوم الأول. بدون تعقيد، بدون ضوضاء — فقط احترافية حقيقية.',
@@ -542,7 +542,7 @@ const PKGS=[
     trigger:'<b>محفّز الترقية لوهج:</b> وصلت 32 حجزة/شهر، أو كسرت حد الصور، أو طلبت واتساب تلقائي.',
   },
   {
-    tier:'TIER II · الباقة الثانية', nm:'وَهَج', mean:'الضوء الذي يملأ الفضاء',
+    tier:'TIER II · الباقة الثانية', nm:'وَهَج', aud:'للخبيرات المستقلات', mean:'الضوء الذي يملأ الفضاء',
     price:'399', alt:'أو 1,990 ر.س / 6 أشهر — وفّري 17%', comm:'عمولة الحجوزات: 10%',
     quote:'لمّا وصل عملك للمستوى الذي يستحق أدوات بمستواه',
     tag:'منظومة متكاملة — واتساب تلقائي، تحليلات موقع، كوبونات. كل شيء يعمل وأنتِ تركّزين على إبداعك.',
@@ -565,7 +565,7 @@ const PKGS=[
     trigger:'<b>محفّز الترقية لفريد:</b> احتاجت مساعدة، أو بدأت تعمل في أعراس، أو أرادت برنامج ولاء لعملائها.',
   },
   {
-    tier:'TIER III · الباقة الثالثة', nm:'فَرِيد', mean:'لا مثيل له في صنعته',
+    tier:'TIER III · الباقة الثالثة', nm:'فَرِيد', aud:'للصوالين والمراكز', mean:'لا مثيل له في صنعته',
     price:'799', alt:'أو 3,990 ر.س / 6 أشهر — وفّري 17% · سنوياً 7,190 ر.س', comm:'عمولة الحجوزات: 8%',
     quote:'ليس مجرد خبيرة — للاستوديو الذي صار علامة',
     tag:'نظام استوديو حقيقي بذكاء اصطناعي وتحليلات مقارنة. لمن وصلت للقمة ولا تقبل بأقل من فريد.',
@@ -597,6 +597,7 @@ document.getElementById('pillars').innerHTML=PKGS.map((p,i)=>`
     <span class="tier">${p.tier.split(' · ')[0]}</span>
     <span class="nm">${p.nm}</span>
     <span class="mean">${p.mean}</span>
+    ${p.aud?`<span style="font-size:10.5px;color:var(--gold-light,#ccab64)">${p.aud}</span>`:''}
     <div class="pr"><span class="num gold-fill">${p.price}</span><span class="unit">ر.س / شهر</span></div>
     <span class="meta">${PILLAR_META[i]}</span>
   </a>`).join('');
@@ -613,6 +614,7 @@ document.getElementById('pkg-details').innerHTML=PKGS.map((p,i)=>{
           <span class="tier">${p.tier}</span>
           <span class="nm">${p.nm}</span>
           <span class="mean">${p.mean}</span>
+          ${p.aud?`<span style="display:inline-block;font-size:11.5px;color:var(--gold-light,#ccab64);border:1px solid var(--gold-deep,#846a38);border-radius:20px;padding:4px 15px;margin-top:8px">${p.aud}</span>`:''}
         </div>
         <div class="pkg-price">
           <div class="main"><span class="n gold-fill">${p.price}</span><span class="u">ر.س / شهر</span></div>

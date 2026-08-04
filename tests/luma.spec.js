@@ -106,6 +106,20 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('الباقات: سَناء ووَهَج للخبيرات وفَريد للصوالين', async ({ page }) => {
+  await page.goto('/index.html');
+  await page.waitForTimeout(500);
+  const tiers = page.locator('.tier');
+  await expect(tiers.nth(0).locator('.aud')).toHaveText('للخبيرات المستقلات');   // سَناء
+  await expect(tiers.nth(1).locator('.aud')).toHaveText('للخبيرات المستقلات');   // وَهَج
+  await expect(tiers.nth(2).locator('.aud')).toHaveText('للصوالين والمراكز');     // فَرِيد
+  // وثيقة الباقات تعرض التصنيف نفسه
+  await page.goto('/pricing.html');
+  await page.waitForTimeout(700);
+  expect(await page.getByText('للخبيرات المستقلات').count()).toBeGreaterThanOrEqual(2);
+  expect(await page.getByText('للصوالين والمراكز').count()).toBeGreaterThanOrEqual(1);
+});
+
 test('زر «ابدئي مجاناً 14 يوماً» يوجّه لصفحة الباقات', async ({ page }) => {
   await page.goto('/index.html');
   await page.waitForTimeout(500);
