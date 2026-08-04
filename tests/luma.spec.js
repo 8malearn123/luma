@@ -106,6 +106,16 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('اسم الخبيرة بأعلى لوحتها يفتح ملفها العام', async ({ page }) => {
+  await page.goto('/expert.html');
+  await page.waitForTimeout(700);
+  await page.click('#meChip');
+  await page.waitForURL(/experience\.html/);
+  await page.waitForTimeout(600);
+  await expect(page.getByText('رهف العتيبي').first()).toBeVisible();
+  await expect(page.locator('#exp-rate')).toBeVisible();
+});
+
 test('الباقات: سَناء ووَهَج للخبيرات وفَريد للصوالين', async ({ page }) => {
   await page.goto('/index.html');
   await page.waitForTimeout(500);
