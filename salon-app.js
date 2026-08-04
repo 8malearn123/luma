@@ -204,6 +204,32 @@ SCREENS.marketing=()=>{
     </div>
     <div class="card"><div class="sec-label">قنوات الوصول <span class="ln"></span></div>${CH.map(c=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 0"><span style="font-size:13px;color:var(--cream);width:108px">${c[0]}</span><div style="flex:1;height:9px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:${c[1]/44*100}%;background:${c[2]};border-radius:10px"></span></div><span class="mono" style="font-size:12px;color:var(--gold-pale);width:34px;text-align:left">${c[1]}%</span></div>`).join('')}
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:11px;background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('users',19)}</div><div><div style="font-size:13.5px;color:var(--white);font-weight:600">برنامج الإحالة</div><div style="font-size:12px;color:var(--muted)">٢٨ عميلة دعت 39 صديقة</div></div></div>
+      ${(()=>{ /* خدمة الولاء — أداة تسويق واستبقاء ضمن هذه الشاشة */
+        if(typeof loyCfg!=='function')return '';
+        const cfg=loyCfg(),pts=loyPtsAll(),names=Object.keys(pts);
+        const total=names.reduce((t,n)=>t+pts[n],0);
+        const top=names.sort((a,b)=>pts[b]-pts[a]).slice(0,3);
+        const nextOf=p=>{const r=(cfg.rewards||[]).find(x=>x.pts>p);return r?r.pts:(cfg.rewards&&cfg.rewards.length?cfg.rewards[cfg.rewards.length-1].pts:300);};
+        return `
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line-soft)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:40px;height:40px;border-radius:11px;background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('star',19)}</div>
+          <div><div style="font-size:13.5px;color:var(--white);font-weight:600">برنامج الولاء</div><div style="font-size:11.5px;color:var(--muted)">نقاط مع كل فاتورة تُستبدل بخصومات</div></div></div>
+          <span class="badge ${cfg.on?'green':'soft'}">${cfg.on?'مفعّل':'متوقف'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-bottom:12px">
+          <div style="background:var(--surface3);border-radius:10px;padding:9px 4px"><div class="num" style="font-size:17px;color:var(--gold-light)">${cfg.rate}</div><div style="font-size:10px;color:var(--muted)">نقطة / ريال</div></div>
+          <div style="background:var(--surface3);border-radius:10px;padding:9px 4px"><div class="num" style="font-size:17px;color:var(--white)">${names.length}</div><div style="font-size:10px;color:var(--muted)">عميلة مشتركة</div></div>
+          <div style="background:var(--surface3);border-radius:10px;padding:9px 4px"><div class="num" style="font-size:17px;color:var(--white)">${total.toLocaleString('en')}</div><div style="font-size:10px;color:var(--muted)">نقطة موزّعة</div></div>
+        </div>
+        ${top.map(n=>{const p=pts[n],nx=nextOf(p);return `
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0">
+          <span style="font-size:12.5px;color:var(--cream);width:104px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
+          <div style="flex:1;height:7px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:${Math.min(100,Math.round(p/nx*100))}%;background:linear-gradient(90deg,#dbbd81,#9c8047);border-radius:10px"></span></div>
+          <span class="num" style="font-size:12px;color:var(--gold-pale);width:44px;text-align:left">${p}</span>
+        </div>`;}).join('')}
+        <button class="btn btn-gold" style="width:100%;margin-top:12px" onclick="LOY.settings()">★ إعدادات برنامج الولاء والكوبونات</button>
+      </div>`;})()}
     </div>
   </div>`;
 };

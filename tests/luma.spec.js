@@ -106,6 +106,19 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('التسويق: خدمة الولاء ظاهرة بإحصاءاتها وزر الإعدادات يعمل', async ({ page }) => {
+  await page.goto('/salon.html#marketing');
+  await page.waitForTimeout(800);
+  await expect(page.getByText('برنامج الولاء').first()).toBeVisible();
+  await expect(page.getByText('نقطة / ريال')).toBeVisible();
+  await expect(page.getByText('عميلة مشتركة')).toBeVisible();
+  await expect(page.getByText('نقطة موزّعة')).toBeVisible();
+  await page.click('button:has-text("إعدادات برنامج الولاء")');
+  await page.waitForTimeout(400);
+  await expect(page.locator('.lux-modal')).toContainText('نقطة لكل ريال مدفوع');
+  await page.click('.lux-modal .x');
+});
+
 test('اسم الخبيرة بأعلى لوحتها يفتح ملفها العام', async ({ page }) => {
   await page.goto('/expert.html');
   await page.waitForTimeout(700);
