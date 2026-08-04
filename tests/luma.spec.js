@@ -106,6 +106,26 @@ test('شاشة التقارير بأرقام حية', async ({ page }) => {
   await expect(page.getByText(/إشغال الكراسي/)).toBeVisible();
 });
 
+test('العملاء: خانة تسجيل العملاء تسجّل عميلة وتظهر بالجدول وتبقى بعد التحديث', async ({ page }) => {
+  await page.goto('/salon.html#clients');
+  await page.waitForTimeout(800);
+  await expect(page.getByText('تسجيل العملاء').first()).toBeVisible();
+  // رقم خاطئ يُرفض
+  await page.fill('#regName', 'جوري السالم');
+  await page.fill('#regPhone', '123');
+  await page.click('button:has-text("تسجيل")');
+  await page.waitForTimeout(300);
+  await expect(page.locator('.ctr', { hasText: 'جوري السالم' })).toHaveCount(0);
+  // رقم صحيح → تُسجَّل وتظهر أول الجدول وتبقى بعد إعادة التحميل
+  await page.fill('#regPhone', '0554443322');
+  await page.click('button:has-text("تسجيل")');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.ctr', { hasText: 'جوري السالم' })).toBeVisible();
+  await page.reload();
+  await page.waitForTimeout(800);
+  await expect(page.locator('.ctr', { hasText: 'جوري السالم' })).toBeVisible();
+});
+
 test('التسويق: خدمة الولاء ظاهرة بإحصاءاتها وزر الإعدادات يعمل', async ({ page }) => {
   await page.goto('/salon.html#marketing');
   await page.waitForTimeout(800);
