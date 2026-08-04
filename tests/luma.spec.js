@@ -709,10 +709,16 @@ test('صفحة الخبيرة: نبذة ورابط أعمالها وتقييما
   // كل منتج له صورة SVG مدمجة
   await page.click('#tab-shop');
   await expect(page.locator('.pcard .art svg')).toHaveCount(6);
-  // زر رفع صورة المنتج لا يظهر للزائرة — صلاحية المالكة فقط
+  // زر رفع صورة المنتج لا يظهر للزائرة — إدارة المنتجات للصالون فقط
   await expect(page.locator('.pcam')).toHaveCount(0);
-  // جلسة خبيرة → يظهر الرفع ويعمل ثم الإزالة
+  // حتى جلسة الخبيرة لا تضيف منتجات
   await page.evaluate(() => localStorage.setItem('luma_role', 'expert'));
+  await page.reload();
+  await page.waitForTimeout(600);
+  await page.click('#tab-shop');
+  await expect(page.locator('.pcam')).toHaveCount(0);
+  // جلسة الصالون → يظهر الرفع ويعمل ثم الإزالة
+  await page.evaluate(() => localStorage.setItem('luma_role', 'salon'));
   await page.reload();
   await page.waitForTimeout(600);
   await page.click('#tab-shop');

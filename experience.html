@@ -801,8 +801,8 @@ const PRODUCT_ART={
 };
 const productArt=id=>PRODUCT_ART[id]||'';
 
-/* خاصية إضافة صورة لكل منتج — صلاحية للمالكة فقط (جلسة صالون أو خبيرة)، الزائرات يشاهدن فقط */
-const LUMA_OWNER=(()=>{try{return ['salon','expert'].includes(localStorage.getItem('luma_role'));}catch(e){return false;}})();
+/* خاصية إضافة صورة لكل منتج — إدارة المنتجات بواسطة الصالون فقط، الخبيرة والزائرات يشاهدن فقط */
+const LUMA_OWNER=(()=>{try{return localStorage.getItem('luma_role')==='salon';}catch(e){return false;}})();
 const PIMG_KEY='luma_prod_img';
 const prodImgs=()=>{try{return JSON.parse(localStorage.getItem(PIMG_KEY))||{};}catch(e){return{};}};
 function prodImgSet(id,src){
