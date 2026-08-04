@@ -126,6 +126,29 @@ test('العملاء: خانة تسجيل العملاء تسجّل عميلة �
   await expect(page.locator('.ctr', { hasText: 'جوري السالم' })).toBeVisible();
 });
 
+test('الخدمات: إضافة صورة لكل خدمة وتظهر بصفحة الحجز', async ({ page }) => {
+  await page.goto('/salon.html#services');
+  await page.waitForTimeout(800);
+  const firstBtn = page.locator('button:has-text("إضافة صورة")').first();
+  await expect(firstBtn).toBeVisible();
+  const PX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const [fc] = await Promise.all([page.waitForEvent('filechooser'), firstBtn.click()]);
+  await fc.setFiles({ name: 'svc.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
+  await page.waitForTimeout(700);
+  await expect(page.locator('.card img[alt="مكياج سهرة"]')).toBeVisible();
+  await expect(page.locator('button:has-text("تغيير الصورة")').first()).toBeVisible();
+  // الصورة تظهر لعميلات صفحة الحجز
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.locator('.svc', { hasText: 'مكياج سهرة' }).locator('img')).toBeVisible();
+  // الإزالة تعيد الأيقونة
+  await page.goto('/salon.html#services');
+  await page.waitForTimeout(800);
+  await page.locator('button[title="إزالة الصورة"]').first().click();
+  await page.waitForTimeout(500);
+  await expect(page.locator('.card img[alt="مكياج سهرة"]')).toHaveCount(0);
+});
+
 test('التسويق: خدمة الولاء ظاهرة بإحصاءاتها وزر الإعدادات يعمل', async ({ page }) => {
   await page.goto('/salon.html#marketing');
   await page.waitForTimeout(800);

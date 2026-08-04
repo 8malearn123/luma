@@ -42,6 +42,31 @@ SCREENS.clients=()=>{
   </div>`;
 };
 
+/* ── صورة لكل خدمة — تُرفع من شاشة الخدمات وتظهر بصفحة الحجز ── */
+const SVCIMG_KEY='luma_svc_img';
+const svcImgs=()=>LumaStore.get(SVCIMG_KEY,{});
+function svcImgSet(n,src){
+  LumaStore.update(SVCIMG_KEY,m=>{if(src)m[n]=src;else delete m[n];return m;},{});
+  SALON.go('services');
+}
+window.svcImgPick=n=>{
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  inp.onchange=()=>{
+    const f=inp.files&&inp.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{const im=new Image();im.onload=()=>{
+      const MAX=640,sc=Math.min(1,MAX/Math.max(im.width,im.height));
+      const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      svcImgSet(n,cv.toDataURL('image/jpeg',0.78));
+      LUX.toast('حُفظت صورة «'+n+'» — وستظهر بصفحة الحجز ✓','ok');
+    };im.src=rd.result;};
+    rd.readAsDataURL(f);
+  };
+  inp.click();
+};
+window.svcImgClear=n=>{svcImgSet(n,null);LUX.toast('أُزيلت صورة «'+n+'»','ok');};
+
 /* ── SERVICES (كتالوج حي — يغذي الحجز والأسعار والتقارير) ── */
 SCREENS.services=()=>{
   const cats=[...new Set(SVC_CATALOG.map(s=>s[3]||'أخرى'))];
@@ -50,7 +75,15 @@ SCREENS.services=()=>{
   ${cats.map(cat=>{
     const items=SVC_CATALOG.filter(s=>(s[3]||'أخرى')===cat);
     const by=(STAFF.find(x=>x.role===cat)||{}).n;
-    return `<div class="sec-label">${cat} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${items.map(s=>`<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px"><div style="width:42px;height:42px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div><div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]*30} دقيقة${by?` · تُقدّم بواسطة ${by}`:''}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div><button class="btn btn-ghost" style="padding:8px 14px" onclick="SALON.svcForm('${s[0].replace(/'/g,"\\'")}')">تحرير</button></div>`).join('')}</div>`;
+    return `<div class="sec-label">${cat} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${items.map(s=>{
+      const im=svcImgs()[s[0]];const esc=s[0].replace(/'/g,"\\'");
+      return `<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px">${
+        im?`<img src="${im}" alt="${s[0]}" style="width:52px;height:52px;border-radius:11px;object-fit:cover;border:1px solid var(--gold-deep)"/>`
+          :`<div style="width:52px;height:52px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div>`
+      }<div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]*30} دقيقة${by?` · تُقدّم بواسطة ${by}`:''}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div>
+      <button class="btn btn-ghost svc-img-btn" style="padding:8px 12px;display:inline-flex;align-items:center;gap:6px" title="${im?'تغيير صورة الخدمة':'إضافة صورة للخدمة'}" onclick="svcImgPick('${esc}')">${icon('image',15)} ${im?'تغيير الصورة':'إضافة صورة'}</button>
+      ${im?`<button class="btn btn-ghost" style="padding:8px 11px;color:#e29aa6" title="إزالة الصورة" onclick="svcImgClear('${esc}')">✕</button>`:''}
+      <button class="btn btn-ghost" style="padding:8px 14px" onclick="SALON.svcForm('${esc}')">تحرير</button></div>`;}).join('')}</div>`;
   }).join('')}`;
 };
 
