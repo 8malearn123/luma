@@ -84,7 +84,9 @@ SCREENS.services=()=>{
       <button class="btn btn-ghost svc-img-btn" style="padding:8px 12px;display:inline-flex;align-items:center;gap:6px" title="${im?'تغيير صورة الخدمة':'إضافة صورة للخدمة'}" onclick="svcImgPick('${esc}')">${icon('image',15)} ${im?'تغيير الصورة':'إضافة صورة'}</button>
       ${im?`<button class="btn btn-ghost" style="padding:8px 11px;color:#e29aa6" title="إزالة الصورة" onclick="svcImgClear('${esc}')">✕</button>`:''}
       <button class="btn btn-ghost" style="padding:8px 14px" onclick="SALON.svcForm('${esc}')">تحرير</button></div>`;}).join('')}</div>`;
-  }).join('')}`;
+  }).join('')}
+  <div class="sec-label" style="margin-top:8px">المنتجات — بيع التجزئة للعميلات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اضغطي أيقونة المنتج لإضافة صورته</span></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px">${SALON_PRODUCTS.map(salonProductCard).join('')}</div>`;
 };
 
 /* ── PRODUCTS (retail — products being sold) ── */
@@ -102,24 +104,30 @@ const SALONPIMG={
         const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
         cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
         LumaStore.update(SPIMG_KEY,m=>{m[name]=cv.toDataURL('image/jpeg',0.78);return m;},{});
-        SALON.go('products');LUX.toast('حُفظت صورة «'+name+'» ✓','ok');
+        SALON.go((location.hash||'').replace('#','')||'services');LUX.toast('حُفظت صورة «'+name+'» ✓','ok');
       };im.src=rd.result;};
       rd.readAsDataURL(f);
     };
     inp.click();
   },
-  clear(name){LumaStore.update(SPIMG_KEY,m=>{delete m[name];return m;},{});SALON.go('products');},
+  clear(name){LumaStore.update(SPIMG_KEY,m=>{delete m[name];return m;},{});SALON.go((location.hash||'').replace('#','')||'services');},
 };
 
+const SALON_PRODUCTS=[
+  {n:'سيروم ترطيب',c:'عناية',price:180,sold:42,q:24,sc:'green'},
+  {n:'طلاء أظافر — مجموعة',c:'أظافر',price:210,sold:38,q:15,sc:'green'},
+  {n:'زيت شعر مغذّي',c:'شعر',price:120,sold:31,q:30,sc:'green'},
+  {n:'مثبّت مكياج',c:'مكياج',price:130,sold:27,q:18,sc:'green'},
+  {n:'كريم أساس',c:'مكياج',price:150,sold:19,q:8,sc:'gold'},
+  {n:'ماسك بشرة',c:'عناية',price:95,sold:14,q:3,sc:'gold'},
+];
+/* بطاقة منتج واحدة — مع رفع/تغيير/إزالة الصورة */
+function salonProductCard(p){
+  const pim=salonProdImgs()[p.n];const esc=p.n.replace(/'/g,"\\'");
+  return `<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="position:relative"><div onclick="SALONPIMG.pick('${esc}')" title="${pim?'تغيير صورة المنتج':'إضافة صورة للمنتج'}" style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);cursor:pointer;overflow:hidden">${pim?`<img src="${pim}" alt="" style="width:100%;height:100%;object-fit:cover"/>`:icon('bag',22)}</div>${pim?`<button onclick="SALONPIMG.clear('${esc}')" title="إزالة الصورة" style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#e29aa6;cursor:pointer;font-size:10px;line-height:1">✕</button>`:`<span style="position:absolute;bottom:-5px;left:-5px;width:17px;height:17px;border-radius:50%;background:var(--gold-deep);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;pointer-events:none">📷</span>`}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`;
+}
 SCREENS.products=()=>{
-  const P=[
-    {n:'سيروم ترطيب',c:'عناية',price:180,sold:42,q:24,sc:'green'},
-    {n:'طلاء أظافر — مجموعة',c:'أظافر',price:210,sold:38,q:15,sc:'green'},
-    {n:'زيت شعر مغذّي',c:'شعر',price:120,sold:31,q:30,sc:'green'},
-    {n:'مثبّت مكياج',c:'مكياج',price:130,sold:27,q:18,sc:'green'},
-    {n:'كريم أساس',c:'مكياج',price:150,sold:19,q:8,sc:'gold'},
-    {n:'ماسك بشرة',c:'عناية',price:95,sold:14,q:3,sc:'gold'},
-  ];
+  const P=SALON_PRODUCTS;
   const totUnits=P.reduce((s,p)=>s+p.sold,0);
   const totRev=P.reduce((s,p)=>s+p.sold*p.price,0);
   const best=P.slice().sort((a,b)=>b.sold-a.sold)[0];
@@ -135,7 +143,7 @@ SCREENS.products=()=>{
   <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start">
     <div>
       <div class="sec-label">المنتجات <span class="ln"></span></div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">${P.map(p=>{const pim=salonProdImgs()[p.n];return `<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="position:relative"><div onclick="SALONPIMG.pick('${p.n.replace(/'/g,"\\'")}')" title="${pim?'تغيير صورة المنتج':'إضافة صورة للمنتج'}" style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);cursor:pointer;overflow:hidden">${pim?`<img src="${pim}" alt="" style="width:100%;height:100%;object-fit:cover"/>`:icon('bag',22)}</div>${pim?`<button onclick="SALONPIMG.clear('${p.n.replace(/'/g,"\\'")}')" title="إزالة الصورة" style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#e29aa6;cursor:pointer;font-size:10px;line-height:1">✕</button>`:`<span style="position:absolute;bottom:-5px;left:-5px;width:17px;height:17px;border-radius:50%;background:var(--gold-deep);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;pointer-events:none">📷</span>`}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`;}).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">${P.map(salonProductCard).join('')}</div>
     </div>
     <div class="card"><div class="sec-label">الأكثر مبيعاً <span class="ln"></span></div>${P.slice().sort((a,b)=>b.sold-a.sold).map((p,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${i<P.length-1?'border-bottom:1px solid var(--line-soft)':''}"><span style="font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-deep);width:20px;direction:ltr">${i+1}</span><div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--white);font-weight:500">${p.n}</div><div class="bar" style="height:6px;background:var(--surface3);border-radius:10px;overflow:hidden;margin-top:5px"><span style="display:block;height:100%;width:${p.sold/maxSold*100}%;background:linear-gradient(90deg,#9c8047,#dbbd81);border-radius:10px"></span></div></div><span class="num" style="font-family:'Bodoni Moda',serif;font-size:17px;color:var(--gold-light);direction:ltr">${p.sold}</span></div>`).join('')}</div>
   </div>`;
@@ -355,7 +363,6 @@ const NAV=[
   {id:'page',label:'صفحتي والرابط',icon:'pin',crumb:'GROWTH'},
   {id:'clients',label:'العملاء',icon:'users',crumb:'SALON'},
   {id:'services',label:'الخدمات',icon:'scissors',crumb:'SALON'},
-  {id:'products',label:'المنتجات',icon:'bag',crumb:'SALON'},
   {id:'inventory',label:'المخزون',icon:'boxes',crumb:'SALON'},
   {id:'subscriptions',label:'الاشتراكات',icon:'ticket',crumb:'SALON'},
   {id:'invoices',label:'الفواتير البيعية',icon:'invoice',crumb:'FINANCE'},
