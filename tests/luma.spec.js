@@ -147,6 +147,13 @@ test('الخدمات: إضافة صورة لكل خدمة وتظهر بصفحة 
   await page.locator('button[title="إزالة الصورة"]').first().click();
   await page.waitForTimeout(500);
   await expect(page.locator('.card img[alt="مكياج سهرة"]')).toHaveCount(0);
+  // قسم المنتجات انتقل لشاشة الخدمات — مع رفع صورة للمنتج
+  await expect(page.getByText('المنتجات — بيع التجزئة للعميلات')).toBeVisible();
+  await expect(page.getByText('سيروم ترطيب').first()).toBeVisible();
+  const [fc2] = await Promise.all([page.waitForEvent('filechooser'), page.locator('div[title="إضافة صورة للمنتج"]').first().click()]);
+  await fc2.setFiles({ name: 'p.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
+  await page.waitForTimeout(700);
+  expect(await page.locator('div[title="تغيير صورة المنتج"] img').count()).toBeGreaterThan(0);
 });
 
 test('التسويق: خدمة الولاء ظاهرة بإحصاءاتها وزر الإعدادات يعمل', async ({ page }) => {
