@@ -15,6 +15,7 @@
 
   const TOOLCHIPS = [
     ['waitlist','قائمة الانتظار','calendar'],
+    ['loyalty','برنامج الولاء','loyalty'],
     ['memberships','الاشتراكات','loyalty'],
     ['group','حجوزات جماعية','users'],
     ['staff','الطاقم','user'],
@@ -25,6 +26,9 @@
   ];
 
   const TOOLS = {
+    loyalty(){
+      return (window.LUMA_SCREENS&&window.LUMA_SCREENS.loyalty)?window.LUMA_SCREENS.loyalty.render():'';
+    },
     waitlist(){
       const W=[
         {n:'هيا الشمري',s:'مكياج عروس كامل',d:'يفضّل ٢٨ يونيو',st:'مكان متاح',stc:'gold'},
@@ -62,16 +66,19 @@
         `<div class="cards3">${TEAM.map(t=>`<div class="staffc"><div class="av big">${avc(t.n).replace('avx','avi')}</div><div class="sn">${t.n}</div><div class="sr">${t.role}</div><div class="sb"><span>مواعيد اليوم</span><b>${t.today}</b></div></div>`).join('')}</div>`);
     },
     inventory(){
+      /* bpu = عدد الحجوزات التي تكفيها الوحدة الواحدة */
       const I=[
-        {n:'كريم أساس — درجات متعددة',q:24,min:10,st:'متوفر',stc:'green'},
-        {n:'رموش صناعية',q:6,min:10,st:'منخفض',stc:'gold'},
-        {n:'مثبّت مكياج (سبراي)',q:3,min:8,st:'يحتاج طلب',stc:'gold'},
-        {n:'فُرَش مكياج — أطقم',q:15,min:5,st:'متوفر',stc:'green'},
+        {n:'كريم أساس — درجات متعددة',q:24,min:10,bpu:4,st:'متوفر',stc:'green'},
+        {n:'رموش صناعية',q:6,min:10,bpu:1,st:'منخفض',stc:'gold'},
+        {n:'مثبّت مكياج (سبراي)',q:3,min:8,bpu:8,st:'يحتاج طلب',stc:'gold'},
+        {n:'فُرَش مكياج — أطقم',q:15,min:5,bpu:25,st:'متوفر',stc:'green'},
       ];
-      return panel('المخزون','تابعي مستلزماتكِ وتنبيهات النفاد قبل أن تفاجئكِ.',
+      const left=i=>Math.floor(i.q*i.bpu);
+      return panel('المخزون','تابعي مستلزماتكِ — ولكل صنف كم حجزاً يكفي تقريباً قبل النفاد.',
         `<button class="btn btn-gold">+ صنف جديد</button>`,
-        `<div class="thead4"><span>الصنف</span><span>المتوفر</span><span>الحد الأدنى</span><span>الحالة</span></div>`+
-        I.map(i=>`<div class="trow4"><span class="n">${i.n}</span><span class="num2">${i.q}</span><span class="num2 mut">${i.min}</span><span class="badge ${i.stc}">${i.st}</span></div>`).join(''));
+        `<div class="thead5"><span>الصنف</span><span>المتوفر</span><span>الحد الأدنى</span><span>يكفي لـ</span><span>الحالة</span></div>`+
+        I.map(i=>{const L=left(i);const lc=L<=10?'#c0566a':L<=25?'var(--gold-light)':'var(--green,#6fa86a)';
+        return `<div class="trow5"><span class="n">${i.n}<span style="display:block;font-size:10.5px;color:var(--muted);margin-top:2px">الوحدة تكفي ${i.bpu===1?'حجزاً واحداً':i.bpu+' حجوزات'}</span></span><span class="num2">${i.q}</span><span class="num2 mut">${i.min}</span><span class="num2" style="font-size:17px;color:${lc}">≈ ${L} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:10.5px;color:var(--muted)">حجز</span></span><span class="badge ${i.stc}">${i.st}</span></div>`;}).join(''));
     },
     expenses(){
       return panel('المصاريف والربح','صورة واضحة لإيراداتكِ ومصاريفكِ وصافي ربحكِ.',
@@ -147,6 +154,8 @@
   .staffc .sn{font-size:15px;color:var(--white);font-weight:600;margin-top:12px;} .staffc .sr{font-size:12.5px;color:var(--gold-pale);margin-top:2px;}
   .staffc .sb{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:13px;color:var(--muted);} .staffc .sb b{color:var(--gold-light);font-family:'Bodoni Moda',serif;font-size:20px;}
   .thead4{display:grid;grid-template-columns:2.4fr 1fr 1fr 1.2fr;gap:14px;padding:0 18px 10px;font-size:11.5px;color:var(--gold);font-weight:600;}
+  .thead5{display:grid;grid-template-columns:2.2fr 0.8fr 0.9fr 1.1fr 1fr;gap:14px;padding:0 18px 10px;font-size:11.5px;color:var(--gold);font-weight:600;}
+  .trow5{display:grid;grid-template-columns:2.2fr 0.8fr 0.9fr 1.1fr 1fr;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 18px;margin-bottom:10px;} .trow5 .n{font-size:14px;color:var(--white);}
   .trow4{display:grid;grid-template-columns:2.4fr 1fr 1fr 1.2fr;gap:14px;align-items:center;} .trow4 .n{font-size:14px;color:var(--white);} .num2{font-family:'Bodoni Moda',serif;font-size:20px;color:var(--white);direction:ltr;} .num2.mut{color:var(--muted);}
   .pl{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:14px;align-items:center;} @media(max-width:820px){.pl{grid-template-columns:1fr;} .pl .plop{display:none;}}
   .plc{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:22px;text-align:center;} .plc.hi{border-color:var(--gold-deep);}

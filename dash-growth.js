@@ -135,12 +135,17 @@
   };
   const eloyTier=p=>p>=900?'ذهبية':p>=500?'فضية':'برونزية';
   window.EXPLOY={
-    toggle(){eloySave({on:!eloyCfg().on});LUMA.go('loyalty');LUX.toast(eloyCfg().on?'فُعّل برنامج الولاء ✓':'أُوقف برنامج الولاء','ok');},
+    refresh(){
+      const body=document.getElementById('adv-body');
+      if(body&&window.LUMA_SCREENS&&window.LUMA_SCREENS.loyalty){body.innerHTML=window.LUMA_SCREENS.loyalty.render();}
+      else if(window.LUMA)LUMA.go((location.hash||'').replace('#','')||'advanced');
+    },
+    toggle(){eloySave({on:!eloyCfg().on});EXPLOY.refresh();LUX.toast(eloyCfg().on?'فُعّل برنامج الولاء ✓':'أُوقف برنامج الولاء','ok');},
     saveCfg(){
       const r=parseFloat(document.getElementById('elRate').value)||1;
       const w=parseInt(document.getElementById('elWelcome').value)||0;
       eloySave({rate:Math.max(0.5,Math.min(5,r)),welcome:Math.max(0,w)});
-      LUMA.go('loyalty');LUX.toast('حُفظت إعدادات النقاط ✓','ok');
+      EXPLOY.refresh();LUX.toast('حُفظت إعدادات النقاط ✓','ok');
     },
     addReward(){
       LUX.modal('مكافأة جديدة',`
@@ -158,13 +163,13 @@
           const cfg=eloyCfg();
           cfg.rewards.push({n:nm.value.trim(),pts:Math.max(50,parseInt(ov.querySelector('[name=rp]').value)||500),value:Math.max(1,parseInt(ov.querySelector('[name=rv]').value)||50),type:ov.querySelector('[name=rt]').value});
           cfg.rewards.sort((a,b)=>a.pts-b.pts);eloySave({rewards:cfg.rewards});
-          close();LUMA.go('loyalty');LUX.toast('أُضيفت المكافأة ✓','ok');
+          close();EXPLOY.refresh();LUX.toast('أُضيفت المكافأة ✓','ok');
         };
       }});
     },
     delReward(i){
       const cfg=eloyCfg();cfg.rewards.splice(i,1);eloySave({rewards:cfg.rewards});
-      LUMA.go('loyalty');LUX.toast('حُذفت المكافأة','ok');
+      EXPLOY.refresh();LUX.toast('حُذفت المكافأة','ok');
     },
     redeem(name){
       const cfg=eloyCfg(),pts=eloyPts()[name]||0;
@@ -184,7 +189,7 @@
           /* كوبون حقيقي يعمل في صفحة الحجز */
           try{LumaStore.update('luma_coupons',l=>{l.push({code,type:r.type==='percent'?'percent':'flat',value:r.value,active:true,note:'ولاء — '+name});return l;},[]);}catch(e){}
           try{window.LumaEvents&&LumaEvents.push('review','استبدال نقاط ولاء لدى رهف العتيبي: '+name+' ← '+r.n+' (كوبون '+code+')');}catch(e){}
-          close();LUMA.go('loyalty');
+          close();EXPLOY.refresh();
           LUX.toast('صدر الكوبون <b style="font-family:monospace">'+code+'</b> — '+r.n+' لـ'+name+' ✓','ok');
         };
       }});
