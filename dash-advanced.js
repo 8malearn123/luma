@@ -20,7 +20,6 @@
     ['staff','الطاقم','user'],
     ['inventory','المخزون','services'],
     ['expenses','المصاريف والربح','wallet'],
-    ['contracts','العقود الرقمية','shield'],
     ['giftcards','بطاقات الإهداء','star'],
     ['policy','سياسة الإلغاء','tools'],
   ];
@@ -86,16 +85,6 @@
         </div>
         <div class="sec-label" style="margin-top:24px">آخر المصاريف <span class="ln"></span></div>
         ${[['مستلزمات مكياج','1,800','١ يونيو'],['إيجار الاستوديو','1,500','١ يونيو'],['تسويق وإعلانات','600','٥ يونيو'],['عمولة لوما','1,840','مستمر']].map((e,i)=>`<div class="trow"><div class="gi">${icon('wallet',18)}</div><div class="ti"><div class="n">${e[0]}</div><div class="s">${e[2]}</div></div><div class="amt" style="color:var(--red)">−${e[1]} ر.س</div></div>`).join('')}`);
-    },
-    contracts(){
-      const C=[
-        {n:'عقد مكياج عروس',used:42,st:'مفعّل',stc:'green'},
-        {n:'عقد جلسة تعليمية',used:11,st:'مفعّل',stc:'green'},
-        {n:'اتفاقية حجز جماعي',used:5,st:'مسودة',stc:'soft'},
-      ];
-      return panel('العقود الرقمية','عقود موثّقة بتوقيع رقمي تحمي حقوقكِ مع كل حجز.',
-        `<button class="btn btn-gold">+ قالب عقد</button>`,
-        C.map(c=>`<div class="trow"><div class="gi">${icon('shield',18)}</div><div class="ti"><div class="n">${c.n}</div><div class="s">استُخدم ${c.used} مرة</div></div><span class="badge ${c.stc}">${c.st}</span><button class="btn btn-ghost" style="padding:8px 16px">تحرير</button></div>`).join(''));
     },
     giftcards(){
       return panel('بطاقات الإهداء','اسمحي لعميلاتكِ بإهداء جلساتكِ لمن يحببن.',
@@ -219,7 +208,6 @@
   const COMPLY=[
     {t:'توثيق الهوية (KYC)',d:'تم التحقق من هويتك',ok:true},
     {t:'السجل التجاري',d:'مفعّل ومجدّد',ok:true},
-    {t:'العقود الرقمية',d:'مفعّلة مع توقيع موثّق',ok:true},
     {t:'سياسة الخصوصية (PDPL)',d:'متوافقة مع نظام حماية البيانات',ok:true},
   ];
   S.sync = {
