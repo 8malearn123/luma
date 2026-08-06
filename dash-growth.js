@@ -121,15 +121,81 @@
 </div>`; }};
 
   /* ════════ LOYALTY ════════ */
-  const MEMBERS=[
-    {n:'نوف العتيبي', pts:1240, tier:'ذهبية', visits:14},
-    {n:'لطيفة المطيري', pts:980, tier:'ذهبية', visits:11},
-    {n:'منيرة الدوسري', pts:640, tier:'فضية', visits:7},
-    {n:'سارة الأحمدي', pts:520, tier:'فضية', visits:8},
-    {n:'جواهر الشهري', pts:410, tier:'برونزية', visits:5},
-  ];
-  const REWARDS=[['خصم 10%','500 نقطة'],['جلسة مجانية','1500 نقطة'],['ترقية خدمة','800 نقطة']];
-  S.loyalty = { render(){ return `
+  /* ════════ LOYALTY — أدوات احترافية فعلية (إعدادات ومكافآت واستبدال يولّد كوبونات) ════════ */
+  const ELOY_CFG='luma_exp_loyalty_cfg', ELOY_PTS='luma_exp_loyalty_pts';
+  const eloyCfg=()=>Object.assign({on:true,rate:1,welcome:100,
+    rewards:[{n:'خصم 10%',pts:500,value:10,type:'percent'},{n:'خصم 75 ر.س',pts:800,value:75,type:'flat'},{n:'جلسة مجانية (150 ر.س)',pts:1500,value:150,type:'flat'}]},
+    LumaStore.get(ELOY_CFG,{}));
+  const eloySave=p=>LumaStore.set(ELOY_CFG,Object.assign(eloyCfg(),p));
+  const eloyPts=()=>{
+    const cur=LumaStore.get(ELOY_PTS,null);
+    if(cur)return cur;
+    const seed={'نوف العتيبي':1240,'لطيفة المطيري':980,'منيرة الدوسري':640,'سارة الأحمدي':520,'جواهر الشهري':410};
+    LumaStore.set(ELOY_PTS,seed);return seed;
+  };
+  const eloyTier=p=>p>=900?'ذهبية':p>=500?'فضية':'برونزية';
+  window.EXPLOY={
+    toggle(){eloySave({on:!eloyCfg().on});LUMA.go('loyalty');LUX.toast(eloyCfg().on?'فُعّل برنامج الولاء ✓':'أُوقف برنامج الولاء','ok');},
+    saveCfg(){
+      const r=parseFloat(document.getElementById('elRate').value)||1;
+      const w=parseInt(document.getElementById('elWelcome').value)||0;
+      eloySave({rate:Math.max(0.5,Math.min(5,r)),welcome:Math.max(0,w)});
+      LUMA.go('loyalty');LUX.toast('حُفظت إعدادات النقاط ✓','ok');
+    },
+    addReward(){
+      LUX.modal('مكافأة جديدة',`
+        <div class="lux-f"><label>اسم المكافأة</label><input name="rn" placeholder="مثال: خصم 20%"/></div>
+        <div class="lux-two">
+          <div class="lux-f"><label>النقاط المطلوبة</label><input name="rp" type="number" value="600" dir="ltr" style="text-align:right"/></div>
+          <div class="lux-f"><label>قيمة الخصم</label><input name="rv" type="number" value="50" dir="ltr" style="text-align:right"/></div>
+        </div>
+        <div class="lux-f"><label>نوع الخصم</label><select name="rt"><option value="flat">مبلغ ثابت (ر.س)</option><option value="percent">نسبة %</option></select></div>
+        <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">إضافة</button></div>`,
+      {onMount(ov,close){
+        ov.querySelector('[data-c]').onclick=close;
+        ov.querySelector('[data-ok]').onclick=()=>{
+          const nm=ov.querySelector('[name=rn]');if(!nm.value.trim()){nm.style.borderColor='#c0566a';nm.focus();return;}
+          const cfg=eloyCfg();
+          cfg.rewards.push({n:nm.value.trim(),pts:Math.max(50,parseInt(ov.querySelector('[name=rp]').value)||500),value:Math.max(1,parseInt(ov.querySelector('[name=rv]').value)||50),type:ov.querySelector('[name=rt]').value});
+          cfg.rewards.sort((a,b)=>a.pts-b.pts);eloySave({rewards:cfg.rewards});
+          close();LUMA.go('loyalty');LUX.toast('أُضيفت المكافأة ✓','ok');
+        };
+      }});
+    },
+    delReward(i){
+      const cfg=eloyCfg();cfg.rewards.splice(i,1);eloySave({rewards:cfg.rewards});
+      LUMA.go('loyalty');LUX.toast('حُذفت المكافأة','ok');
+    },
+    redeem(name){
+      const cfg=eloyCfg(),pts=eloyPts()[name]||0;
+      const avail=cfg.rewards.filter(r=>r.pts<=pts);
+      if(!avail.length){LUX.toast('رصيد '+name+' ('+pts+' نقطة) لا يكفي لأي مكافأة بعد','warn');return;}
+      LUX.modal('استبدال نقاط — '+name,`
+        <div class="lux-lead">الرصيد الحالي: <b style="color:var(--gold-light)">${pts.toLocaleString('en')} نقطة</b> — اختاري المكافأة:</div>
+        ${avail.map((r,i)=>`<label style="display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:13px 15px;margin-bottom:9px;cursor:pointer"><input type="radio" name="rw" value="${cfg.rewards.indexOf(r)}" ${i===0?'checked':''} style="accent-color:#ccab64"/><span style="flex:1;font-size:14px;color:var(--white)">${r.n}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold-pale);direction:ltr">${r.pts} pts</span></label>`).join('')}
+        <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">استبدال وإصدار كوبون</button></div>`,
+      {onMount(ov,close){
+        ov.querySelector('[data-c]').onclick=close;
+        ov.querySelector('[data-ok]').onclick=()=>{
+          const idx=+ov.querySelector('[name=rw]:checked').value;
+          const r=eloyCfg().rewards[idx];
+          LumaStore.update(ELOY_PTS,m=>{m[name]=(m[name]||0)-r.pts;return m;},{});
+          const code='RAHAF'+Math.floor(100+Math.random()*900);
+          /* كوبون حقيقي يعمل في صفحة الحجز */
+          try{LumaStore.update('luma_coupons',l=>{l.push({code,type:r.type==='percent'?'percent':'flat',value:r.value,active:true,note:'ولاء — '+name});return l;},[]);}catch(e){}
+          try{window.LumaEvents&&LumaEvents.push('review','استبدال نقاط ولاء لدى رهف العتيبي: '+name+' ← '+r.n+' (كوبون '+code+')');}catch(e){}
+          close();LUMA.go('loyalty');
+          LUX.toast('صدر الكوبون <b style="font-family:monospace">'+code+'</b> — '+r.n+' لـ'+name+' ✓','ok');
+        };
+      }});
+    },
+  };
+  S.loyalty = { render(){
+    const cfg=eloyCfg(), pm=eloyPts();
+    const names=Object.keys(pm).sort((a,b)=>pm[b]-pm[a]);
+    const total=names.reduce((t,n)=>t+pm[n],0);
+    const redeems=(LumaStore.get('luma_coupons',[])||[]).filter(c=>(c.note||'').startsWith('ولاء')).length;
+    return `
 <style>
   .ly-hero{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#201f26,#1a140e);border:1px solid var(--gold-deep);border-radius:16px;padding:22px 26px;margin-bottom:22px;flex-wrap:wrap;gap:16px;}
   .ly-hero .l{display:flex;align-items:center;gap:16px;}
@@ -140,36 +206,38 @@
   @media(max-width:900px){.ly-grid{grid-template-columns:1fr;}}
   .ly-main{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start;}
   @media(max-width:1000px){.ly-main{grid-template-columns:1fr;}}
-  .mem{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--line-soft);}
+  .mem{display:flex;align-items:center;gap:13px;padding:12px 0;border-bottom:1px solid var(--line-soft);}
   .mem:last-child{border-bottom:none;}
   .mem .rk{font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-deep);width:22px;direction:ltr;}
   .mem .av{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;}
   .mem .nm{flex:1;font-size:14px;color:var(--white);font-weight:500;}
   .mem .pts{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold-light);direction:ltr;}
-  .rwd{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:10px;}
-  .rwd .nm{font-size:14px;color:var(--white);font-weight:500;}
-  .rwd .pt{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold-pale);direction:ltr;}
+  .rwd{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;}
+  .rwd .nm{font-size:13.5px;color:var(--white);font-weight:500;}
+  .rwd .pt{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold-pale);direction:ltr;white-space:nowrap;}
+  .cfgIn{width:80px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:center;}
 </style>
 <div class="ly-hero">
-  <div class="l"><div class="ic">${icon('loyalty',24)}</div><div><div class="t1">برنامج الولاء مُفعّل</div><div class="t2">عميلاتك يجمعن نقاطاً مع كل حجز ويستبدلنها بمكافآت</div></div></div>
-  <button class="toggle on" style="width:52px;height:30px"><span class="k"></span></button>
+  <div class="l"><div class="ic">${icon('loyalty',24)}</div><div><div class="t1">برنامج الولاء ${cfg.on?'مُفعّل':'متوقف'}</div><div class="t2">عميلاتك يجمعن نقاطاً مع كل حجز ويستبدلنها بكوبونات خصم حقيقية</div></div></div>
+  <button class="btn ${cfg.on?'btn-ghost':'btn-gold'}" onclick="EXPLOY.toggle()">${cfg.on?'إيقاف البرنامج':'تفعيل البرنامج'}</button>
 </div>
 <div class="ly-grid">
-  <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div><div class="delta up">▲ 18</div></div><div class="val">86</div><div class="k">عضوة في البرنامج</div></div>
-  <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('loyalty',19)}</div></div><div class="val">42,300</div><div class="k">نقطة ممنوحة</div></div>
-  <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">31</div><div class="k">عملية استبدال</div></div>
+  <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div></div><div class="val">${names.length}</div><div class="k">عضوة في البرنامج</div></div>
+  <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('loyalty',19)}</div></div><div class="val">${total.toLocaleString('en')}</div><div class="k">نقطة نشطة بالأرصدة</div></div>
+  <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">${redeems}</div><div class="k">كوبون صادر بالاستبدال</div></div>
 </div>
 <div class="ly-main">
-  <div class="card"><div class="sec-label">أعلى العضوات <span class="ln"></span><span class="more">عرض الكل ←</span></div>
-    ${MEMBERS.map((m,i)=>`<div class="mem"><span class="rk">${i+1}</span><span class="av">${m.n.charAt(0)}</span><span class="nm">${m.n} <span class="badge soft" style="margin-right:6px">${m.tier}</span></span><span class="pts">${m.pts.toLocaleString('en')} نقطة</span></div>`).join('')}
+  <div class="card"><div class="sec-label">العضوات وأرصدتهن <span class="ln"></span><span style="font-size:11px;color:var(--muted)">استبدال النقاط يُصدر كوبوناً يعمل بصفحة الحجز</span></div>
+    ${names.map((n,i)=>`<div class="mem"><span class="rk">${i+1}</span><span class="av">${n.charAt(0)}</span><span class="nm">${n} <span class="badge soft" style="margin-right:6px">${eloyTier(pm[n])}</span></span><span class="pts">${pm[n].toLocaleString('en')} نقطة</span><button class="btn btn-ghost" style="padding:7px 13px;font-size:12px" onclick="EXPLOY.redeem('${n.replace(/'/g,"\\'")}')">استبدال</button></div>`).join('')}
   </div>
   <div>
     <div class="card" style="margin-bottom:16px"><div class="sec-label">إعداد النقاط <span class="ln"></span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:13.5px"><span style="color:var(--muted)">نقاط لكل ريال</span><span style="color:var(--white);font-weight:600">1 نقطة</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--line-soft);font-size:13.5px"><span style="color:var(--muted)">نقاط ترحيبية</span><span style="color:var(--white);font-weight:600">100 نقطة</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:13.5px"><span style="color:var(--muted)">نقاط لكل ريال</span><input id="elRate" class="cfgIn" type="number" step="0.5" min="0.5" max="5" value="${cfg.rate}" dir="ltr"/></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line-soft);font-size:13.5px"><span style="color:var(--muted)">نقاط ترحيبية للعضوة الجديدة</span><input id="elWelcome" class="cfgIn" type="number" min="0" step="50" value="${cfg.welcome}" dir="ltr"/></div>
+      <button class="btn btn-gold" style="width:100%;margin-top:10px" onclick="EXPLOY.saveCfg()">حفظ الإعدادات</button>
     </div>
-    <div class="card"><div class="sec-label">المكافآت <span class="ln"></span><span class="more">+ مكافأة</span></div>
-      ${REWARDS.map(r=>`<div class="rwd"><span class="nm">${r[0]}</span><span class="pt">${r[1]}</span></div>`).join('')}
+    <div class="card"><div class="sec-label">المكافآت <span class="ln"></span><span class="more" onclick="EXPLOY.addReward()">+ مكافأة</span></div>
+      ${cfg.rewards.map((r,i)=>`<div class="rwd"><span class="nm">${r.n}</span><span style="display:flex;align-items:center;gap:9px"><span class="pt">${r.pts} نقطة</span><button onclick="EXPLOY.delReward(${i})" title="حذف" style="background:none;border:none;color:#e29aa6;cursor:pointer;font-size:13px">✕</button></span></div>`).join('')||'<div style="font-size:12.5px;color:var(--muted);padding:6px 0">لا مكافآت بعد — أضيفي الأولى.</div>'}
     </div>
   </div>
 </div>`; }};

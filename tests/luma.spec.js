@@ -156,6 +156,34 @@ test('الخدمات: إضافة صورة لكل خدمة وتظهر بصفحة 
   expect(await page.locator('div[title="تغيير صورة المنتج"] img').count()).toBeGreaterThan(0);
 });
 
+test('لوحة الخبيرة: برنامج الولاء بأدوات فعلية — إعدادات واستبدال يصدر كوبوناً', async ({ page }) => {
+  await page.goto('/expert.html#loyalty');
+  await page.waitForTimeout(900);
+  await expect(page.getByText('برنامج الولاء مُفعّل')).toBeVisible();
+  await expect(page.getByText('نوف العتيبي')).toBeVisible();
+  // حفظ الإعدادات يعمل
+  await page.fill('#elRate', '2');
+  await page.click('button:has-text("حفظ الإعدادات")');
+  await page.waitForTimeout(500);
+  await expect(page.locator('#elRate')).toHaveValue('2');
+  // الاستبدال: نوف (1240 نقطة) تستبدل مكافأة → يصدر كوبون حقيقي وينخفض رصيدها
+  await page.locator('.mem', { hasText: 'نوف العتيبي' }).locator('button:has-text("استبدال")').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.lux-modal')).toContainText('الرصيد الحالي');
+  await page.click('.lux-modal button:has-text("استبدال وإصدار كوبون")');
+  await page.waitForTimeout(600);
+  await expect(page.locator('.mem', { hasText: 'نوف العتيبي' })).toContainText('740');
+  const coupons = await page.evaluate(() => JSON.parse(localStorage.getItem('luma_coupons') || '[]'));
+  expect(coupons.some(c => (c.note || '').includes('ولاء'))).toBeTruthy();
+  // إضافة مكافأة جديدة
+  await page.click('.more:has-text("+ مكافأة")');
+  await page.waitForTimeout(300);
+  await page.fill('.lux-modal [name=rn]', 'خصم 20%');
+  await page.click('.lux-modal [data-ok]');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.rwd', { hasText: 'خصم 20%' })).toBeVisible();
+});
+
 test('التسويق: خدمة الولاء ظاهرة بإحصاءاتها وزر الإعدادات يعمل', async ({ page }) => {
   await page.goto('/salon.html#marketing');
   await page.waitForTimeout(800);
