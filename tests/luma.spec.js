@@ -157,8 +157,11 @@ test('الخدمات: إضافة صورة لكل خدمة وتظهر بصفحة 
 });
 
 test('لوحة الخبيرة: برنامج الولاء بأدوات فعلية — إعدادات واستبدال يصدر كوبوناً', async ({ page }) => {
-  await page.goto('/expert.html#loyalty');
+  // انتقل برنامج الولاء إلى شاشة أدوات احترافية
+  await page.goto('/expert.html#advanced');
   await page.waitForTimeout(900);
+  await page.click('.adv-chip:has-text("برنامج الولاء")');
+  await page.waitForTimeout(500);
   await expect(page.getByText('برنامج الولاء مُفعّل')).toBeVisible();
   await expect(page.getByText('نوف العتيبي')).toBeVisible();
   // حفظ الإعدادات يعمل
