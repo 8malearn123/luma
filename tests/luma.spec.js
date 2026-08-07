@@ -198,6 +198,13 @@ test('التسويق: خدمة الولاء ظاهرة بإحصاءاتها وز
   await page.waitForTimeout(400);
   await expect(page.locator('.lux-modal')).toContainText('نقطة لكل ريال مدفوع');
   await page.click('.lux-modal .x');
+  // بطاقات الإهداء انتقلت إلى تسويق الصالون
+  await expect(page.getByText('بطاقات الإهداء').first()).toBeVisible();
+  await expect(page.getByText('ذهبية كلاسيك')).toBeVisible();
+  // ولم تعد ضمن أدوات الخبيرة الاحترافية
+  await page.goto('/expert.html#advanced');
+  await page.waitForTimeout(800);
+  await expect(page.locator('.adv-chip', { hasText: 'بطاقات الإهداء' })).toHaveCount(0);
 });
 
 test('اسم الخبيرة بأعلى لوحتها يفتح ملفها العام', async ({ page }) => {

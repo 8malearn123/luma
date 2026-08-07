@@ -21,7 +21,6 @@
     ['staff','الطاقم','user'],
     ['inventory','المخزون','services'],
     ['expenses','المصاريف والربح','wallet'],
-    ['giftcards','بطاقات الإهداء','star'],
     ['policy','سياسة الإلغاء','tools'],
   ];
 
@@ -92,12 +91,6 @@
         </div>
         <div class="sec-label" style="margin-top:24px">آخر المصاريف <span class="ln"></span></div>
         ${[['مستلزمات مكياج','1,800','١ يونيو'],['إيجار الاستوديو','1,500','١ يونيو'],['تسويق وإعلانات','600','٥ يونيو'],['عمولة لوما','1,840','مستمر']].map((e,i)=>`<div class="trow"><div class="gi">${icon('wallet',18)}</div><div class="ti"><div class="n">${e[0]}</div><div class="s">${e[2]}</div></div><div class="amt" style="color:var(--red)">−${e[1]} ر.س</div></div>`).join('')}`);
-    },
-    giftcards(){
-      return panel('بطاقات الإهداء','اسمحي لعميلاتكِ بإهداء جلساتكِ لمن يحببن.',
-        `<button class="btn btn-gold">+ تصميم بطاقة</button>`,
-        `<div class="cards3">${[['#201f26','ذهبية كلاسيك'],['#31242a','وردية ناعمة'],['#1f2c25','زمردية']].map(g=>`<div class="giftc" style="background:linear-gradient(135deg,${g[0]},#0c0b0e)"><div class="gtop"><span>LUMA</span><span>◆</span></div><div class="gval">بطاقة إهداء</div><div class="gname">${g[1]}</div></div>`).join('')}</div>
-        <div class="mini-stat" style="margin-top:18px"><span>بطاقات مُصدرة هذا الشهر · ١٤ بطاقة</span><b class="gold-fill">5,600 ر.س</b></div>`);
     },
     policy(){
       const R=[
