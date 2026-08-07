@@ -198,9 +198,9 @@ SCREENS.page=()=>{
   const c=pageCfg();
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
-    <div><div style="font-weight:600;font-size:19px;color:var(--white)">مُنشئ الرابط والصفحة الخاصة</div>
-    <div style="font-size:13px;color:var(--gold-pale);margin-top:2px">رابطك المخصص وصفحة حجز فاخرة — وهذه الهوية نفسها تظهر على فواتيرك المطبوعة</div></div>
-    <a class="btn btn-gold" href="booking.html" target="_blank" style="text-decoration:none">فتح صفحتي ↗</a>
+    <div><div style="font-weight:600;font-size:19px;color:var(--white)">متجري الإلكتروني</div>
+    <div style="font-size:13px;color:var(--gold-pale);margin-top:2px">رابطك المخصص وصفحتك العامة: حجز فاخر + متجر منتجات إلكتروني بسلة ودفع — والهوية نفسها على فواتيرك</div></div>
+    <a class="btn btn-gold" href="booking.html" target="_blank" style="text-decoration:none">فتح متجري ↗</a>
   </div>
   <div style="display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start">
     <div>
