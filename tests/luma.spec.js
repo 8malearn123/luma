@@ -221,9 +221,10 @@ test('الباقات: سَناء ووَهَج للخبيرات وفَريد لل
   await page.goto('/index.html');
   await page.waitForTimeout(500);
   const tiers = page.locator('.tier');
-  await expect(tiers.nth(0).locator('.aud')).toHaveText('للخبيرات المستقلات');   // سَناء
-  await expect(tiers.nth(1).locator('.aud')).toHaveText('للخبيرات المستقلات');   // وَهَج
-  await expect(tiers.nth(2).locator('.aud')).toHaveText('للصوالين والمراكز');     // فَرِيد
+  await expect(tiers.nth(0).locator('.aud')).toHaveText('ستاندر · للخبيرات المستقلات'); // سَناء
+  await expect(tiers.nth(1).locator('.aud')).toHaveText('للخبيرات المستقلات');           // وَهَج
+  await expect(tiers.nth(1)).toContainText('التحليلات والأدوات الاحترافية');
+  await expect(tiers.nth(2).locator('.aud')).toHaveText('للصوالين والمراكز');             // فَرِيد
   // وثيقة الباقات تعرض التصنيف نفسه
   await page.goto('/pricing.html');
   await page.waitForTimeout(700);
