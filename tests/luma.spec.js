@@ -330,6 +330,31 @@ test('سهم الرجوع من تبويب جديد يعيد لصفحة المص�
   await pop.waitForURL(/client\.html/);
 });
 
+test('المتجر الإلكتروني بصفحة الصالون: سلة وإتمام طلب يصل الإشعارات', async ({ page }) => {
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.getByText('متجر صالون لمسة — توصيل حتى بابك')).toBeVisible();
+  // إضافة منتجين للسلة
+  await page.locator('.shp', { hasText: 'سيروم ترطيب' }).locator('button:has-text("أضيفي")').click();
+  await page.waitForTimeout(300);
+  await page.locator('.shp', { hasText: 'سيروم ترطيب' }).locator('button:has-text("+")').click();
+  await page.waitForTimeout(300);
+  await expect(page.locator('#cartFab')).toContainText('360');
+  // إتمام الطلب
+  await page.click('#cartFab');
+  await page.waitForTimeout(400);
+  await page.fill('#odName', 'سارة التجريبية');
+  await page.fill('#odPhone', '0551112233');
+  await page.click('label:has-text("تابي")');
+  await page.click('button:has-text("تأكيد الطلب")');
+  await page.waitForTimeout(500);
+  await expect(page.getByText('تم استلام طلبك')).toBeVisible();
+  await expect(page.getByText(/ORD-\d+/)).toBeVisible();
+  const orders = await page.evaluate(() => JSON.parse(localStorage.getItem('luma_salon_orders') || '[]'));
+  expect(orders.length).toBeGreaterThan(0);
+  expect(orders[0].total).toBe(360);
+});
+
 test('حجز أكثر من خدمة في موعد واحد مع مجموع السعر والمدة', async ({ page }) => {
   await page.goto('/booking.html');
   await page.waitForTimeout(600);

@@ -371,7 +371,7 @@ const NAV=[
   {id:'overview',label:'نظرة عامة',icon:'grid',crumb:'SALON'},
   {id:'board',label:'لوحة الحجوزات',icon:'board',crumb:'SALON'},
   {id:'hr',label:'الطاقم والموارد البشرية',icon:'staff',crumb:'SALON'},
-  {id:'page',label:'صفحتي والرابط',icon:'pin',crumb:'GROWTH'},
+  {id:'page',label:'متجري الإلكتروني',icon:'bag',crumb:'GROWTH'},
   {id:'clients',label:'العملاء',icon:'users',crumb:'SALON'},
   {id:'services',label:'الخدمات',icon:'scissors',crumb:'SALON'},
   {id:'inventory',label:'المخزون',icon:'boxes',crumb:'SALON'},
