@@ -119,7 +119,7 @@
     'اختاري خدمتك':'Choose your service','اختاري الأخصائية':'Choose your specialist','التاريخ والوقت':'Date & time','تأكيد الموعد':'Confirm appointment',
     'متابعة':'Continue','تأكيد الحجز ✓':'Confirm booking ✓','تم تأكيد حجزك 🎉':'Your booking is confirmed 🎉','حجز موعد آخر':'Book another appointment',
     'تذكرة الحجز':'Booking ticket','الأخصائية':'Specialist','التاريخ':'Date','الوقت':'Time','المدة':'Duration','الإجمالي':'Total',
-    'سياسة الحجز 📋':'Booking policy 📋','كود خصم؟ (اختياري)':'Discount code? (optional)','تطبيق':'Apply','تم تطبيق الخصم ✓':'Discount applied ✓',
+    'سياسة الحجز 📋':'Booking policy 📋','سياسة الحجز':'Booking policy','موقعنا':'Our location','كود خصم؟ (اختياري)':'Discount code? (optional)','تطبيق':'Apply','تم تطبيق الخصم ✓':'Discount applied ✓',
     'الكود غير صحيح أو منتهي':'Invalid or expired code','في إجازة معتمدة':'On approved leave','إجازة':'Leave','لا أوقات متاحة هذا اليوم':'No slots available this day',
     'الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.':'Arriving 10 minutes early ensures your full session.',
     'يمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.':'Free cancellation or rescheduling up to 24 hours before your appointment.',

@@ -17,7 +17,7 @@ function pageThemeOf(c){
   return PAGE_PRESETS.find(p=>p.k===c.theme)||PAGE_PRESETS[0];
 }
 const PAGE_POLICY_DEFAULT='الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.';
-const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},map:'',about:'',...hrLoad(PAGE_KEY,{})});
+const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},map:'',about:'',banners:[],hideCats:[],...hrLoad(PAGE_KEY,{})});
 /* شبكات التواصل المدعومة: [المفتاح، الاسم، نص المساعدة] */
 const PAGE_SOCIALS=[
   ['ig','إنستقرام','@اسم_الحساب أو الرابط الكامل'],
@@ -50,9 +50,13 @@ const PAGE_FONTS=[
 const ytIdOf=u=>{const m=String(u||'').match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);return m?m[1]:null;};
 const isVideoUrl=u=>!!ytIdOf(u)||/\.(mp4|webm|mov)(\?|$)/i.test(String(u||''));
 const slugClean=v=>v.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-{2,}/g,'-');
-let PAGE_TAB='basics';
+let PAGE_TAB='general';
 const PAGE={
-  showTab(t){PAGE_TAB=t;SALON.go('page');},
+  showTab(t){PAGE_TAB=t;SALON.go('page');
+    setTimeout(()=>{
+      const sub=document.getElementById('pgSub');if(sub)sub.style.display='block';
+      document.querySelectorAll('.pgsub').forEach(n=>n.classList.toggle('active',n.dataset.sub===t));
+    },0);},
   save(patch,silent){const c={...pageCfg(),...patch};hrSave(PAGE_KEY,c);
     const fr=document.getElementById('pagePrev');if(fr)fr.contentWindow.location.reload();
     if(!silent)LUX.toast('حُفظت التغييرات وانعكست على المعاينة ✓','ok');},
@@ -94,6 +98,19 @@ const PAGE={
       PAGE.save({map:v},true);
       LUX.toast('التُقط موقعك وظهر على الخريطة ✓','ok');
     },()=>LUX.toast('تعذر تحديد الموقع — اسمحي بالوصول للموقع أو الصقي رابط خرائط Google','warn'),{enableHighAccuracy:true,timeout:8000});
+  },
+  addBanner(){
+    const el=document.getElementById('bnIn');const v=(el&&el.value.trim())||'';
+    if(!v){if(el){el.style.borderColor='#c0566a';el.focus();}return;}
+    const b=[...(pageCfg().banners||[]),{t:v,on:true}];
+    PAGE.save({banners:b},true);PAGE.showTab('banners');LUX.toast('أُضيف البنر وظهر بمتجرك ✓','ok');
+  },
+  toggleBanner(i){const b=[...(pageCfg().banners||[])];if(!b[i])return;b[i]={...b[i],on:!b[i].on};PAGE.save({banners:b},true);PAGE.showTab('banners');},
+  delBanner(i){const b=[...(pageCfg().banners||[])];b.splice(i,1);PAGE.save({banners:b},true);PAGE.showTab('banners');LUX.toast('حُذف البنر','ok');},
+  toggleCat(ct){
+    const h=new Set(pageCfg().hideCats||[]);
+    h.has(ct)?h.delete(ct):h.add(ct);
+    PAGE.save({hideCats:[...h]},true);PAGE.showTab('cats');
   },
   resetTheme(){PAGE.save({theme:'dark-luxury',themeCustom:null},true);SALON.go('page');LUX.toast('عاد المظهر للافتراضي','ok');},
   /* ── الشعار والغلاف: رفع ثم محرر قص وتكبير قبل الحفظ ── */
@@ -204,13 +221,13 @@ SCREENS.page=()=>{
   </div>
   <div style="display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start">
     <div>
-      ${(()=>{const T=[['basics','idcard','الأساسية'],['content','image','المحتوى والوسائط'],['booking','clipboard','الحجز والخدمات'],['look','palette','المظهر']];
+      ${(()=>{const T=[['general','gear','عام'],['identity','idcard','الهوية'],['design','palette','تصميم المتجر'],['front','image','الواجهة'],['banners','mega','البنرات'],['pages','clipboard','الصفحات'],['cats','boxes','التصنيفات']];
         return `<div style="display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap">${T.map(([k,ic,l])=>`
           <button onclick="PAGE.showTab('${k}')" style="flex:1;min-width:130px;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:${PAGE_TAB===k?'700':'400'};
             border:1.5px solid ${PAGE_TAB===k?'var(--gold-light)':'var(--line)'};
             background:${PAGE_TAB===k?'linear-gradient(100deg,rgba(156,124,58,0.18),rgba(156,124,58,0.05))':'var(--surface)'};
             color:${PAGE_TAB===k?'var(--gold-light)':'var(--cream)'}">${icon(ic,17)} ${l}</button>`).join('')}</div>`;})()}
-      <div style="${PAGE_TAB==='basics'?'':'display:none'}">
+      <div style="${PAGE_TAB==='general'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">إعداد الرابط الخاص <span class="ln"></span></div>
         <div style="display:flex;align-items:stretch;border:1px solid var(--line);border-radius:11px;overflow:hidden" dir="ltr">
@@ -220,6 +237,8 @@ SCREENS.page=()=>{
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:8px">أحرف إنجليزية وأرقام وشرطات فقط — يُنظَّف تلقائياً أثناء الكتابة.</div>
       </div>
+      </div>
+      <div style="${PAGE_TAB==='identity'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">هوية الصفحة <span class="ln"></span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -229,7 +248,6 @@ SCREENS.page=()=>{
           <div class="lux-f"><label>الرقم الضريبي <span style="font-size:10px;color:var(--muted)">— يظهر في الفاتورة</span></label><input value="${c.vatno||''}" oninput="PAGE.field('vatno',this)" dir="ltr" placeholder="310123456700003" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:right"/></div>
         </div>
         <div class="lux-f"><label>نبذة مختصرة</label><textarea rows="2" oninput="PAGE.field('bio',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;resize:vertical">${c.bio}</textarea></div>
-        <div class="lux-f"><label>من نحن <span style="font-size:10px;color:var(--muted)">— اختياري، يظهر بنافذة منبثقة عند ضغط العميلة زر «من نحن» في صفحتك · كل سطر فقرة</span></label><textarea id="aboutIn" rows="4" oninput="PAGE.field('about',this)" placeholder="قصتكم، رؤيتكم، ما يميز صالونكم…" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;line-height:2;outline:none;resize:vertical">${c.about||''}</textarea></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           ${[['logo','الشعار','https://…/logo.png'],['cover','صورة الغلاف الفاخرة','https://…/cover.jpg']].map(([k,lb,ph])=>{
             const v=c[k]||'';const isData=v.startsWith('data:');
@@ -247,7 +265,11 @@ SCREENS.page=()=>{
         </div>
       </div>
       </div>
-      <div style="${PAGE_TAB==='content'?'':'display:none'}">
+      <div style="${PAGE_TAB==='front'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">رسالة الترحيب <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختيارية — نافذة منبثقة أول ما تفتح العميلة متجرك</span></div>
+        <input id="wbIn" value="${(c.welcome||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('welcome',this)" placeholder="مثال: 🌸 أهلاً بك! خصم 10٪ على أول حجز بكود LUMA10 — اتركيه فارغاً للإخفاء" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
+      </div>
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">روابط السوشل ميديا <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختيارية — تظهر كأيقونات في صفحتك فقط عند تعبئتها</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -288,12 +310,42 @@ SCREENS.page=()=>{
         <div style="font-size:11px;color:var(--muted);margin-top:9px">الصور المرفوعة تُضغط تلقائياً · الفيديو برابط يوتيوب أو ملف mp4</div>
       </div>
       </div>
-      <div style="${PAGE_TAB==='booking'?'':'display:none'}">
+      <div style="${PAGE_TAB==='pages'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
-        <div class="sec-label">سياسة الحجز والخدمات المميزة <span class="ln"></span></div>
+        <div class="sec-label">صفحات المتجر <span class="ln"></span><span style="font-size:11px;color:var(--muted)">سياسة الحجز و«من نحن»</span></div>
         <div class="lux-f"><label>سياسة الحجز — كل سطر يظهر كبند في صفحة الحجز وعند التأكيد</label>
           <textarea rows="4" oninput="PAGE.field('policy',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13px;line-height:2;outline:none;resize:vertical">${c.policy||''}</textarea></div>
-        <div class="lux-f" style="margin-top:6px"><label>الخدمات المميزة — اختاري شارة تظهر على الخدمة في صفحة الحجز</label>
+        <div class="lux-f"><label>من نحن <span style="font-size:10px;color:var(--muted)">— اختياري، يظهر بنافذة منبثقة عند ضغط العميلة زر «من نحن» · كل سطر فقرة</span></label><textarea id="aboutIn" rows="4" oninput="PAGE.field('about',this)" placeholder="قصتكم، رؤيتكم، ما يميز صالونكم…" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;line-height:2;outline:none;resize:vertical">${c.about||''}</textarea></div>
+      </div>
+      </div>
+      <div style="${PAGE_TAB==='banners'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">البنرات الترويجية <span class="ln"></span><span style="font-size:11px;color:var(--muted)">أشرطة إعلانية تظهر أعلى متجرك — فعّلي وعطّلي كما تشائين</span></div>
+        ${(c.banners||[]).length?(c.banners||[]).map((b,i)=>`
+        <div style="display:flex;align-items:center;gap:11px;border:1px solid ${b.on?'var(--gold-deep)':'var(--line)'};border-radius:11px;padding:11px 14px;margin-bottom:9px">
+          <span style="color:var(--gold-light);display:inline-flex">${icon('mega',16)}</span>
+          <span style="flex:1;font-size:13px;color:${b.on?'var(--white)':'var(--muted)'}">${b.t}</span>
+          <button class="btn btn-ghost" style="padding:6px 13px;font-size:11.5px" onclick="PAGE.toggleBanner(${i})">${b.on?'إيقاف':'تفعيل'}</button>
+          <button onclick="PAGE.delBanner(${i})" title="حذف" style="background:none;border:none;color:#e29aa6;cursor:pointer;font-size:13px">✕</button>
+        </div>`).join(''):`<div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">لا بنرات بعد — أضيفي أول بنر ترويجي (مثال: توصيل مجاني للطلبات فوق 200 ر.س).</div>`}
+        <div style="display:flex;gap:9px">
+          <input id="bnIn" placeholder="نص البنر — مثال: خصم 15% على كل المنتجات هذا الأسبوع" style="flex:1;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none"/>
+          <button class="btn btn-gold" onclick="PAGE.addBanner()">+ إضافة</button>
+        </div>
+      </div>
+      </div>
+      <div style="${PAGE_TAB==='cats'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">تصنيفات المتجر <span class="ln"></span><span style="font-size:11px;color:var(--muted)">تحكّمي بأي تصنيفات المنتجات تظهر لعميلاتك</span></div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:4px">
+          ${['عناية','أظافر','شعر','مكياج'].map(ct=>{const off=(c.hideCats||[]).includes(ct);return `
+          <button onclick="PAGE.toggleCat('${ct}')" style="font-family:inherit;font-size:12.5px;padding:9px 18px;border-radius:20px;cursor:pointer;border:1.5px solid ${off?'var(--line)':'var(--gold-light)'};background:${off?'var(--surface)':'linear-gradient(120deg,rgba(219,189,129,.16),rgba(156,124,58,.05))'};color:${off?'var(--muted)':'var(--gold-light)'};text-decoration:${off?'line-through':'none'}">${ct}</button>`;}).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">التصنيف المشطوب مخفي — منتجاته لا تظهر في المتجر، وتظهر البقية كفلاتر للعميلة.</div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">الخدمات المميزة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">شارات تظهر على الخدمات في صفحة الحجز</span></div>
+        <div class="lux-f"><label>اختاري شارة لكل خدمة</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
             ${SVC_CATALOG.map(s=>{const cur=(c.featured||{})[s[0]]||'';return `
             <div style="display:flex;align-items:center;gap:9px;border:1px solid ${cur?'var(--gold-deep)':'var(--line)'};border-radius:10px;padding:8px 11px">
@@ -306,7 +358,7 @@ SCREENS.page=()=>{
           </div></div>
       </div>
       </div>
-      <div style="${PAGE_TAB==='look'?'':'display:none'}">
+      <div style="${PAGE_TAB==='design'?'':'display:none'}">
       <div class="card">
         <div class="sec-label">مظهر وتصميم الصفحة <span class="ln"></span>
           <span id="thBadge" style="display:${c.theme==='custom'?'inline-block':'none'};font-size:10.5px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:2px 10px">ثيم مخصص ✓</span></div>
@@ -345,10 +397,6 @@ SCREENS.page=()=>{
               <span style="display:block;font-size:9.5px;color:${(c.font||'plex')===k?'var(--gold-light)':'var(--muted)'};margin-top:4px">${lb}</span>
             </button>`).join('')}
           </div>
-        </div>
-        <div style="margin-top:16px">
-          <div style="font-size:12.5px;color:var(--gold-pale);margin-bottom:7px">رسالة الترحيب <span style="font-size:10px;color:var(--muted)">— اختيارية، تظهر نافذةً منبثقة أول ما تفتح العميلة صفحتك</span></div>
-          <input id="wbIn" value="${(c.welcome||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('welcome',this)" placeholder="مثال: 🌸 أهلاً بك! خصم 10٪ على أول حجز بكود LUMA10 — اتركيه فارغاً للإخفاء" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
           <span style="font-size:11px;color:var(--muted)">كل تغيير يُحفظ فوراً وينعكس على المعاينة والفاتورة</span>

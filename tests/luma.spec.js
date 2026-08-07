@@ -458,9 +458,11 @@ test('«من نحن» نافذة منبثقة اختيارية في صفحة ا�
   await page.goto('/booking.html');
   await page.waitForTimeout(500);
   await expect(page.locator('.aboutBtn')).toHaveCount(0);
-  // كتابة «من نحن» من المحرر
+  // كتابة «من نحن» من المحرر — ضمن قسم الصفحات
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
+  await page.click('button:has-text("الصفحات")');
+  await page.waitForTimeout(300);
   await page.fill('#aboutIn', 'بدأنا في 2019 برؤية بسيطة: جمالك يستحق مستوى آخر.\nطاقمنا خبيرات معتمدات بشهادات عالمية.');
   await page.waitForTimeout(400);
   // الزر يظهر والنافذة تعرض الفقرات
@@ -482,7 +484,7 @@ test('موقعي بالخريطة: من المحرر إلى خريطة مدمج�
   // إدخال إحداثيات من المحرر
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("المحتوى والوسائط")');
+  await page.click('button:has-text("الواجهة")');
   await page.waitForTimeout(300);
   await page.fill('#mapIn', '21.543333,39.172779');
   await page.waitForTimeout(400);
@@ -492,7 +494,7 @@ test('موقعي بالخريطة: من المحرر إلى خريطة مدمج�
   await expect(page.locator('.mapc .mapf')).toHaveCount(1);
   expect(await page.locator('.mapc .mapf').getAttribute('src')).toContain('21.543333,39.172779');
   expect(await page.locator('.mapc a').getAttribute('href')).toContain('query=21.543333,39.172779');
-  await expect(page.getByText('موقعنا 📍')).toBeVisible();
+  await expect(page.getByText('موقعنا')).toBeVisible();
 });
 
 test('روابط السوشل ميديا الاختيارية تظهر في صفحة الحجز', async ({ page }) => {
@@ -503,7 +505,7 @@ test('روابط السوشل ميديا الاختيارية تظهر في صف
   // تعبئة إنستقرام (باسم مستخدم) وواتساب (برقم) من المحرر
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("المحتوى والوسائط")');
+  await page.click('button:has-text("الواجهة")');
   await page.waitForTimeout(300);
   await page.fill('#soc-ig', '@lamsa.beauty');
   await page.fill('#soc-wa', '0555123456');
@@ -519,11 +521,13 @@ test('روابط السوشل ميديا الاختيارية تظهر في صف
 test('نوع الخط وشريط الترحيب من المحرر إلى صفحة الحجز', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("المظهر")');
+  await page.click('button:has-text("تصميم المتجر")');
   await page.waitForTimeout(300);
   // اختيار خط «أميري» + كتابة رسالة ترحيب
   await page.locator('.font-chip', { hasText: 'أميري' }).click();
   await page.waitForTimeout(500);
+  await page.click('button:has-text("الواجهة")');
+  await page.waitForTimeout(300);
   await page.fill('#wbIn', '🌸 أهلاً بك! خصم 10٪ على أول حجز بكود LUMA10');
   await page.waitForTimeout(400);
   // صفحة الحجز: الخط مطبق والشريط ظاهر
@@ -545,10 +549,12 @@ test('نوع الخط وشريط الترحيب من المحرر إلى صفح�
 test('سياسة الحجز والخدمات المميزة تظهر في صفحة الحجز', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("الحجز والخدمات")');
+  await page.click('button:has-text("الصفحات")');
   await page.waitForTimeout(300);
-  await expect(page.getByText('سياسة الحجز والخدمات المميزة')).toBeVisible();
-  // تمييز خدمة إضافية بشارة «عرض خاص»
+  await expect(page.getByText('صفحات المتجر')).toBeVisible();
+  // تمييز خدمة إضافية بشارة «عرض خاص» — من قسم التصنيفات
+  await page.click('button:has-text("التصنيفات")');
+  await page.waitForTimeout(300);
   await page.locator('.feat-sel').first().selectOption('عرض خاص');
   await page.waitForTimeout(500);
   // صفحة الحجز: الشارات والسياسة
@@ -556,7 +562,7 @@ test('سياسة الحجز والخدمات المميزة تظهر في صفح
   await page.waitForTimeout(600);
   await expect(page.locator('.svc .feat', { hasText: 'الأكثر طلباً' })).toBeVisible();   // الافتراضية
   await expect(page.locator('.svc .feat', { hasText: 'عرض خاص' })).toBeVisible();       // المضافة
-  await expect(page.getByText('سياسة الحجز 📋').first()).toBeVisible();
+  await expect(page.getByText('سياسة الحجز', { exact: false }).first()).toBeVisible();
   await expect(page.getByText(/إلغاء أو تعديل الحجز مجاناً/).first()).toBeVisible();
   // البنود تظهر أيضاً في خطوة التأكيد
   await page.locator('.svc').first().click();
@@ -565,10 +571,43 @@ test('سياسة الحجز والخدمات المميزة تظهر في صفح
   await expect(page.locator('.policy.compact')).toBeVisible();
 });
 
+test('متجري الإلكتروني: قائمة منسدلة بسبعة أقسام + بنرات وتصنيفات تعمل بالمتجر', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  // القائمة الجانبية: النقر يفتح الفروع السبعة
+  await page.click('.nav-item[data-id="page"]');
+  await page.waitForTimeout(300);
+  for (const l of ['عام', 'الهوية', 'تصميم المتجر', 'الواجهة', 'البنرات', 'الصفحات', 'التصنيفات'])
+    await expect(page.locator('.pgsub', { hasText: l })).toBeVisible();
+  // البنرات: إضافة بنر يظهر بالمتجر
+  await page.locator('.pgsub[data-sub="banners"]').click();
+  await page.waitForTimeout(400);
+  await page.fill('#bnIn', 'توصيل مجاني للطلبات فوق 200 ر.س');
+  await page.click('button:has-text("+ إضافة")');
+  await page.waitForTimeout(500);
+  await expect(page.getByText('توصيل مجاني للطلبات فوق 200 ر.س').first()).toBeVisible();
+  // التصنيفات: إخفاء «عناية»
+  await page.locator('.pgsub[data-sub="cats"]').click();
+  await page.waitForTimeout(400);
+  await page.click('button:has-text("عناية")');
+  await page.waitForTimeout(400);
+  // المتجر العام: البنر ظاهر، فلاتر التصنيفات بدون «عناية»، ومنتجاتها مخفية
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.getByText('توصيل مجاني للطلبات فوق 200 ر.س')).toBeVisible();
+  await expect(page.locator('.shp', { hasText: 'سيروم ترطيب' })).toHaveCount(0);
+  await page.click('.shopcat:has-text("أظافر")');
+  await page.waitForTimeout(400);
+  await expect(page.locator('.shp')).toHaveCount(1);
+  await expect(page.locator('.shp', { hasText: 'طلاء أظافر' })).toBeVisible();
+});
+
 test('الشعار والغلاف: رفع صورة من الجهاز ينعكس على صفحة الحجز', async ({ page }) => {
   const PX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
+  await page.click('button:has-text("الهوية")');
+  await page.waitForTimeout(300);
   await page.setInputFiles('#up-logo', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
   await expect(page.getByText('تعديل الصورة — قص وتكبير')).toBeVisible();   // محرر القص يفتح
   await page.click('button:has-text("حفظ الصورة")');
@@ -592,6 +631,8 @@ test('الشعار والغلاف: رفع صورة من الجهاز ينعكس 
   // الإزالة تعيد الافتراضي
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
+  await page.click('button:has-text("الهوية")');
+  await page.waitForTimeout(300);
   await page.locator('button[title="إزالة"]').first().click();
   await page.waitForTimeout(500);
   await expect(page.locator('#pv-logo')).toHaveCount(0);
@@ -601,7 +642,7 @@ test('معرض الأعمال: صور وفيديو من المحرر إلى صف
   const PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("المحتوى والوسائط")');
+  await page.click('button:has-text("الواجهة")');
   await page.waitForTimeout(300);
   await expect(page.getByText('معرض الأعمال')).toBeVisible();
   // 1) رفع صورة من الجهاز (تُضغط عبر canvas)
@@ -632,7 +673,7 @@ test('معرض الأعمال: صور وفيديو من المحرر إلى صف
 test('محرر الثيم المخصص: الألوان والزوايا تنعكس على صفحة الحجز والفاتورة', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("المظهر")');
+  await page.click('button:has-text("تصميم المتجر")');
   await page.waitForTimeout(300);
   // تخصيص اللون المميز عبر حقل hex
   await page.fill('#thx-ac', '#ff2277');
@@ -647,7 +688,7 @@ test('محرر الثيم المخصص: الألوان والزوايا تنعك
   // القالب الجاهز يعيد الاختيار كنقطة بداية
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("المظهر")');
+  await page.click('button:has-text("تصميم المتجر")');
   await page.waitForTimeout(300);
   await page.click('button:has-text("زمرد هادئ")');
   await page.waitForTimeout(600);
@@ -813,7 +854,7 @@ test('الترجمة: تبديل اللغة للإنجليزية يعم المو
   await page.goto('/booking.html');
   await page.waitForTimeout(700);
   await expect(page.getByText('Choose your service')).toBeVisible();
-  await expect(page.getByText('Booking policy 📋').first()).toBeVisible();
+  await expect(page.getByText('Booking policy').first()).toBeVisible();
   // العودة للعربية
   await page.click('.luma-lang-btn');
   await page.waitForTimeout(900);
