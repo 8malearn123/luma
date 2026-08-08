@@ -484,7 +484,7 @@ test('موقعي بالخريطة: من المحرر إلى خريطة مدمج�
   // إدخال إحداثيات من المحرر
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("الواجهة")');
+  await page.click('button:has-text("الهوية")');
   await page.waitForTimeout(300);
   await page.fill('#mapIn', '21.543333,39.172779');
   await page.waitForTimeout(400);
@@ -505,7 +505,7 @@ test('روابط السوشل ميديا الاختيارية تظهر في صف
   // تعبئة إنستقرام (باسم مستخدم) وواتساب (برقم) من المحرر
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("الواجهة")');
+  await page.click('button:has-text("الهوية")');
   await page.waitForTimeout(300);
   await page.fill('#soc-ig', '@lamsa.beauty');
   await page.fill('#soc-wa', '0555123456');
@@ -513,15 +513,15 @@ test('روابط السوشل ميديا الاختيارية تظهر في صف
   // الأيقونتان تظهران بروابط مطبَّعة
   await page.goto('/booking.html');
   await page.waitForTimeout(500);
-  await expect(page.locator('.socs .soc')).toHaveCount(2);
-  expect(await page.locator('.soc-ig').getAttribute('href')).toBe('https://instagram.com/lamsa.beauty');
-  expect(await page.locator('.soc-wa').getAttribute('href')).toBe('https://wa.me/966555123456');
+  await expect(page.locator('.head .socs .soc')).toHaveCount(2);
+  expect(await page.locator('.head .soc-ig').getAttribute('href')).toBe('https://instagram.com/lamsa.beauty');
+  expect(await page.locator('.head .soc-wa').getAttribute('href')).toBe('https://wa.me/966555123456');
 });
 
 test('نوع الخط وشريط الترحيب من المحرر إلى صفحة الحجز', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("تصميم المتجر")');
+  await page.click('button:has-text("الهوية")');
   await page.waitForTimeout(300);
   // اختيار خط «أميري» + كتابة رسالة ترحيب
   await page.locator('.font-chip', { hasText: 'أميري' }).click();
@@ -583,7 +583,7 @@ test('متجري الإلكتروني: قائمة منسدلة بسبعة أقس
   await page.locator('.pgsub[data-sub="banners"]').click();
   await page.waitForTimeout(400);
   await page.fill('#bnIn', 'توصيل مجاني للطلبات فوق 200 ر.س');
-  await page.click('button:has-text("+ إضافة")');
+  await page.locator('.card', { hasText: 'البنرات الترويجية' }).locator('button:has-text("+ إضافة")').click();
   await page.waitForTimeout(500);
   await expect(page.getByText('توصيل مجاني للطلبات فوق 200 ر.س').first()).toBeVisible();
   // التصنيفات: إخفاء «عناية»
@@ -673,7 +673,7 @@ test('معرض الأعمال: صور وفيديو من المحرر إلى صف
 test('محرر الثيم المخصص: الألوان والزوايا تنعكس على صفحة الحجز والفاتورة', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("تصميم المتجر")');
+  await page.click('button:has-text("الهوية")');
   await page.waitForTimeout(300);
   // تخصيص اللون المميز عبر حقل hex
   await page.fill('#thx-ac', '#ff2277');
@@ -1046,4 +1046,361 @@ test('المتجر: نافذة الصالون بالتعليقات والاست�
   await page.locator('.card.salon').first().click();
   await expect(page.locator('.sv-review').first()).toBeVisible();
   await expect(page.getByText('استفسارات')).toBeVisible();
+});
+
+test('لوحة أداء المتجر في «عام»: أرقام حية وتغذية آخر الطلبات', async ({ page }) => {
+  // اللوحة تظهر افتراضياً في تبويب «عام» مع كل الأقسام المطلوبة
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await expect(page.getByText('أداء المتجر')).toBeVisible();
+  for (const lbl of ['زيارة للمتجر', 'طلب منتجات', 'قيمة المبيعات', 'حجز', 'عميلة'])
+    await expect(page.getByText(lbl, { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('المنتجات الأكثر مبيعاً')).toBeVisible();
+  await expect(page.getByText('الخدمات الأكثر حجزاً')).toBeVisible();
+  await expect(page.getByText('آخر الطلبات والحجوزات')).toBeVisible();
+  // لا طلبات بعد: رسالة فارغة
+  await expect(page.getByText('لا طلبات أو حجوزات أونلاين بعد')).toBeVisible();
+  // زيارة المتجر تزيد العداد + طلب جديد يظهر في التغذية
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  const v1 = await page.evaluate(() => parseInt(localStorage.getItem('luma_store_visits') || '0'));
+  expect(v1).toBeGreaterThan(0);
+  await page.locator('.shp', { hasText: 'سيروم ترطيب' }).locator('button:has-text("أضيفي")').click();
+  await page.waitForTimeout(300);
+  await page.click('#cartFab');
+  await page.waitForTimeout(400);
+  await page.fill('#odName', 'أروى الاختبار');
+  await page.fill('#odPhone', '0559998877');
+  await page.click('button:has-text("تأكيد الطلب")');
+  await page.waitForTimeout(500);
+  await expect(page.getByText('تم استلام طلبك')).toBeVisible();
+  // العودة للوحة: الطلب في «آخر الطلبات والحجوزات» وعداد الطلبات = 1
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await expect(page.getByText('أروى الاختبار')).toBeVisible();
+  await expect(page.locator('.badge', { hasText: 'طلب' }).first()).toBeVisible();
+});
+
+test('قسم «الهوية» موحّد: الاسم والشعار والألوان والخط والموقع وحسابات التواصل', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الهوية")');
+  await page.waitForTimeout(300);
+  // كل بطاقات الهوية في مكان واحد
+  await expect(page.getByText('هوية الصفحة')).toBeVisible();
+  await expect(page.getByText('اسم الصالون')).toBeVisible();
+  await expect(page.getByText('رقم التواصل')).toBeVisible();
+  await expect(page.getByText('الشعار', { exact: false }).first()).toBeVisible();
+  await expect(page.getByText('صورة الغلاف الفاخرة')).toBeVisible();
+  await expect(page.getByText('ألوان الهوية')).toBeVisible();
+  await expect(page.locator('#thx-ac')).toBeVisible();
+  await expect(page.getByText('نوع الخط')).toBeVisible();
+  await expect(page.locator('.font-chip')).toHaveCount(8);
+  await expect(page.getByText('موقعي على الخريطة')).toBeVisible();
+  await expect(page.locator('#mapIn')).toBeVisible();
+  await expect(page.getByText('حسابات التواصل')).toBeVisible();
+  await expect(page.locator('#soc-ig')).toBeVisible();
+  // تعديل لون من داخل الهوية يفعّل شارة الثيم المخصص
+  await page.fill('#thx-ac', '#cc3366');
+  await page.locator('#thx-ac').evaluate(el => el.dispatchEvent(new Event('change')));
+  await page.waitForTimeout(400);
+  await expect(page.locator('#thBadge')).toBeVisible();
+});
+
+test('منشئ تخطيط المتجر: إظهار/إخفاء الأقسام وترتيبها ولكل صالون متجر مختلف', async ({ page }) => {
+  // الافتراضي في المتجر: آراء العملاء ظاهرة والعروض وفريقنا مخفية
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.getByText('آراء العملاء')).toBeVisible();
+  await expect(page.getByText('أمل القحطاني')).toBeVisible();
+  await expect(page.locator('.offer-c')).toHaveCount(0);
+  await expect(page.locator('.team-c')).toHaveCount(0);
+  // المحرر: 8 أقسام قابلة للسحب والإفلات + «الخدمات» قسم أساسي لا يُخفى
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("تصميم المتجر")');
+  await page.waitForTimeout(300);
+  await expect(page.getByText('شكل الصفحة الرئيسية — الأقسام وترتيبها')).toBeVisible();
+  await expect(page.locator('.sec-row')).toHaveCount(8);
+  await expect(page.locator('.sec-row[draggable="true"]')).toHaveCount(8);
+  await expect(page.locator('.sec-row', { hasText: 'الخدمات المميزة' }).getByText('أساسي ✓')).toBeVisible();
+  await expect(page.locator('.sec-row', { hasText: 'الخدمات المميزة' }).locator('.sec-tgl')).toHaveCount(0);
+  // إخفاء آراء العملاء + إظهار العروض وفريقنا
+  await page.locator('.sec-row', { hasText: 'آراء العملاء' }).locator('.sec-tgl').click();
+  await page.waitForTimeout(400);
+  await page.locator('.sec-row', { hasText: 'العروض' }).locator('.sec-tgl').click();
+  await page.waitForTimeout(400);
+  await page.locator('.sec-row', { hasText: 'فريقنا' }).locator('.sec-tgl').click();
+  await page.waitForTimeout(400);
+  // رفع «المنتجات المميزة» درجة بالأسهم — تسبق الخدمات
+  await page.locator('.sec-row', { hasText: 'المنتجات المميزة' }).locator('.sec-up').click();
+  await page.waitForTimeout(400);
+  const layout = await page.evaluate(() =>
+    (JSON.parse(localStorage.getItem('luma_page_cfg') || '{}').layout || []).map(x => x.k + ':' + (x.on ? 1 : 0)));
+  expect(layout).toContain('reviews:0');
+  expect(layout).toContain('offers:1');
+  expect(layout).toContain('team:1');
+  expect(layout.indexOf('products:1')).toBeLessThan(layout.indexOf('services:1'));
+  // المتجر يعكس التخصيص: العروض وفريقنا ظاهرة، الآراء مختفية، والمنتجات قبل الخدمات
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.locator('.offer-c')).toHaveCount(3);
+  await expect(page.getByText('خصم منتصف الأسبوع')).toBeVisible();
+  await expect(page.locator('.team-c').first()).toBeVisible();
+  await expect(page.getByText('آراء العملاء')).toHaveCount(0);
+  const prodBox = await page.getByText('متجر صالون لمسة — توصيل حتى بابك').boundingBox();
+  const svcBox = await page.getByText('اختاري خدمتك').boundingBox();
+  expect(prodBox.y).toBeLessThan(svcBox.y);
+});
+
+test('محرر «الواجهة»: ألوان وخط وأشكال وطرق عرض وFooter تنعكس على المتجر', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الواجهة")');
+  await page.waitForTimeout(300);
+  // كل مجموعات التحكم موجودة
+  await expect(page.getByText('ألوان الواجهة')).toBeVisible();
+  await expect(page.getByText('اللون الأساسي')).toBeVisible();
+  await expect(page.getByText('اللون الثانوي')).toBeVisible();
+  await expect(page.getByText('لون الأزرار', { exact: true })).toBeVisible();
+  await expect(page.getByText('خط الواجهة')).toBeVisible();
+  await expect(page.locator('.font-chip2')).toHaveCount(8);
+  await expect(page.getByText('شكل البطاقات')).toBeVisible();
+  await expect(page.getByText('شكل الأزرار')).toBeVisible();
+  await expect(page.getByText('طريقة عرض المنتجات')).toBeVisible();
+  await expect(page.getByText('طريقة عرض الخدمات')).toBeVisible();
+  await expect(page.getByText('شكل القائمة')).toBeVisible();
+  await expect(page.getByText('Footer — تذييل الصفحة')).toBeVisible();
+  // لون الأزرار مخصص + بطاقات حادة + منتجات قائمة + أزرار كبسولة + قائمة شريط سفلي
+  await page.fill('#uix-btn', '#22aa88');
+  await page.locator('#uix-btn').evaluate(el => el.dispatchEvent(new Event('change')));
+  await page.waitForTimeout(400);
+  await page.locator('[data-ui="cardStyle:sharp"]').click();
+  await page.waitForTimeout(350);
+  await page.locator('[data-ui="btnStyle:pill"]').click();
+  await page.waitForTimeout(350);
+  await page.locator('[data-ui="prodView:list"]').click();
+  await page.waitForTimeout(350);
+  await page.locator('[data-ui="menuStyle:underline"]').click();
+  await page.waitForTimeout(350);
+  await page.fill('#ftNote', 'نسعد بخدمتكم يومياً');
+  await page.waitForTimeout(400);
+  // المتجر يعكس كل شيء
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  const btnColor = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--btn').trim());
+  expect(btnColor).toBe('#22aa88');
+  const cls = await page.evaluate(() => document.body.className);
+  expect(cls).toContain('ui-card-sharp');
+  expect(cls).toContain('ui-btn-pill');
+  expect(cls).toContain('ui-prod-list');
+  expect(cls).toContain('ui-menu-underline');
+  // Footer ظاهر باسم الصالون والسطر الإضافي وشعار لوما
+  await expect(page.locator('.foot')).toBeVisible();
+  await expect(page.locator('.foot')).toContainText('صالون لمسة');
+  await expect(page.locator('.foot')).toContainText('نسعد بخدمتكم يومياً');
+  await expect(page.locator('.foot')).toContainText('LUMA');
+  // إخفاء الـFooter من المحرر يخفيه من المتجر
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الواجهة")');
+  await page.waitForTimeout(300);
+  await page.click('#ftTgl');
+  await page.waitForTimeout(400);
+  await page.goto('/booking.html');
+  await page.waitForTimeout(600);
+  await expect(page.locator('.foot')).toHaveCount(0);
+});
+
+test('تبويب «الزيارات»: الزوار والمشاهدات والصفحات والمصادر والأجهزة ومعدل التحويل', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الزيارات")');
+  await page.waitForTimeout(300);
+  await expect(page.getByText('تحليلات الزيارات')).toBeVisible();
+  await expect(page.getByText('الزوار', { exact: true })).toBeVisible();
+  await expect(page.getByText('مشاهدات المنتجات', { exact: true })).toBeVisible();
+  await expect(page.getByText('مشاهدات الخدمات', { exact: true })).toBeVisible();
+  await expect(page.getByText('معدل التحويل', { exact: true })).toBeVisible();
+  await expect(page.getByText('مشاهدات المنتجات — الأعلى')).toBeVisible();
+  await expect(page.getByText('مشاهدات الخدمات — الأعلى')).toBeVisible();
+  await expect(page.getByText('أكثر الصفحات زيارة')).toBeVisible();
+  await expect(page.getByText('مصادر الزيارات')).toBeVisible();
+  await expect(page.getByText('الأجهزة')).toBeVisible();
+  await expect(page.locator('.card', { hasText: 'مصادر الزيارات' }).getByText('انستغرام')).toBeVisible();
+  await expect(page.locator('.card', { hasText: 'الأجهزة' }).getByText('جوال')).toBeVisible();
+});
+
+test('صفحات المتجر: الجاهزة والإضافية تظهر بتذييل المتجر وتفتح بنافذة', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الصفحات")');
+  await page.waitForTimeout(300);
+  // 8 صفحات جاهزة + محررات الأسئلة والسياسات
+  await expect(page.getByText('صفحات متجرك الجاهزة')).toBeVisible();
+  await expect(page.locator('.spg-row')).toHaveCount(8);
+  await expect(page.locator('#faqIn')).toBeVisible();
+  await expect(page.locator('#privIn')).toBeVisible();
+  await expect(page.locator('#retIn')).toBeVisible();
+  // إخفاء «سياسة الخصوصية» + إضافة صفحة خاصة
+  await page.locator('.spg-row[data-pg="privacy"] .spg-tgl').click();
+  await page.waitForTimeout(400);
+  await page.fill('#xpT', 'خدمات الشركات والفعاليات');
+  await page.fill('#xpB', 'نقدم باقات خاصة للفعاليات والمناسبات الكبرى\nتواصلوا معنا لتفاصيل الأسعار');
+  await page.click('button:has-text("+ إضافة الصفحة")');
+  await page.waitForTimeout(500);
+  // تذييل المتجر: الروابط الصحيحة ظاهرة والمخفية غائبة
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.locator('.fpages')).toBeVisible();
+  await expect(page.locator('.fpg', { hasText: 'خدماتنا' })).toBeVisible();
+  await expect(page.locator('.fpg', { hasText: 'فريقنا' })).toBeVisible();
+  await expect(page.locator('.fpg', { hasText: 'سياسة الخصوصية' })).toHaveCount(0);
+  await expect(page.locator('.fpg', { hasText: 'خدمات الشركات والفعاليات' })).toBeVisible();
+  // الأسئلة الشائعة تفتح بنافذة بمحتواها
+  await page.locator('.fpg', { hasText: 'الأسئلة الشائعة' }).click();
+  await expect(page.locator('.pg-lb')).toContainText('هل أحتاج حجزاً مسبقاً؟');
+  await page.locator('.pg-lb .pgx').click();
+  // الصفحة الإضافية تفتح بمحتواها
+  await page.locator('.fpg', { hasText: 'خدمات الشركات والفعاليات' }).click();
+  await expect(page.locator('.pg-lb')).toContainText('نقدم باقات خاصة للفعاليات');
+  // «خدماتنا» قائمة تلقائية بالأسعار
+  await page.locator('.pg-lb .pgx').click();
+  await page.locator('.fpg', { hasText: 'خدماتنا' }).click();
+  await expect(page.locator('.pg-lb')).toContainText('مكياج عروس');
+});
+
+test('تصنيفات لكل متجر: إضافة وحذف وإخفاء تنعكس على خدمات المتجر', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("التصنيفات")');
+  await page.waitForTimeout(300);
+  // القائمة الافتراضية: شعر/أظافر/مكياج/بشرة/عناية/عناية بالجسم/منتجات
+  await expect(page.getByText('تصنيفات متجرك')).toBeVisible();
+  await expect(page.locator('.cat-chip')).toHaveCount(7);
+  // إضافة تصنيف جديد
+  await page.fill('#catIn', 'رموش وحواجب');
+  await page.locator('.card', { hasText: 'تصنيفات متجرك' }).locator('button:has-text("+ إضافة")').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.cat-chip')).toHaveCount(8);
+  await expect(page.locator('.cat-chip', { hasText: 'رموش وحواجب' })).toBeVisible();
+  // حذف تصنيف «منتجات»
+  await page.locator('.cat-chip', { hasText: 'منتجات' }).locator('button[title="حذف التصنيف"]').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.cat-chip')).toHaveCount(7);
+  // إخفاء «مكياج» يخفي خدمات المكياج من المتجر
+  await page.locator('.cat-chip', { hasText: 'مكياج' }).locator('button', { hasText: 'مكياج' }).first().click();
+  await page.waitForTimeout(400);
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.locator('.svc', { hasText: 'مكياج عروس' })).toHaveCount(0);
+  await expect(page.locator('.svc', { hasText: 'تسريحة' }).first()).toBeVisible();
+});
+
+test('قسم «الخدمات» المستقل: وصف وموظفات وحالة وإظهار بالمتجر', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('.nav-item[data-id="page"]');
+  await page.waitForTimeout(300);
+  await page.locator('.pgsub[data-sub="svc"]').click();
+  await page.waitForTimeout(400);
+  await expect(page.getByText('إدارة الخدمات')).toBeVisible();
+  await expect(page.locator('.msvc')).toHaveCount(12);
+  // كل بطاقة: حالة + ظهور + وصف + موظفات
+  const row = page.locator('.msvc', { hasText: 'مكياج سهرة' });
+  await expect(row.locator('.msvc-st')).toContainText('نشطة');
+  await expect(row.locator('.msvc-desc')).toBeVisible();
+  // إسناد «تسريحة» إلى سارة
+  await page.locator('.msvc', { hasText: 'تسريحة' }).locator('.msvc-stf', { hasText: 'سارة' }).click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.msvc', { hasText: 'تسريحة' }).locator('.msvc-stf', { hasText: 'سارة' })).toContainText('✓');
+  // إخفاء «مكياج سهرة» من المتجر
+  await page.locator('.msvc', { hasText: 'مكياج سهرة' }).locator('.msvc-hide').click();
+  await page.waitForTimeout(400);
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.locator('.svc', { hasText: 'مكياج سهرة' })).toHaveCount(0);
+  await expect(page.locator('.svc', { hasText: 'مكياج عروس' }).first()).toBeVisible();
+});
+
+test('قسم «المنتجات» المستقل: مخزون وحالة وإضافة تنعكس على المتجر', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('.nav-item[data-id="page"]');
+  await page.waitForTimeout(300);
+  await page.locator('.pgsub[data-sub="prod"]').click();
+  await page.waitForTimeout(400);
+  await expect(page.getByText('إدارة المنتجات')).toBeVisible();
+  await expect(page.locator('.mprd')).toHaveCount(6);
+  // تصفير مخزون «ماسك بشرة» يخفيه تلقائياً
+  const mask = page.locator('.mprd[data-n="ماسك بشرة"]');
+  await mask.locator('.mprd-s').fill('0');
+  await mask.locator('.mprd-s').evaluate(el => el.dispatchEvent(new Event('change')));
+  await page.waitForTimeout(500);
+  await expect(page.getByText('نفد المخزون', { exact: false }).first()).toBeVisible();
+  // إضافة منتج جديد
+  await page.fill('#npN', 'شمعة عطرية فاخرة');
+  await page.fill('#npP', '60');
+  await page.fill('#npS', '10');
+  await page.click('button:has-text("+ إضافة المنتج")');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.mprd')).toHaveCount(7);
+  // المتجر: الجديد ظاهر والنافد مخفي
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.locator('.shp', { hasText: 'شمعة عطرية فاخرة' })).toBeVisible();
+  await expect(page.locator('.shp', { hasText: 'ماسك بشرة' })).toHaveCount(0);
+});
+
+test('قسم «الحجوزات» المستقل: قادمة ومكتملة وملغاة مع الإجراءات', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('.nav-item[data-id="page"]');
+  await page.waitForTimeout(300);
+  await page.locator('.pgsub[data-sub="books"]').click();
+  await page.waitForTimeout(400);
+  await expect(page.getByText('حجوزات المتجر')).toBeVisible();
+  // القادمة: حجزان مبدئيان بعميل وخدمة وموظفة ووقت
+  await expect(page.locator('.mbk')).toHaveCount(2);
+  const b1 = page.locator('.mbk', { hasText: 'نوف العتيبي' });
+  await expect(b1).toContainText('مكياج عروس');
+  await expect(b1).toContainText('مع أمل');
+  // إتمام حجز نوف — ينتقل للمكتملة
+  await b1.locator('.mbk-done').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.mbk')).toHaveCount(1);
+  await page.locator('.bkf[data-f="done"]').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.mbk')).toHaveCount(3);
+  await expect(page.locator('.mbk', { hasText: 'نوف العتيبي' })).toBeVisible();
+  // الملغاة
+  await page.locator('.bkf[data-f="cancel"]').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.mbk', { hasText: 'مها الزهراني' })).toBeVisible();
+});
+
+test('قسم «الفريق» المستقل: التخصص والخدمات والجدول والنبذة', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(800);
+  await page.click('.nav-item[data-id="page"]');
+  await page.waitForTimeout(300);
+  await page.locator('.pgsub[data-sub="team"]').click();
+  await page.waitForTimeout(400);
+  await expect(page.getByText('فريق الصالون')).toBeVisible();
+  await expect(page.locator('.mteam')).toHaveCount(4);
+  const amal = page.locator('.mteam', { hasText: 'أمل' });
+  await expect(amal).toContainText('التخصص: مكياج');
+  await expect(amal).toContainText('مكياج سهرة');
+  await expect(amal).toContainText('الجمعة إجازة');
+  // نبذة تُحفظ وتبقى بعد إعادة التحميل
+  await amal.locator('.mteam-bio').fill('خبرة 8 سنوات في مكياج العرائس والمناسبات');
+  await amal.locator('.mteam-bio').evaluate(el => el.dispatchEvent(new Event('change')));
+  await page.waitForTimeout(400);
+  await page.reload();
+  await page.waitForTimeout(800);
+  await page.click('.nav-item[data-id="page"]');
+  await page.waitForTimeout(300);
+  await page.locator('.pgsub[data-sub="team"]').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('.mteam', { hasText: 'أمل' }).locator('.mteam-bio')).toHaveValue('خبرة 8 سنوات في مكياج العرائس والمناسبات');
 });

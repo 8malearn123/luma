@@ -384,7 +384,7 @@ const NAV=[
   {id:'settings',label:'الإعدادات',icon:'gear',crumb:'SYSTEM'},
 ];
 const NAV_FLAT={};NAV.forEach(n=>NAV_FLAT[n.id]=n);
-const PAGE_SUBNAV=[['general','عام'],['identity','الهوية'],['design','تصميم المتجر'],['front','الواجهة'],['banners','البنرات'],['pages','الصفحات'],['cats','التصنيفات']];
+const PAGE_SUBNAV=[['general','عام'],['visits','الزيارات'],['svc','الخدمات'],['prod','المنتجات'],['books','الحجوزات'],['team','الفريق'],['identity','الهوية'],['design','تصميم المتجر'],['front','الواجهة'],['banners','البنرات'],['pages','الصفحات'],['cats','التصنيفات']];
 document.getElementById('sb-nav').innerHTML=NAV.map(it=>{
   if(it.id==='page')return `<div class="nav-item" data-id="page" onclick="window.togglePageMenu()"><span class="ico">${icon(it.icon,20)}</span><span class="lbl">${it.label}</span><span class="dot"></span><span id="pgCaret" style="font-size:10px;color:var(--muted);transition:transform .2s">▾</span></div>
     <div id="pgSub" style="display:none;padding:2px 0 4px">${PAGE_SUBNAV.map(([k,l])=>`<div class="nav-item pgsub" data-sub="${k}" style="padding:8.5px 34px 8.5px 13px;margin-bottom:1px;font-size:13.5px" onclick="PAGE.showTab('${k}')"><span class="lbl">${l}</span><span class="dot"></span></div>`).join('')}</div>`;
