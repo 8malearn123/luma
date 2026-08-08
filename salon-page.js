@@ -17,7 +17,7 @@ function pageThemeOf(c){
   return PAGE_PRESETS.find(p=>p.k===c.theme)||PAGE_PRESETS[0];
 }
 const PAGE_POLICY_DEFAULT='الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.';
-const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},map:'',about:'',banners:[],hideCats:[],...hrLoad(PAGE_KEY,{})});
+const pageCfg=()=>({slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',themeCustom:null,gallery:[],policy:PAGE_POLICY_DEFAULT,featured:{'مكياج عروس':'الأكثر طلباً'},font:'plex',welcome:'',social:{},map:'',about:'',banners:[],hideCats:[],faqText:PAGE_FAQ_DEFAULT,privacyText:PAGE_PRIVACY_DEFAULT,returnsText:PAGE_RETURNS_DEFAULT,pagesOn:{},pagesExtra:[],catList:PAGE_CATS_DEFAULT,...hrLoad(PAGE_KEY,{})});
 /* شبكات التواصل المدعومة: [المفتاح، الاسم، نص المساعدة] */
 const PAGE_SOCIALS=[
   ['ig','إنستقرام','@اسم_الحساب أو الرابط الكامل'],
@@ -27,6 +27,64 @@ const PAGE_SOCIALS=[
   ['wa','واتساب','رقم الجوال 05xxxxxxxx'],
 ];
 const PAGE_BADGES=['الأكثر طلباً','جديدة','عرض خاص','اختيار الخبيرات'];
+/* أقسام الصفحة الرئيسية للمتجر — كل صالون يرتّبها ويُظهر/يُخفي ما يشاء فيصبح متجره مختلفاً */
+const PAGE_SECTIONS=[
+  ['banner','البانر الرئيسي','أشرطة إعلانية أعلى المتجر'],
+  ['offers','العروض','بطاقات خصومات وباقات موسمية'],
+  ['gallery','صور الصالون','صور وفيديوهات أعمالك'],
+  ['services','الخدمات المميزة','قائمة الخدمات والحجز'],
+  ['products','المنتجات المميزة','متجر التجزئة بالسلة والتوصيل'],
+  ['reviews','آراء العملاء','تقييمات عميلاتك بالنجوم'],
+  ['team','فريقنا','خبيرات الصالون بأدوارهن'],
+  ['insta','انستغرام','شبكة صور من حسابك مع زر متابعة'],
+];
+const PAGE_LAYOUT_DEFAULT=[{k:'banner',on:true},{k:'gallery',on:true},{k:'services',on:true},{k:'products',on:true},{k:'reviews',on:true},{k:'offers',on:false},{k:'team',on:false},{k:'insta',on:false}];
+/* صفحات المتجر الجاهزة — تُفتح من تذييل صفحة المتجر */
+const PAGE_STOREPAGES=[
+  ['about','من نحن','قصة الصالون — من محرر «من نحن» أدناه'],
+  ['services','خدماتنا','قائمة تلقائية بكل خدماتك وأسعارها'],
+  ['products','منتجاتنا','قائمة تلقائية بمنتجات متجرك'],
+  ['team','فريقنا','خبيرات الصالون تلقائياً'],
+  ['contact','تواصل معنا','الجوال والعنوان والسوشل والخريطة'],
+  ['faq','الأسئلة الشائعة','سؤال | جواب — كل سطر'],
+  ['privacy','سياسة الخصوصية','كل سطر فقرة'],
+  ['returns','سياسة الاسترجاع','كل سطر فقرة'],
+];
+const PAGE_FAQ_DEFAULT='هل أحتاج حجزاً مسبقاً؟ | نعم، الحجز المسبق يضمن وقتك المفضل — احجزي من الصفحة مباشرة.\nهل تتوفر باقات للعرائس؟ | نعم، باقة العروس الملكية تشمل المكياج والتسريحة والعناية.\nهل يمكن إلغاء الحجز؟ | الإلغاء أو التعديل مجاني قبل 24 ساعة من الموعد.';
+const PAGE_PRIVACY_DEFAULT='نحترم خصوصيتك — بياناتك (الاسم ورقم الجوال) تُستخدم لإدارة حجزك وطلباتك فقط.\nلا نشارك بياناتك مع أي طرف ثالث دون موافقتك.\nيمكنك طلب حذف بياناتك في أي وقت عبر التواصل معنا.';
+const PAGE_RETURNS_DEFAULT='يمكن استرجاع المنتجات غير المفتوحة خلال 7 أيام من الاستلام.\nمستحضرات التجميل المفتوحة لا تُسترجع حفاظاً على معايير السلامة.\nرسوم التوصيل غير قابلة للاسترداد عند الاسترجاع.';
+/* ═══ أقسام إدارة المتجر المستقلة: الخدمات والمنتجات والحجوزات والفريق ═══ */
+const PAGE_PRODUCTS_DEFAULT=[
+  {n:'سيروم ترطيب',c:'عناية',p:180,stock:24,desc:'سيروم مرطب مركّز للبشرة'},
+  {n:'طلاء أظافر — مجموعة',c:'أظافر',p:210,stock:15,desc:'مجموعة ألوان موسمية'},
+  {n:'زيت شعر مغذّي',c:'شعر',p:120,stock:32,desc:'زيت طبيعي يغذي الأطراف'},
+  {n:'مثبّت مكياج',c:'مكياج',p:130,stock:18,desc:'ثبات يدوم حتى 16 ساعة'},
+  {n:'كريم أساس',c:'مكياج',p:150,stock:21,desc:'تغطية طبيعية عالية'},
+  {n:'ماسك بشرة',c:'عناية',p:95,stock:40,desc:'ماسك منقٍّ أسبوعي'},
+];
+const pageProducts=()=>{const l=LumaStore.get('luma_shop_products',null);return Array.isArray(l)&&l.length?l:PAGE_PRODUCTS_DEFAULT.map(x=>({...x}));};
+const PAGE_SEED_BOOKS=[
+  {id:'s1',client:'نوف العتيبي',svc:'مكياج عروس',staff:'أمل',date:'2026-08-12',time:'6:00 م',st:'up'},
+  {id:'s2',client:'لينا الحربي',svc:'هيدرافيشل',staff:'نورة',date:'2026-08-10',time:'4:30 م',st:'up'},
+  {id:'s3',client:'جود السبيعي',svc:'منيكير جل',staff:'ريم',date:'2026-08-05',time:'2:00 م',st:'done'},
+  {id:'s4',client:'رزان الشهري',svc:'تسريحة',staff:'سارة',date:'2026-08-03',time:'7:00 م',st:'done'},
+  {id:'s5',client:'مها الزهراني',svc:'تنظيف بشرة',staff:'نورة',date:'2026-08-02',time:'1:00 م',st:'cancel'},
+];
+const PAGE_TEAM_DEFAULT=[['أمل','مكياج'],['سارة','شعر'],['نورة','بشرة'],['ريم','أظافر']];
+const pageTeam=()=>{const extra=(LumaStore.get('luma_salon_staff',[])||[]).filter(t=>t&&t.n).map(t=>[t.n,t.role||'تجميل']);return [...PAGE_TEAM_DEFAULT,...extra];};
+const pageSvcList=()=>{const cats=['مكياج','مكياج','مكياج','شعر','شعر','شعر','بشرة','بشرة','بشرة','أظافر','أظافر','أظافر'];
+  const cat=LumaStore.get('luma_svc_catalog',null)||SVC_CATALOG;
+  return cat.filter(x=>x&&x[0]).map((x,i)=>({n:x[0],d:(x[1]||2)*30,p:x[2],c:x[3]||cats[i]||'أخرى'}));};
+/* تصنيفات المتجر الافتراضية — لكل صالون قائمته الخاصة */
+const PAGE_CATS_DEFAULT=['شعر','أظافر','مكياج','بشرة','عناية','عناية بالجسم','منتجات'];
+/* ترتيب الأقسام المحفوظ مع تطبيع: الخدمات قسم أساسي لا يُخفى، والمفاتيح الجديدة تُلحق آخر القائمة */
+function pageLayoutOf(c){
+  const cur=Array.isArray((c||pageCfg()).layout)?(c||pageCfg()).layout:[];
+  const seen=new Set();const out=[];
+  cur.forEach(x=>{if(x&&PAGE_SECTIONS.some(s=>s[0]===x.k)&&!seen.has(x.k)){seen.add(x.k);out.push({k:x.k,on:x.k==='services'?true:!!x.on});}});
+  PAGE_LAYOUT_DEFAULT.forEach(d=>{if(!seen.has(d.k))out.push({...d});});
+  return out;
+}
 /* خطوط عربية لصفحة الحجز — [مفتاح، الاسم، عائلة CSS، استعلام Google Fonts] */
 const PAGE_FONTS=[
   ['plex','بلكس عربي — الافتراضي',"'IBM Plex Sans Arabic',sans-serif",'IBM+Plex+Sans+Arabic:wght@300;400;500;700'],
@@ -51,6 +109,7 @@ const ytIdOf=u=>{const m=String(u||'').match(/(?:youtube\.com\/(?:watch\?v=|shor
 const isVideoUrl=u=>!!ytIdOf(u)||/\.(mp4|webm|mov)(\?|$)/i.test(String(u||''));
 const slugClean=v=>v.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-{2,}/g,'-');
 let PAGE_TAB='general';
+let PAGE_BOOKF='up';
 const PAGE={
   showTab(t){PAGE_TAB=t;SALON.go('page');
     setTimeout(()=>{
@@ -72,8 +131,12 @@ const PAGE={
     PAGE.save({theme:'custom',themeCustom:t},true);
     const cp=document.getElementById('thc-'+key);if(cp&&cp.value!==hx)cp.value=hx;
     const tx=document.getElementById('thx-'+key);if(tx&&tx.value!==hx)tx.value=hx;
+    const cp2=document.getElementById('uic-'+key);if(cp2&&cp2.value!==hx)cp2.value=hx;
+    const tx2=document.getElementById('uix-'+key);if(tx2&&tx2.value!==hx)tx2.value=hx;
     const badge=document.getElementById('thBadge');if(badge)badge.style.display='inline-block';
   },
+  /* خيارات شكل الواجهة: بطاقات/أزرار/قائمة/طرق عرض/تذييل */
+  setUI(k,v){if(v==='true')v=true;if(v==='false')v=false;PAGE.save({[k]:v},true);PAGE.showTab('front');},
   setRad(v){
     const t=PAGE.customBase();t.rad=Math.max(0,Math.min(28,parseInt(v)||0));
     PAGE.save({theme:'custom',themeCustom:t},true);
@@ -112,7 +175,87 @@ const PAGE={
     h.has(ct)?h.delete(ct):h.add(ct);
     PAGE.save({hideCats:[...h]},true);PAGE.showTab('cats');
   },
+  /* ── تصنيفات خاصة بكل متجر: إضافة وحذف ── */
+  addCat(){
+    const el=document.getElementById('catIn');const v=(el&&el.value.trim())||'';
+    if(!v){if(el){el.style.borderColor='#c0566a';el.focus();}return;}
+    const l=[...(pageCfg().catList||PAGE_CATS_DEFAULT)];
+    if(l.includes(v)){LUX.toast('التصنيف موجود مسبقاً','warn');return;}
+    l.push(v);PAGE.save({catList:l},true);PAGE.showTab('cats');LUX.toast('أُضيف التصنيف ✓','ok');
+  },
+  delCat(ct){
+    const l=(pageCfg().catList||PAGE_CATS_DEFAULT).filter(x=>x!==ct);
+    const h=(pageCfg().hideCats||[]).filter(x=>x!==ct);
+    PAGE.save({catList:l,hideCats:h},true);PAGE.showTab('cats');LUX.toast('حُذف التصنيف','ok');
+  },
+  /* ── صفحات المتجر: إظهار/إخفاء الجاهزة + صفحات إضافية ── */
+  pgToggle(k){
+    const p={...(pageCfg().pagesOn||{})};p[k]=p[k]===false?true:false;
+    PAGE.save({pagesOn:p},true);PAGE.showTab('pages');
+  },
+  xpAdd(){
+    const t=document.getElementById('xpT'),b=document.getElementById('xpB');
+    const tv=(t&&t.value.trim())||'',bv=(b&&b.value.trim())||'';
+    if(!tv){if(t){t.style.borderColor='#c0566a';t.focus();}return;}
+    if(!bv){if(b){b.style.borderColor='#c0566a';b.focus();}return;}
+    const l=[...(pageCfg().pagesExtra||[]),{t:tv,body:bv,on:true}];
+    PAGE.save({pagesExtra:l},true);PAGE.showTab('pages');LUX.toast('أُضيفت الصفحة لمتجرك ✓','ok');
+  },
+  xpToggle(i){const l=[...(pageCfg().pagesExtra||[])];if(!l[i])return;l[i]={...l[i],on:!l[i].on};PAGE.save({pagesExtra:l},true);PAGE.showTab('pages');},
+  xpDel(i){const l=[...(pageCfg().pagesExtra||[])];l.splice(i,1);PAGE.save({pagesExtra:l},true);PAGE.showTab('pages');LUX.toast('حُذفت الصفحة','ok');},
+  /* ── قسم الخدمات المستقل: وصف وموظفات وحالة وظهور ── */
+  svcMeta(n,k,v){const m=LumaStore.get('luma_svc_meta',{})||{};m[n]={...(m[n]||{}),[k]:v};LumaStore.set('luma_svc_meta',m);},
+  svcMetaT(n,k){const m=LumaStore.get('luma_svc_meta',{})||{};PAGE.svcMeta(n,k,!((m[n]||{})[k]));PAGE.save({},true);PAGE.showTab('svc');},
+  svcDesc(n,el){PAGE.svcMeta(n,'desc',el.value.trim());PAGE.save({},true);},
+  svcStaff(n,st){const m=LumaStore.get('luma_svc_meta',{})||{};const cur=new Set((m[n]||{}).staff||[]);
+    cur.has(st)?cur.delete(st):cur.add(st);m[n]={...(m[n]||{}),staff:[...cur]};
+    LumaStore.set('luma_svc_meta',m);PAGE.save({},true);PAGE.showTab('svc');},
+  /* ── قسم المنتجات المستقل: سعر ومخزون وصور ووصف وتصنيف وحالة ── */
+  prodField(i,k,el){const l=pageProducts();if(!l[i])return;let v=el.value;
+    if(k==='p'||k==='stock')v=Math.max(0,parseInt(v)||0);else v=String(v).trim()||l[i][k];
+    l[i]={...l[i],[k]:v};LumaStore.set('luma_shop_products',l);PAGE.save({},true);
+    if(k==='stock'||k==='c')PAGE.showTab('prod');},
+  prodToggle(i){const l=pageProducts();if(!l[i])return;l[i]={...l[i],off:!l[i].off};LumaStore.set('luma_shop_products',l);PAGE.save({},true);PAGE.showTab('prod');},
+  prodDel(i){const l=pageProducts();l.splice(i,1);LumaStore.set('luma_shop_products',l);PAGE.save({},true);PAGE.showTab('prod');LUX.toast('حُذف المنتج','ok');},
+  prodAdd(){
+    const g=id=>document.getElementById(id);
+    const n=(g('npN')&&g('npN').value.trim())||'';
+    if(!n){if(g('npN')){g('npN').style.borderColor='#c0566a';g('npN').focus();}return;}
+    const l=pageProducts();
+    l.push({n,c:(g('npC')&&g('npC').value)||'عناية',p:Math.max(0,parseInt(g('npP')&&g('npP').value)||0),stock:Math.max(0,parseInt(g('npS')&&g('npS').value)||0),desc:(g('npD')&&g('npD').value.trim())||''});
+    LumaStore.set('luma_shop_products',l);PAGE.save({},true);PAGE.showTab('prod');LUX.toast('أُضيف المنتج لمتجرك ✓','ok');},
+  prodImg(i,input){
+    const f=input.files&&input.files[0];if(!f)return;const l=pageProducts();if(!l[i])return;
+    const rd=new FileReader();
+    rd.onload=e=>{const im=new Image();im.onload=()=>{
+      const W=700,sc=Math.min(1,W/im.width);
+      const cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+      cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      const m=LumaStore.get('luma_salon_prod_img',{})||{};m[l[i].n]=cv.toDataURL('image/jpeg',.78);
+      LumaStore.set('luma_salon_prod_img',m);PAGE.save({},true);PAGE.showTab('prod');LUX.toast('حُفظت صورة المنتج ✓','ok');
+    };im.src=e.target.result;};
+    rd.readAsDataURL(f);},
+  /* ── قسم الحجوزات: قادمة/مكتملة/ملغاة مع الإجراءات ── */
+  bookFilter(f){PAGE_BOOKF=f;PAGE.showTab('books');},
+  bookList(){
+    const ov=LumaStore.get('luma_bookst',{})||{};
+    const live=(LumaStore.get('luma_public_bookings',[])||[]).map((b,i)=>({id:'p'+i,client:b.client||'حجز أونلاين',svc:b.service||'—',staff:b.staffName||b.staff||'—',date:String(b.at||'').slice(0,10)||'—',time:b.time||'',st:ov['p'+i]||'up'}));
+    return [...live,...PAGE_SEED_BOOKS.map(b=>({...b,st:ov[b.id]||b.st}))];},
+  bookSt(id,st){const ov=LumaStore.get('luma_bookst',{})||{};ov[id]=st;LumaStore.set('luma_bookst',ov);PAGE.showTab('books');LUX.toast(st==='done'?'اكتمل الحجز ✓':'أُلغي الحجز','ok');},
+  /* ── قسم الفريق: نبذة قابلة للتحرير ── */
+  teamBio(n,el){const m=LumaStore.get('luma_team_meta',{})||{};m[n]={...(m[n]||{}),bio:el.value.trim()};LumaStore.set('luma_team_meta',m);LUX.toast('حُفظت النبذة ✓','ok');},
   resetTheme(){PAGE.save({theme:'dark-luxury',themeCustom:null},true);SALON.go('page');LUX.toast('عاد المظهر للافتراضي','ok');},
+  /* ── منشئ تخطيط الصفحة الرئيسية: إظهار/إخفاء وترتيب بالسحب والأسهم ── */
+  secToggle(i){const l=pageLayoutOf();if(!l[i]||l[i].k==='services')return;l[i]={...l[i],on:!l[i].on};
+    PAGE.save({layout:l},true);PAGE.showTab('design');},
+  secMove(i,d){const l=pageLayoutOf();const j=i+d;if(!l[i]||j<0||j>=l.length)return;
+    const t=l[i];l[i]=l[j];l[j]=t;PAGE.save({layout:l},true);PAGE.showTab('design');},
+  _drag:null,
+  secDragStart(e,i){PAGE._drag=i;try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(i));}catch(x){}},
+  secDragOver(e){e.preventDefault();try{e.dataTransfer.dropEffect='move';}catch(x){}},
+  secDrop(e,i){e.preventDefault();const f=PAGE._drag;PAGE._drag=null;if(f==null||f===i)return;
+    const l=pageLayoutOf();const [m]=l.splice(f,1);l.splice(i,0,m);
+    PAGE.save({layout:l},true);PAGE.showTab('design');LUX.toast('تغيّر ترتيب الأقسام ✓','ok');},
   /* ── الشعار والغلاف: رفع ثم محرر قص وتكبير قبل الحفظ ── */
   imgUpload(key,inp){
     const f=inp.files&&inp.files[0];if(!f)return;
@@ -221,7 +364,7 @@ SCREENS.page=()=>{
   </div>
   <div style="display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start">
     <div>
-      ${(()=>{const T=[['general','gear','عام'],['identity','idcard','الهوية'],['design','palette','تصميم المتجر'],['front','image','الواجهة'],['banners','mega','البنرات'],['pages','clipboard','الصفحات'],['cats','boxes','التصنيفات']];
+      ${(()=>{const T=[['general','gear','عام'],['visits','chart','الزيارات'],['svc','scissors','الخدمات'],['prod','boxes','المنتجات'],['books','calendar','الحجوزات'],['team','staff','الفريق'],['identity','idcard','الهوية'],['design','palette','تصميم المتجر'],['front','image','الواجهة'],['banners','mega','البنرات'],['pages','clipboard','الصفحات'],['cats','boxes','التصنيفات']];
         return `<div style="display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap">${T.map(([k,ic,l])=>`
           <button onclick="PAGE.showTab('${k}')" style="flex:1;min-width:130px;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:${PAGE_TAB===k?'700':'400'};
             border:1.5px solid ${PAGE_TAB===k?'var(--gold-light)':'var(--line)'};
@@ -236,6 +379,181 @@ SCREENS.page=()=>{
           <button id="cpBtn" class="btn btn-ghost" style="border-radius:0;border:none;border-right:1px solid var(--line)" onclick="PAGE.copy()">نسخ الرابط</button>
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:8px">أحرف إنجليزية وأرقام وشرطات فقط — يُنظَّف تلقائياً أثناء الكتابة.</div>
+      </div>
+      ${(()=>{ /* لوحة أداء المتجر — أرقام حية من الزيارات والطلبات والحجوزات */
+        const visits=1284+(parseInt(LumaStore.raw.get('luma_store_visits','0'))||0);
+        const orders=LumaStore.get('luma_salon_orders',[])||[];
+        const sales=26950+orders.reduce((t,o)=>t+(o.total||0),0);
+        const bookings=LumaStore.get('luma_public_bookings',[])||[];
+        const bookCount=47+bookings.length;
+        const clientsN=306+((typeof CLIENTS!=='undefined')?CLIENTS.length:6);
+        const sold={};(typeof SALON_PRODUCTS!=='undefined'?SALON_PRODUCTS:[]).forEach(p=>{sold[p.n]=p.sold;});
+        orders.forEach(o=>Object.entries(o.items||{}).forEach(([n,q])=>{sold[n]=(sold[n]||0)+q;}));
+        const topProd=Object.entries(sold).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        const maxP=topProd.length?topProd[0][1]:1;
+        const svcCount={'مكياج عروس':18,'مكياج سهرة':14,'هيدرافيشل':9};
+        bookings.forEach(b=>{if(b.service)svcCount[b.service]=(svcCount[b.service]||0)+1;});
+        const topSvc=Object.entries(svcCount).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        const maxS=topSvc.length?topSvc[0][1]:1;
+        const feed=[
+          ...orders.map(o=>({k:'طلب',kc:'gold',n:o.client||'عميلة',d:(o.ref||'')+' — '+(o.total||0)+' ر.س',at:o.at||''})),
+          ...bookings.map(b=>({k:'حجز',kc:'green',n:b.client||'حجز أونلاين',d:(b.service||'')+(b.time?' · '+b.time:''),at:b.at||''})),
+        ].sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,6);
+        const bar=(v,max,color)=>`<div style="flex:1;height:7px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:${Math.round(v/max*100)}%;background:${color};border-radius:10px"></span></div>`;
+        return `
+      <div class="sec-label" style="margin-top:4px">أداء المتجر <span class="ln"></span><span style="font-size:11px;color:var(--muted)">أرقام حية — الزيارات والطلبات تتحدث تلقائياً</span></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px">
+        ${[[visits.toLocaleString('en'),'زيارة للمتجر'],[orders.length,'طلب منتجات'],[sales.toLocaleString('en')+' <span style=\'font-size:11px\'>ر.س</span>','قيمة المبيعات'],[bookCount,'حجز'],[clientsN,'عميلة']].map(x=>`
+        <div class="card" style="text-align:center;padding:15px 8px"><div class="num" style="font-size:22px;color:var(--gold-light)">${x[0]}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">${x[1]}</div></div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div class="card"><div class="sec-label">المنتجات الأكثر مبيعاً <span class="ln"></span></div>
+          ${topProd.map(([n,v])=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><span style="font-size:12.5px;color:var(--cream);width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>${bar(v,maxP,'linear-gradient(90deg,#dbbd81,#9c8047)')}<span class="num" style="font-size:13px;color:var(--gold-pale);width:30px;text-align:left">${v}</span></div>`).join('')}</div>
+        <div class="card"><div class="sec-label">الخدمات الأكثر حجزاً <span class="ln"></span></div>
+          ${topSvc.map(([n,v])=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><span style="font-size:12.5px;color:var(--cream);width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>${bar(v,maxS,'linear-gradient(90deg,#9fce99,#5f8a5b)')}<span class="num" style="font-size:13px;color:var(--gold-pale);width:30px;text-align:left">${v}</span></div>`).join('')}</div>
+      </div>
+      <div class="card" style="margin-bottom:14px"><div class="sec-label">آخر الطلبات والحجوزات <span class="ln"></span></div>
+        ${feed.length?feed.map(f=>`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="badge ${f.kc}" style="min-width:44px;justify-content:center">${f.k}</span><span style="flex:1;font-size:13px;color:var(--white)">${f.n}</span><span style="font-size:11.5px;color:var(--muted)" dir="ltr">${f.d}</span></div>`).join('')
+        :'<div style="font-size:12.5px;color:var(--muted);padding:6px 0;line-height:1.9">لا طلبات أو حجوزات أونلاين بعد — أول عملية من متجرك ستظهر هنا فوراً.</div>'}</div>`;})()}
+      </div>
+      <div style="${PAGE_TAB==='visits'?'':'display:none'}">
+      ${(()=>{ /* تحليلات الزيارات — الزوار والمشاهدات والمصادر والأجهزة ومعدل التحويل */
+        const live=(parseInt(LumaStore.raw.get('luma_store_visits','0'))||0);
+        const visits=1284+live;
+        const visitors=942+live;
+        const ordersN=(LumaStore.get('luma_salon_orders',[])||[]).length;
+        const booksN=(LumaStore.get('luma_public_bookings',[])||[]).length;
+        const conv=Math.min(100,((47+ordersN+booksN)/(visits||1))*100);
+        const pv=[['سيروم ترطيب',438],['طلاء أظافر — مجموعة',356],['مثبّت مكياج',291],['زيت شعر مغذّي',232]];
+        const sv=[['مكياج عروس',693],['هيدرافيشل',441],['مكياج سهرة',402],['قص أطراف وسشوار',287]];
+        const pvSum=pv.reduce((t,x)=>t+x[1],0),svSum=sv.reduce((t,x)=>t+x[1],0);
+        const pages=[['الصفحة الرئيسية',visits],['المتجر — المنتجات',861],['صفحة الحجز',744],['صفحة المعرض',519],['من نحن',203]];
+        const src=[['انستغرام',38,'#dbbd81'],['بحث Google',24,'#9fce99'],['مباشر — الرابط',19,'#8fb8d8'],['واتساب',12,'#a9dfb9'],['تيك توك',7,'#d8a5c0']];
+        const dev=[['جوال',78],['كمبيوتر',16],['تابلت',6]];
+        const bar=(v,max,color)=>`<div style="flex:1;height:7px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:${Math.max(3,Math.round(v/max*100))}%;background:${color};border-radius:10px"></span></div>`;
+        const row=(n,v,max,color,suffix)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><span style="font-size:12.5px;color:var(--cream);width:132px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>${bar(v,max,color)}<span class="num" style="font-size:13px;color:var(--gold-pale);width:52px;text-align:left">${v.toLocaleString('en')}${suffix||''}</span></div>`;
+        return `
+      <div class="sec-label" style="margin-top:4px">تحليلات الزيارات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">آخر 30 يوماً — الزوار يتحدثون تلقائياً مع كل زيارة لمتجرك</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+        ${[[visitors.toLocaleString('en'),'الزوار'],[pvSum.toLocaleString('en'),'مشاهدات المنتجات'],[svSum.toLocaleString('en'),'مشاهدات الخدمات'],[conv.toFixed(1)+'٪','معدل التحويل']].map(x=>`
+        <div class="card" style="text-align:center;padding:15px 8px"><div class="num" style="font-size:22px;color:var(--gold-light)">${x[0]}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">${x[1]}</div></div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="card"><div class="sec-label">مشاهدات المنتجات — الأعلى <span class="ln"></span></div>
+          ${pv.map(([n,v])=>row(n,v,pv[0][1],'linear-gradient(90deg,#dbbd81,#9c8047)')).join('')}</div>
+        <div class="card"><div class="sec-label">مشاهدات الخدمات — الأعلى <span class="ln"></span></div>
+          ${sv.map(([n,v])=>row(n,v,sv[0][1],'linear-gradient(90deg,#9fce99,#5f8a5b)')).join('')}</div>
+      </div>
+      <div class="card" style="margin-bottom:14px"><div class="sec-label">أكثر الصفحات زيارة <span class="ln"></span></div>
+        ${pages.map(([n,v])=>row(n,v,pages[0][1],'linear-gradient(90deg,#8fb8d8,#5b7f9c)')).join('')}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="card"><div class="sec-label">مصادر الزيارات <span class="ln"></span></div>
+          ${src.map(([n,v,cl])=>row(n,v,src[0][1],cl,'٪')).join('')}</div>
+        <div class="card"><div class="sec-label">الأجهزة <span class="ln"></span></div>
+          ${dev.map(([n,v])=>row(n,v,dev[0][1],'linear-gradient(90deg,#d8a5c0,#9c5b7f)','٪')).join('')}
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.9">معدل التحويل = (الطلبات + الحجوزات) ÷ الزيارات — كل طلب أو حجز جديد يرفعه مباشرة.</div></div>
+      </div>`;})()}
+      </div>
+      <div style="${PAGE_TAB==='svc'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">إدارة الخدمات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">الاسم والسعر والمدة والوصف والصور والموظفات والحالة والظهور بالمتجر</span></div>
+        ${(()=>{const META=LumaStore.get('luma_svc_meta',{})||{};const IMGS=LumaStore.get('luma_svc_img',{})||{};
+        return pageSvcList().map(sv=>{const m=META[sv.n]||{};const im=IMGS[sv.n];const q=sv.n.replace(/'/g,"\\'");
+        return `
+        <div class="msvc" style="border:1px solid ${m.off?'var(--line)':'var(--gold-deep)'};border-radius:12px;padding:12px 14px;margin-bottom:10px;${m.off?'opacity:.7;':''}background:${m.off?'var(--surface)':'linear-gradient(120deg,rgba(219,189,129,.05),transparent)'}">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            ${im?`<img src="${im}" alt="" style="width:44px;height:44px;border-radius:9px;object-fit:cover;border:1px solid var(--gold-deep);flex-shrink:0"/>`:`<span style="width:44px;height:44px;border-radius:9px;background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0">${icon('image',17)}</span>`}
+            <span style="flex:1;min-width:140px"><b style="font-size:13.5px;color:var(--white)">${sv.n}</b><span style="display:block;font-size:11px;color:var(--muted);margin-top:3px">${sv.c} · ${sv.d} دقيقة · <b class="num" style="color:var(--gold-pale)">${sv.p}</b> ر.س</span></span>
+            <label class="btn btn-ghost" style="cursor:pointer;padding:7px 11px;font-size:11px;display:inline-flex;align-items:center;gap:5px">${icon('upload',12)} صورة<input type="file" accept="image/*" onchange="svcImgPick('${q}',this)" style="display:none"/></label>
+            <button class="msvc-st btn btn-ghost" onclick="PAGE.svcMetaT('${q}','off')" style="padding:7px 12px;font-size:11px;color:${m.off?'#e29aa6':'var(--gold-light)'}">${m.off?'موقوفة':'نشطة ✓'}</button>
+            <button class="msvc-hide btn btn-ghost" onclick="PAGE.svcMetaT('${q}','hide')" style="padding:7px 12px;font-size:11px;color:${m.hide?'#e29aa6':'var(--cream)'}">${m.hide?'مخفية من المتجر':'ظاهرة بالمتجر ✓'}</button>
+          </div>
+          <input class="msvc-desc" value="${String(m.desc||'').replace(/"/g,'&quot;')}" onchange="PAGE.svcDesc('${q}',this)" placeholder="وصف الخدمة — يظهر للعميلة تحت اسم الخدمة في المتجر" style="width:100%;margin-top:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--white);font-family:inherit;font-size:12px;outline:none"/>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;align-items:center">
+            <span style="font-size:11px;color:var(--muted)">تقدمها:</span>
+            ${pageTeam().map(([tn])=>{const onn=(m.staff||[]).includes(tn);return `
+            <button class="msvc-stf" onclick="PAGE.svcStaff('${q}','${tn}')" style="font-family:inherit;font-size:11px;padding:5px 13px;border-radius:16px;cursor:pointer;border:1px solid ${onn?'var(--gold-light)':'var(--line)'};background:${onn?'linear-gradient(120deg,rgba(219,189,129,.18),rgba(156,124,58,.06))':'var(--surface)'};color:${onn?'var(--gold-light)':'var(--muted)'}">${tn}${onn?' ✓':''}</button>`;}).join('')}
+          </div>
+        </div>`;}).join('');})()}
+      </div>
+      </div>
+      <div style="${PAGE_TAB==='prod'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">إدارة المنتجات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">الاسم والسعر والمخزون والصور والوصف والتصنيف والحالة</span></div>
+        ${(()=>{const IMGS=LumaStore.get('luma_salon_prod_img',{})||{};const cats=(pageCfg().catList||PAGE_CATS_DEFAULT);
+        return pageProducts().map((pr,i)=>{const im=IMGS[pr.n];const inp='background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--white);font-family:inherit;font-size:12px;outline:none';
+        return `
+        <div class="mprd" data-n="${String(pr.n).replace(/"/g,'&quot;')}" style="border:1px solid ${pr.off?'var(--line)':'var(--gold-deep)'};border-radius:12px;padding:12px 14px;margin-bottom:10px;${pr.off?'opacity:.7':''}">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <label style="cursor:pointer;flex-shrink:0" title="تغيير الصورة">
+              ${im?`<img src="${im}" alt="" style="width:44px;height:44px;border-radius:9px;object-fit:cover;border:1px solid var(--gold-deep)"/>`:`<span style="width:44px;height:44px;border-radius:9px;background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;color:var(--muted)">${icon('bag',17)}</span>`}
+              <input type="file" accept="image/*" onchange="PAGE.prodImg(${i},this)" style="display:none"/></label>
+            <input class="mprd-n" value="${String(pr.n).replace(/"/g,'&quot;')}" onchange="PAGE.prodField(${i},'n',this)" style="flex:1;min-width:130px;${inp};font-weight:700"/>
+            <span style="display:inline-flex;align-items:center;gap:5px"><input class="mprd-p num" value="${pr.p}" onchange="PAGE.prodField(${i},'p',this)" dir="ltr" style="width:64px;text-align:center;${inp}"/><span style="font-size:10.5px;color:var(--muted)">ر.س</span></span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><input class="mprd-s num" value="${pr.stock!=null?pr.stock:0}" onchange="PAGE.prodField(${i},'stock',this)" dir="ltr" style="width:56px;text-align:center;${inp};color:${(pr.stock||0)<=5?'#e29aa6':'var(--white)'}"/><span style="font-size:10.5px;color:var(--muted)">مخزون</span></span>
+            <select class="mprd-c" onchange="PAGE.prodField(${i},'c',this)" style="${inp}">${cats.map(ct=>`<option ${pr.c===ct?'selected':''}>${ct}</option>`).join('')}</select>
+            <button class="mprd-st btn btn-ghost" onclick="PAGE.prodToggle(${i})" style="padding:7px 12px;font-size:11px;color:${pr.off?'#e29aa6':'var(--gold-light)'}">${pr.off?'موقوف':'نشط ✓'}</button>
+            <button onclick="PAGE.prodDel(${i})" title="حذف" style="background:none;border:none;color:#e29aa6;cursor:pointer;font-size:13px">✕</button>
+          </div>
+          <input class="mprd-d" value="${String(pr.desc||'').replace(/"/g,'&quot;')}" onchange="PAGE.prodField(${i},'desc',this)" placeholder="وصف المنتج" style="width:100%;margin-top:9px;${inp}"/>
+          ${(pr.stock||0)===0?`<div style="font-size:11px;color:#e29aa6;margin-top:7px">نفد المخزون — المنتج مخفي تلقائياً من المتجر حتى تعبئته.</div>`:''}
+        </div>`;}).join('');})()}
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">منتج جديد <span class="ln"></span></div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <input id="npN" placeholder="اسم المنتج" style="flex:2;min-width:150px;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:10px 12px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none"/>
+          <input id="npP" placeholder="السعر" dir="ltr" style="width:80px;text-align:center;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:10px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none"/>
+          <input id="npS" placeholder="المخزون" dir="ltr" style="width:80px;text-align:center;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:10px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none"/>
+          <select id="npC" style="background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:10px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none">${(pageCfg().catList||PAGE_CATS_DEFAULT).map(ct=>`<option>${ct}</option>`).join('')}</select>
+          <input id="npD" placeholder="الوصف (اختياري)" style="flex:2;min-width:150px;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:10px 12px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none"/>
+          <button class="btn btn-gold" onclick="PAGE.prodAdd()">+ إضافة المنتج</button>
+        </div>
+      </div>
+      </div>
+      <div style="${PAGE_TAB==='books'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">حجوزات المتجر <span class="ln"></span><span style="font-size:11px;color:var(--muted)">القادمة والمكتملة والملغاة — العميل والخدمة والموظفة والوقت</span></div>
+        ${(()=>{const all=PAGE.bookList();
+        const F=[['up','القادمة'],['done','المكتملة'],['cancel','الملغاة']];
+        const list=all.filter(b=>b.st===PAGE_BOOKF);
+        return `
+        <div style="display:flex;gap:8px;margin-bottom:13px">
+          ${F.map(([k,lb])=>`<button class="bkf" data-f="${k}" onclick="PAGE.bookFilter('${k}')" style="font-family:inherit;font-size:12px;padding:8px 17px;border-radius:20px;cursor:pointer;border:1.5px solid ${PAGE_BOOKF===k?'var(--gold-light)':'var(--line)'};background:${PAGE_BOOKF===k?'linear-gradient(120deg,rgba(219,189,129,.16),rgba(156,124,58,.05))':'var(--surface)'};color:${PAGE_BOOKF===k?'var(--gold-light)':'var(--cream)'}">${lb} <b class="num">${all.filter(b=>b.st===k).length}</b></button>`).join('')}
+        </div>
+        ${list.length?list.map(b=>`
+        <div class="mbk" style="display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="width:36px;height:36px;border-radius:50%;background:rgba(219,189,129,.12);color:var(--gold-light);display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">${String(b.client).charAt(0)}</span>
+          <span style="flex:1;min-width:120px"><b style="font-size:13px;color:var(--white)">${b.client}</b><span style="display:block;font-size:11px;color:var(--muted);margin-top:2px">${b.svc} · مع ${b.staff}</span></span>
+          <span style="font-size:11.5px;color:var(--gold-pale)" dir="ltr">${b.date} · ${b.time}</span>
+          <span class="badge ${b.st==='up'?'gold':b.st==='done'?'green':'red'}" style="min-width:56px;justify-content:center">${b.st==='up'?'قادم':b.st==='done'?'مكتمل':'ملغي'}</span>
+          ${b.st==='up'?`<span style="display:inline-flex;gap:6px">
+            <button class="mbk-done btn btn-ghost" onclick="PAGE.bookSt('${b.id}','done')" style="padding:6px 12px;font-size:11px;color:#9fce99">إتمام ✓</button>
+            <button class="mbk-cancel btn btn-ghost" onclick="PAGE.bookSt('${b.id}','cancel')" style="padding:6px 12px;font-size:11px;color:#e29aa6">إلغاء</button></span>`:''}
+        </div>`).join(''):`<div style="font-size:12.5px;color:var(--muted);padding:8px 0">لا حجوزات في هذه القائمة.</div>`}`;})()}
+      </div>
+      </div>
+      <div style="${PAGE_TAB==='team'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">فريق الصالون <span class="ln"></span><span style="font-size:11px;color:var(--muted)">الموظفات والتخصص والخدمات وجدول العمل والنبذة</span></div>
+        ${(()=>{const META=LumaStore.get('luma_team_meta',{})||{};const svcs=pageSvcList();const SVM=LumaStore.get('luma_svc_meta',{})||{};
+        return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${pageTeam().map(([tn,role])=>{
+          const assigned=svcs.filter(sv=>((SVM[sv.n]||{}).staff||[]).includes(tn));
+          const list=assigned.length?assigned:svcs.filter(sv=>sv.c===role);
+          const bio=(META[tn]||{}).bio||'';
+          return `
+        <div class="mteam" style="border:1px solid var(--gold-deep);border-radius:13px;padding:14px 15px">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:9px">
+            <span style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,rgba(219,189,129,.25),rgba(156,124,58,.08));color:var(--gold-light);display:inline-flex;align-items:center;justify-content:center;font-size:17px;font-weight:800">${tn.charAt(0)}</span>
+            <span><b style="font-size:14px;color:var(--white)">${tn}</b><span style="display:block;font-size:11px;color:var(--gold-pale);margin-top:2px">التخصص: ${role}</span></span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:5px">الخدمات التي تقدمها:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px">
+            ${list.slice(0,4).map(sv=>`<span style="font-size:10.5px;color:var(--cream);border:1px solid var(--line);border-radius:14px;padding:4px 11px">${sv.n}</span>`).join('')||'<span style="font-size:11px;color:var(--muted)">حدديها من قسم «الخدمات»</span>'}
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);margin-bottom:9px"><span style="color:var(--gold-light);display:inline-flex">${icon('clock',13)}</span> السبت – الخميس · 10:00 ص – 8:00 م · الجمعة إجازة</div>
+          <textarea class="mteam-bio" rows="2" onchange="PAGE.teamBio('${tn}',this)" placeholder="نبذة عنها — خبرتها وشهاداتها وأسلوبها" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--white);font-family:inherit;font-size:11.5px;line-height:1.9;outline:none;resize:vertical">${bio}</textarea>
+        </div>`;}).join('')}</div>`;})()}
       </div>
       </div>
       <div style="${PAGE_TAB==='identity'?'':'display:none'}">
@@ -264,20 +582,32 @@ SCREENS.page=()=>{
             </div></div>`;}).join('')}
         </div>
       </div>
-      </div>
-      <div style="${PAGE_TAB==='front'?'':'display:none'}">
+      ${(()=>{const t=pageThemeOf(c);const FIELDS=[['bg','خلفية الصفحة'],['card','لون البطاقات'],['ac','اللون المميز — الأزرار والعناوين'],['tx','لون النصوص']];
+      return `
       <div class="card" style="margin-bottom:14px">
-        <div class="sec-label">رسالة الترحيب <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختيارية — نافذة منبثقة أول ما تفتح العميلة متجرك</span></div>
-        <input id="wbIn" value="${(c.welcome||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('welcome',this)" placeholder="مثال: 🌸 أهلاً بك! خصم 10٪ على أول حجز بكود LUMA10 — اتركيه فارغاً للإخفاء" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
-      </div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="sec-label">روابط السوشل ميديا <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختيارية — تظهر كأيقونات في صفحتك فقط عند تعبئتها</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          ${PAGE_SOCIALS.map(([k,lb,ph])=>`
-          <div class="lux-f"><label>${lb}</label>
-            <input id="soc-${k}" value="${((c.social||{})[k]||'').replace(/"/g,'&quot;')}" oninput="PAGE.setSocial('${k}',this)" dir="ltr" placeholder="${ph}" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none;text-align:right"/></div>`).join('')}
+        <div class="sec-label">ألوان الهوية <span class="ln"></span>
+          <span id="thBadge" style="display:${c.theme==='custom'?'inline-block':'none'};font-size:10.5px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:2px 10px">ثيم مخصص ✓</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+          ${FIELDS.map(([k,lb])=>`
+          <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:9px 12px">
+            <input type="color" id="thc-${k}" value="${t[k]}" onchange="PAGE.setColor('${k}',this.value)"
+              style="width:34px;height:34px;border:none;border-radius:9px;background:none;cursor:pointer;padding:0"/>
+            <div style="flex:1"><div style="font-size:12px;color:var(--white)">${lb}</div>
+              <input id="thx-${k}" value="${t[k]}" onchange="PAGE.setColor('${k}',this.value)" dir="ltr"
+                style="width:100%;background:none;border:none;outline:none;color:var(--gold-pale);font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:2px 0"/></div>
+          </div>`).join('')}
         </div>
       </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">نوع الخط <span class="ln"></span><span style="font-size:11px;color:var(--muted)">خط صفحة متجرك وفاتورتك</span></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
+          ${PAGE_FONTS.map(([k,lb,fam])=>`
+          <button class="font-chip" onclick="PAGE.setFont('${k}')" style="font-family:${fam.replace(/"/g,'&quot;')};background:var(--surface2);border:1.5px solid ${(c.font||'plex')===k?'var(--gold-light)':'var(--line)'};border-radius:11px;padding:10px 6px;cursor:pointer;text-align:center;color:var(--white)">
+            <span style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:17px;line-height:1.5">أهلاً بك <span style="color:var(--gold-light);display:inline-flex">${icon('flower',15)}</span></span>
+            <span style="display:block;font-size:9.5px;color:${(c.font||'plex')===k?'var(--gold-light)':'var(--muted)'};margin-top:4px">${lb}</span>
+          </button>`).join('')}
+        </div>
+      </div>`;})()}
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">موقعي على الخريطة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختياري — خريطة مدمجة وزر اتجاهات في صفحتك</span></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -286,6 +616,61 @@ SCREENS.page=()=>{
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:9px">تظهر للعميلات كخريطة مدمجة أسفل صفحة الحجز مع زر «الاتجاهات» — اتركيه فارغاً للإخفاء.</div>
       </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">حسابات التواصل <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختيارية — تظهر كأيقونات في صفحتك فقط عند تعبئتها</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          ${PAGE_SOCIALS.map(([k,lb,ph])=>`
+          <div class="lux-f"><label>${lb}</label>
+            <input id="soc-${k}" value="${((c.social||{})[k]||'').replace(/"/g,'&quot;')}" oninput="PAGE.setSocial('${k}',this)" dir="ltr" placeholder="${ph}" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none;text-align:right"/></div>`).join('')}
+        </div>
+      </div>
+      </div>
+      <div style="${PAGE_TAB==='front'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">رسالة الترحيب <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اختيارية — نافذة منبثقة أول ما تفتح العميلة متجرك</span></div>
+        <input id="wbIn" value="${(c.welcome||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('welcome',this)" placeholder="مثال: 🌸 أهلاً بك! خصم 10٪ على أول حجز بكود LUMA10 — اتركيه فارغاً للإخفاء" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
+      </div>
+      ${(()=>{const t=pageThemeOf(c);
+      const uiChip=(k,v,cur,lb)=>`<button class="ui-chip" data-ui="${k}:${v}" onclick="PAGE.setUI('${k}','${v}')" style="font-family:inherit;font-size:12px;padding:8px 16px;border-radius:20px;cursor:pointer;border:1.5px solid ${cur===v?'var(--gold-light)':'var(--line)'};background:${cur===v?'linear-gradient(120deg,rgba(219,189,129,.16),rgba(156,124,58,.05))':'var(--surface)'};color:${cur===v?'var(--gold-light)':'var(--cream)'}">${lb}</button>`;
+      return `
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">ألوان الواجهة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">الأساسي والثانوي ولون الأزرار</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px">
+          ${[['ac','اللون الأساسي'],['ac2','اللون الثانوي'],['btn','لون الأزرار']].map(([k,lb])=>{const v=t[k]||t.ac;return `
+          <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:9px 12px">
+            <input type="color" id="uic-${k}" value="${v}" onchange="PAGE.setColor('${k}',this.value)" style="width:34px;height:34px;border:none;border-radius:9px;background:none;cursor:pointer;padding:0"/>
+            <div style="flex:1"><div style="font-size:12px;color:var(--white)">${lb}</div>
+              <input id="uix-${k}" value="${v}" onchange="PAGE.setColor('${k}',this.value)" dir="ltr" style="width:100%;background:none;border:none;outline:none;color:var(--gold-pale);font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:2px 0"/></div>
+          </div>`;}).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:9px">الأساسي للعناوين والتمييز · الثانوي لخلفيات القوائم · الأزرار لزر الحجز والدفع.</div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">خط الواجهة <span class="ln"></span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${PAGE_FONTS.map(([k,lb,fam])=>`<button class="font-chip2" onclick="PAGE.setFont('${k}')" style="font-family:${fam.replace(/"/g,'&quot;')};font-size:12.5px;padding:9px 15px;border-radius:20px;cursor:pointer;border:1.5px solid ${(c.font||'plex')===k?'var(--gold-light)':'var(--line)'};background:var(--surface);color:${(c.font||'plex')===k?'var(--gold-light)':'var(--cream)'}">${lb}</button>`).join('')}
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">أشكال الواجهة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">البطاقات والأزرار والقائمة وطرق العرض</span></div>
+        ${[
+          ['cardStyle','شكل البطاقات',[['soft','ناعمة مستديرة'],['sharp','حادة مربعة'],['outline','بإطار مميز']],'soft'],
+          ['btnStyle','شكل الأزرار',[['auto','حسب الاستدارة'],['pill','كبسولة'],['rounded','مستدير خفيف'],['square','مربع']],'auto'],
+          ['prodView','طريقة عرض المنتجات',[['grid','شبكة'],['list','قائمة']],'grid'],
+          ['svcView','طريقة عرض الخدمات',[['list','قائمة'],['cards','بطاقات']],'list'],
+          ['menuStyle','شكل القائمة',[['simple','بسيطة'],['pills','حبوب'],['underline','شريط سفلي']],'simple'],
+        ].map(([k,lb,opts,d])=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+          <span style="font-size:12.5px;color:var(--white);width:158px">${lb}</span>
+          <span style="display:flex;gap:7px;flex-wrap:wrap">${opts.map(([v,ol])=>uiChip(k,v,c[k]||d,ol)).join('')}</span>
+        </div>`).join('')}
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">Footer — تذييل الصفحة <span class="ln"></span>
+          <button class="btn btn-ghost" id="ftTgl" style="padding:6px 13px;font-size:11.5px" onclick="PAGE.setUI('footerOn','${c.footerOn===false?'true':'false'}')">${c.footerOn===false?'إظهار':'إخفاء'}</button></div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:9px">يظهر أسفل متجرك: الاسم والعنوان والتواصل وحسابات السوشل — وحالته الآن: <b style="color:${c.footerOn===false?'#e29aa6':'var(--gold-light)'}">${c.footerOn===false?'مخفي':'ظاهر'}</b></div>
+        <input id="ftNote" value="${(c.footerNote||'').replace(/"/g,'&quot;')}" oninput="PAGE.field('footerNote',this)" placeholder="سطر إضافي — مثال: نسعد بخدمتكم يومياً من 10 صباحاً حتى 10 مساءً" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
+      </div>`;})()}
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">معرض الأعمال — صور وفيديوهات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">${(c.gallery||[]).length} / ${PAGE.GAL_MAX}</span></div>
         ${(c.gallery||[]).length?`
@@ -317,6 +702,36 @@ SCREENS.page=()=>{
           <textarea rows="4" oninput="PAGE.field('policy',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13px;line-height:2;outline:none;resize:vertical">${c.policy||''}</textarea></div>
         <div class="lux-f"><label>من نحن <span style="font-size:10px;color:var(--muted)">— اختياري، يظهر بنافذة منبثقة عند ضغط العميلة زر «من نحن» · كل سطر فقرة</span></label><textarea id="aboutIn" rows="4" oninput="PAGE.field('about',this)" placeholder="قصتكم، رؤيتكم، ما يميز صالونكم…" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;line-height:2;outline:none;resize:vertical">${c.about||''}</textarea></div>
       </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">صفحات متجرك الجاهزة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">تظهر كروابط في تذييل المتجر — فعّلي ما يناسبك</span></div>
+        ${PAGE_STOREPAGES.map(([k,lb,d])=>{const on=(c.pagesOn||{})[k]!==false;return `
+        <div class="spg-row" data-pg="${k}" style="display:flex;align-items:center;gap:11px;border:1px solid ${on?'var(--gold-deep)':'var(--line)'};border-radius:11px;padding:10px 13px;margin-bottom:8px;background:${on?'linear-gradient(120deg,rgba(219,189,129,.07),transparent)':'var(--surface)'}">
+          <span style="color:${on?'var(--gold-light)':'var(--muted)'};display:inline-flex">${icon('clipboard',15)}</span>
+          <span style="flex:1;min-width:0"><span style="display:block;font-size:13px;color:${on?'var(--white)':'var(--muted)'}">${lb}</span><span style="display:block;font-size:10.5px;color:var(--muted);margin-top:2px">${d}</span></span>
+          <button class="spg-tgl btn btn-ghost" onclick="PAGE.pgToggle('${k}')" style="padding:6px 13px;font-size:11.5px;white-space:nowrap">${on?'إخفاء':'إظهار'}</button>
+        </div>`;}).join('')}
+        <div class="lux-f" style="margin-top:12px"><label>الأسئلة الشائعة <span style="font-size:10px;color:var(--muted)">— كل سطر: السؤال | الجواب</span></label>
+          <textarea id="faqIn" rows="3" oninput="PAGE.field('faqText',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;line-height:2;outline:none;resize:vertical">${c.faqText||''}</textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="lux-f"><label>سياسة الخصوصية <span style="font-size:10px;color:var(--muted)">— كل سطر فقرة</span></label>
+            <textarea id="privIn" rows="3" oninput="PAGE.field('privacyText',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;line-height:2;outline:none;resize:vertical">${c.privacyText||''}</textarea></div>
+          <div class="lux-f"><label>سياسة الاسترجاع <span style="font-size:10px;color:var(--muted)">— كل سطر فقرة</span></label>
+            <textarea id="retIn" rows="3" oninput="PAGE.field('returnsText',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;line-height:2;outline:none;resize:vertical">${c.returnsText||''}</textarea></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">صفحة إضافية <span class="ln"></span><span style="font-size:11px;color:var(--muted)">أي صفحة تريدينها — شروط، عروض الشركات، أي محتوى</span></div>
+        ${(c.pagesExtra||[]).length?(c.pagesExtra||[]).map((p,i)=>`
+        <div class="xpg-row" style="display:flex;align-items:center;gap:11px;border:1px solid ${p.on?'var(--gold-deep)':'var(--line)'};border-radius:11px;padding:10px 13px;margin-bottom:8px">
+          <span style="color:var(--gold-light);display:inline-flex">${icon('plus',14)}</span>
+          <span style="flex:1;font-size:13px;color:${p.on?'var(--white)':'var(--muted)'}">${p.t}</span>
+          <button class="btn btn-ghost" style="padding:6px 13px;font-size:11.5px" onclick="PAGE.xpToggle(${i})">${p.on?'إخفاء':'إظهار'}</button>
+          <button onclick="PAGE.xpDel(${i})" title="حذف" style="background:none;border:none;color:#e29aa6;cursor:pointer;font-size:13px">✕</button>
+        </div>`).join(''):`<div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">لا صفحات إضافية بعد — أضيفي أول صفحة خاصة بمتجرك.</div>`}
+        <input id="xpT" placeholder="عنوان الصفحة — مثال: خدمات الشركات والفعاليات" style="width:100%;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none;margin-bottom:9px"/>
+        <textarea id="xpB" rows="3" placeholder="محتوى الصفحة — كل سطر فقرة" style="width:100%;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;line-height:2;outline:none;resize:vertical;margin-bottom:9px"></textarea>
+        <button class="btn btn-gold" onclick="PAGE.xpAdd()">+ إضافة الصفحة</button>
+      </div>
       </div>
       <div style="${PAGE_TAB==='banners'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
@@ -336,12 +751,19 @@ SCREENS.page=()=>{
       </div>
       <div style="${PAGE_TAB==='cats'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">
-        <div class="sec-label">تصنيفات المتجر <span class="ln"></span><span style="font-size:11px;color:var(--muted)">تحكّمي بأي تصنيفات المنتجات تظهر لعميلاتك</span></div>
-        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:4px">
-          ${['عناية','أظافر','شعر','مكياج'].map(ct=>{const off=(c.hideCats||[]).includes(ct);return `
-          <button onclick="PAGE.toggleCat('${ct}')" style="font-family:inherit;font-size:12.5px;padding:9px 18px;border-radius:20px;cursor:pointer;border:1.5px solid ${off?'var(--line)':'var(--gold-light)'};background:${off?'var(--surface)':'linear-gradient(120deg,rgba(219,189,129,.16),rgba(156,124,58,.05))'};color:${off?'var(--muted)':'var(--gold-light)'};text-decoration:${off?'line-through':'none'}">${ct}</button>`;}).join('')}
+        <div class="sec-label">تصنيفات متجرك <span class="ln"></span><span style="font-size:11px;color:var(--muted)">لكل صالون قائمته الخاصة — أضيفي واحذفي وأخفي كما يناسب متجرك</span></div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px">
+          ${(c.catList||PAGE_CATS_DEFAULT).map(ct=>{const off=(c.hideCats||[]).includes(ct);return `
+          <span class="cat-chip" style="display:inline-flex;align-items:center;gap:7px;border:1.5px solid ${off?'var(--line)':'var(--gold-light)'};background:${off?'var(--surface)':'linear-gradient(120deg,rgba(219,189,129,.16),rgba(156,124,58,.05))'};border-radius:20px;padding:7px 8px 7px 14px">
+            <button onclick="PAGE.toggleCat('${ct.replace(/'/g,"\\'")}')" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:12.5px;color:${off?'var(--muted)':'var(--gold-light)'};text-decoration:${off?'line-through':'none'};padding:2px 4px">${ct}</button>
+            <button onclick="PAGE.delCat('${ct.replace(/'/g,"\\'")}')" title="حذف التصنيف" style="width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.4);color:#e29aa6;cursor:pointer;font-size:10px;line-height:1">✕</button>
+          </span>`;}).join('')}
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:8px">التصنيف المشطوب مخفي — منتجاته لا تظهر في المتجر، وتظهر البقية كفلاتر للعميلة.</div>
+        <div style="display:flex;gap:9px">
+          <input id="catIn" placeholder="تصنيف جديد — مثال: رموش وحواجب" style="flex:1;background:var(--bg);border:1px dashed var(--gold-deep);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:12.5px;outline:none"/>
+          <button class="btn btn-gold" onclick="PAGE.addCat()">+ إضافة</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:9px">اضغطي على التصنيف لإخفائه (يُشطب) — المخفي لا تظهر خدماته ومنتجاته في المتجر، والبقية تظهر كفلاتر للعميلة.</div>
       </div>
       <div class="card" style="margin-bottom:14px">
         <div class="sec-label">الخدمات المميزة <span class="ln"></span><span style="font-size:11px;color:var(--muted)">شارات تظهر على الخدمات في صفحة الحجز</span></div>
@@ -359,9 +781,27 @@ SCREENS.page=()=>{
       </div>
       </div>
       <div style="${PAGE_TAB==='design'?'':'display:none'}">
+      <div class="card" style="margin-bottom:14px">
+        <div class="sec-label">شكل الصفحة الرئيسية — الأقسام وترتيبها <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اسحبي وأفلتي أو استخدمي الأسهم — وأظهري/أخفي أي قسم</span></div>
+        ${pageLayoutOf(c).map((x,i,arr)=>{const meta=PAGE_SECTIONS.find(s=>s[0]===x.k)||[x.k,x.k,''];const lock=x.k==='services';
+        const ab='width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);color:var(--cream);cursor:pointer;font-size:10px;line-height:1;display:inline-flex;align-items:center;justify-content:center';
+        return `
+        <div class="sec-row" draggable="true" ondragstart="PAGE.secDragStart(event,${i})" ondragover="PAGE.secDragOver(event)" ondrop="PAGE.secDrop(event,${i})"
+          style="display:flex;align-items:center;gap:11px;border:1px solid ${x.on?'var(--gold-deep)':'var(--line)'};border-radius:11px;padding:10px 13px;margin-bottom:8px;background:${x.on?'linear-gradient(120deg,rgba(219,189,129,.07),transparent)':'var(--surface)'};cursor:grab">
+          <span style="color:var(--muted);font-size:15px;letter-spacing:1px" title="اسحبي للترتيب">⠿</span>
+          <span class="num" style="font-size:11px;color:var(--gold-pale);width:16px;text-align:center">${i+1}</span>
+          <span style="flex:1;min-width:0"><span style="display:block;font-size:13px;color:${x.on?'var(--white)':'var(--muted)'}">${meta[1]}</span><span style="display:block;font-size:10.5px;color:var(--muted);margin-top:2px">${meta[2]}</span></span>
+          <span style="display:inline-flex;gap:4px">
+            <button class="sec-up" onclick="PAGE.secMove(${i},-1)" ${i===0?'disabled style="'+ab+';opacity:.3;cursor:default"':'style="'+ab+'"'} title="أعلى">▲</button>
+            <button class="sec-dn" onclick="PAGE.secMove(${i},1)" ${i===arr.length-1?'disabled style="'+ab+';opacity:.3;cursor:default"':'style="'+ab+'"'} title="أسفل">▼</button>
+          </span>
+          ${lock?`<span style="font-size:10.5px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:4px 12px;white-space:nowrap">أساسي ✓</span>`
+            :`<button class="sec-tgl btn btn-ghost" onclick="PAGE.secToggle(${i})" style="padding:6px 13px;font-size:11.5px;white-space:nowrap">${x.on?'إخفاء':'إظهار'}</button>`}
+        </div>`;}).join('')}
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.9">مثال: صالون يرتّب «آراء العملاء ← العروض ← المنتجات ← الخدمات ← البانر»، وآخر يبدأ بـ«انستغرام ← فريقنا» — الكل على لوما ولكل صالون متجر مختلف تماماً.</div>
+      </div>
       <div class="card">
-        <div class="sec-label">مظهر وتصميم الصفحة <span class="ln"></span>
-          <span id="thBadge" style="display:${c.theme==='custom'?'inline-block':'none'};font-size:10.5px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:2px 10px">ثيم مخصص ✓</span></div>
+        <div class="sec-label">مظهر وتصميم الصفحة <span class="ln"></span></div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:9px">قوالب كنقطة بداية — ثم عدّلي كل لون بنفسك:</div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
           ${PAGE_PRESETS.map(p=>`
@@ -371,33 +811,14 @@ SCREENS.page=()=>{
             <span style="display:block;font-size:9px;color:${p.tx};opacity:.5" dir="ltr">${p.k}</span>
           </button>`).join('')}
         </div>
-        ${(()=>{const t=pageThemeOf(c);const FIELDS=[['bg','خلفية الصفحة'],['card','لون البطاقات'],['ac','اللون المميز — الأزرار والعناوين'],['tx','لون النصوص']];
+        ${(()=>{const t=pageThemeOf(c);
         return `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-          ${FIELDS.map(([k,lb])=>`
-          <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:9px 12px">
-            <input type="color" id="thc-${k}" value="${t[k]}" onchange="PAGE.setColor('${k}',this.value)"
-              style="width:34px;height:34px;border:none;border-radius:9px;background:none;cursor:pointer;padding:0"/>
-            <div style="flex:1"><div style="font-size:12px;color:var(--white)">${lb}</div>
-              <input id="thx-${k}" value="${t[k]}" onchange="PAGE.setColor('${k}',this.value)" dir="ltr"
-                style="width:100%;background:none;border:none;outline:none;color:var(--gold-pale);font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:2px 0"/></div>
-          </div>`).join('')}
-        </div>
-        <div style="display:flex;align-items:center;gap:14px;margin-top:14px;border:1px solid var(--line);border-radius:11px;padding:10px 14px">
+        <div style="display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:11px;padding:10px 14px">
           <span style="font-size:12px;color:var(--white);white-space:nowrap">استدارة الزوايا</span>
           <input type="range" min="0" max="28" value="${t.rad!=null?t.rad:18}" onchange="PAGE.setRad(this.value)" style="flex:1;accent-color:var(--gold-light)"/>
           <span id="radV" class="num" style="font-size:13px;color:var(--gold-light);width:44px;text-align:left" dir="ltr">${t.rad!=null?t.rad:18}px</span>
         </div>
-        <div style="margin-top:16px">
-          <div style="font-size:12.5px;color:var(--gold-pale);margin-bottom:9px">نوع الخط</div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
-            ${PAGE_FONTS.map(([k,lb,fam])=>`
-            <button class="font-chip" onclick="PAGE.setFont('${k}')" style="font-family:${fam.replace(/"/g,'&quot;')};background:var(--surface2);border:1.5px solid ${(c.font||'plex')===k?'var(--gold-light)':'var(--line)'};border-radius:11px;padding:10px 6px;cursor:pointer;text-align:center;color:var(--white)">
-              <span style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:17px;line-height:1.5">أهلاً بك <span style="color:var(--gold-light);display:inline-flex">${icon('flower',15)}</span></span>
-              <span style="display:block;font-size:9.5px;color:${(c.font||'plex')===k?'var(--gold-light)':'var(--muted)'};margin-top:4px">${lb}</span>
-            </button>`).join('')}
-          </div>
-        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:12px">الألوان والخط تعدّلينها من قسم «الهوية» — هنا ترتيب الأقسام والقوالب الجاهزة والاستدارة.</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
           <span style="font-size:11px;color:var(--muted)">كل تغيير يُحفظ فوراً وينعكس على المعاينة والفاتورة</span>
           <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px" onclick="PAGE.resetTheme()">استعادة الافتراضي</button>

@@ -81,7 +81,7 @@
   .stf.sel{background:var(--ac);color:var(--bg)} .stf.sel .av{border-color:var(--bg);color:var(--bg)}
   .reroute{background:var(--card);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);border-radius:var(--rad,16px);padding:14px;margin-top:12px;font-size:13px;line-height:1.9}
   .reroute b{color:var(--ac)}
-  .btn{width:100%;border:none;border-radius:calc(var(--rad,16px) - 2px);padding:14px;background:var(--ac);color:var(--bg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px}
+  .btn{width:100%;border:none;border-radius:calc(var(--rad,16px) - 2px);padding:14px;background:var(--btn,var(--ac));color:var(--bg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px}
   .btn:disabled{opacity:.35} .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--tx)}
   .days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
   .day{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:calc(var(--rad,16px) - 1px);padding:11px;text-align:center;color:var(--tx);font-family:inherit;cursor:pointer}
@@ -125,6 +125,24 @@
   .shs-bg.show{opacity:1}
   .shs{width:100%;max-width:640px;max-height:82vh;overflow-y:auto;background:var(--card);border:1px solid var(--ln);border-bottom:none;border-radius:22px 22px 0 0;padding:18px 20px 24px;transform:translateY(40px);transition:transform .3s cubic-bezier(.2,1.2,.4,1)}
   .shs-bg.show .shs{transform:none}
+  /* ── أشكال الواجهة — من محرر «الواجهة»: البطاقات والأزرار والقائمة وطرق العرض ── */
+  .ui-card-sharp .svc,.ui-card-sharp .shp,.ui-card-sharp .offer-c,.ui-card-sharp .rev-c,.ui-card-sharp .team-c,.ui-card-sharp .mapc,.ui-card-sharp .policy,.ui-card-sharp .gal-it{border-radius:5px!important}
+  .ui-card-outline .svc,.ui-card-outline .shp,.ui-card-outline .offer-c,.ui-card-outline .rev-c,.ui-card-outline .team-c,.ui-card-outline .mapc,.ui-card-outline .policy{border-color:color-mix(in srgb,var(--ac) 60%,transparent)!important;box-shadow:0 0 0 1px color-mix(in srgb,var(--ac) 22%,transparent)}
+  .ui-btn-pill .btn{border-radius:28px}
+  .ui-btn-rounded .btn{border-radius:12px}
+  .ui-btn-square .btn{border-radius:5px}
+  .ui-menu-pills .cat{display:inline-block;background:color-mix(in srgb,var(--ac2,var(--ac)) 13%,transparent);border-radius:20px;padding:6px 15px}
+  .ui-menu-underline .cat{display:block;border-bottom:2px solid color-mix(in srgb,var(--ac) 55%,transparent);padding-bottom:7px}
+  .ui-prod-list .shop-grid{grid-template-columns:1fr!important}
+  .ui-prod-list .shp{flex-direction:row;align-items:center;gap:13px}
+  .ui-prod-list .shp .im{width:62px;height:62px;flex-shrink:0}
+  .ui-prod-list .shp .nm{flex:1}
+  .ui-prod-list .shp .row{margin-top:0;margin-right:auto;gap:12px}
+  .ui-svc-cards .svc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ui-svc-cards .svc{flex-direction:column;align-items:flex-start;gap:10px;height:100%;margin-bottom:0}
+  @media(max-width:560px){.ui-svc-cards .svc-wrap{grid-template-columns:1fr}}
+  .foot{margin-top:32px;border-top:1px solid var(--ln);padding:24px 6px 12px;text-align:center}
+  .foot .socs{justify-content:center}
 </style>
 </head>
 <body>
@@ -141,12 +159,20 @@ const load=(k,f)=>LumaStore.get(k,f);
 const CFG={slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ الأولى للجمال في جدة — مكياج، شعر، وعناية ملكية بلمسات خبيرات.',phone:'0555 123 456',address:'جدة · حي الشاطئ',logo:'',cover:'',theme:'dark-luxury',
   policy:'الحضور قبل الموعد بـ10 دقائق يضمن اكتمال جلستك كاملة.\nيمكن إلغاء أو تعديل الحجز مجاناً قبل 24 ساعة من الموعد.\nالتأخر أكثر من 15 دقيقة قد يتطلب إعادة جدولة الموعد.\nقيمة العربون (إن وُجد) تُخصم من الفاتورة النهائية.',
   featured:{'مكياج عروس':'الأكثر طلباً'},
+  faqText:'هل أحتاج حجزاً مسبقاً؟ | نعم، الحجز المسبق يضمن وقتك المفضل — احجزي من الصفحة مباشرة.\nهل تتوفر باقات للعرائس؟ | نعم، باقة العروس الملكية تشمل المكياج والتسريحة والعناية.\nهل يمكن إلغاء الحجز؟ | الإلغاء أو التعديل مجاني قبل 24 ساعة من الموعد.',
+  privacyText:'نحترم خصوصيتك — بياناتك (الاسم ورقم الجوال) تُستخدم لإدارة حجزك وطلباتك فقط.\nلا نشارك بياناتك مع أي طرف ثالث دون موافقتك.\nيمكنك طلب حذف بياناتك في أي وقت عبر التواصل معنا.',
+  returnsText:'يمكن استرجاع المنتجات غير المفتوحة خلال 7 أيام من الاستلام.\nمستحضرات التجميل المفتوحة لا تُسترجع حفاظاً على معايير السلامة.\nرسوم التوصيل غير قابلة للاسترداد عند الاسترجاع.',
   ...load('luma_page_cfg',{})};
+/* عدّاد زيارات المتجر — يظهر بلوحة «عام» عند صاحبة الصالون */
+try{LumaStore.raw.set('luma_store_visits',String((parseInt(LumaStore.raw.get('luma_store_visits','0'))||0)+1));}catch(e){}
 /* ثيم مخصص من المحرر الكامل، أو قالب جاهز */
 const T=(CFG.theme==='custom'&&CFG.themeCustom)?{...THEMES['dark-luxury'],...CFG.themeCustom}:(THEMES[CFG.theme]||THEMES['dark-luxury']);
 const rt=document.documentElement.style;
 rt.setProperty('--bg',T.bg);rt.setProperty('--card',T.card);rt.setProperty('--ac',T.ac);rt.setProperty('--tx',T.tx);
 rt.setProperty('--rad',(T.rad!=null?T.rad:18)+'px');
+rt.setProperty('--ac2',T.ac2||T.ac);rt.setProperty('--btn',T.btn||T.ac);
+/* أشكال الواجهة: البطاقات/الأزرار/القائمة/طرق العرض — تُدار من محرر «الواجهة» */
+document.body.classList.add('ui-card-'+(CFG.cardStyle||'soft'),'ui-btn-'+(CFG.btnStyle||'auto'),'ui-menu-'+(CFG.menuStyle||'simple'),'ui-prod-'+(CFG.prodView||'grid'),'ui-svc-'+(CFG.svcView||'list'));
 
 /* ═══ الخط المخصص — يُحمَّل بشكل غير حاجب حتى لا يجمّد الصفحة ═══ */
 const FONTS={
@@ -383,14 +409,16 @@ window.galOpen=i=>{
 };
 
 /* ═══════════ المتجر الإلكتروني — منتجات الصالون بسلة وإتمام طلب ═══════════ */
-const SHOP=[
-  {n:'سيروم ترطيب',c:'عناية',p:180},
-  {n:'طلاء أظافر — مجموعة',c:'أظافر',p:210},
-  {n:'زيت شعر مغذّي',c:'شعر',p:120},
-  {n:'مثبّت مكياج',c:'مكياج',p:130},
-  {n:'كريم أساس',c:'مكياج',p:150},
-  {n:'ماسك بشرة',c:'عناية',p:95},
+const SHOP_DEFAULT=[
+  {n:'سيروم ترطيب',c:'عناية',p:180,stock:24},
+  {n:'طلاء أظافر — مجموعة',c:'أظافر',p:210,stock:15},
+  {n:'زيت شعر مغذّي',c:'شعر',p:120,stock:32},
+  {n:'مثبّت مكياج',c:'مكياج',p:130,stock:18},
+  {n:'كريم أساس',c:'مكياج',p:150,stock:21},
+  {n:'ماسك بشرة',c:'عناية',p:95,stock:40},
 ];
+/* قائمة المنتجات تديرها المالكة من قسم «المنتجات» — الموقوف أو نافد المخزون لا يظهر */
+const SHOP=((load('luma_shop_products',null)||SHOP_DEFAULT).filter(p=>p&&p.n&&!p.off&&(p.stock==null||p.stock>0))).map(p=>({n:p.n,c:p.c,p:p.p,desc:p.desc||''}));
 const shopImgs=()=>load('luma_salon_prod_img')||{};
 let cart={};
 const cartCount=()=>Object.values(cart).reduce((t,q)=>t+q,0);
@@ -404,6 +432,138 @@ function bannersStrip(){
 }
 let shopCat='all';
 window.shopFilter=c=>{shopCat=c;const y=window.scrollY;render();shopFab();window.scrollTo(0,y);};
+
+/* ═══ تخطيط الصفحة الرئيسية — الأقسام وترتيبها تديرها المالكة من «تصميم المتجر» ═══ */
+const LAYOUT_KEYS=['banner','offers','gallery','services','products','reviews','team','insta'];
+const LAYOUT_DEFAULT=[{k:'banner',on:true},{k:'gallery',on:true},{k:'services',on:true},{k:'products',on:true},{k:'reviews',on:true},{k:'offers',on:false},{k:'team',on:false},{k:'insta',on:false}];
+function layoutOf(){
+  const cur=Array.isArray(CFG.layout)?CFG.layout:[];
+  const seen=new Set();const out=[];
+  cur.forEach(x=>{if(x&&LAYOUT_KEYS.includes(x.k)&&!seen.has(x.k)){seen.add(x.k);out.push({k:x.k,on:x.k==='services'?true:!!x.on});}});
+  LAYOUT_DEFAULT.forEach(d=>{if(!seen.has(d.k))out.push({...d});});
+  return out;
+}
+const secStar=n=>'<span style="color:var(--ac);letter-spacing:2px">'+'★'.repeat(n)+'</span><span style="opacity:.25;letter-spacing:2px">'+'★'.repeat(5-n)+'</span>';
+/* العروض — بطاقات خصومات وباقات */
+function offersSec(){
+  const OFFERS=[
+    {b:'-15٪',t:'خصم منتصف الأسبوع',d:'على كل خدمات العناية بالبشرة — الثلاثاء والأربعاء'},
+    {b:'باقة',t:'باقة العروس الملكية',d:'مكياج + تسريحة + جلسة عناية بسعر باقة واحدة'},
+    {b:'هدية',t:'ضيافة مجانية',d:'قهوة مختصة وضيافة فاخرة مع كل موعد مسائي'},
+  ];
+  return `<div class="cat" style="margin-top:24px">العروض <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20.6 13.4L12 22l-8.6-8.6a5.4 5.4 0 017.6-7.6l1 1 1-1a5.4 5.4 0 017.6 7.6z"/></svg></div>
+  <div style="display:grid;gap:10px;margin-bottom:6px">${OFFERS.map(o=>`
+    <div class="offer-c" style="display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid color-mix(in srgb,var(--ac) 40%,transparent);border-radius:var(--rad,14px);padding:14px 16px">
+      <span style="flex-shrink:0;background:color-mix(in srgb,var(--ac) 18%,transparent);color:var(--ac);border-radius:11px;padding:9px 13px;font-size:13px;font-weight:800">${o.b}</span>
+      <span><span style="display:block;font-size:13.5px;font-weight:700">${o.t}</span><span style="display:block;font-size:11.5px;opacity:.65;margin-top:3px">${o.d}</span></span>
+    </div>`).join('')}</div>`;
+}
+/* آراء العملاء — تقييمات بالنجوم */
+function reviewsSec(){
+  const RVS=[
+    {n:'أمل القحطاني',s:5,t:'أجمل مكياج عروس ممكن تشوفينه — تفاصيل وإتقان، تجربة ملكية فعلاً.'},
+    {n:'ريما العتيبي',s:5,t:'التزام تام بالمواعيد والنتيجة خيالية، صرت عميلة دائمة.'},
+    {n:'شهد الدوسري',s:4,t:'المكان راقٍ جداً والفريق محترف — الضيافة لمسة فخمة.'},
+  ];
+  return `<div class="cat" style="margin-top:24px">آراء العملاء <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/></svg></div>
+  <div style="display:grid;gap:10px;margin-bottom:6px">${RVS.map(r=>`
+    <div class="rev-c" style="background:var(--card);border:1px solid var(--ln);border-radius:var(--rad,14px);padding:14px 16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><b style="font-size:13px">${r.n}</b><span style="font-size:11px">${secStar(r.s)}</span></div>
+      <div style="font-size:12.5px;opacity:.75;line-height:1.9">${r.t}</div>
+    </div>`).join('')}</div>`;
+}
+/* فريقنا — خبيرات الصالون */
+function teamSec(){
+  return `<div class="cat" style="margin-top:24px">فريقنا <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.5c2.6.4 4.5 2.6 4.5 5.5"/></svg></div>
+  <div class="team-row" style="display:flex;gap:11px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px">${STAFF.map(t=>`
+    <div class="team-c" style="flex:0 0 108px;text-align:center;background:var(--card);border:1px solid var(--ln);border-radius:var(--rad,14px);padding:14px 8px">
+      <span style="display:flex;width:46px;height:46px;border-radius:50%;background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--ac);align-items:center;justify-content:center;font-size:18px;font-weight:800;margin:0 auto 8px">${String(t.n||'').replace('أ. ','').charAt(0)}</span>
+      <span style="display:block;font-size:12px;font-weight:700">${t.n}</span>
+      <span style="display:block;font-size:10.5px;opacity:.6;margin-top:3px">${t.role?'خبيرة '+t.role:'خبيرة تجميل'}</span>
+    </div>`).join('')}</div>`;
+}
+/* انستغرام — شبكة صور وزر متابعة */
+function instaSec(){
+  const ig=String((CFG.social||{}).ig||'').trim();
+  const href=ig?(/^https?:\/\//i.test(ig)?ig:'https://instagram.com/'+ig.replace(/^@/,'')):'';
+  const tiles=(CFG.gallery||[]).filter(x=>x.type!=='video').slice(0,4);
+  return `<div class="cat" style="margin-top:24px">انستغرام <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></div>
+  <div class="ig-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">${[0,1,2,3].map(i=>`
+    <div style="aspect-ratio:1;border-radius:12px;overflow:hidden;border:1px solid var(--ln);background:linear-gradient(135deg,color-mix(in srgb,var(--ac) ${14+i*6}%,transparent),color-mix(in srgb,var(--ac) 4%,transparent));display:flex;align-items:center;justify-content:center;color:var(--ac)">
+      ${tiles[i]?`<img src="${tiles[i].src}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.remove()"/>`:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13.5" r="3.4"/></svg>`}
+    </div>`).join('')}</div>
+  ${href?`<a href="${href}" target="_blank" rel="noopener" style="display:block;text-align:center;border:1px solid var(--ac);color:var(--ac);border-radius:22px;padding:10px;font-size:12.5px;text-decoration:none;margin-bottom:6px">تابعينا على انستغرام ${ig.startsWith('@')?ig:''}</a>`
+       :`<div style="text-align:center;font-size:11px;opacity:.5;margin-bottom:6px">أضيفي حساب انستغرام من «الهوية» ليظهر زر المتابعة</div>`}`;
+}
+/* ═══ صفحات المتجر — من نحن/خدماتنا/منتجاتنا/فريقنا/تواصل/أسئلة/سياسات + صفحات إضافية ═══ */
+const STOREPAGES=[['about','من نحن'],['services','خدماتنا'],['products','منتجاتنا'],['team','فريقنا'],['contact','تواصل معنا'],['faq','الأسئلة الشائعة'],['privacy','سياسة الخصوصية'],['returns','سياسة الاسترجاع']];
+const pgEnabled=k=>((CFG.pagesOn||{})[k]!==false);
+const paras=t=>String(t||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>`<p style="font-size:13px;line-height:2.1;opacity:.85;margin-bottom:8px">${esc(l)}</p>`).join('');
+function pageBody(k){
+  if(k==='about')return paras(CFG.about||CFG.bio);
+  if(k==='services')return SERVICES.map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--ln);font-size:13px"><span>${esc(x.n)} <span style="opacity:.5;font-size:11px">· ${x.d} دقيقة</span></span><b style="color:var(--ac);white-space:nowrap">${x.p} ر.س</b></div>`).join('');
+  if(k==='products')return SHOP.map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--ln);font-size:13px"><span>${esc(x.n)} <span style="opacity:.5;font-size:11px">· ${esc(x.c)}</span></span><b style="color:var(--ac);white-space:nowrap">${x.p} ر.س</b></div>`).join('');
+  if(k==='team')return STAFF.map(t=>`<div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--ln)"><span style="width:34px;height:34px;border-radius:50%;background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--ac);display:inline-flex;align-items:center;justify-content:center;font-weight:800">${String(t.n||'').charAt(0)}</span><span style="font-size:13px">${esc(t.n)} <span style="opacity:.55;font-size:11px">— خبيرة ${esc(t.role||'تجميل')}</span></span></div>`).join('');
+  if(k==='contact'){const m=mapInfo();return `
+    <div style="font-size:13px;line-height:2.3">
+      <div>📞 <bdo dir="ltr">${esc(CFG.phone||'')}</bdo></div>
+      <div>📍 ${esc(CFG.address||'')}</div>
+      ${m?`<div><a href="${m.link}" target="_blank" rel="noopener" style="color:var(--ac)">الاتجاهات في خرائط Google</a></div>`:''}
+    </div>${socialRow()}`;}
+  if(k==='faq')return String(CFG.faqText||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const[q,a]=l.split('|');return `<div style="padding:9px 0;border-bottom:1px solid var(--ln)"><div style="font-size:13px;font-weight:700;color:var(--ac)">${esc((q||'').trim())}</div><div style="font-size:12.5px;opacity:.8;line-height:2;margin-top:4px">${esc((a||'').trim())}</div></div>`;}).join('');
+  if(k==='privacy')return paras(CFG.privacyText);
+  if(k==='returns')return paras(CFG.returnsText);
+  const xp=(CFG.pagesExtra||[])[parseInt(String(k).replace('xp',''))||0];
+  return xp?paras(xp.body):'';
+}
+window.openPage=(k,title)=>{
+  const old=document.querySelector('.pg-lb');if(old)old.remove();
+  const lb=document.createElement('div');lb.className='pg-lb';
+  lb.style.cssText='position:fixed;inset:0;z-index:95;background:rgba(8,6,10,.65);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px';
+  lb.innerHTML=`<div style="width:100%;max-width:560px;max-height:80vh;overflow-y:auto;background:var(--card);border:1px solid var(--ln);border-radius:var(--rad,16px);padding:20px 22px;text-align:right">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:16px;font-weight:800;color:var(--ac)">${esc(title)}</div>
+      <button class="pgx" aria-label="إغلاق" style="background:none;border:1px solid var(--ln);border-radius:50%;width:30px;height:30px;color:inherit;cursor:pointer">✕</button></div>
+    ${pageBody(k)||'<div style="font-size:12.5px;opacity:.6">لا محتوى بعد.</div>'}
+  </div>`;
+  lb.addEventListener('click',e=>{if(e.target===lb)lb.remove();});
+  lb.querySelector('.pgx').onclick=()=>lb.remove();
+  document.body.appendChild(lb);
+};
+function footerPages(){
+  const links=[...STOREPAGES.filter(([k])=>pgEnabled(k)).map(([k,lb])=>[k,lb]),
+    ...(CFG.pagesExtra||[]).map((p,i)=>p&&p.on?['xp'+i,p.t]:null).filter(Boolean)];
+  if(!links.length)return '';
+  return `<div class="fpages" style="display:flex;gap:7px 16px;flex-wrap:wrap;justify-content:center;margin-top:14px">
+    ${links.map(([k,lb])=>`<button class="fpg" onclick="openPage('${k}','${String(lb).replace(/'/g,"\\'")}')" style="background:none;border:none;color:inherit;opacity:.75;font-family:inherit;font-size:11.5px;cursor:pointer;padding:2px 0;border-bottom:1px dashed transparent" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.75">${lb}</button>`).join('')}
+  </div>`;
+}
+/* Footer — تذييل المتجر: الاسم والتواصل والسوشل، تديره المالكة من «الواجهة» */
+function footerSec(){
+  if(CFG.footerOn===false)return '';
+  return `<div class="foot">
+    <div style="font-size:15.5px;font-weight:800">${esc(CFG.title)}</div>
+    <div style="font-size:11.5px;opacity:.65;margin-top:6px">${esc(CFG.address||'')} · <bdo dir="ltr">${esc(CFG.phone||'')}</bdo></div>
+    ${CFG.footerNote?`<div style="font-size:11.5px;opacity:.8;margin-top:7px">${esc(CFG.footerNote)}</div>`:''}
+    ${socialRow()}
+    ${footerPages()}
+    <div style="font-size:10.5px;opacity:.45;margin-top:12px">© ${esc(CFG.title)} — مدعوم من <b style="letter-spacing:2px">LUMA</b></div>
+  </div>`;
+}
+/* الخدمات — القسم الأساسي: القائمة وزر المتابعة للحجز */
+function servicesSec(){
+  const hideC=new Set(CFG.hideCats||[]);
+  const SVMETA=load('luma_svc_meta',{})||{};
+  return `<h1 style="font-size:18px">اختاري خدمتك <span style="font-size:11px;opacity:.55;font-weight:400">— تقدرين تختارين أكثر من خدمة</span></h1>`+CATS.filter(([k])=>!hideC.has(k)).map(([k,ar])=>{
+    const list=SERVICES.filter(x=>{const m=SVMETA[x.n]||{};return x.cat===k&&!m.off&&!m.hide;});if(!list.length)return'';
+    return `<div class="cat">${ar}</div><div class="svc-wrap">`+list.map(x=>{
+      const im=(load('luma_svc_img')||{})[x.n];
+      return `<button class="svc ${svcs.includes(x.id)?'sel':''}" onclick="pickSvc(${x.id})">
+      <span style="display:flex;align-items:center;gap:12px">${im?`<img src="${im}" alt="" style="width:46px;height:46px;border-radius:10px;object-fit:cover;border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);flex-shrink:0"/>`:''}<span>${FEAT[x.n]?`<span class="feat"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/></svg> ${esc(FEAT[x.n])}</span>`:''}<span class="n">${x.n}</span><div class="d">${x.d} دقيقة${(SVMETA[x.n]||{}).desc?' · '+esc(SVMETA[x.n].desc):''}</div></span></span>
+      <span style="display:flex;align-items:center;gap:10px"><span class="p">${x.p} ر.س</span><span class="tick">${svcs.includes(x.id)?'✓':''}</span></span></button>`;}).join('')+`</div>`;
+  }).join('')
+  +(selSvcs().length?`<button class="btn" onclick="go(2)">متابعة — ${selSvcs().length>1?selSvcs().length+' خدمات':'خدمة واحدة'} · ${selTotal()} ر.س · ${selDur()} دقيقة</button>`:'');
+}
 function storeSection(){
   const hide=new Set(CFG.hideCats||[]);
   const items=SHOP.filter(p=>!hide.has(p.c));
@@ -473,16 +633,9 @@ function render(){
   }
   let s='';
   if(step===1){
-    s=bannersStrip()+gallery()+`<h1 style="font-size:18px">اختاري خدمتك <span style="font-size:11px;opacity:.55;font-weight:400">— تقدرين تختارين أكثر من خدمة</span></h1>`+CATS.map(([k,ar])=>{
-      const list=SERVICES.filter(x=>x.cat===k);if(!list.length)return'';
-      return `<div class="cat">${ar}</div>`+list.map(x=>{
-        const im=(load('luma_svc_img')||{})[x.n];
-        return `<button class="svc ${svcs.includes(x.id)?'sel':''}" onclick="pickSvc(${x.id})">
-        <span style="display:flex;align-items:center;gap:12px">${im?`<img src="${im}" alt="" style="width:46px;height:46px;border-radius:10px;object-fit:cover;border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);flex-shrink:0"/>`:''}<span>${FEAT[x.n]?`<span class="feat"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/></svg> ${esc(FEAT[x.n])}</span>`:''}<span class="n">${x.n}</span><div class="d">${x.d} دقيقة</div></span></span>
-        <span style="display:flex;align-items:center;gap:10px"><span class="p">${x.p} ر.س</span><span class="tick">${svcs.includes(x.id)?'✓':''}</span></span></button>`;}).join('');
-    }).join('')
-    +(selSvcs().length?`<button class="btn" onclick="go(2)">متابعة — ${selSvcs().length>1?selSvcs().length+' خدمات':'خدمة واحدة'} · ${selTotal()} ر.س · ${selDur()} دقيقة</button>`:'')
-    +storeSection()+mapCard()+policyBox();
+    /* الصفحة الرئيسية تُبنى من الأقسام المفعّلة بترتيب المالكة — لكل صالون متجر مختلف */
+    const SECS={banner:bannersStrip,offers:offersSec,gallery:gallery,services:servicesSec,products:storeSection,reviews:reviewsSec,team:teamSec,insta:instaSec};
+    s=layoutOf().filter(x=>x.on).map(x=>(SECS[x.k]||(()=>''))()).join('')+mapCard()+policyBox()+footerSec();
   }
   if(step===2){
     s=back('اختاري تاريخ الزيارة',1)+`<div class="days">`+days.map((d,i)=>{
