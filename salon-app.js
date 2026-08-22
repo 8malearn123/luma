@@ -16,10 +16,11 @@ const CLIENTS_BASE_TOTAL=312-6; /* the sample table shows 6 of the base 312 */
 
 SCREENS.clients=()=>{
   const C=CLIENTS;
+  const TL=tiersSorted();
   const total=CLIENTS_BASE_TOTAL+CLIENTS.length;
   return `
-  <style>.ctab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.cth,.ctr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 40px;gap:12px;align-items:center;padding:14px 20px}.cth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.ctr{border-bottom:1px solid var(--line-soft)}.ctr:last-child{border-bottom:none}.ctr:hover{background:var(--surface2)}.cnm{display:flex;align-items:center;gap:11px}.cnm .av{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px}.cc{font-size:13px;color:var(--cream)}.cc .num{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr}@media(max-width:1080px){.cth{display:none}.ctr{grid-template-columns:1fr auto}.ctr .hide{display:none}}</style>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="LOY.settings()">★ برنامج الولاء</button><button class="btn btn-gold" onclick="SALON.addClient()">+ عميلة جديدة</button></div></div>
+  <style>.ctab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.cth,.ctr{display:grid;grid-template-columns:2fr 1.2fr 1fr 1.2fr 1fr 40px;gap:12px;align-items:center;padding:14px 20px}.cth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.ctr{border-bottom:1px solid var(--line-soft)}.ctr:last-child{border-bottom:none}.ctr:hover{background:var(--surface2)}.cnm{display:flex;align-items:center;gap:11px}.cnm .av{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px}.cc{font-size:13px;color:var(--cream)}.cc .num{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr}@media(max-width:1080px){.cth{display:none}.ctr{grid-template-columns:1fr auto}.ctr .hide{display:none}}</style>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="TIERS.settings()">◈ فئات العملاء</button><button class="btn btn-ghost" onclick="LOY.settings()">★ برنامج الولاء</button><button class="btn btn-gold" onclick="SALON.addClient()">+ عميلة جديدة</button></div></div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div><div class="delta">▲ 8</div></div><div class="val">${total}</div><div class="k">إجمالي العملاء</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">68<span class="u">%</span></div><div class="k">عميلات متكررات</div></div>
@@ -37,8 +38,31 @@ SCREENS.clients=()=>{
       <button class="btn btn-gold" style="padding:12px 26px" onclick="SALON.regClient()">تسجيل</button>
     </div>
   </div>
-  <div class="ctab"><div class="cth"><span>العميلة</span><span>الزيارات</span><span>الإنفاق</span><span>آخر زيارة</span><span>الموظفة المفضّلة</span><span></span></div>
-  ${C.map(c=>`<div class="ctr"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span> <button class="badge gold loypts" onclick="LOY.redeem('${c.n.replace(/'/g,"\\'")}')" style="cursor:pointer;border:none;margin-top:3px" title="استبدال نقاط الولاء">★ ${loyPts(c.n).toLocaleString('en')}</button>${c.phone?` <span style="font-size:11px;color:var(--muted);direction:ltr;display:inline-block;margin-right:6px">${c.phone}</span>`:''}</div></div><div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${c.sp}</span> ر.س</div><div class="cc hide">${c.last}</div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`).join('')}
+  <div class="sec-label">فئات العملاء <span class="ln"></span><span style="font-size:11px;color:var(--muted)">الفئة تُحتسب تلقائياً من الإنفاق السنوي — اضغطي الفئة لعرض مميزاتها وعميلاتها</span></div>
+  <div style="display:grid;grid-template-columns:repeat(${Math.min(4,TL.length)},1fr);gap:14px;margin-bottom:20px">
+    ${TL.map(t=>{const n=tierClients(t.id).length;
+      return `<div class="card" style="cursor:pointer;padding:15px 17px" onclick="TIERS.view('${t.id}')">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span class="badge ${t.color||'soft'}" style="font-size:12px">${t.name}</span>
+          <span class="num" style="font-size:21px;color:var(--white)">${n}</span></div>
+        <div style="font-size:11.5px;color:var(--gold-pale);margin-top:8px">من <span class="num">${(t.min||0).toLocaleString('en')}</span> ر.س سنوياً${t.discount?` · خصم ${t.discount}٪`:''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.7">${(t.perks||[]).slice(0,2).map(p=>'✦ '+p).join('<br/>')||'بلا مميزات محدَّدة'}${(t.perks||[]).length>2?`<br/><span style="color:var(--gold-pale)">+${(t.perks||[]).length-2} مميزة</span>`:''}</div>
+      </div>`;}).join('')}
+  </div>
+  <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+    <div data-tierbar style="display:flex;gap:8px;flex-wrap:wrap;flex:1">
+      <button data-tid="" class="on" onclick="TIERS.pick('')" style="font-family:inherit;font-size:12.5px;padding:7px 15px;border-radius:30px;cursor:pointer;border:1px solid transparent;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217">كل العميلات</button>
+      ${TL.map(t=>`<button data-tid="${t.id}" onclick="TIERS.pick('${t.id}')" style="font-family:inherit;font-size:12.5px;padding:7px 15px;border-radius:30px;cursor:pointer;border:1px solid var(--line);background:var(--surface3);color:var(--cream)">${t.name} · ${tierClients(t.id).length}</button>`).join('')}
+    </div>
+    <input id="cliSearch" oninput="TIERS.apply()" placeholder="بحث بالاسم أو الجوال…" style="min-width:210px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 13px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
+    <span style="font-size:12px;color:var(--muted)">المعروض: <b id="cliCount" style="color:var(--gold-light)">${C.length}</b></span>
+  </div>
+  <div class="ctab"><div class="cth"><span>العميلة</span><span>الفئة</span><span>الزيارات</span><span>الإنفاق السنوي</span><span>الموظفة المفضّلة</span><span></span></div>
+  ${C.map(c=>{const t=tierOf(c)||{},nx=tierNext(c);
+    return `<div class="ctr" data-tier="${t.id||''}" data-find="${(c.n+' '+(c.phone||'')).replace(/"/g,'')}"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span> <button class="badge gold loypts" onclick="LOY.redeem('${c.n.replace(/'/g,"\\'")}')" style="cursor:pointer;border:none;margin-top:3px" title="استبدال نقاط الولاء">★ ${loyPts(c.n).toLocaleString('en')}</button>${c.phone?` <span style="font-size:11px;color:var(--muted);direction:ltr;display:inline-block;margin-right:6px">${c.phone}</span>`:''}</div></div>
+    <div class="cc"><button class="badge ${t.color||'soft'}" onclick="TIERS.view('${t.id||''}')" style="cursor:pointer;font-size:11.5px" title="${(t.perks||[]).join(' · ')||'بلا مميزات'}">${t.name||'—'}${t.discount?` · ${t.discount}٪`:''}</button>${nx?`<div style="font-size:10px;color:var(--muted);margin-top:4px">تبقّى <span class="num">${nx.gap.toLocaleString('en')}</span> ر.س لـ«${nx.tier.name}»</div>`:''}</div>
+    <div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${clientYearSpend(c).toLocaleString('en')}</span> ر.س<div style="font-size:10px;color:var(--muted)">${c.last}</div></div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`;}).join('')}
+  <div id="cliEmpty" style="display:none;padding:26px;text-align:center;color:var(--muted);font-size:13px">لا عميلات تطابق الفلترة الحالية.</div>
   </div>`;
 };
 

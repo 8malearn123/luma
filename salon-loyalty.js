@@ -106,3 +106,125 @@ const LOY={
     }});
   },
 };
+
+/* ══════════ فئات العملاء — حد إنفاق سنوي · مسمّى · مميزات ══════════
+   الفئة تُشتق تلقائياً من إنفاق العميلة السنوي، والمسميات والحدود والمميزات
+   كلها من إعداد صاحبة الصالون، وتنعكس على جدول العملاء والفلترة. */
+const TIER_KEY='luma_client_tiers';
+const TIER_DEFAULT=[
+  {id:'t1',name:'عميلة جديدة',min:0,    color:'soft', discount:0,  perks:['ترحيب بأول زيارة']},
+  {id:'t2',name:'فضية',       min:3000, color:'green',discount:5,  perks:['خصم ٥٪ على الخدمات','أولوية في قائمة الانتظار']},
+  {id:'t3',name:'ذهبية',      min:6000, color:'gold', discount:10, perks:['خصم ١٠٪ على الخدمات','هدية عيد الميلاد','حجز مؤكد في أوقات الذروة']},
+  {id:'t4',name:'ماسية',      min:12000,color:'gold', discount:15, perks:['خصم ١٥٪ على الخدمات','جلسة عناية مجانية كل ٦ أشهر','مديرة علاقات خاصة']},
+];
+const tiersAll=()=>{const l=LumaStore.get(TIER_KEY,null);return (Array.isArray(l)&&l.length)?l:TIER_DEFAULT;};
+const tiersSorted=()=>tiersAll().slice().sort((a,b)=>(a.min||0)-(b.min||0));
+const saveTiers=l=>LumaStore.set(TIER_KEY,l);
+const spNum=v=>parseFloat(String(v==null?0:v).replace(/[^\d.]/g,''))||0;
+/* الإنفاق السنوي المعتمد في احتساب الفئة */
+const clientYearSpend=c=>spNum(c.ysp!=null?c.ysp:c.sp);
+/* فئة العميلة: أعلى فئة تجاوزت حدّها السنوي */
+function tierOf(c){
+  const s=clientYearSpend(c);let t=null;
+  tiersSorted().forEach(x=>{if(s>=(x.min||0))t=x;});
+  return t||tiersSorted()[0]||null;
+}
+/* الفئة التالية والمتبقّي للوصول إليها */
+function tierNext(c){
+  const s=clientYearSpend(c);
+  const nx=tiersSorted().find(x=>(x.min||0)>s);
+  return nx?{tier:nx,gap:Math.max(0,(nx.min||0)-s)}:null;
+}
+const tierClients=id=>CLIENTS.filter(c=>(tierOf(c)||{}).id===id);
+
+const TIERS={
+  /* إعداد الفئات: المسمّى والحد السنوي والخصم والمميزات */
+  settings(){
+    const rowHtml=(t,i)=>`
+      <div data-row="${i}" style="border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--surface2)">
+        <div class="lux-two">
+          <div class="lux-f"><label>مسمّى الفئة</label><input data-f="name" value="${(t.name||'').replace(/"/g,'&quot;')}"/></div>
+          <div class="lux-f"><label>حد الإنفاق السنوي (ر.س)</label><input data-f="min" type="number" min="0" dir="ltr" style="text-align:right" value="${t.min||0}"/></div>
+        </div>
+        <div class="lux-two">
+          <div class="lux-f"><label>خصم الفئة (٪)</label><input data-f="discount" type="number" min="0" max="100" dir="ltr" style="text-align:right" value="${t.discount||0}"/></div>
+          <div class="lux-f"><label>لون الشارة</label><select data-f="color">
+            ${[['gold','ذهبي'],['green','أخضر'],['soft','رمادي']].map(([v,n])=>`<option value="${v}" ${t.color===v?'selected':''}>${n}</option>`).join('')}</select></div>
+        </div>
+        <div class="lux-f"><label>مميزات الفئة (افصلي بينها بفاصلة)</label>
+          <input data-f="perks" value="${(t.perks||[]).join('، ').replace(/"/g,'&quot;')}" placeholder="خصم ١٠٪، هدية عيد الميلاد"/></div>
+        <button class="lux-btn lux-ghost" data-del="${i}" style="padding:7px 14px;font-size:12px;color:#e29aa6;border-color:#7c4a55">حذف الفئة</button>
+      </div>`;
+    const list=tiersSorted();
+    LUX.modal('فئات العملاء',`
+      <div class="lux-lead">الفئة تُحتسب تلقائياً من إنفاق العميلة خلال السنة — حدّدي المسمّى والحد والمميزات، وتظهر على كل عميلة في جدول العملاء.</div>
+      <div data-rows>${list.map(rowHtml).join('')}</div>
+      <button class="lux-btn lux-ghost" data-add style="width:100%;margin-bottom:10px">+ إضافة فئة</button>
+      <button class="lux-btn lux-gold" data-ok style="width:100%">حفظ الفئات</button>`,{onMount(ov,close){
+      const rows=ov.querySelector('[data-rows]');
+      const bind=()=>ov.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+        if(rows.children.length<=1){LUX.toast('لا بد من فئة واحدة على الأقل','err');return;}
+        b.closest('[data-row]').remove();});
+      bind();
+      ov.querySelector('[data-add]').onclick=()=>{
+        const d=document.createElement('div');
+        d.innerHTML=rowHtml({name:'فئة جديدة',min:0,color:'soft',discount:0,perks:[]},rows.children.length);
+        rows.appendChild(d.firstElementChild);bind();};
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const out=[...rows.querySelectorAll('[data-row]')].map((r,i)=>{
+          const g=f=>r.querySelector('[data-f='+f+']');
+          return {id:'t'+(i+1),name:g('name').value.trim()||('فئة '+(i+1)),
+            min:Math.max(0,parseFloat(g('min').value)||0),
+            discount:Math.min(100,Math.max(0,parseFloat(g('discount').value)||0)),
+            color:g('color').value,
+            perks:g('perks').value.split(/[،,]/).map(x=>x.trim()).filter(Boolean)};
+        });
+        const mins=out.map(t=>t.min);
+        if(new Set(mins).size!==mins.length){LUX.toast('لا يمكن تكرار حد الإنفاق بين فئتين','err');return;}
+        saveTiers(out);close();SALON.go('clients');LUX.toast('حُفظت '+out.length+' فئات ✓','ok');
+      };
+    }});
+  },
+  /* بطاقة الفئة ومميزاتها */
+  view(id){
+    const t=tiersAll().find(x=>x.id===id);if(!t)return;
+    const cl=tierClients(id);
+    LUX.modal('فئة «'+t.name+'»',`
+      <div class="lux-row"><span class="k">حد الإنفاق السنوي</span><span class="v">${(t.min||0).toLocaleString('en')} ر.س فأكثر</span></div>
+      <div class="lux-row"><span class="k">خصم الفئة</span><span class="v">${t.discount||0}٪</span></div>
+      <div class="lux-row"><span class="k">عدد العميلات</span><span class="v">${cl.length}</span></div>
+      <div class="lux-lead" style="margin-top:12px">المميزات</div>
+      ${(t.perks||[]).length?(t.perks||[]).map(p=>`<div class="lux-row"><span class="k">✦</span><span class="v">${p}</span></div>`).join(''):'<div class="lux-lead">لم تُحدَّد مميزات لهذه الفئة بعد.</div>'}
+      <div class="lux-lead" style="margin-top:12px">العميلات في هذه الفئة</div>
+      ${cl.length?cl.map(c=>`<div class="lux-row"><span class="k">${c.n}</span><span class="v">${clientYearSpend(c).toLocaleString('en')} ر.س</span></div>`).join(''):'<div class="lux-lead">لا عميلات في هذه الفئة بعد.</div>'}
+      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:14px">تعديل الفئات</button>`,{onMount(ov,close){
+      ov.querySelector('[data-ok]').onclick=()=>{close();TIERS.settings();};
+    }});
+  },
+  /* فلترة جدول العملاء: فئة + بحث بالاسم أو الجوال */
+  pick(id){
+    const bar=document.querySelector('[data-tierbar]');if(!bar)return;
+    bar.querySelectorAll('[data-tid]').forEach(b=>{
+      const on=b.dataset.tid===id;
+      b.classList.toggle('on',on);
+      b.style.background=on?'linear-gradient(120deg,#dbbd81,#9c8047)':'var(--surface3)';
+      b.style.color=on?'#131217':'var(--cream)';
+      b.style.borderColor=on?'transparent':'var(--line)';
+    });
+    TIERS.apply();
+  },
+  apply(){
+    const bar=document.querySelector('[data-tierbar]');if(!bar)return;
+    const id=(bar.querySelector('[data-tid].on')||{dataset:{tid:''}}).dataset.tid;
+    const q=(document.querySelector('#cliSearch')||{value:''}).value.trim().toLowerCase();
+    let shown=0;
+    document.querySelectorAll('.ctab .ctr').forEach(r=>{
+      const okT=!id||r.dataset.tier===id;
+      const okQ=!q||(r.dataset.find||'').toLowerCase().includes(q);
+      const ok=okT&&okQ;r.style.display=ok?'':'none';if(ok)shown++;
+    });
+    const n=document.querySelector('#cliCount');if(n)n.textContent=shown;
+    const e=document.querySelector('#cliEmpty');if(e)e.style.display=shown?'none':'';
+  },
+};
+window.TIERS=TIERS;
