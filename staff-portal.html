@@ -118,7 +118,9 @@ const wkDate=i=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 /* نفس بذرة داشبورد الصالون — أمر تجريبي بانتظار موافقة سارة */
 const OT_SEED=[{id:1,staff:'sara',date:wkDate(4),from:'20:00',to:'22:30',mins:150,
-  reason:'حفل تخرّج — ٦ عميلات إضافيات',by:'مديرة الصالون',at:Date.now(),status:'pending'}];
+  reason:'حفل تخرّج — ٦ عميلات إضافيات',by:'مديرة الصالون',at:Date.now(),status:'pending',
+  comp:'hours',compMins:150,compDate:''}];
+const COMP_AR={pay:'أجر إضافي نقدي',hours:'ساعات راحة مقابلة',days:'يوم دوام كامل'};
 const otAll=()=>S.get('luma_hr_ot',OT_SEED);
 const otMine=()=>otAll().filter(o=>o.staff===SID&&o.status!=='cancelled');
 const DAYS_AR=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
@@ -388,7 +390,7 @@ function otCard(){
   if(!mine.length)return '';
   const ST={pending:['بانتظار ردّك',''],accepted:['وافقتِ ✓','g'],declined:['اعتذرتِ','']};
   const rows=mine.map(o=>{
-    const d=new Date(o.date+'T12:00:00').getDay();
+    const d=new Date(o.date+'T12:00:00').getDay(), cm=o.comp||'pay';
     const [lb,cl]=ST[o.status]||['—',''];
     return `<div style="border:1px solid ${o.status==='pending'?'var(--acD)':'var(--line)'};border-radius:14px;padding:12px;margin-top:10px;${o.status==='declined'?'opacity:.6':''}">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
@@ -397,16 +399,27 @@ function otCard(){
       <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap">
         <div><div style="font-size:10.5px;color:var(--mut)">الوقت</div><b style="font-size:14px" dir="ltr">${o.from} – ${o.to}</b></div>
         <div><div style="font-size:10.5px;color:var(--mut)">الساعات</div><b style="font-size:14px;color:var(--ac)">${dur(o.mins)}</b></div>
+        <div><div style="font-size:10.5px;color:var(--mut)">التعويض</div><b style="font-size:13px;color:var(--ac)">${
+          cm==='pay'?'أجر إضافي':cm==='hours'?dur(o.compMins||o.mins)+' راحة':(o.compDays||1)+' يوم دوام'}</b></div>
       </div>
+      ${cm!=='pay'?`<div style="font-size:11.5px;color:${o.compDate?'var(--tx)':'var(--mut)'};margin-top:8px">
+        يوم التعويض: ${o.compDate?`<b>${DAYS_AR[new Date(o.compDate+'T12:00:00').getDay()]}</b> <span dir="ltr">${o.compDate}</span>`:'لم تحدّده الإدارة — تقدرين تقترحين يوماً'}</div>`:''}
+      ${o.proposedDate?`<div style="font-size:11.5px;color:var(--ac);margin-top:6px">اقترحتِ: <b dir="ltr">${o.proposedDate}</b> — بانتظار اعتماد الإدارة</div>`:''}
       ${o.reason?`<div style="font-size:11.5px;color:var(--mut);margin-top:8px">السبب: ${esc(o.reason)}</div>`:''}
       ${o.reply?`<div style="font-size:11.5px;color:var(--red);margin-top:6px">ردّك: ${esc(o.reply)}</div>`:''}
-      ${o.status==='pending'?`<div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn" style="padding:10px" onclick="otReply(${o.id},'accepted')">موافقة</button>
-        <button class="btn ghost" style="padding:10px" onclick="otReply(${o.id},'declined')">اعتذار</button></div>`:''}
+      ${o.status==='pending'?`<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn" style="padding:10px;flex:1" onclick="otReply(${o.id},'accepted')">موافقة</button>
+        <button class="btn ghost" style="padding:10px;flex:1" onclick="otReply(${o.id},'declined')">اعتذار</button></div>
+        ${cm!=='pay'?`<button class="btn ghost" style="padding:10px;margin-top:8px" onclick="otPropose(${o.id})">اقتراح يوم تعويض آخر</button>`:''}`:''}
     </div>`;}).join('');
   const wait=mine.filter(o=>o.status==='pending').length;
+  const acc=mine.filter(o=>o.status==='accepted'&&(o.comp||'pay')!=='pay');
+  const balH=acc.filter(o=>o.comp==='hours').reduce((t,o)=>t+(o.compMins||o.mins||0),0);
+  const balD=acc.filter(o=>o.comp==='days').reduce((t,o)=>t+(o.compDays||1),0);
   return `<div class="card"><b style="font-size:13px">أوامر الأوفر تايم</b>
-    <div style="font-size:11.5px;color:var(--mut);margin-top:3px">${wait?wait+' أمر بانتظار ردّك — الساعات تُحتسب في راتبك بعد موافقتك':'كل الأوامر تم الردّ عليها'}</div>
+    <div style="font-size:11.5px;color:var(--mut);margin-top:3px">${wait?wait+' أمر بانتظار ردّك — التعويض يبدأ بعد موافقتك':'كل الأوامر تم الردّ عليها'}</div>
+    ${balH||balD?`<div class="row" style="margin-top:8px"><span class="k">رصيد التعويض المستحق لك</span>
+      <b style="color:var(--green)">${[balH?dur(balH)+' راحة':'',balD?balD+' يوم دوام':''].filter(Boolean).join(' · ')}</b></div>`:''}
     ${rows}</div>`;
 }
 window.otReply=(id,st)=>{
@@ -420,6 +433,16 @@ window.otReply=(id,st)=>{
     window.LumaEvents&&LumaEvents.push('hr',(st==='accepted'?'وافقت ':'اعتذرت ')+who+' عن أمر أوفر تايم '+dur(o.mins||0)+' يوم '+(o.date||''),'salon.html#hr');}catch(e){}
   toast(st==='accepted'?`وافقتِ على الأوفر تايم — ${dur(o.mins||0)} ✓`:'أُبلغت الإدارة باعتذارك');
   render();
+};
+window.otPropose=id=>{
+  const o=otAll().find(x=>x.id===id);if(!o)return;
+  const v=(prompt('اقترحي يوم التعويض بصيغة YYYY-MM-DD:',o.compDate||'')||'').trim();
+  if(!v)return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){toast('صيغة التاريخ غير صحيحة');return;}
+  S.update('luma_hr_ot',l=>{const x=l.find(y=>y.id===id);if(x&&x.status==='pending')x.proposedDate=v;return l;},otAll());
+  try{const who=(allStaff().find(s=>s.id===SID)||{}).n||'موظفة';
+    window.LumaEvents&&LumaEvents.push('hr','اقترحت '+who+' يوم تعويض '+v+' عن أمر الأوفر تايم '+(o.date||''),'salon.html#hr');}catch(e){}
+  toast('أُرسل اقتراحك للإدارة ✓');render();
 };
 window.clockIn=()=>{
   const wd=new Date().getDay(),sh=shiftOf(wd),now=hhmm(new Date());

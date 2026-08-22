@@ -93,7 +93,7 @@ function hrOtSection(){
   const wait=list.filter(o=>o.status==='pending').length;
   const cards=list.map(o=>{
     const [lb,cl]=HR_OT_ST[o.status]||['—','soft'];
-    const d=new Date(o.date+'T12:00:00').getDay();
+    const d=new Date(o.date+'T12:00:00').getDay(), cm=hrCompOf(o);
     const L=hrLedger(o.staff), pay=Math.round(L.hourly*L.p.otMul*(o.mins||0)/60);
     return `<div class="card" style="margin-bottom:10px;${o.status==='cancelled'||o.status==='declined'?'opacity:.6':''}">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -106,19 +106,34 @@ function hrOtSection(){
           </div>
           <div style="font-size:12px;color:var(--gold-pale);margin-top:3px">
             ${HR_DAYS[d]} <span dir="ltr">${o.date}</span> · <span dir="ltr">${o.from} – ${o.to}</span>
-            · قيمة تقديرية <span class="num">${pay.toLocaleString('en')}</span> ر.س</div>
+            · ${cm==='pay'?`أجر إضافي <span class="num">${pay.toLocaleString('en')}</span> ر.س`
+               :cm==='hours'?`تعويض <b style="color:var(--gold-light)">${hrDur(o.compMins||o.mins)}</b> راحة`
+               :`تعويض <b style="color:var(--gold-light)">${o.compDays||1} يوم دوام</b>`}</div>
+          ${cm!=='pay'?`<div style="font-size:11.5px;margin-top:3px;color:${o.compDate?'var(--cream)':'var(--muted)'}">
+            يوم التعويض: ${o.compDate?`<b>${HR_DAYS[new Date(o.compDate+'T12:00:00').getDay()]}</b> <span dir="ltr">${o.compDate}</span>`:'لم يُحدَّد بعد'}</div>`:''}
+          ${o.proposedDate?`<div style="font-size:11.5px;color:var(--gold-light);margin-top:3px">اقترحت الموظفة يوم تعويض آخر:
+            <b>${HR_DAYS[new Date(o.proposedDate+'T12:00:00').getDay()]}</b> <span dir="ltr">${o.proposedDate}</span></div>`:''}
           ${o.reason?`<div style="font-size:11.5px;color:var(--muted);margin-top:2px">«${o.reason}»</div>`:''}
           ${o.reply?`<div style="font-size:11.5px;color:#e29aa6;margin-top:3px">ردّ الموظفة: «${o.reply}»</div>`:''}
           ${o.status==='accepted'?(()=>{const a=hrAttOf(o.staff,d);
+            if(cm!=='pay')return `<div style="font-size:11.5px;color:#9fce99;margin-top:3px">تُعوَّض وقتاً — لا تُضاف نقداً إلى راتب الشهر.</div>`;
             return a&&a.ot?`<div style="font-size:11.5px;color:#9fce99;margin-top:3px">سُجّل فعلياً: ${hrDur(a.ot)} — دخلت حاسبة الرواتب ✓</div>`
               :`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">لم يُسجَّل انصراف ذلك اليوم بعد — يُحتسب في الراتب فور تسجيله.</div>`;})():''}
           <div style="font-size:10.5px;color:var(--muted-deep);margin-top:3px">صادر من ${o.by||'الإدارة'}${o.repliedAt?' · ردّت '+LumaEvents.ago(o.repliedAt):''}</div>
         </div>
+        ${o.proposedDate&&o.status==='pending'?`<button class="btn btn-gold" style="padding:8px 16px" onclick="HR.acceptProposed(${o.id})">اعتماد اليوم المقترح</button>`:''}
         ${o.status==='pending'?`<button class="btn btn-ghost" style="padding:8px 16px;border-color:#7c4a55;color:#e29aa6" onclick="HR.cancelOT(${o.id})">إلغاء الأمر</button>`:''}
+        ${o.status==='accepted'&&cm!=='pay'&&!o.compDate?`<button class="btn btn-ghost" style="padding:8px 16px" onclick="HR.setCompDate(${o.id})">تحديد يوم التعويض</button>`:''}
       </div></div>`;}).join('');
+  const bal=STAFF.map(s=>({s,b:hrCompBalance(s.id)})).filter(x=>x.b.mins||x.b.days);
   return `
   <div class="sec-label" style="margin-top:26px">أوامر الأوفر تايم <span class="ln"></span>
     <span style="font-size:11px;color:var(--muted)">${wait?wait+' بانتظار موافقة الموظفات':'لا أوامر معلّقة'}</span></div>
+  ${bal.length?`<div class="card" style="margin-bottom:12px;display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+    <span style="font-size:12.5px;color:var(--gold-pale)">رصيد التعويض المستحق</span>
+    ${bal.map(x=>`<span style="font-size:12.5px;color:var(--white)">${x.s.n}:
+      <b style="color:var(--gold-light)">${[x.b.mins?hrDur(x.b.mins)+' راحة':'',x.b.days?x.b.days+' يوم دوام':''].filter(Boolean).join(' · ')}</b></span>`).join('')}
+  </div>`:''}
   ${cards||'<div class="card" style="text-align:center;color:var(--muted);font-size:12.5px">لا توجد أوامر أوفر تايم — أصدري أمراً من زر «+ أمر أوفر تايم».</div>'}`;
 }
 /* ملخّص أسبوعي لموظفة: مجدول · فعلي · تأخير · أوفر تايم · غياب */
@@ -160,7 +175,8 @@ const HR_OT_KEY='luma_hr_ot';
 let HR_OT=hrLoad(HR_OT_KEY,null);
 if(!HR_OT){
   HR_OT=[{id:1,staff:'sara',date:hrWeekDate(4),from:'20:00',to:'22:30',mins:150,
-          reason:'حفل تخرّج — ٦ عميلات إضافيات',by:'مديرة الصالون',at:Date.now(),status:'pending'}];
+          reason:'حفل تخرّج — ٦ عميلات إضافيات',by:'مديرة الصالون',at:Date.now(),status:'pending',
+          comp:'hours',compMins:150,compDate:''}];
   hrSave(HR_OT_KEY,HR_OT);
 }
 const HR_OT_ST={pending:['بانتظار موافقة الموظفة','gold'],accepted:['وافقت الموظفة','green'],
@@ -168,12 +184,30 @@ const HR_OT_ST={pending:['بانتظار موافقة الموظفة','gold'],ac
 const hrOtSave=()=>hrSave(HR_OT_KEY,HR_OT);
 /* أوامر يوم محدّد من الأسبوع الجاري لموظفة */
 const hrOtOn=(sid,d)=>HR_OT.filter(o=>o.staff===sid&&o.date===hrWeekDate(d)&&o.status!=='cancelled'&&o.status!=='declined');
+/* طرق التعويض عن ساعات الأوفر تايم */
+const HR_COMP={pay:'أجر إضافي نقدي',hours:'ساعات راحة مقابلة',days:'يوم دوام كامل'};
+const hrCompOf=o=>o.comp||'pay';
 /* دقائق الأوفر تايم المعتمدة (أوامر وافقت عليها الموظفة) هذا الشهر */
 function hrOtApproved(sid){
   const m=hrMonth();
   return HR_OT.filter(o=>o.staff===sid&&o.status==='accepted'&&String(o.date).slice(0,7)===m)
               .reduce((t,o)=>t+(o.mins||0),0);
 }
+/* دقائق أوفر تايم مُتفق على تعويضها وقتاً لا نقداً — تُستثنى من أجر الأوفر تايم */
+function hrCompMins(sid,month){
+  const m=month||hrMonth();
+  return HR_OT.filter(o=>o.staff===sid&&o.status==='accepted'&&hrCompOf(o)!=='pay'&&String(o.date).slice(0,7)===m)
+              .reduce((t,o)=>t+(o.mins||0),0);
+}
+/* رصيد التعويض المستحق للموظفة: ساعات راحة وأيام دوام */
+function hrCompBalance(sid){
+  const acc=HR_OT.filter(o=>o.staff===sid&&o.status==='accepted'&&hrCompOf(o)!=='pay');
+  return {mins:acc.filter(o=>hrCompOf(o)==='hours').reduce((t,o)=>t+(o.compMins||o.mins||0),0),
+          days:acc.filter(o=>hrCompOf(o)==='days').reduce((t,o)=>t+(o.compDays||1),0),
+          list:acc};
+}
+/* أيام التعويض الواقعة في يوم d من الأسبوع الجاري */
+const hrCompOn=(sid,d)=>HR_OT.filter(o=>o.staff===sid&&o.status==='accepted'&&hrCompOf(o)!=='pay'&&o.compDate===hrWeekDate(d));
 function hrOnLeaveToday(sid){
   const t=new Date().toISOString().slice(0,10);
   return HR_LEAVES.some(l=>l.staff===sid&&l.status==='approved'&&l.from<=t&&l.to>=t);
@@ -206,10 +240,12 @@ function hrLedger(sid){
     late+=a.late||0;otMin+=a.ot||0;worked+=a.worked||0;
   });
   const hourly=Math.round(p.base/(HR_MONTH_DAYS*HR_STD_H));
-  const otPay=Math.round(hourly*p.otMul*otMin/60);
+  const otComp=Math.min(otMin,hrCompMins(sid));   /* ساعات يُعوَّض عنها وقتاً لا نقداً */
+  const otPaid=Math.max(0,otMin-otComp);
+  const otPay=Math.round(hourly*p.otMul*otPaid/60);
   const lateDed=p.dedLate?Math.round(hourly*late/60):0;
   const absDed=p.dedLate?Math.round(hourly*HR_STD_H*abs):0;
-  return {p,svc,rate,svcComm,prod,prodComm,tips,adv,late,abs,otMin,worked,hourly,otPay,lateDed,absDed,
+  return {p,svc,rate,svcComm,prod,prodComm,tips,adv,late,abs,otMin,otComp,otPaid,worked,hourly,otPay,lateDed,absDed,
           net:p.base+svcComm+prodComm+tips+otPay-adv-lateDed-absDed};
 }
 
@@ -558,24 +594,52 @@ const HR={
         <div class="lux-f"><label>من الساعة</label><input type="time" name="from" value="20:00"/></div>
         <div class="lux-f"><label>إلى الساعة</label><input type="time" name="to" value="22:00"/></div>
       </div>
+      <div class="lux-f"><label>طريقة التعويض</label><select name="comp">
+        ${Object.entries(HR_COMP).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>
+      <div data-comp>
+        <div class="lux-two">
+          <div class="lux-f" data-hoursf><label>ساعات الراحة المستحقة</label><input type="number" name="compH" step="0.25" min="0" dir="ltr" style="text-align:right"/></div>
+          <div class="lux-f" data-daysf><label>عدد أيام الدوام المستحقة</label><input type="number" name="compD" step="1" min="1" value="1" dir="ltr" style="text-align:right"/></div>
+          <div class="lux-f"><label>يوم التعويض</label><input type="date" name="compDate"/></div>
+        </div>
+      </div>
       <div data-calc style="background:var(--surface3);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.9"></div>
       <div class="lux-f" style="margin-top:12px"><label>سبب الأوفر تايم</label><input name="reason" placeholder="مثال: حفل تخرّج — عميلات إضافيات"/></div>
       <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">إرسال الأمر للموظفة</button></div>`;
     LUX.modal('أمر أوفر تايم',body,{onMount(ov,close){
       const g=n=>ov.querySelector('[name='+n+']');
+      let touchedH=false;
+      g('compH').oninput=()=>{touchedH=true;};
       const calc=()=>{
         const st=g('staff').value, dt=g('date').value, d=dt?new Date(dt+'T12:00:00').getDay():0;
         const sh=hrShiftOf(st,d), mins=hrMin(g('to').value)-hrMin(g('from').value);
         const L=hrLedger(st), pay=Math.round(L.hourly*L.p.otMul*Math.max(0,mins)/60);
+        const comp=g('comp').value;
+        if(!touchedH)g('compH').value=(Math.max(0,mins)/60).toFixed(2).replace(/\.?0+$/,'')||'0';
+        ov.querySelector('[data-comp]').style.display=comp==='pay'?'none':'';
+        ov.querySelector('[data-hoursf]').style.display=comp==='hours'?'':'none';
+        ov.querySelector('[data-daysf]').style.display=comp==='days'?'':'none';
+        const cd=g('compDate').value, cdd=cd?new Date(cd+'T12:00:00').getDay():null;
+        const cdSh=cd?hrShiftOf(st,cdd):null;
         ov.querySelector('[data-calc]').innerHTML=
           `<div>اليوم: <b style="color:var(--white)">${dt?HR_DAYS[d]:'—'}</b> · وردية ذلك اليوم:
              <b dir="ltr" style="color:var(--gold-light)">${sh.off?'إجازة أسبوعية':sh.start+' – '+sh.end}</b></div>
            <div style="color:${mins>0?'#9fce99':'#e29aa6'}">مدة الأوفر تايم: <b>${mins>0?hrDur(mins):'حدّدي وقتاً صحيحاً'}</b></div>
-           ${mins>0?`<div>القيمة التقديرية: <b style="color:var(--gold-light)">${pay.toLocaleString('en')} ر.س</b>
-             <span style="color:var(--muted)">(${L.hourly} ر.س/س × ${L.p.otMul})</span></div>`:''}
+           ${mins>0?(comp==='pay'
+             ?`<div>التعويض: <b style="color:var(--gold-light)">${pay.toLocaleString('en')} ر.س</b>
+                <span style="color:var(--muted)">(${L.hourly} ر.س/س × ${L.p.otMul}) — تُضاف لراتب الشهر</span></div>`
+             :comp==='hours'
+             ?`<div>التعويض: <b style="color:var(--gold-light)">${hrDur(Math.round((parseFloat(g('compH').value)||0)*60))} راحة</b>
+                <span style="color:var(--muted)">— لا تُحتسب نقداً في الراتب</span></div>`
+             :`<div>التعويض: <b style="color:var(--gold-light)">${parseInt(g('compD').value)||1} يوم دوام</b>
+                <span style="color:var(--muted)">— لا يُحتسب نقداً في الراتب</span></div>`):''}
+           ${comp!=='pay'?(cd
+             ?`<div>يوم التعويض: <b style="color:var(--white)">${HR_DAYS[cdd]} <span dir="ltr">${cd}</span></b>
+                ${cdSh.off?'<span style="color:var(--muted)">— إجازتها الأسبوعية أصلاً، اختاري يوم دوام</span>':''}</div>`
+             :'<div style="color:var(--muted)">لم يُحدَّد يوم التعويض — تستطيع الموظفة اقتراح يوم عند الردّ.</div>'):''}
            ${!sh.off&&hrMin(g('from').value)<hrMin(sh.end)?'<div style="color:#e29aa6">تنبيه: وقت البداية يقع داخل الوردية الأساسية.</div>':''}`;
       };
-      ['staff','date','from','to'].forEach(n=>{g(n).onchange=calc;g(n).oninput=calc;});
+      ['staff','date','from','to','comp','compH','compD','compDate'].forEach(n=>{g(n).onchange=calc;g(n).oninput=calc;});
       calc();
       ov.querySelector('[data-c]').onclick=close;
       ov.querySelector('[data-ok]').onclick=()=>{
@@ -585,11 +649,40 @@ const HR={
         const dup=HR_OT.some(o=>o.staff===g('staff').value&&o.date===g('date').value&&['pending','accepted'].includes(o.status)
           &&hrMin(o.from)<mins+hrMin(g('from').value)&&hrMin(o.to)>hrMin(g('from').value));
         if(dup){LUX.toast('يوجد أمر أوفر تايم آخر يتقاطع مع هذا الوقت','err');return;}
+        const comp=g('comp').value;
+        if(comp==='days'&&g('compDate').value&&hrShiftOf(g('staff').value,new Date(g('compDate').value+'T12:00:00').getDay()).off){
+          LUX.toast('يوم التعويض المختار إجازتها الأسبوعية — اختاري يوم دوام','err');return;}
         HR_OT.unshift({id:Date.now(),staff:g('staff').value,date:g('date').value,from:g('from').value,to:g('to').value,
-          mins,reason:g('reason').value.trim(),by:'مديرة الصالون',at:Date.now(),status:'pending'});
+          mins,reason:g('reason').value.trim(),by:'مديرة الصالون',at:Date.now(),status:'pending',comp,
+          compMins:comp==='hours'?Math.round((parseFloat(g('compH').value)||0)*60):0,
+          compDays:comp==='days'?(parseInt(g('compD').value)||1):0,
+          compDate:comp==='pay'?'':g('compDate').value});
         hrOtSave();close();SALON.go('hr');
-        try{window.LumaEvents&&LumaEvents.push('hr','أمر أوفر تايم إلى '+hrStaffName(g('staff').value)+' — '+hrDur(mins)+' بانتظار موافقتها','salon.html#hr');}catch(e){}
+        try{window.LumaEvents&&LumaEvents.push('hr','أمر أوفر تايم إلى '+hrStaffName(g('staff').value)+' — '+hrDur(mins)+' ('+HR_COMP[comp]+') بانتظار موافقتها','salon.html#hr');}catch(e){}
         LUX.toast('أُرسل الأمر إلى '+hrStaffName(g('staff').value)+' — بانتظار موافقتها','ok');
+      };
+    }});
+  },
+  acceptProposed(id){
+    const o=HR_OT.find(x=>x.id===id);if(!o||!o.proposedDate)return;
+    LUX.confirm('اعتماد يوم التعويض الذي اقترحته '+hrStaffName(o.staff)+' ('+o.proposedDate+')؟',()=>{
+      o.compDate=o.proposedDate;o.proposedDate='';o.status='accepted';o.repliedAt=Date.now();
+      hrOtSave();SALON.go('hr');LUX.toast('اعتُمد يوم التعويض ✓','ok');
+    });
+  },
+  setCompDate(id){
+    const o=HR_OT.find(x=>x.id===id);if(!o)return;
+    LUX.modal('يوم التعويض — '+hrStaffName(o.staff),`
+      <div class="lux-lead">التعويض المستحق: <b style="color:var(--gold-light)">${hrCompOf(o)==='days'?(o.compDays||1)+' يوم دوام':hrDur(o.compMins||o.mins)+' راحة'}</b>
+        — عن أوفر تايم <span dir="ltr">${o.date}</span>.</div>
+      <div class="lux-f"><label>يوم التعويض</label><input type="date" name="cd" value="${o.compDate||''}"/></div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%">حفظ</button>`,{onMount(ov,close){
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const v=ov.querySelector('[name=cd]').value;
+        if(!v){LUX.toast('حدّدي اليوم','err');return;}
+        if(hrCompOf(o)==='days'&&hrShiftOf(o.staff,new Date(v+'T12:00:00').getDay()).off){
+          LUX.toast('اليوم المختار إجازتها الأسبوعية — اختاري يوم دوام','err');return;}
+        o.compDate=v;hrOtSave();close();SALON.go('hr');LUX.toast('حُدّد يوم التعويض ✓','ok');
       };
     }});
   },
@@ -842,6 +935,7 @@ SCREENS.hr=()=>{
                 ${att?`<div style="font-size:10px;margin-top:3px;color:${att.absent||att.late?'#e29aa6':'#9fce99'}">${att.absent?'غياب':(att.late?'تأخير '+att.late+' دقيقة':'')}</div>`:''}
                 ${att&&att.ot?`<div style="font-size:10px;color:#9fce99;margin-top:2px">أوفر تايم ${hrDur(att.ot)}</div>`:''}
                 ${hrOtOn(s.id,i).map(o=>`<div style="font-size:9.5px;margin-top:3px;color:${o.status==='accepted'?'#9fce99':'var(--gold-light)'}">${o.status==='accepted'?'✓':'●'} أمر ${hrDur(o.mins)} <span dir="ltr">${o.from}–${o.to}</span></div>`).join('')}
+                ${hrCompOn(s.id,i).map(o=>`<div style="font-size:9.5px;margin-top:3px;color:var(--gold-light)">⟲ تعويض ${hrCompOf(o)==='days'?(o.compDays||1)+' يوم':hrDur(o.compMins||o.mins)}</div>`).join('')}
                 </button></td>`;}).join('')}
             <td style="padding:8px;text-align:center;font-size:11px;line-height:1.7">
               <div style="color:var(--cream)">فعلي <b class="num" style="color:var(--white)">${(w.act/60).toFixed(1)}</b> / مجدول <span class="num">${(w.sched/60).toFixed(1)}</span> س</div>
@@ -867,7 +961,7 @@ SCREENS.hr=()=>{
       <td style="padding:11px;color:var(--gold-pale)" class="num">${L.svcComm.toLocaleString('en')} <span style="font-size:10px;color:${L.rate!==L.p.pct?'#9fce99':'var(--muted)'}">(${L.rate}٪${L.rate!==L.p.pct?' شريحة ▲':''})</span></td>
       <td style="padding:11px;color:var(--gold-pale)" class="num">${L.prodComm.toLocaleString('en')} <span style="font-size:10px;color:var(--muted)">(${L.p.prodPct}٪ من ${L.prod.toLocaleString('en')})</span></td>
       <td style="padding:11px;color:#9fce99" class="num">${L.tips.toLocaleString('en')}</td>
-      <td style="padding:11px;color:#9fce99" class="num">${L.otPay?'+'+L.otPay.toLocaleString('en'):'—'}<div style="font-size:10px;color:var(--muted)">${L.otMin?hrDur(L.otMin)+' × '+L.p.otMul:'لا يوجد'}</div></td>
+      <td style="padding:11px;color:#9fce99" class="num">${L.otPay?'+'+L.otPay.toLocaleString('en'):'—'}<div style="font-size:10px;color:var(--muted)">${L.otMin?hrDur(L.otPaid)+' × '+L.p.otMul:'لا يوجد'}</div>${L.otComp?`<div style="font-size:10px;color:var(--gold-pale)">${hrDur(L.otComp)} تُعوَّض وقتاً</div>`:''}</td>
       <td style="padding:11px;color:#e29aa6" class="num">−${L.adv.toLocaleString('en')}${closed?'':` <button class="btn btn-ghost" style="padding:3px 9px;font-size:10px" onclick="HR.addAdvance('${s.id}')">+ سلفة</button>`}</td>
       <td style="padding:11px;font-size:11px;color:${L.late||L.abs?'#e29aa6':'#9fce99'}">${L.late||L.abs?L.late+' د · '+L.abs+' غياب':'منتظم ✓'}${(L.lateDed+L.absDed)?`<div style="font-size:10px;color:#e29aa6">خصم −${(L.lateDed+L.absDed).toLocaleString('en')} ر.س</div>`:''}</td>
       <td style="padding:11px;color:var(--gold-light);font-weight:700" class="num">${L.net.toLocaleString('en')}</td>
