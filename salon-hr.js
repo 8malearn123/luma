@@ -87,6 +87,40 @@ function hrAttOf(sid,d){
   const worked=(sIn!==null&&sOut!==null)?Math.max(0,sOut-sIn):0;
   return {...r,absent:false,late,ot,worked};
 }
+/* قسم أوامر الأوفر تايم — موجَّهة من الإدارة وبانتظار موافقة الموظفة */
+function hrOtSection(){
+  const list=HR_OT.slice().sort((a,b)=>(b.at||0)-(a.at||0));
+  const wait=list.filter(o=>o.status==='pending').length;
+  const cards=list.map(o=>{
+    const [lb,cl]=HR_OT_ST[o.status]||['—','soft'];
+    const d=new Date(o.date+'T12:00:00').getDay();
+    const L=hrLedger(o.staff), pay=Math.round(L.hourly*L.p.otMul*(o.mins||0)/60);
+    return `<div class="card" style="margin-bottom:10px;${o.status==='cancelled'||o.status==='declined'?'opacity:.6':''}">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span style="width:42px;height:42px;border-radius:11px;background:var(--surface3);border:1px solid ${o.status==='accepted'?'rgba(111,168,106,.45)':'var(--gold-deep)'};display:flex;align-items:center;justify-content:center;color:${o.status==='accepted'?'#9fce99':'var(--gold-light)'};font-size:17px">⏱</span>
+        <div style="flex:1;min-width:220px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:14.5px;color:var(--white);font-weight:600">${hrStaffName(o.staff)}</span>
+            <span class="badge ${cl}" style="font-size:10.5px">${lb}</span>
+            <span class="badge gold" style="font-size:10.5px">${hrDur(o.mins)}</span>
+          </div>
+          <div style="font-size:12px;color:var(--gold-pale);margin-top:3px">
+            ${HR_DAYS[d]} <span dir="ltr">${o.date}</span> · <span dir="ltr">${o.from} – ${o.to}</span>
+            · قيمة تقديرية <span class="num">${pay.toLocaleString('en')}</span> ر.س</div>
+          ${o.reason?`<div style="font-size:11.5px;color:var(--muted);margin-top:2px">«${o.reason}»</div>`:''}
+          ${o.reply?`<div style="font-size:11.5px;color:#e29aa6;margin-top:3px">ردّ الموظفة: «${o.reply}»</div>`:''}
+          ${o.status==='accepted'?(()=>{const a=hrAttOf(o.staff,d);
+            return a&&a.ot?`<div style="font-size:11.5px;color:#9fce99;margin-top:3px">سُجّل فعلياً: ${hrDur(a.ot)} — دخلت حاسبة الرواتب ✓</div>`
+              :`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">لم يُسجَّل انصراف ذلك اليوم بعد — يُحتسب في الراتب فور تسجيله.</div>`;})():''}
+          <div style="font-size:10.5px;color:var(--muted-deep);margin-top:3px">صادر من ${o.by||'الإدارة'}${o.repliedAt?' · ردّت '+LumaEvents.ago(o.repliedAt):''}</div>
+        </div>
+        ${o.status==='pending'?`<button class="btn btn-ghost" style="padding:8px 16px;border-color:#7c4a55;color:#e29aa6" onclick="HR.cancelOT(${o.id})">إلغاء الأمر</button>`:''}
+      </div></div>`;}).join('');
+  return `
+  <div class="sec-label" style="margin-top:26px">أوامر الأوفر تايم <span class="ln"></span>
+    <span style="font-size:11px;color:var(--muted)">${wait?wait+' بانتظار موافقة الموظفات':'لا أوامر معلّقة'}</span></div>
+  ${cards||'<div class="card" style="text-align:center;color:var(--muted);font-size:12.5px">لا توجد أوامر أوفر تايم — أصدري أمراً من زر «+ أمر أوفر تايم».</div>'}`;
+}
 /* ملخّص أسبوعي لموظفة: مجدول · فعلي · تأخير · أوفر تايم · غياب */
 function hrWeekStats(sid){
   let sched=0,act=0,late=0,ot=0,abs=0,days=0;
@@ -120,6 +154,25 @@ function hrAttReport(only){
     }
   });
   return rows;
+}
+/* ══ أوامر الأوفر تايم: يوجّهها المدير وتوافق عليها الموظفة ══ */
+const HR_OT_KEY='luma_hr_ot';
+let HR_OT=hrLoad(HR_OT_KEY,null);
+if(!HR_OT){
+  HR_OT=[{id:1,staff:'sara',date:hrWeekDate(4),from:'20:00',to:'22:30',mins:150,
+          reason:'حفل تخرّج — ٦ عميلات إضافيات',by:'مديرة الصالون',at:Date.now(),status:'pending'}];
+  hrSave(HR_OT_KEY,HR_OT);
+}
+const HR_OT_ST={pending:['بانتظار موافقة الموظفة','gold'],accepted:['وافقت الموظفة','green'],
+                declined:['اعتذرت الموظفة','soft'],cancelled:['أُلغي الأمر','soft']};
+const hrOtSave=()=>hrSave(HR_OT_KEY,HR_OT);
+/* أوامر يوم محدّد من الأسبوع الجاري لموظفة */
+const hrOtOn=(sid,d)=>HR_OT.filter(o=>o.staff===sid&&o.date===hrWeekDate(d)&&o.status!=='cancelled'&&o.status!=='declined');
+/* دقائق الأوفر تايم المعتمدة (أوامر وافقت عليها الموظفة) هذا الشهر */
+function hrOtApproved(sid){
+  const m=hrMonth();
+  return HR_OT.filter(o=>o.staff===sid&&o.status==='accepted'&&String(o.date).slice(0,7)===m)
+              .reduce((t,o)=>t+(o.mins||0),0);
 }
 function hrOnLeaveToday(sid){
   const t=new Date().toISOString().slice(0,10);
@@ -492,6 +545,60 @@ const HR={
       };
     }});
   },
+  /* ── أمر أوفر تايم: يوجّهه المدير للموظفة، ولا يُعتمد إلا بموافقتها ── */
+  newOT(sid){
+    const today=hrIso(new Date());
+    const body=`
+      <div class="lux-lead">وجّهي أمر أوفر تايم للموظفة — يصلها في بوابة الموظفات بالساعات والوقت، ولا يُحتسب إلا بعد موافقتها.</div>
+      <div class="lux-two">
+        <div class="lux-f"><label>الموظفة</label><select name="staff">${STAFF.map(s=>`<option value="${s.id}" ${sid===s.id?'selected':''}>${s.n}</option>`).join('')}</select></div>
+        <div class="lux-f"><label>التاريخ</label><input type="date" name="date" value="${today}"/></div>
+      </div>
+      <div class="lux-two">
+        <div class="lux-f"><label>من الساعة</label><input type="time" name="from" value="20:00"/></div>
+        <div class="lux-f"><label>إلى الساعة</label><input type="time" name="to" value="22:00"/></div>
+      </div>
+      <div data-calc style="background:var(--surface3);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.9"></div>
+      <div class="lux-f" style="margin-top:12px"><label>سبب الأوفر تايم</label><input name="reason" placeholder="مثال: حفل تخرّج — عميلات إضافيات"/></div>
+      <div class="lux-foot"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-ok style="flex:1.4">إرسال الأمر للموظفة</button></div>`;
+    LUX.modal('أمر أوفر تايم',body,{onMount(ov,close){
+      const g=n=>ov.querySelector('[name='+n+']');
+      const calc=()=>{
+        const st=g('staff').value, dt=g('date').value, d=dt?new Date(dt+'T12:00:00').getDay():0;
+        const sh=hrShiftOf(st,d), mins=hrMin(g('to').value)-hrMin(g('from').value);
+        const L=hrLedger(st), pay=Math.round(L.hourly*L.p.otMul*Math.max(0,mins)/60);
+        ov.querySelector('[data-calc]').innerHTML=
+          `<div>اليوم: <b style="color:var(--white)">${dt?HR_DAYS[d]:'—'}</b> · وردية ذلك اليوم:
+             <b dir="ltr" style="color:var(--gold-light)">${sh.off?'إجازة أسبوعية':sh.start+' – '+sh.end}</b></div>
+           <div style="color:${mins>0?'#9fce99':'#e29aa6'}">مدة الأوفر تايم: <b>${mins>0?hrDur(mins):'حدّدي وقتاً صحيحاً'}</b></div>
+           ${mins>0?`<div>القيمة التقديرية: <b style="color:var(--gold-light)">${pay.toLocaleString('en')} ر.س</b>
+             <span style="color:var(--muted)">(${L.hourly} ر.س/س × ${L.p.otMul})</span></div>`:''}
+           ${!sh.off&&hrMin(g('from').value)<hrMin(sh.end)?'<div style="color:#e29aa6">تنبيه: وقت البداية يقع داخل الوردية الأساسية.</div>':''}`;
+      };
+      ['staff','date','from','to'].forEach(n=>{g(n).onchange=calc;g(n).oninput=calc;});
+      calc();
+      ov.querySelector('[data-c]').onclick=close;
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const mins=hrMin(g('to').value)-hrMin(g('from').value);
+        if(!g('date').value){LUX.toast('حدّدي التاريخ','err');return;}
+        if(mins<=0){LUX.toast('وقت النهاية يجب أن يكون بعد البداية','err');return;}
+        const dup=HR_OT.some(o=>o.staff===g('staff').value&&o.date===g('date').value&&['pending','accepted'].includes(o.status)
+          &&hrMin(o.from)<mins+hrMin(g('from').value)&&hrMin(o.to)>hrMin(g('from').value));
+        if(dup){LUX.toast('يوجد أمر أوفر تايم آخر يتقاطع مع هذا الوقت','err');return;}
+        HR_OT.unshift({id:Date.now(),staff:g('staff').value,date:g('date').value,from:g('from').value,to:g('to').value,
+          mins,reason:g('reason').value.trim(),by:'مديرة الصالون',at:Date.now(),status:'pending'});
+        hrOtSave();close();SALON.go('hr');
+        try{window.LumaEvents&&LumaEvents.push('hr','أمر أوفر تايم إلى '+hrStaffName(g('staff').value)+' — '+hrDur(mins)+' بانتظار موافقتها','salon.html#hr');}catch(e){}
+        LUX.toast('أُرسل الأمر إلى '+hrStaffName(g('staff').value)+' — بانتظار موافقتها','ok');
+      };
+    }});
+  },
+  cancelOT(id){
+    const o=HR_OT.find(x=>x.id===id);if(!o)return;
+    LUX.confirm('إلغاء أمر الأوفر تايم الموجَّه إلى '+hrStaffName(o.staff)+' ('+hrDur(o.mins)+')؟',()=>{
+      o.status='cancelled';hrOtSave();SALON.go('hr');LUX.toast('أُلغي أمر الأوفر تايم','err');
+    },true);
+  },
   /* ── جدولة الحضور: قالب وردية يُطبَّق على عدة موظفات دفعة واحدة ── */
   bulkSchedule(){
     const body=`
@@ -635,6 +742,7 @@ SCREENS.hr=()=>{
     ${HR.tab==='staff'?`<button class="btn btn-gold" onclick="SALON.addStaff()">+ إضافة موظفة</button>`:''}
     ${HR.tab==='shifts'?`<div style="display:flex;gap:9px;flex-wrap:wrap">
       <button class="btn btn-ghost" onclick="HR.bulkSchedule()">جدولة الحضور</button>
+      <button class="btn btn-ghost" onclick="HR.newOT()">+ أمر أوفر تايم</button>
       <button class="btn btn-gold" onclick="HR.attReport()">⤓ تصدير تقرير الحضور والانصراف</button>
     </div>`:''}
     ${HR.tab==='leaves'?`<div style="display:flex;gap:9px;flex-wrap:wrap">
@@ -733,6 +841,7 @@ SCREENS.hr=()=>{
                 ${att&&!att.absent&&(att.in||att.out)?`<div dir="ltr" style="font-size:10px;color:var(--cream);margin-top:4px">${att.in||'—'} → ${att.out||'—'}</div>`:''}
                 ${att?`<div style="font-size:10px;margin-top:3px;color:${att.absent||att.late?'#e29aa6':'#9fce99'}">${att.absent?'غياب':(att.late?'تأخير '+att.late+' دقيقة':'')}</div>`:''}
                 ${att&&att.ot?`<div style="font-size:10px;color:#9fce99;margin-top:2px">أوفر تايم ${hrDur(att.ot)}</div>`:''}
+                ${hrOtOn(s.id,i).map(o=>`<div style="font-size:9.5px;margin-top:3px;color:${o.status==='accepted'?'#9fce99':'var(--gold-light)'}">${o.status==='accepted'?'✓':'●'} أمر ${hrDur(o.mins)} <span dir="ltr">${o.from}–${o.to}</span></div>`).join('')}
                 </button></td>`;}).join('')}
             <td style="padding:8px;text-align:center;font-size:11px;line-height:1.7">
               <div style="color:var(--cream)">فعلي <b class="num" style="color:var(--white)">${(w.act/60).toFixed(1)}</b> / مجدول <span class="num">${(w.sched/60).toFixed(1)}</span> س</div>
@@ -743,7 +852,8 @@ SCREENS.hr=()=>{
           </tr>`;}).join('')}</tbody>
       </table>
     </div>
-    <div style="font-size:11.5px;color:var(--muted);margin-top:12px">الساعات أعلاه هي مصدر الحقيقة لمواعيد الحجز المتاحة · اضغطي على أي يوم لتسجيل الحضور والانصراف · التأخيرات والغيابات وساعات الأوفر تايم تُرحَّل تلقائياً إلى حاسبة الرواتب نهاية الشهر.</div>`;
+    <div style="font-size:11.5px;color:var(--muted);margin-top:12px">الساعات أعلاه هي مصدر الحقيقة لمواعيد الحجز المتاحة · اضغطي على أي يوم لتسجيل الحضور والانصراف · التأخيرات والغيابات وساعات الأوفر تايم تُرحَّل تلقائياً إلى حاسبة الرواتب نهاية الشهر.</div>
+    ${hrOtSection()}`;
   }
 
   /* payroll — multi-source ledger */

@@ -113,6 +113,15 @@ function attCalc(rec,sh){
   return {...rec,absent:false,late,ot,worked:(i!==null&&o!==null)?Math.max(0,o-i):0};
 }
 const shiftOf=wd=>(S.get('luma_hr_shifts',{})[SID]||{})[wd]||((wd===5)?{off:true}:{off:false,start:'10:00',end:'20:00'});
+/* أوامر الأوفر تايم الموجَّهة لي من الإدارة */
+const wkDate=i=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay()+i);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+/* نفس بذرة داشبورد الصالون — أمر تجريبي بانتظار موافقة سارة */
+const OT_SEED=[{id:1,staff:'sara',date:wkDate(4),from:'20:00',to:'22:30',mins:150,
+  reason:'حفل تخرّج — ٦ عميلات إضافيات',by:'مديرة الصالون',at:Date.now(),status:'pending'}];
+const otAll=()=>S.get('luma_hr_ot',OT_SEED);
+const otMine=()=>otAll().filter(o=>o.staff===SID&&o.status!=='cancelled');
+const DAYS_AR=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 function ledger(sid){
   const p=payOf(sid);
   const svc=myAppts(sid).filter(a=>a.st!=='blocked').length*380*24;
@@ -181,6 +190,10 @@ function notifications(){
     if(l.status!=='pending'&&seen['lv'+l.id]!==l.status)
       msgs.push(l.status==='approved'?`✅ اعتُمدت إجازتك (${l.from} ← ${l.to})`:`❌ رُفض طلب إجازتك (${l.from})`);
     seen['lv'+l.id]=l.status;
+  });
+  otAll().filter(o=>o.staff===SID&&o.status==='pending').forEach(o=>{
+    if(!seen['ot'+o.id])msgs.push(`⏱ أمر أوفر تايم جديد — ${o.date} من ${o.from} إلى ${o.to} · بانتظار موافقتك (تبويب حضوري)`);
+    seen['ot'+o.id]='pending';
   });
   S.get('luma_requests',[]).filter(r=>r.staff===SID).forEach(r=>{
     const t=(rtypes().find(x=>x.id===r.type)||{}).name||'طلب';
@@ -363,11 +376,51 @@ function attView(me){
       </div>
       ${today&&!today.absent&&today.late?`<div style="font-size:11px;color:var(--red);margin-top:10px">سُجّل تأخير ${today.late} دقيقة اليوم — يظهر لإدارة الصالون</div>`:''}
     </div>
+    ${otCard()}
     <div class="card"><b style="font-size:13px">سجل الحضور هذا الأسبوع</b>
       ${hist||'<div style="color:var(--green);font-size:12.5px;padding:8px 0">منتظمة تماماً ✓</div>'}
       ${hist?`<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><span class="k">الإجمالي</span>
         <span>${dur(wWork)} عمل${wLate?` · <span style="color:var(--red)">${dur(wLate)} تأخير</span>`:''}${wOt?` · <span style="color:var(--green)">${dur(wOt)} أوفر تايم</span>`:''}</span></div>`:''}</div>`;
 }
+/* بطاقة أوامر الأوفر تايم: الساعات والوقت والسبب — بموافقة الموظفة أو اعتذارها */
+function otCard(){
+  const mine=otMine().slice().sort((a,b)=>(b.at||0)-(a.at||0));
+  if(!mine.length)return '';
+  const ST={pending:['بانتظار ردّك',''],accepted:['وافقتِ ✓','g'],declined:['اعتذرتِ','']};
+  const rows=mine.map(o=>{
+    const d=new Date(o.date+'T12:00:00').getDay();
+    const [lb,cl]=ST[o.status]||['—',''];
+    return `<div style="border:1px solid ${o.status==='pending'?'var(--acD)':'var(--line)'};border-radius:14px;padding:12px;margin-top:10px;${o.status==='declined'?'opacity:.6':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <b style="font-size:13px">${DAYS_AR[d]} <span style="color:var(--mut);font-weight:400" dir="ltr">${o.date}</span></b>
+        <span class="badge ${cl}">${lb}</span></div>
+      <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap">
+        <div><div style="font-size:10.5px;color:var(--mut)">الوقت</div><b style="font-size:14px" dir="ltr">${o.from} – ${o.to}</b></div>
+        <div><div style="font-size:10.5px;color:var(--mut)">الساعات</div><b style="font-size:14px;color:var(--ac)">${dur(o.mins)}</b></div>
+      </div>
+      ${o.reason?`<div style="font-size:11.5px;color:var(--mut);margin-top:8px">السبب: ${esc(o.reason)}</div>`:''}
+      ${o.reply?`<div style="font-size:11.5px;color:var(--red);margin-top:6px">ردّك: ${esc(o.reply)}</div>`:''}
+      ${o.status==='pending'?`<div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn" style="padding:10px" onclick="otReply(${o.id},'accepted')">موافقة</button>
+        <button class="btn ghost" style="padding:10px" onclick="otReply(${o.id},'declined')">اعتذار</button></div>`:''}
+    </div>`;}).join('');
+  const wait=mine.filter(o=>o.status==='pending').length;
+  return `<div class="card"><b style="font-size:13px">أوامر الأوفر تايم</b>
+    <div style="font-size:11.5px;color:var(--mut);margin-top:3px">${wait?wait+' أمر بانتظار ردّك — الساعات تُحتسب في راتبك بعد موافقتك':'كل الأوامر تم الردّ عليها'}</div>
+    ${rows}</div>`;
+}
+window.otReply=(id,st)=>{
+  let reply='';
+  if(st==='declined'){
+    reply=(prompt('سبب الاعتذار (اختياري) — يظهر للإدارة:')||'').trim();
+  }
+  S.update('luma_hr_ot',l=>{const o=l.find(x=>x.id===id);if(o&&o.status==='pending'){o.status=st;o.reply=reply;o.repliedAt=Date.now();}return l;},otAll());
+  const o=otAll().find(x=>x.id===id)||{};
+  try{const who=(allStaff().find(s=>s.id===SID)||{}).n||'موظفة';
+    window.LumaEvents&&LumaEvents.push('hr',(st==='accepted'?'وافقت ':'اعتذرت ')+who+' عن أمر أوفر تايم '+dur(o.mins||0)+' يوم '+(o.date||''),'salon.html#hr');}catch(e){}
+  toast(st==='accepted'?`وافقتِ على الأوفر تايم — ${dur(o.mins||0)} ✓`:'أُبلغت الإدارة باعتذارك');
+  render();
+};
 window.clockIn=()=>{
   const wd=new Date().getDay(),sh=shiftOf(wd),now=hhmm(new Date());
   const late=sh.off?0:Math.max(0,tMin(now)-tMin(sh.start));
