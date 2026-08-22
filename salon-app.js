@@ -448,6 +448,7 @@ const NAV=[
   {id:'invoices',label:'الفواتير البيعية',icon:'invoice',crumb:'FINANCE'},
   {id:'marketing',label:'التسويق',icon:'mega',crumb:'GROWTH'},
   {id:'finance',label:'المالية',icon:'wallet',crumb:'FINANCE'},
+  {id:'accounting',label:'المحاسبة',icon:'clipboard',crumb:'FINANCE'},
   {id:'reports',label:'التقارير',icon:'chart',crumb:'FINANCE'},
   {id:'branches',label:'الفروع',icon:'pin',crumb:'SALON'},
   {id:'settings',label:'الإعدادات',icon:'gear',crumb:'SYSTEM'},
