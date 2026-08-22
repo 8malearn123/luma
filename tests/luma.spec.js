@@ -135,7 +135,7 @@ test('الخدمات: إضافة صورة لكل خدمة وتظهر بصفحة 
   const [fc] = await Promise.all([page.waitForEvent('filechooser'), firstBtn.click()]);
   await fc.setFiles({ name: 'svc.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
   await page.waitForTimeout(700);
-  await expect(page.locator('.card img[alt="مكياج سهرة"]')).toBeVisible();
+  await expect(page.locator('.svc img[alt="مكياج سهرة"]')).toBeVisible();
   await expect(page.locator('button:has-text("تغيير الصورة")').first()).toBeVisible();
   // الصورة تظهر لعميلات صفحة الحجز
   await page.goto('/booking.html');
@@ -146,7 +146,7 @@ test('الخدمات: إضافة صورة لكل خدمة وتظهر بصفحة 
   await page.waitForTimeout(800);
   await page.locator('button[title="إزالة الصورة"]').first().click();
   await page.waitForTimeout(500);
-  await expect(page.locator('.card img[alt="مكياج سهرة"]')).toHaveCount(0);
+  await expect(page.locator('.svc img[alt="مكياج سهرة"]')).toHaveCount(0);
   // قسم المنتجات انتقل لشاشة الخدمات — مع رفع صورة للمنتج
   await expect(page.getByText('المنتجات — بيع التجزئة للعميلات')).toBeVisible();
   await expect(page.getByText('سيروم ترطيب').first()).toBeVisible();
@@ -703,14 +703,14 @@ test('إدارة الخدمات: إضافة خدمة تنعكس في الكتا�
   await page.fill('#svP', '300');
   await page.click('.lux-modal [data-ok]');
   await page.waitForTimeout(500);
-  await expect(page.locator('.card', { hasText: 'باديكير سبا' })).toBeVisible();
-  await expect(page.locator('.card', { hasText: 'باديكير سبا' })).toContainText('300');
+  await expect(page.locator('.svc', { hasText: 'باديكير سبا' })).toBeVisible();
+  await expect(page.locator('.svc', { hasText: 'باديكير سبا' })).toContainText('300');
   // تحرير سعر خدمة قائمة
-  await page.locator('.card', { hasText: 'منيكير جل' }).locator('button:has-text("تحرير")').click();
+  await page.locator('.svc', { hasText: 'منيكير جل' }).locator('button:has-text("تحرير")').click();
   await page.fill('#svP', '180');
   await page.click('.lux-modal [data-ok]');
   await page.waitForTimeout(500);
-  await expect(page.locator('.card', { hasText: 'منيكير جل' })).toContainText('180');
+  await expect(page.locator('.svc', { hasText: 'منيكير جل' })).toContainText('180');
 });
 
 test('التقارير: تصدير للطباعة وملخص أسبوعي', async ({ page }) => {

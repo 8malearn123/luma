@@ -92,23 +92,69 @@ window.svcImgPick=n=>{
 window.svcImgClear=n=>{svcImgSet(n,null);LUX.toast('أُزيلت صورة «'+n+'»','ok');};
 
 /* ── SERVICES (كتالوج حي — يغذي الحجز والأسعار والتقارير) ── */
+/* بطاقة خدمة: صورة كبيرة + سعر + آلية تعديل ظاهرة (صورة · تحرير) */
+function svcCard(s){
+  const im=svcImgs()[s[0]];const esc=s[0].replace(/'/g,"\\'");
+  const by=(STAFF.find(x=>x.role===(s[3]||'أخرى'))||{}).n;
+  return `<div class="svc">
+    <button type="button" class="svc-im" onclick="svcImgPick('${esc}')" title="${im?'تغيير صورة الخدمة':'إضافة صورة للخدمة'}">
+      ${im?`<img src="${im}" alt="${s[0]}"/>`
+         :`<div class="svc-ph">${icon('image',26)}<span>اضغطي لإضافة صورة</span></div>`}
+      <span class="svc-cat">${s[3]||'أخرى'}</span>
+      <span class="svc-pr"><b class="num">${s[2]}</b> ر.س</span>
+      <div class="svc-ov"><span>${icon('image',15)} ${im?'تغيير الصورة':'إضافة صورة'}</span></div>
+    </button>
+    <div class="svc-bd">
+      <div class="svc-n">${s[0]}</div>
+      <div class="svc-m">◷ ${s[1]*30} دقيقة${by?` · ${by}`:''}</div>
+    </div>
+    <div class="svc-ft">
+      <button class="btn btn-gold" style="flex:1;padding:9px 0;font-size:12.5px" onclick="SALON.svcForm('${esc}')">${icon('pencil',14)} تحرير الخدمة</button>
+      ${im?`<button class="btn btn-ghost svc-x" title="إزالة الصورة" onclick="svcImgClear('${esc}')">✕</button>`:''}
+    </div>
+  </div>`;
+}
 SCREENS.services=()=>{
   const cats=[...new Set(SVC_CATALOG.map(s=>s[3]||'أخرى'))];
+  const withImg=SVC_CATALOG.filter(s=>svcImgs()[s[0]]).length;
+  const avg=Math.round(SVC_CATALOG.reduce((t,s)=>t+ (+s[2]||0),0)/(SVC_CATALOG.length||1));
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">خدمات الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${SVC_CATALOG.length} خدمة عبر ${cats.length} أقسام — كل تعديل ينعكس فوراً على الحجز والفواتير والتقارير</div></div><button class="btn btn-gold" onclick="SALON.svcForm()">+ خدمة جديدة</button></div>
+  <style>
+  .svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:18px;margin-bottom:26px}
+  .svc{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,border-color .18s,box-shadow .18s}
+  .svc:hover{transform:translateY(-3px);border-color:var(--gold-deep);box-shadow:0 14px 34px rgba(0,0,0,.42)}
+  .svc-im{position:relative;width:100%;padding:0;font-family:inherit;border:none;aspect-ratio:4/3;max-height:215px;background:var(--surface3);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .svc-im img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+  .svc:hover .svc-im img{transform:scale(1.05)}
+  .svc-ph{display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--gold-deep);font-size:11.5px}
+  .svc-ph span{color:var(--muted)}
+  .svc-cat{position:absolute;top:10px;right:10px;background:rgba(12,11,14,.72);backdrop-filter:blur(6px);border:1px solid var(--line);color:var(--gold-pale);font-size:10.5px;padding:4px 10px;border-radius:20px}
+  .svc-pr{position:absolute;bottom:10px;left:10px;background:rgba(12,11,14,.78);backdrop-filter:blur(6px);border:1px solid var(--gold-deep);color:var(--gold-light);font-size:10.5px;padding:4px 10px;border-radius:20px}
+  .svc-pr b{font-family:'Bodoni Moda',serif;font-size:16px;color:var(--white);direction:ltr}
+  .svc-ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(12,11,14,.62);opacity:0;transition:opacity .2s}
+  .svc-im:hover .svc-ov{opacity:1}
+  .svc-ov span{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-size:12px;font-weight:600;padding:9px 16px;border-radius:24px}
+  .svc-bd{padding:13px 15px 4px;flex:1}
+  .svc-n{font-size:15px;color:var(--white);font-weight:600}
+  .svc-m{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .svc-ft{display:flex;gap:8px;padding:12px 15px 15px;align-items:center}
+  .svc-ft .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  .svc-x{padding:9px 12px;color:#e29aa6}
+  .svc-add{background:var(--surface2);border:1.5px dashed var(--gold-deep);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:200px;color:var(--gold-light);cursor:pointer;font-size:13px;transition:background .18s}
+  .svc-add:hover{background:var(--surface3)}
+  </style>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">خدمات الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${SVC_CATALOG.length} خدمة عبر ${cats.length} أقسام — اضغطي صورة الخدمة لتغييرها، و«تحرير الخدمة» للاسم والسعر والمدة</div></div><button class="btn btn-gold" onclick="SALON.svcForm()">+ خدمة جديدة</button></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('scissors',19)}</div></div><div class="val">${SVC_CATALOG.length}</div><div class="k">خدمة في الكتالوج · ${cats.length} أقسام</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('image',19)}</div></div><div class="val">${withImg}<span class="u">/${SVC_CATALOG.length}</span></div><div class="k">خدمة لها صورة تظهر بصفحة الحجز</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">${avg.toLocaleString('en')}<span class="u">ر.س</span></div><div class="k">متوسط سعر الخدمة</div></div>
+  </div>
   ${cats.map(cat=>{
     const items=SVC_CATALOG.filter(s=>(s[3]||'أخرى')===cat);
-    const by=(STAFF.find(x=>x.role===cat)||{}).n;
-    return `<div class="sec-label">${cat} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${items.map(s=>{
-      const im=svcImgs()[s[0]];const esc=s[0].replace(/'/g,"\\'");
-      return `<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px">${
-        im?`<img src="${im}" alt="${s[0]}" style="width:52px;height:52px;border-radius:11px;object-fit:cover;border:1px solid var(--gold-deep)"/>`
-          :`<div style="width:52px;height:52px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div>`
-      }<div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]*30} دقيقة${by?` · تُقدّم بواسطة ${by}`:''}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div>
-      <button class="btn btn-ghost svc-img-btn" style="padding:8px 12px;display:inline-flex;align-items:center;gap:6px" title="${im?'تغيير صورة الخدمة':'إضافة صورة للخدمة'}" onclick="svcImgPick('${esc}')">${icon('image',15)} ${im?'تغيير الصورة':'إضافة صورة'}</button>
-      ${im?`<button class="btn btn-ghost" style="padding:8px 11px;color:#e29aa6" title="إزالة الصورة" onclick="svcImgClear('${esc}')">✕</button>`:''}
-      <button class="btn btn-ghost" style="padding:8px 14px" onclick="SALON.svcForm('${esc}')">تحرير</button></div>`;}).join('')}</div>`;
+    return `<div class="sec-label">${cat} <span class="ln"></span><span style="font-size:11px;color:var(--muted)">${items.length} خدمة</span></div>
+    <div class="svc-grid">${items.map(svcCard).join('')}</div>`;
   }).join('')}
+  <div class="svc-add" style="max-width:280px;margin-bottom:26px" onclick="SALON.svcForm()">${icon('scissors',24)}<span>+ إضافة خدمة جديدة</span></div>
   <div class="sec-label" style="margin-top:8px">المنتجات — بيع التجزئة للعميلات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اضغطي أيقونة المنتج لإضافة صورته</span></div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px">${SALON_PRODUCTS.map(salonProductCard).join('')}</div>`;
 };
@@ -145,7 +191,6 @@ const SALON_PRODUCTS=[
   {n:'كريم أساس',c:'مكياج',price:150,sold:19,q:8,sc:'gold'},
   {n:'ماسك بشرة',c:'عناية',price:95,sold:14,q:3,sc:'gold'},
 ];
-/* بطاقة منتج واحدة — مع رفع/تغيير/إزالة الصورة */
 function salonProductCard(p){
   const pim=salonProdImgs()[p.n];const esc=p.n.replace(/'/g,"\\'");
   return `<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="position:relative"><div onclick="SALONPIMG.pick('${esc}')" title="${pim?'تغيير صورة المنتج':'إضافة صورة للمنتج'}" style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);cursor:pointer;overflow:hidden">${pim?`<img src="${pim}" alt="" style="width:100%;height:100%;object-fit:cover"/>`:icon('bag',22)}</div>${pim?`<button onclick="SALONPIMG.clear('${esc}')" title="إزالة الصورة" style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#e29aa6;cursor:pointer;font-size:10px;line-height:1">✕</button>`:`<span style="position:absolute;bottom:-5px;left:-5px;width:17px;height:17px;border-radius:50%;background:var(--gold-deep);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;pointer-events:none">📷</span>`}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`;
