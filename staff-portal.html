@@ -98,7 +98,21 @@ function myAppts(sid){
 }
 const payOf=sid=>({base:3500,pct:10,prodPct:15,tierAt:15000,tierPct:12,...(S.get('luma_hr_pay2',{})[sid]||{})});
 const advOf=sid=>{const m=new Date().toISOString().slice(0,7);return (S.get('luma_hr_advances',{})[m]||{})[sid]||0;};
-const attAll=()=>S.get('luma_hr_att',{amal:{},sara:{1:{late:45}},nora:{2:{absent:true}},reem:{3:{late:20}}});
+const attAll=()=>S.get('luma_hr_att',{amal:{1:{in:'09:58',out:'21:32'}},sara:{1:{in:'10:45',out:'20:00'},3:{in:'10:00',out:'21:15'}},nora:{2:{absent:true}},reem:{3:{in:'10:20',out:'20:00'}}});
+const hhmm=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+const tMin=t=>{const p=String(t||'').split(':');return (+p[0]||0)*60+(+p[1]||0);};
+const dur=m=>{m=Math.max(0,Math.round(m));const h=Math.floor(m/60),r=m%60;return h?(h+' س'+(r?' '+r+' د':'')):(r+' د');};
+/* نفس حساب لوحة الصالون: التأخير والأوفر تايم مشتقّان من الوردية المجدولة */
+function attCalc(rec,sh){
+  if(!rec)return null;
+  if(rec.absent)return {absent:true,late:0,ot:0,worked:0};
+  const i=rec.in?tMin(rec.in):null,o=rec.out?tMin(rec.out):null;
+  const late=(i!==null&&!sh.off)?Math.max(0,i-tMin(sh.start)):(rec.late||0);
+  let ot=rec.ot||0;
+  if(o!==null)ot=sh.off?Math.max(0,o-(i===null?o:i)):Math.max(0,o-tMin(sh.end));
+  return {...rec,absent:false,late,ot,worked:(i!==null&&o!==null)?Math.max(0,o-i):0};
+}
+const shiftOf=wd=>(S.get('luma_hr_shifts',{})[SID]||{})[wd]||((wd===5)?{off:true}:{off:false,start:'10:00',end:'20:00'});
 function ledger(sid){
   const p=payOf(sid);
   const svc=myAppts(sid).filter(a=>a.st!=='blocked').length*380*24;
@@ -325,45 +339,51 @@ window.newReq=()=>{
 function attView(me){
   const att=attAll();
   const wd=new Date().getDay();
-  const today=(att[SID]||{})[wd]||null;
-  const sh=(S.get('luma_hr_shifts',{})[SID]||{})[wd]||((wd===5)?{off:true}:{off:false,start:'10:00',end:'20:00'});
-  const rec=S.get('luma_portal_att_'+SID,{});
-  const t=new Date().toISOString().slice(0,10);
-  const dayRec=rec[t]||{};
-  const now=()=>new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'});
+  const sh=shiftOf(wd);
+  const today=attCalc((att[SID]||{})[wd],sh);
+  const dayRec=today&&!today.absent?today:{};
   const week=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const hist=Object.entries(att[SID]||{}).map(([d,v])=>`<div class="row"><span class="k">${week[d]}</span>
-    <span style="color:${v.absent?'var(--red)':'var(--red)'}">${v.absent?'غياب':'تأخير '+v.late+' دقيقة'}</span></div>`).join('');
+  let wOt=0,wLate=0,wWork=0;
+  const hist=Object.entries(att[SID]||{}).map(([d,v])=>{
+    const a=attCalc(v,shiftOf(+d));if(!a)return '';
+    wOt+=a.ot||0;wLate+=a.late||0;wWork+=a.worked||0;
+    const bad=a.absent||a.late;
+    return `<div class="row"><span class="k">${week[d]}${a.in?` <span style="color:var(--mut)" dir="ltr">${a.in}${a.out?' → '+a.out:''}</span>`:''}</span>
+      <span style="color:${bad?'var(--red)':'var(--green)'}">${a.absent?'غياب':(a.late?'تأخير '+a.late+' دقيقة':'في الوقت ✓')}${a.ot?` <span style="color:var(--green)">· أوفر تايم ${dur(a.ot)}</span>`:''}</span></div>`;
+  }).join('');
   return `
     <div class="card" style="text-align:center">
       <div style="font-size:12px;color:var(--mut)">وردية اليوم (${week[wd]})</div>
       <div style="font-size:18px;font-weight:700;margin-top:4px" dir="ltr">${sh.off?'إجازة أسبوعية 🌙':sh.start+' – '+sh.end}</div>
-      ${dayRec.in?`<div class="badge g" style="margin-top:10px">حضور ${dayRec.in}${dayRec.out?' · انصراف '+dayRec.out:''}</div>`:''}
+      ${dayRec.in?`<div class="badge g" style="margin-top:10px" dir="ltr">${dayRec.in}${dayRec.out?' → '+dayRec.out:''}</div>`:''}
+      ${dayRec.out?`<div style="font-size:11.5px;color:var(--mut);margin-top:8px">ساعات اليوم: <b style="color:var(--ac)">${dur(dayRec.worked)}</b>${dayRec.ot?` · أوفر تايم <b style="color:var(--green)">${dur(dayRec.ot)}</b>`:''}</div>`:''}
       <div style="display:flex;gap:10px;margin-top:14px">
         <button class="btn" ${sh.off||dayRec.in?'disabled':''} onclick="clockIn()">تسجيل حضور</button>
         <button class="btn ghost" ${!dayRec.in||dayRec.out?'disabled':''} onclick="clockOut()">تسجيل انصراف</button>
       </div>
       ${today&&!today.absent&&today.late?`<div style="font-size:11px;color:var(--red);margin-top:10px">سُجّل تأخير ${today.late} دقيقة اليوم — يظهر لإدارة الصالون</div>`:''}
     </div>
-    <div class="card"><b style="font-size:13px">ملاحظات الحضور هذا الأسبوع</b>
-      ${hist||'<div style="color:var(--green);font-size:12.5px;padding:8px 0">منتظمة تماماً ✓</div>'}</div>`;
+    <div class="card"><b style="font-size:13px">سجل الحضور هذا الأسبوع</b>
+      ${hist||'<div style="color:var(--green);font-size:12.5px;padding:8px 0">منتظمة تماماً ✓</div>'}
+      ${hist?`<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><span class="k">الإجمالي</span>
+        <span>${dur(wWork)} عمل${wLate?` · <span style="color:var(--red)">${dur(wLate)} تأخير</span>`:''}${wOt?` · <span style="color:var(--green)">${dur(wOt)} أوفر تايم</span>`:''}</span></div>`:''}</div>`;
 }
 window.clockIn=()=>{
-  const wd=new Date().getDay();
-  const sh=(S.get('luma_hr_shifts',{})[SID]||{})[wd]||{off:wd===5,start:'10:00'};
-  const nowMin=new Date().getHours()*60+new Date().getMinutes();
-  const startMin=parseInt(sh.start)*60+parseInt(sh.start.split(':')[1]||0);
-  const late=Math.max(0,nowMin-startMin);
-  /* يغذي نفس مفتاح أعلام التأخير في جدول دوام الصالون */
-  S.update('luma_hr_att',att=>{att[SID]=att[SID]||{};if(late>0)att[SID][wd]={late};else delete att[SID][wd];return att;},attAll());
+  const wd=new Date().getDay(),sh=shiftOf(wd),now=hhmm(new Date());
+  const late=sh.off?0:Math.max(0,tMin(now)-tMin(sh.start));
+  /* الحضور والانصراف الفعلي يُكتبان في نفس سجل لوحة الصالون — منه يُشتق التأخير والأوفر تايم */
+  S.update('luma_hr_att',att=>{att[SID]=att[SID]||{};att[SID][wd]={...(att[SID][wd]||{}),in:now};delete att[SID][wd].absent;return att;},attAll());
   const t=new Date().toISOString().slice(0,10);
-  S.update('luma_portal_att_'+SID,r=>{r[t]={...(r[t]||{}),in:new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})};return r;},{});
+  S.update('luma_portal_att_'+SID,r=>{r[t]={...(r[t]||{}),in:now};return r;},{});
   toast(late>0?`سُجّل حضورك — تأخير ${late} دقيقة`:'سُجّل حضورك في الوقت ✓');render();
 };
 window.clockOut=()=>{
+  const wd=new Date().getDay(),sh=shiftOf(wd),now=hhmm(new Date());
+  const ot=sh.off?0:Math.max(0,tMin(now)-tMin(sh.end));
+  S.update('luma_hr_att',att=>{att[SID]=att[SID]||{};att[SID][wd]={...(att[SID][wd]||{}),out:now};return att;},attAll());
   const t=new Date().toISOString().slice(0,10);
-  S.update('luma_portal_att_'+SID,r=>{r[t]={...(r[t]||{}),out:new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})};return r;},{});
-  toast('سُجّل انصرافك — يومك سعيد 🌸');render();
+  S.update('luma_portal_att_'+SID,r=>{r[t]={...(r[t]||{}),out:now};return r;},{});
+  toast(ot>0?`سُجّل انصرافك — أوفر تايم ${dur(ot)} 🌸`:'سُجّل انصرافك — يومك سعيد 🌸');render();
 };
 
 render();
