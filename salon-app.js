@@ -1,4 +1,12 @@
 /* لوما · داشبورد الصالون — بقية الشاشات، كائن SALON، الحجز والدفع والفواتير، الإقلاع */
+/* ── إشعارات واتساب: تُرسل عبر مزوّد الصالون، ولا تُعطّل أي تدفق عند الفشل ── */
+const clientPhone=n=>{const c=(typeof CLIENTS!=='undefined')?CLIENTS.find(x=>x.n===n):null;return c&&c.phone||'';};
+function waNotify(ev,vars,phone){
+  if(!window.LumaWA)return;
+  try{LumaWA.send(ev,{salon:(typeof pageCfg==='function'?pageCfg().title:'صالون لمسة'),...vars},phone);}catch(e){}
+}
+window.waNotify=waNotify;
+
 /* ── CLIENTS ── */
 const CLIENTS=[
   {n:'نوف العتيبي',v:14,sp:'9,200',last:'قبل ٣ أيام',staff:'أمل',tag:'VIP',tc:'gold'},
@@ -447,6 +455,7 @@ const NAV=[
   {id:'subscriptions',label:'الاشتراكات',icon:'ticket',crumb:'SALON'},
   {id:'invoices',label:'الفواتير البيعية',icon:'invoice',crumb:'FINANCE'},
   {id:'marketing',label:'التسويق',icon:'mega',crumb:'GROWTH'},
+  {id:'whatsapp',label:'إشعارات واتساب',icon:'mega',crumb:'GROWTH'},
   {id:'finance',label:'المالية',icon:'wallet',crumb:'FINANCE'},
   {id:'accounting',label:'المحاسبة',icon:'clipboard',crumb:'FINANCE'},
   {id:'reports',label:'التقارير',icon:'chart',crumb:'FINANCE'},
@@ -582,6 +591,9 @@ const SALON={
         try{window.LumaEvents&&LumaEvents.push(k==='block'?'block':'booking',k==='block'
           ?'وقت محجوب بلوحة صالون لمسة: '+st.n+' — '+q('reason').value+' ('+slotLabel(start)+')'
           :'حجز من لوحة صالون لمسة: '+q('client').value.trim()+' · '+sv[0]+' مع '+st.n+' ('+slotLabel(start)+')','salon.html#board');}catch(e){}
+        /* إشعار واتساب: تأكيد الحجز للعميلة عبر مزوّد الصالون */
+        if(k!=='block')waNotify('booking',{client:q('client').value.trim(),service:sv[0],staff:st.n,
+          date:'اليوم',time:slotLabel(start)},q('phone')&&q('phone').value);
         LUX.toast(k==='block'
           ?'حُجب وقت '+st.n+' <bdo dir="ltr">'+slotLabel(start)+'</bdo> ✓'
           :'تم حجز '+q('client').value.trim()+' مع '+st.n+' الساعة '+slotLabel(start)+' ✓','ok');
@@ -644,12 +656,16 @@ const SALON={
         setTimeout(()=>{
           a.st='confirmed';saveAppts();
           const total=+(price*1.15+tip).toFixed(2);
-          markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
+          const invNo=nextInvNo();
+          markPaid(a.id,{no:invNo,method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
           const pts=typeof loyAward==='function'?loyAward(a.client,total):0;
           const stk=typeof stockConsume==='function'?stockConsume(a.service):{alerts:[]};
           /* طلب تقييم ما بعد الزيارة — يفتح في review.html ويُنشر موثقاً في المتجر */
           try{LumaStore.update('luma_review_reqs',l=>{l.push({id:'rv'+a.id+'_'+Date.now(),client:a.client,service:a.service,staff:(STAFF.find(x=>x.id===a.staff)||{n:''}).n,salon:'صالون لمسة',date:new Date().toISOString().slice(0,10),st:'sent'});return l;},[]);}catch(e){}
-          setTimeout(()=>LUX.toast('📱 أُرسل للعميلة رابط تقييم الزيارة عبر واتساب (محاكاة)','ok'),2800);
+          /* إشعارا واتساب: الفاتورة ثم طلب التقييم — عبر مزوّد الصالون أو رابط يدوي */
+          waNotify('receipt',{client:a.client,service:a.service,amount:total.toLocaleString('en'),invoice:invNo},clientPhone(a.client));
+          waNotify('review',{client:a.client,service:a.service,link:location.origin+'/review.html'},clientPhone(a.client));
+          setTimeout(()=>LUX.toast('📱 أُرسل للعميلة إشعار الفاتورة ورابط التقييم عبر واتساب','ok'),2800);
           close();SALON.go('board');
           try{window.LumaEvents&&LumaEvents.push('pay','دفعة مستلمة بصالون لمسة: '+a.client+' · '+a.service+' — '+total.toLocaleString('en')+' ر.س ('+method+')','salon.html#invoices');}catch(e){}
           LUX.toast('تم الدفع بنجاح عبر '+method+' ✓'+(pts?' — أُضيفت '+pts+' نقطة ولاء لرصيد '+a.client:''),'ok');

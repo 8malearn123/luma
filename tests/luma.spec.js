@@ -1385,3 +1385,96 @@ test('المعاينة الحية: تتجاهل الرسائل غير المطا
   await page.waitForTimeout(600);
   expect(await page.evaluate(() => localStorage.getItem('luma_store_visits'))).toBe(before);
 });
+
+test('واتساب: ربط مزوّد خاص بكل صالون وحالة الربط والاختبار في وضع التجربة', async ({ page }) => {
+  await page.goto('/salon.html#whatsapp');
+  await page.waitForTimeout(900);
+  // خمسة مزوّدين وحالة «موقوف» ابتداءً
+  await expect(page.locator('.wa-prov')).toHaveCount(5);
+  await expect(page.getByText('موقوف')).toBeVisible();
+  await expect(page.getByText('الربط غير مكتمل')).toBeVisible();
+  // تعبئة حقول Meta ثم تفعيل الربط → الحالة «متصل»
+  await page.locator('.wa-f[data-f="sender"]').fill('1234567890');
+  await page.locator('.wa-f[data-f="sender"]').dispatchEvent('change');
+  await page.locator('.wa-f[data-f="token"]').fill('TESTTOKEN');
+  await page.locator('.wa-f[data-f="token"]').dispatchEvent('change');
+  await page.evaluate(() => WA.toggle());
+  await page.waitForTimeout(600);
+  await expect(page.getByText('متصل')).toBeVisible();
+  await expect(page.getByText('الربط مكتمل')).toBeVisible();
+  // تبديل المزوّد يغيّر الحقول المطلوبة
+  await page.locator('.wa-prov[data-prov="twilio"]').click();
+  await page.waitForTimeout(500);
+  await expect(page.locator('.wa-f[data-f="sid"]')).toBeVisible();
+  await page.locator('.wa-prov[data-prov="meta"]').click();
+  await page.waitForTimeout(500);
+  // اختبار الإرسال في وضع التجربة يُسجَّل بلا إرسال فعلي
+  await page.evaluate(() => WA.test());
+  await page.waitForTimeout(500);
+  await page.fill('input[name=ph]', '0551234567');
+  await page.click('.lux-btn.lux-gold[data-ok]');
+  await page.waitForTimeout(900);
+  const log = await page.evaluate(() => JSON.parse(localStorage.getItem('luma_wa_log') || '[]'));
+  expect(log.length).toBe(1);
+  expect(log[0].status).toBe('sandbox');
+  expect(log[0].to).toBe('966551234567');   // تحويل 05… إلى E.164
+});
+
+test('واتساب: قوالب الأحداث قابلة للتحرير والتعطيل والمتغيرات تُملأ', async ({ page }) => {
+  await page.goto('/salon.html#whatsapp');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => WA.go('events'));
+  await page.waitForTimeout(600);
+  await expect(page.locator('.wa-ev')).toHaveCount(7);
+  // تعطيل حدث «تأكيد الحجز» يمنع إرساله
+  await page.locator('.wa-ev[data-ev="booking"] .wa-tgl').click();
+  await page.waitForTimeout(500);
+  const r = await page.evaluate(() => LumaWA.send('booking', { client: 'نوف' }, '0551112233'));
+  expect(r.status).toBe('skipped');
+  // تحرير قالب «الفاتورة» ثم التحقق من تعبئة المتغيرات
+  await page.locator('.wa-ev[data-ev="receipt"] .wa-tpl').fill('عزيزتي {{client}} فاتورتك {{amount}} ريال من {{salon}}');
+  await page.locator('.wa-ev[data-ev="receipt"] .wa-tpl').dispatchEvent('change');
+  await page.waitForTimeout(500);
+  const txt = await page.evaluate(() =>
+    LumaWA.fill(LumaWA.tplOf(LumaWA.get(), 'receipt'), { client: 'نوف', amount: '530', salon: 'صالون لمسة' }));
+  expect(txt).toBe('عزيزتي نوف فاتورتك 530 ريال من صالون لمسة');
+  // متغير غير معروف لا يظهر كـ {{x}}
+  expect(await page.evaluate(() => LumaWA.fill('مرحباً {{client}} {{unknown}}', { client: 'ريم' }))).toBe('مرحباً ريم');
+});
+
+test('واتساب: بلا ربط يرجع لرابط wa.me اليدوي بدل الفشل الصامت', async ({ page }) => {
+  await page.goto('/salon.html#whatsapp');
+  await page.waitForTimeout(900);
+  const r = await page.evaluate(() => LumaWA.send('booking', { client: 'هند', service: 'مكياج' }, '0509998877'));
+  expect(r.status).toBe('manual');
+  expect(r.link).toContain('wa.me/966509998877');
+  await page.evaluate(() => WA.go('log'));
+  await page.waitForTimeout(600);
+  await expect(page.locator('.wa-row')).toHaveCount(1);
+  await expect(page.getByText('لا يوجد ربط API — رابط إرسال يدوي')).toBeVisible();
+  await expect(page.locator('button:has-text("فتح واتساب")')).toBeVisible();
+});
+
+test('واتساب: بناء طلب كل مزوّد بالشكل الصحيح', async ({ page }) => {
+  await page.goto('/salon.html#whatsapp');
+  await page.waitForTimeout(900);
+  const reqs = await page.evaluate(() => {
+    const mk = p => LumaWA.buildRequest({ provider: p, sender: 'SND', token: 'TK', sid: 'SD', url: 'https://x.test/hook' }, '966500000000', 'مرحباً');
+    const meta = mk('meta'), tw = mk('twilio'), d3 = mk('d360'), um = mk('ultramsg'), cu = mk('custom');
+    return {
+      metaUrl: meta.url, metaAuth: meta.init.headers.Authorization, metaBody: meta.init.body,
+      twUrl: tw.url, twAuth: tw.init.headers.Authorization.slice(0, 6), twBody: tw.init.body,
+      d3Key: d3.init.headers['D360-API-KEY'], umUrl: um.url, cuUrl: cu.url,
+    };
+  });
+  expect(reqs.metaUrl).toBe('https://graph.facebook.com/v21.0/SND/messages');
+  expect(reqs.metaAuth).toBe('Bearer TK');
+  expect(JSON.parse(reqs.metaBody).messaging_product).toBe('whatsapp');
+  expect(JSON.parse(reqs.metaBody).text.body).toBe('مرحباً');
+  expect(reqs.twUrl).toContain('/Accounts/SD/Messages.json');
+  expect(reqs.twAuth).toBe('Basic ');
+  expect(reqs.twBody).toContain('To=whatsapp%3A%2B966500000000');
+  expect(reqs.d3Key).toBe('TK');
+  expect(reqs.umUrl).toBe('https://api.ultramsg.com/SD/messages/chat');
+  expect(reqs.cuUrl).toBe('https://x.test/hook');
+});

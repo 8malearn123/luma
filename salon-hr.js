@@ -659,6 +659,9 @@ const HR={
           compDate:comp==='pay'?'':g('compDate').value});
         hrOtSave();close();SALON.go('hr');
         try{window.LumaEvents&&LumaEvents.push('hr','أمر أوفر تايم إلى '+hrStaffName(g('staff').value)+' — '+hrDur(mins)+' ('+HR_COMP[comp]+') بانتظار موافقتها','salon.html#hr');}catch(e){}
+        /* إشعار واتساب للموظفة بأمر الأوفر تايم */
+        if(window.waNotify)waNotify('staff_ot',{staff:hrStaffName(g('staff').value),date:g('date').value,
+          time:g('from').value+' – '+g('to').value,hours:hrDur(mins)},(spOf(g('staff').value)||{}).phone);
         LUX.toast('أُرسل الأمر إلى '+hrStaffName(g('staff').value)+' — بانتظار موافقتها','ok');
       };
     }});
