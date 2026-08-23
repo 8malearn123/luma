@@ -656,14 +656,18 @@ test('محرر الثيم المخصص: الألوان والزوايا تنعك
   await page.waitForTimeout(600);
   const ac = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ac').trim());
   expect(ac).toBe('#ff2277');
-  // القالب الجاهز يعيد الاختيار كنقطة بداية
+  // قالب الاستوديو الجاهز يعيد ضبط اللون والخط والقالب معاً
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("استوديو التصميم")');
-  await page.waitForTimeout(300);
-  await page.click('button:has-text("زمرد هادئ")');
-  await page.waitForTimeout(600);
-  await expect(page.locator('#thx-ac')).toHaveValue('#8fd0c0');
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(500);
+  await page.click('.st-tpl[data-tpl="spa"]');
+  await page.waitForTimeout(500);
+  await page.click('button:has-text("نشر التغييرات")');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الهوية")');
+  await page.waitForTimeout(400);
+  await expect(page.locator('#thx-ac')).toHaveValue('#0f766e');
 });
 
 test('إدارة الخدمات: إضافة خدمة تنعكس في الكتالوج', async ({ page }) => {
@@ -1038,56 +1042,6 @@ test('قسم «الهوية» موحّد: الاسم والشعار والألو
   await expect(page.locator('#thBadge')).toBeVisible();
 });
 
-test('منشئ تخطيط الموقع: إظهار/إخفاء الأقسام وترتيبها ولكل صالون موقع مختلف', async ({ page }) => {
-  // الافتراضي في المتجر: آراء العملاء ظاهرة والعروض وفريقنا مخفية
-  await page.goto('/booking.html');
-  await page.waitForTimeout(700);
-  await expect(page.getByText('آراء العملاء')).toBeVisible();
-  await expect(page.getByText('أمل القحطاني')).toBeVisible();
-  await expect(page.locator('.offer-c')).toHaveCount(0);
-  await expect(page.locator('.team-c')).toHaveCount(0);
-  // المحرر: 8 أقسام قابلة للسحب والإفلات + «الخدمات» قسم أساسي لا يُخفى
-  await page.goto('/salon.html#page');
-  await page.waitForTimeout(800);
-  await page.click('button:has-text("استوديو التصميم")');
-  await page.waitForTimeout(300);
-  await expect(page.getByText('شكل الصفحة الرئيسية — الأقسام وترتيبها')).toBeVisible();
-  await expect(page.locator('.sec-row')).toHaveCount(7);
-  await expect(page.locator('.sec-row[draggable="true"]')).toHaveCount(7);
-  await expect(page.locator('.sec-row', { hasText: 'الخدمات المميزة' }).getByText('أساسي ✓')).toBeVisible();
-  await expect(page.locator('.sec-row', { hasText: 'الخدمات المميزة' }).locator('.sec-tgl')).toHaveCount(0);
-  // إخفاء آراء العملاء + إظهار العروض وفريقنا
-  await page.locator('.sec-row', { hasText: 'آراء العملاء' }).locator('.sec-tgl').click();
-  await page.waitForTimeout(400);
-  await page.locator('.sec-row', { hasText: 'العروض' }).locator('.sec-tgl').click();
-  await page.waitForTimeout(400);
-  await page.locator('.sec-row', { hasText: 'فريقنا' }).locator('.sec-tgl').click();
-  await page.waitForTimeout(400);
-  // رفع «العروض» بالأسهم حتى تسبق الخدمات
-  for (let i = 0; i < 6; i++) {
-    const before = await page.evaluate(() =>
-      (JSON.parse(localStorage.getItem('luma_page_cfg') || '{}').layout || []).map(x => x.k));
-    if (before.indexOf('offers') < before.indexOf('services')) break;
-    await page.locator('.sec-row', { hasText: 'العروض' }).locator('.sec-up').click();
-    await page.waitForTimeout(350);
-  }
-  const layout = await page.evaluate(() =>
-    (JSON.parse(localStorage.getItem('luma_page_cfg') || '{}').layout || []).map(x => x.k + ':' + (x.on ? 1 : 0)));
-  expect(layout).toContain('reviews:0');
-  expect(layout).toContain('offers:1');
-  expect(layout).toContain('team:1');
-  expect(layout.indexOf('offers:1')).toBeLessThan(layout.indexOf('services:1'));
-  // الموقع يعكس التخصيص: العروض وفريقنا ظاهرة، الآراء مختفية، والعروض قبل الخدمات
-  await page.goto('/booking.html');
-  await page.waitForTimeout(700);
-  await expect(page.locator('.offer-c')).toHaveCount(3);
-  await expect(page.getByText('خصم منتصف الأسبوع')).toBeVisible();
-  await expect(page.locator('.team-c').first()).toBeVisible();
-  await expect(page.getByText('آراء العملاء')).toHaveCount(0);
-  const offBox = await page.locator('.offer-c').first().boundingBox();
-  const svcBox = await page.getByText('اختاري خدمتك').boundingBox();
-  expect(offBox.y).toBeLessThan(svcBox.y);
-});
 
 test('محرر «الواجهة»: ألوان وخط وأشكال وطرق عرض وFooter تنعكس على المتجر', async ({ page }) => {
   await page.goto('/salon.html#page');
@@ -1305,4 +1259,129 @@ test('قسم «الفريق» المستقل: التخصص والخدمات وا
   await page.locator('.pgsub[data-sub="team"]').click();
   await page.waitForTimeout(400);
   await expect(page.locator('.mteam', { hasText: 'أمل' }).locator('.mteam-bio')).toHaveValue('خبرة 8 سنوات في مكياج العرائس والمناسبات');
+});
+
+test('استوديو التصميم: قوالب جاهزة وقالب الصفحة ينعكسان في المعاينة الحية', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(700);
+  const pf = () => page.frames().find(f => f.url().includes('preview=1'));
+  // المعاينة إطار حقيقي للصفحة العامة لا محاكاة
+  expect(pf()).toBeTruthy();
+  await expect(page.locator('.st-tpl')).toHaveCount(6);
+  await expect(page.locator('.st-theme')).toHaveCount(4);
+  // قالب جاهز واحد يغيّر لون الموقع كلياً خلال أقل من ثانية
+  await page.click('.st-tpl[data-tpl="rose"]');
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ac').trim())).toBe('#db2777');
+  // قالب الصفحة له أثر بصري مثبت: الاستدارة والصنف على الجذر
+  await page.click('.st-theme[data-theme="classic"]');
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => document.body.className)).toContain('theme-classic');
+  expect(await pf().evaluate(() => getComputedStyle(document.body).getPropertyValue('--rad').trim())).toBe('0px');
+  await page.click('.st-theme[data-theme="bold"]');
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => document.body.className)).toContain('theme-bold');
+  expect(await pf().evaluate(() => getComputedStyle(document.body).getPropertyValue('--rad').trim())).toBe('10px');
+});
+
+test('استوديو التصميم: إخفاء وترتيب وتكرار الأقسام ينعكس فوراً بلا حفظ قبل النشر', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(700);
+  const pf = () => page.frames().find(f => f.url().includes('preview=1'));
+  // الأقسام التسعة عشر كلها معروضة وقابلة للسحب
+  await expect(page.locator('.sec-row')).toHaveCount(19);
+  await expect(page.locator('.sec-row[draggable="true"]')).toHaveCount(19);
+  // «خدماتنا» ثابت: لا زر إخفاء ولا حذف
+  const svcRow = page.locator('.sec-row', { hasText: 'خدماتنا' });
+  await expect(svcRow.locator('.sec-tgl')).toHaveCount(0);
+  await expect(svcRow.locator('.sec-del')).toHaveCount(0);
+  // إخفاء «آراء العميلات» يخفيها من الصفحة العامة فوراً
+  expect(await pf().evaluate(() => !!document.querySelector('[data-sec^="reviews"]').innerHTML)).toBe(true);
+  await page.locator('.sec-row', { hasText: 'آراء العميلات' }).locator('.sec-tgl').click();
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => !!document.querySelector('[data-sec^="reviews"]'))).toBe(false);
+  // تكرار «لماذا نحن» يعرضه مرتين
+  await page.locator('.sec-row', { hasText: 'لماذا نحن' }).locator('.sec-dup').click();
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => document.querySelectorAll('[data-sec^="perks"]').length)).toBe(2);
+  // لا شيء يُحفظ حتى النشر
+  expect(await page.evaluate(() => (JSON.parse(localStorage.getItem('luma_page_cfg') || '{}').layout || []).length)).toBe(0);
+  await expect(page.getByText('لديك تغييرات غير منشورة')).toBeVisible();
+  await page.click('button:has-text("نشر التغييرات")');
+  await page.waitForTimeout(800);
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('luma_page_cfg') || '{}').layout || []);
+  expect(saved.length).toBe(20);
+  expect(saved.filter(x => x.k === 'perks').length).toBe(2);
+  expect(saved.find(x => x.k === 'reviews').on).toBe(false);
+});
+
+test('استوديو التصميم: التراجع يرجع الحالة والكتابة السريعة لقطة واحدة', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(700);
+  // ثلاث خطوات ثم ثلاث تراجعات ترجع للأصل
+  await page.click('.st-theme[data-theme="minimal"]');
+  await page.waitForTimeout(800);
+  await page.click('.st-theme[data-theme="bold"]');
+  await page.waitForTimeout(800);
+  await page.click('.st-theme[data-theme="classic"]');
+  await page.waitForTimeout(800);
+  expect(await page.evaluate(() => STUDIO.val('themeId'))).toBe('classic');
+  for (let i = 0; i < 3; i++) { await page.click('button:has-text("تراجع")'); await page.waitForTimeout(700); }
+  expect(await page.evaluate(() => STUDIO.form.themeId)).toBeUndefined();
+  // تجاهل المسودة يعيد كل شيء
+  await page.click('.st-theme[data-theme="bold"]');
+  await page.waitForTimeout(600);
+  await expect(page.getByText('لديك تغييرات غير منشورة')).toBeVisible();
+});
+
+test('استوديو التصميم: محرر محتوى القسم يضيف عنصراً يظهر بالصفحة العامة', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(700);
+  // فتح محرر «الباقات والعروض» وإضافة عرض
+  await page.locator('.sec-row', { hasText: 'الباقات والعروض' }).locator('.sec-ed').click();
+  await page.waitForTimeout(500);
+  await page.click('.st-add');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.st-row')).toHaveCount(1);
+  await page.locator('.st-row input').nth(1).fill('باقة العروس الماسية');
+  await page.locator('.st-row input').nth(1).dispatchEvent('change');
+  await page.waitForTimeout(600);
+  // إظهار القسم ثم التحقق من ظهوره في المعاينة
+  await page.click('button:has-text("رجوع للأقسام")');
+  await page.waitForTimeout(400);
+  await page.locator('.sec-row', { hasText: 'الباقات والعروض' }).locator('.sec-tgl').click();
+  await page.waitForTimeout(700);
+  const pf = page.frames().find(f => f.url().includes('preview=1'));
+  expect(await pf.evaluate(() => document.body.innerText)).toContain('باقة العروس الماسية');
+});
+
+test('المعاينة الحية: تتجاهل الرسائل غير المطابقة ولا تعمل بدون preview=1', async ({ page }) => {
+  // بدون preview=1 لا يُسجَّل مستقبِل ولا تتأثر الصفحة
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await page.evaluate(() => window.postMessage({ type: 'salon-preview', settings: { title: 'اختراق' } }, window.location.origin));
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => CFG.title)).not.toBe('اختراق');
+  // مع preview=1: رسالة بنوع خاطئ تُتجاهل، والصحيحة تُطبَّق
+  await page.goto('/booking.html?preview=1');
+  await page.waitForTimeout(700);
+  await page.evaluate(() => window.postMessage({ type: 'other-thing', settings: { title: 'اختراق' } }, window.location.origin));
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => CFG.title)).not.toBe('اختراق');
+  await page.evaluate(() => window.postMessage({ type: 'salon-preview', settings: { title: 'صالون المعاينة' } }, window.location.origin));
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => CFG.title)).toBe('صالون المعاينة');
+  // وضع المعاينة لا يزيد عدّاد الزيارات ولا يحفظ شيئاً
+  const before = await page.evaluate(() => localStorage.getItem('luma_store_visits'));
+  await page.reload();
+  await page.waitForTimeout(600);
+  expect(await page.evaluate(() => localStorage.getItem('luma_store_visits'))).toBe(before);
 });

@@ -14,6 +14,35 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#09090b;--card:#151517;--ac:#e5c158;--tx:#f5f1e8}
+  /* قوالب الموقع — لكل قالب استدارة وظل وحدود مختلفة، والأثر مثبت بالاختبارات */
+  body.theme-modern{--rad:16px;--sec-gap:26px;--shadow:0 10px 26px rgba(0,0,0,.28);--bd:1px}
+  body.theme-minimal{--rad:4px;--sec-gap:20px;--shadow:none;--bd:1px}
+  body.theme-bold{--rad:10px;--sec-gap:32px;--shadow:0 16px 38px rgba(0,0,0,.45);--bd:2px}
+  body.theme-classic{--rad:0px;--sec-gap:24px;--shadow:0 2px 0 color-mix(in srgb,var(--ac) 35%,transparent);--bd:1px}
+  body[class*="theme-"] .card,body[class*="theme-"] .offer-c,body[class*="theme-"] .rev-c,
+  body[class*="theme-"] .team-c,body[class*="theme-"] .perk-c,body[class*="theme-"] .brand-c,
+  body[class*="theme-"] .faq-c,body[class*="theme-"] .sec-box{border-radius:var(--rad);box-shadow:var(--shadow);border-width:var(--bd)}
+  .sec-box{background:var(--card);border:1px solid var(--ln);padding:15px 16px;margin-bottom:10px}
+  .sec-t{font-size:14px;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+  .sec-t .no{font-family:'Bodoni Moda',serif;color:var(--ac);font-size:15px}
+  .perk-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
+  .perk-c{background:var(--card);border:1px solid var(--ln);padding:13px 14px;text-align:center}
+  .perk-c .ic{font-size:20px;display:block;margin-bottom:6px}
+  .brand-row{display:flex;gap:9px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px}
+  .brand-c{flex:0 0 92px;background:var(--card);border:1px solid var(--ln);padding:14px 8px;text-align:center;font-size:12px}
+  .faq-c{background:var(--card);border:1px solid var(--ln);padding:12px 14px;margin-bottom:8px}
+  .faq-c summary{cursor:pointer;font-size:13px;font-weight:600;list-style:none}
+  .faq-c summary::-webkit-details-marker{display:none}
+  .faq-c p{font-size:12.5px;opacity:.72;line-height:1.9;margin-top:9px}
+  .cd-row{display:flex;gap:8px;justify-content:center;margin:10px 0}
+  .cd-box{background:var(--card);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);border-radius:var(--rad,12px);padding:10px 14px;text-align:center;min-width:64px}
+  .cd-box b{display:block;font-family:'Bodoni Moda',serif;font-size:22px;color:var(--ac);direction:ltr}
+  .cd-box span{font-size:10.5px;opacity:.6}
+  .wide-c{position:relative;border-radius:var(--rad,14px);overflow:hidden;border:1px solid var(--ln);min-height:120px;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;margin-bottom:10px;background:linear-gradient(120deg,color-mix(in srgb,var(--ac) 20%,transparent),color-mix(in srgb,var(--ac) 5%,transparent))}
+  .divider-c{text-align:center;padding:16px;margin:14px 0;border-block:1px solid color-mix(in srgb,var(--ac) 35%,transparent);font-size:13.5px;font-weight:600;color:var(--ac)}
+  .cta-c{text-align:center;background:linear-gradient(120deg,color-mix(in srgb,var(--ac) 22%,transparent),color-mix(in srgb,var(--ac) 6%,transparent));border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);border-radius:var(--rad,14px);padding:22px 18px;margin-bottom:10px}
+  .hours-r{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--ln);font-size:12.5px}
+  .hours-r:last-child{border-bottom:none}
   body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
   .wrap{max-width:430px;margin:0 auto;padding-bottom:40px}
   .cover{position:relative;height:150px;background:linear-gradient(140deg,color-mix(in srgb,var(--ac) 25%,transparent),var(--bg))}
@@ -161,16 +190,43 @@ const CFG={slug:'lama-beauty',title:'صالون لمسة',bio:'وجهتكِ ال
   privacyText:'نحترم خصوصيتك — بياناتك (الاسم ورقم الجوال) تُستخدم لإدارة حجزك وطلباتك فقط.\nلا نشارك بياناتك مع أي طرف ثالث دون موافقتك.\nيمكنك طلب حذف بياناتك في أي وقت عبر التواصل معنا.',
   policyText:'يمكن تعديل الموعد أو إلغاؤه مجاناً قبل 24 ساعة من وقته.\nالإلغاء خلال أقل من 24 ساعة يُحتسب منه العربون إن وُجد.\nالتأخر أكثر من 15 دقيقة قد يقصّر مدة الجلسة حفاظاً على مواعيد بقية العميلات.',
   ...load('luma_page_cfg',{})};
+/* ═══ المعاينة الحية — الصفحة العامة نفسها داخل iframe الاستوديو، تستقبل المسودة عبر postMessage.
+   لا تعمل إلا مع ?preview=1، وتفحص e.origin في الطرفين، ولا تحفظ شيئاً في التخزين. ═══ */
+const IS_PREVIEW=new URLSearchParams(location.search).get('preview')==='1';
+if(IS_PREVIEW){
+  window.addEventListener('message',e=>{
+    if(e.origin!==window.location.origin)return;      /* فحص المصدر إلزامي */
+    const d=e.data;
+    if(!d||d.type!=='salon-preview')return;
+    Object.assign(CFG,d.settings||{});
+    if(d.extras)CFG.extras={...(CFG.extras||{}),...d.extras};
+    applyTheme();
+    try{typeof render==='function'&&render();}catch(err){}
+  });
+  try{window.parent&&window.parent.postMessage({type:'salon-preview-ready'},window.location.origin);}catch(e){}
+}
 /* عدّاد زيارات الموقع — يظهر بلوحة «عام» عند صاحبة الصالون */
-try{LumaStore.raw.set('luma_store_visits',String((parseInt(LumaStore.raw.get('luma_store_visits','0'))||0)+1));}catch(e){}
-/* ثيم مخصص من المحرر الكامل، أو قالب جاهز */
-const T=(CFG.theme==='custom'&&CFG.themeCustom)?{...THEMES['dark-luxury'],...CFG.themeCustom}:(THEMES[CFG.theme]||THEMES['dark-luxury']);
-const rt=document.documentElement.style;
-rt.setProperty('--bg',T.bg);rt.setProperty('--card',T.card);rt.setProperty('--ac',T.ac);rt.setProperty('--tx',T.tx);
-rt.setProperty('--rad',(T.rad!=null?T.rad:18)+'px');
-rt.setProperty('--ac2',T.ac2||T.ac);rt.setProperty('--btn',T.btn||T.ac);
+if(!IS_PREVIEW)try{LumaStore.raw.set('luma_store_visits',String((parseInt(LumaStore.raw.get('luma_store_visits','0'))||0)+1));}catch(e){}
+/* ثيم مخصص من المحرر الكامل، أو قالب جاهز — دالة واحدة تُستدعى عند التحميل ومع كل مسودة معاينة */
+const THEME_IDS=['modern','minimal','bold','classic'];
+const themeClass=id=>'theme-'+(THEME_IDS.includes(id)?id:'modern');
+function applyTheme(){
+  const T=(CFG.theme==='custom'&&CFG.themeCustom)?{...THEMES['dark-luxury'],...CFG.themeCustom}:(THEMES[CFG.theme]||THEMES['dark-luxury']);
+  const rt=document.documentElement.style;
+  rt.setProperty('--bg',T.bg);rt.setProperty('--card',T.card);rt.setProperty('--ac',T.ac);rt.setProperty('--tx',T.tx);
+  rt.setProperty('--ac2',T.ac2||T.ac);rt.setProperty('--btn',T.btn||T.ac);
+  /* استدارة الأزرار من الاستوديو تتقدّم على استدارة الثيم */
+  const br=(CFG.extras||{}).btnRadius;
+  rt.setProperty('--rad',(br!=null?br:(T.rad!=null?T.rad:18))+'px');
+  const b=document.body;
+  THEME_IDS.forEach(t=>b.classList.remove('theme-'+t));
+  b.classList.add(themeClass(CFG.themeId));
+  ['soft','sharp','round'].forEach(v=>b.classList.remove('ui-card-'+v));
+  b.classList.add('ui-card-'+(CFG.cardStyle||'soft'));
+}
 /* أشكال الواجهة: البطاقات/الأزرار/القائمة/طرق العرض — تُدار من محرر «الواجهة» */
-document.body.classList.add('ui-card-'+(CFG.cardStyle||'soft'),'ui-btn-'+(CFG.btnStyle||'auto'),'ui-menu-'+(CFG.menuStyle||'simple'),'ui-svc-'+(CFG.svcView||'list'));
+document.body.classList.add('ui-btn-'+(CFG.btnStyle||'auto'),'ui-menu-'+(CFG.menuStyle||'simple'),'ui-svc-'+(CFG.svcView||'list'));
+applyTheme();
 
 /* ═══ الخط المخصص — يُحمَّل بشكل غير حاجب حتى لا يجمّد الصفحة ═══ */
 const FONTS={
@@ -413,20 +469,34 @@ function bannersStrip(){
     <span style="color:var(--ac);display:inline-flex;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 001 1h2l8 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M16 9a3 3 0 010 6"/></svg></span>
     <span style="font-size:13px;font-weight:600">${esc(x.t)}</span></div>`).join('');
 }
-/* ═══ تخطيط الصفحة الرئيسية — الأقسام وترتيبها تديرها المالكة من «استوديو التصميم» ═══ */
-const LAYOUT_KEYS=['banner','offers','gallery','services','reviews','team','insta'];
-const LAYOUT_DEFAULT=[{k:'banner',on:true},{k:'gallery',on:true},{k:'services',on:true},{k:'reviews',on:true},{k:'offers',on:false},{k:'team',on:false},{k:'insta',on:false}];
+/* ═══ نظام الأقسام — الصفحة ليست ثابتة بل مصفوفة أقسام مرتّبة تُرسم من JSON محفوظ ═══ */
+const LAYOUT_KEYS=['banner','perks','services','offers','countdown','team','gallery','wide','divider','brands','video','reviews','hours','location','faq','text','booking_cta','support','insta'];
+const LAYOUT_DEFAULT=[
+  {k:'banner',on:true},{k:'perks',on:true},{k:'services',on:true},{k:'offers',on:false},
+  {k:'countdown',on:false},{k:'team',on:false},{k:'gallery',on:true},{k:'wide',on:false},
+  {k:'divider',on:false},{k:'brands',on:false},{k:'video',on:false},{k:'reviews',on:true},
+  {k:'hours',on:true},{k:'location',on:true},{k:'faq',on:false},{k:'text',on:false},
+  {k:'booking_cta',on:true},{k:'support',on:true},{k:'insta',on:false},
+];
+/* الدمج مع الافتراضي: أي قسم جديد يُضاف في الكود يظهر تلقائياً للصالونات القديمة بلا ترحيل،
+   والتكرار مسموح — نفس المفتاح مرتين يُرسم مرتين بمفتاح مركّب. */
 function layoutOf(){
-  const cur=Array.isArray(CFG.layout)?CFG.layout:[];
-  const seen=new Set();const out=[];
-  cur.forEach(x=>{if(x&&LAYOUT_KEYS.includes(x.k)&&!seen.has(x.k)){seen.add(x.k);out.push({k:x.k,on:x.k==='services'?true:!!x.on});}});
-  LAYOUT_DEFAULT.forEach(d=>{if(!seen.has(d.k))out.push({...d});});
+  const cur=(Array.isArray(CFG.layout)?CFG.layout:[]).filter(x=>x&&LAYOUT_KEYS.includes(x.k));
+  const out=cur.map(x=>({k:x.k,on:x.k==='services'?true:x.on!==false}));
+  LAYOUT_DEFAULT.forEach(d=>{if(!cur.some(x=>x.k===d.k))out.push({...d});});
   return out;
+}
+/* الترقيم التسلسلي للأقسام الكبيرة حسب ترتيبها الفعلي لا حسب تعريفها */
+const AR_D='٠١٢٣٤٥٦٧٨٩';
+function secNumbers(order){
+  const numbered=['services','team','gallery','reviews'];const m={};let c=0;
+  order.forEach(k=>{if(numbered.includes(k)&&!m[k])m[k]='٠'+AR_D[++c];});
+  return m;
 }
 const secStar=n=>'<span style="color:var(--ac);letter-spacing:2px">'+'★'.repeat(n)+'</span><span style="opacity:.25;letter-spacing:2px">'+'★'.repeat(5-n)+'</span>';
 /* العروض — بطاقات خصومات وباقات */
 function offersSec(){
-  const OFFERS=[
+  const OFFERS=((CFG.extras||{}).offers||[]).length?(CFG.extras||{}).offers:[
     {b:'-15٪',t:'خصم منتصف الأسبوع',d:'على كل خدمات العناية بالبشرة — الثلاثاء والأربعاء'},
     {b:'باقة',t:'باقة العروس الملكية',d:'مكياج + تسريحة + جلسة عناية بسعر باقة واحدة'},
     {b:'هدية',t:'ضيافة مجانية',d:'قهوة مختصة وضيافة فاخرة مع كل موعد مسائي'},
@@ -434,13 +504,99 @@ function offersSec(){
   return `<div class="cat" style="margin-top:24px">العروض <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20.6 13.4L12 22l-8.6-8.6a5.4 5.4 0 017.6-7.6l1 1 1-1a5.4 5.4 0 017.6 7.6z"/></svg></div>
   <div style="display:grid;gap:10px;margin-bottom:6px">${OFFERS.map(o=>`
     <div class="offer-c" style="display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid color-mix(in srgb,var(--ac) 40%,transparent);border-radius:var(--rad,14px);padding:14px 16px">
-      <span style="flex-shrink:0;background:color-mix(in srgb,var(--ac) 18%,transparent);color:var(--ac);border-radius:11px;padding:9px 13px;font-size:13px;font-weight:800">${o.b}</span>
-      <span><span style="display:block;font-size:13.5px;font-weight:700">${o.t}</span><span style="display:block;font-size:11.5px;opacity:.65;margin-top:3px">${o.d}</span></span>
+      <span style="flex-shrink:0;background:color-mix(in srgb,var(--ac) 18%,transparent);color:var(--ac);border-radius:11px;padding:9px 13px;font-size:13px;font-weight:800">${esc(o.b||'')}</span>
+      <span><span style="display:block;font-size:13.5px;font-weight:700">${esc(o.t||'')}</span><span style="display:block;font-size:11.5px;opacity:.65;margin-top:3px">${esc(o.d||'')}</span></span>
     </div>`).join('')}</div>`;
+}
+/* ── الأقسام الجديدة: كلها تقرأ محتواها من إعدادات الصالون (X) وتتلوّن بمتغيرات CSS ── */
+const X=()=>CFG.extras||{};
+const secHead=(t,no)=>`<div class="cat" style="margin-top:var(--sec-gap,24px)">${no?`<span style="font-family:'Bodoni Moda',serif;color:var(--ac);margin-left:6px">${no}</span>`:''}${esc(t)}</div>`;
+/* مميزات الصالون */
+function perksSec(no){
+  const P=X().perks||[{ic:'✦',t:'نظافة وتعقيم',d:'أدوات معقّمة لكل عميلة'},{ic:'🔒',t:'خصوصية تامة',d:'صالون نسائي مغلق'},
+    {ic:'⏱',t:'مواعيد مرنة',d:'حجز حتى 10 مساءً'},{ic:'★',t:'خبيرات معتمدات',d:'فريق مدرّب ومرخّص'}];
+  if(!P.length)return '';
+  return secHead('لماذا نحن',no)+`<div class="perk-grid">${P.map(x=>`
+    <div class="perk-c"><span class="ic">${esc(x.ic||'✦')}</span><b style="font-size:13px">${esc(x.t||'')}</b>
+      ${x.d?`<div style="font-size:11.5px;opacity:.65;margin-top:4px;line-height:1.7">${esc(x.d)}</div>`:''}</div>`).join('')}</div>`;
+}
+/* عد تنازلي لعرض ينتهي */
+function countdownSec(no){
+  const c=X().countdown||{};
+  if(!c.ends)return '';
+  const left=Math.max(0,new Date(c.ends+'T23:59:59').getTime()-Date.now());
+  const d=Math.floor(left/864e5),h=Math.floor(left%864e5/36e5),m=Math.floor(left%36e5/6e4);
+  return secHead(c.t||'ينتهي العرض خلال',no)+`<div class="cd-row">
+    ${[[d,'يوم'],[h,'ساعة'],[m,'دقيقة']].map(([v,l])=>`<div class="cd-box"><b>${v}</b><span>${l}</span></div>`).join('')}</div>`;
+}
+/* بنرات عريضة */
+function wideSec(no){
+  const W=X().wide||[];
+  if(!W.length)return '';
+  return W.map(b=>`<div class="wide-c">${b.img?`<img src="${b.img}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45"/>`:''}
+    <div style="position:relative"><b style="font-size:16px;display:block">${esc(b.t||'')}</b>
+      ${b.d?`<span style="font-size:12.5px;opacity:.75;display:block;margin-top:5px">${esc(b.d)}</span>`:''}</div></div>`).join('');
+}
+/* فاصل بجملة تسويقية */
+function dividerSec(){
+  const d=X().divider||{};
+  return d.t?`<div class="divider-c">${esc(d.t)}</div>`:'';
+}
+/* ماركات المنتجات المستخدمة */
+function brandsSec(no){
+  const B=X().brands||[];
+  if(!B.length)return '';
+  return secHead('ماركات نستخدمها',no)+`<div class="brand-row">${B.map(b=>`<div class="brand-c">${b.img?`<img src="${b.img}" alt="" style="width:100%;height:34px;object-fit:contain;margin-bottom:6px"/>`:''}${esc(b.n||'')}</div>`).join('')}</div>`;
+}
+/* فيديو تعريفي */
+function videoSec(no){
+  const v=X().video||{};
+  if(!v.url)return '';
+  const yt=String(v.url).match(/(?:youtu\.be\/|v=)([\w-]{6,})/);
+  return secHead(v.t||'فيديو تعريفي',no)+`<div class="sec-box" style="padding:0;overflow:hidden">
+    ${yt?`<iframe src="https://www.youtube.com/embed/${yt[1]}" title="فيديو" style="width:100%;aspect-ratio:16/9;border:none;display:block" allowfullscreen loading="lazy"></iframe>`
+       :`<video src="${esc(v.url)}" controls playsinline style="width:100%;display:block"></video>`}</div>`;
+}
+/* أوقات العمل */
+function hoursSec(no){
+  const H=X().hours||[{d:'السبت — الخميس',o:'10:00 ص',c:'10:00 م'},{d:'الجمعة',o:'2:00 م',c:'11:00 م'}];
+  if(!H.length)return '';
+  return secHead('أوقات العمل',no)+`<div class="sec-box">${H.map(h=>`
+    <div class="hours-r"><span>${esc(h.d||'')}</span>
+      <b style="color:var(--ac)">${h.closed?'مغلق':esc((h.o||'')+' – '+(h.c||''))}</b></div>`).join('')}</div>`;
+}
+/* الأسئلة الشائعة */
+function faqSec(no){
+  const rows=String(CFG.faqText||'').split('\n').map(l=>l.split('|')).filter(x=>x[0]&&x[0].trim());
+  if(!rows.length)return '';
+  return secHead('الأسئلة الشائعة',no)+rows.map(([q,a])=>`
+    <details class="faq-c"><summary>${esc(q.trim())}</summary><p>${esc((a||'').trim())}</p></details>`).join('');
+}
+/* نص حر */
+function textSec(no){
+  const x=X();
+  if(!x.textBody)return '';
+  return secHead(x.textTitle||'عن الصالون',no)+`<div class="sec-box" style="font-size:12.5px;opacity:.8;line-height:2">${esc(x.textBody).replace(/\n/g,'<br>')}</div>`;
+}
+/* دعوة الحجز الختامية */
+function ctaSec(){
+  const x=X();
+  return `<div class="cta-c"><b style="font-size:16px;display:block">${esc(x.ctaTitle||'جاهزة لموعدك القادم؟')}</b>
+    <span style="font-size:12.5px;opacity:.72;display:block;margin-top:6px">${esc(x.ctaText||'احجزي الآن واختاري الوقت الذي يناسبك')}</span>
+    <button class="btn" style="margin-top:14px;max-width:260px" onclick="document.querySelector('.svc')?.scrollIntoView({behavior:'smooth',block:'center'})">احجزي موعدك</button></div>`;
+}
+/* واتساب واتصال */
+function supportSec(){
+  const ph=String(CFG.phone||'').replace(/\D/g,'');
+  if(!ph)return '';
+  const wa='https://wa.me/'+(ph.startsWith('966')?ph:'966'+ph.replace(/^0/,''));
+  return `<div style="display:flex;gap:9px;margin-bottom:10px">
+    <a href="${wa}" target="_blank" rel="noopener" style="flex:1;text-align:center;border:1px solid var(--ac);color:var(--ac);border-radius:var(--rad,22px);padding:12px;font-size:12.5px;text-decoration:none">واتساب</a>
+    <a href="tel:${ph}" style="flex:1;text-align:center;border:1px solid var(--ln);color:inherit;border-radius:var(--rad,22px);padding:12px;font-size:12.5px;text-decoration:none">اتصال</a></div>`;
 }
 /* آراء العملاء — تقييمات بالنجوم */
 function reviewsSec(){
-  const RVS=[
+  const RVS=((CFG.extras||{}).reviews||[]).length?(CFG.extras||{}).reviews:[
     {n:'أمل القحطاني',s:5,t:'أجمل مكياج عروس ممكن تشوفينه — تفاصيل وإتقان، تجربة ملكية فعلاً.'},
     {n:'ريما العتيبي',s:5,t:'التزام تام بالمواعيد والنتيجة خيالية، صرت عميلة دائمة.'},
     {n:'شهد الدوسري',s:4,t:'المكان راقٍ جداً والفريق محترف — الضيافة لمسة فخمة.'},
@@ -554,9 +710,18 @@ function render(){
   }
   let s='';
   if(step===1){
-    /* الصفحة الرئيسية تُبنى من الأقسام المفعّلة بترتيب المالكة — لكل صالون متجر مختلف */
-    const SECS={banner:bannersStrip,offers:offersSec,gallery:gallery,services:servicesSec,reviews:reviewsSec,team:teamSec,insta:instaSec};
-    s=layoutOf().filter(x=>x.on).map(x=>(SECS[x.k]||(()=>''))()).join('')+mapCard()+policyBox()+footerSec();
+    /* الصفحة الرئيسية تُبنى من الأقسام المفعّلة بترتيب المالكة — لكل صالون موقع مختلف.
+       التكرار مسموح: نفس المفتاح مرتين يُرسم مرتين، والترقيم يتبع الترتيب الفعلي. */
+    const SECS={banner:bannersStrip,perks:perksSec,services:servicesSec,offers:offersSec,countdown:countdownSec,
+      team:teamSec,gallery:gallery,wide:wideSec,divider:dividerSec,brands:brandsSec,video:videoSec,
+      reviews:reviewsSec,hours:hoursSec,location:mapCard,faq:faqSec,text:textSec,
+      booking_cta:ctaSec,support:supportSec,insta:instaSec};
+    const order=layoutOf().filter(x=>x.on).map(x=>x.k);
+    const nums=secNumbers(order);
+    const used={};
+    s=order.map(k=>{const f=SECS[k];if(!f)return '';used[k]=(used[k]||0)+1;
+      return `<div data-sec="${k}-${used[k]}">${f(used[k]===1?nums[k]:'')||''}</div>`;}).join('')
+      +policyBox()+footerSec();
   }
   if(step===2){
     s=back('اختاري تاريخ الزيارة',1)+`<div class="days">`+days.map((d,i)=>{

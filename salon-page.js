@@ -9,7 +9,6 @@ const PAGE_PRESETS=[
   {k:'pearl-light',ar:'لؤلؤ فاتح',bg:'#f7f3ec',card:'#ffffff',ac:'#9c8047',tx:'#2e241b',rad:18},
 ];
 /* توافق خلفي مع أي كود قديم يقرأ الشكل المصفوفي */
-const PAGE_THEMES=PAGE_PRESETS.map(p=>[p.k,p.ar,p.bg,p.ac]);
 /* الثيم المحلول للإعدادات الحالية: قالب جاهز أو ثيم مخصص بالكامل */
 function pageThemeOf(c){
   c=c||pageCfg();
@@ -125,13 +124,6 @@ const PAGE={
   },
   /* خيارات شكل الواجهة: بطاقات/أزرار/قائمة/طرق عرض/تذييل */
   setUI(k,v){if(v==='true')v=true;if(v==='false')v=false;PAGE.save({[k]:v},true);PAGE.showTab('front');},
-  setRad(v){
-    const t=PAGE.customBase();t.rad=Math.max(0,Math.min(28,parseInt(v)||0));
-    PAGE.save({theme:'custom',themeCustom:t},true);
-    const l=document.getElementById('radV');if(l)l.textContent=t.rad+'px';
-    const badge=document.getElementById('thBadge');if(badge)badge.style.display='inline-block';
-  },
-  preset(k){PAGE.save({theme:k,themeCustom:null},true);SALON.go('page');LUX.toast('طُبّق قالب البداية — عدّلي ألوانه كما تحبين','ok');},
   setFont(k){PAGE.save({font:k},true);SALON.go('page');LUX.toast('تغيّر خط الصفحة ✓','ok');},
   setSocial(k,el){
     const s={...(pageCfg().social||{})};
@@ -696,57 +688,18 @@ SCREENS.page=()=>{
       </div>
       </div>
       <div style="${PAGE_TAB==='design'?'':'display:none'}">
-      <div class="card" style="margin-bottom:14px">
-        <div class="sec-label">شكل الصفحة الرئيسية — الأقسام وترتيبها <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اسحبي وأفلتي أو استخدمي الأسهم — وأظهري/أخفي أي قسم</span></div>
-        ${pageLayoutOf(c).map((x,i,arr)=>{const meta=PAGE_SECTIONS.find(s=>s[0]===x.k)||[x.k,x.k,''];const lock=x.k==='services';
-        const ab='width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);color:var(--cream);cursor:pointer;font-size:10px;line-height:1;display:inline-flex;align-items:center;justify-content:center';
-        return `
-        <div class="sec-row" draggable="true" ondragstart="PAGE.secDragStart(event,${i})" ondragover="PAGE.secDragOver(event)" ondrop="PAGE.secDrop(event,${i})"
-          style="display:flex;align-items:center;gap:11px;border:1px solid ${x.on?'var(--gold-deep)':'var(--line)'};border-radius:11px;padding:10px 13px;margin-bottom:8px;background:${x.on?'linear-gradient(120deg,rgba(219,189,129,.07),transparent)':'var(--surface)'};cursor:grab">
-          <span style="color:var(--muted);font-size:15px;letter-spacing:1px" title="اسحبي للترتيب">⠿</span>
-          <span class="num" style="font-size:11px;color:var(--gold-pale);width:16px;text-align:center">${i+1}</span>
-          <span style="flex:1;min-width:0"><span style="display:block;font-size:13px;color:${x.on?'var(--white)':'var(--muted)'}">${meta[1]}</span><span style="display:block;font-size:10.5px;color:var(--muted);margin-top:2px">${meta[2]}</span></span>
-          <span style="display:inline-flex;gap:4px">
-            <button class="sec-up" onclick="PAGE.secMove(${i},-1)" ${i===0?'disabled style="'+ab+';opacity:.3;cursor:default"':'style="'+ab+'"'} title="أعلى">▲</button>
-            <button class="sec-dn" onclick="PAGE.secMove(${i},1)" ${i===arr.length-1?'disabled style="'+ab+';opacity:.3;cursor:default"':'style="'+ab+'"'} title="أسفل">▼</button>
-          </span>
-          ${lock?`<span style="font-size:10.5px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:4px 12px;white-space:nowrap">أساسي ✓</span>`
-            :`<button class="sec-tgl btn btn-ghost" onclick="PAGE.secToggle(${i})" style="padding:6px 13px;font-size:11.5px;white-space:nowrap">${x.on?'إخفاء':'إظهار'}</button>`}
-        </div>`;}).join('')}
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.9">مثال: صالون يرتّب «آراء العملاء ← العروض ← المعرض ← الخدمات ← البانر»، وآخر يبدأ بـ«انستغرام ← فريقنا» — الكل على لوما ولكل صالون موقع مختلف تماماً.</div>
-      </div>
-      <div class="card">
-        <div class="sec-label">مظهر وتصميم الصفحة <span class="ln"></span></div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:9px">قوالب كنقطة بداية — ثم عدّلي كل لون بنفسك:</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
-          ${PAGE_PRESETS.map(p=>`
-          <button onclick="PAGE.preset('${p.k}')" style="background:${p.bg};border:2px solid ${c.theme===p.k?p.ac:'var(--line)'};border-radius:12px;padding:11px;text-align:right;cursor:pointer;font-family:inherit">
-            <span style="display:flex;gap:5px;margin-bottom:8px"><i style="width:14px;height:14px;border-radius:50%;background:${p.ac}"></i><i style="width:14px;height:14px;border-radius:50%;background:${p.card};border:1px solid rgba(128,128,128,.35)"></i></span>
-            <span style="display:block;font-size:12px;font-weight:700;color:${p.tx}">${p.ar}</span>
-            <span style="display:block;font-size:9px;color:${p.tx};opacity:.5" dir="ltr">${p.k}</span>
-          </button>`).join('')}
-        </div>
-        ${(()=>{const t=pageThemeOf(c);
-        return `
-        <div style="display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:11px;padding:10px 14px">
-          <span style="font-size:12px;color:var(--white);white-space:nowrap">استدارة الزوايا</span>
-          <input type="range" min="0" max="28" value="${t.rad!=null?t.rad:18}" onchange="PAGE.setRad(this.value)" style="flex:1;accent-color:var(--gold-light)"/>
-          <span id="radV" class="num" style="font-size:13px;color:var(--gold-light);width:44px;text-align:left" dir="ltr">${t.rad!=null?t.rad:18}px</span>
-        </div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:12px">الألوان والخط تعدّلينها من قسم «الهوية» — هنا ترتيب الأقسام والقوالب الجاهزة والاستدارة.</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
-          <span style="font-size:11px;color:var(--muted)">كل تغيير يُحفظ فوراً وينعكس على المعاينة والفاتورة</span>
-          <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px" onclick="PAGE.resetTheme()">استعادة الافتراضي</button>
-        </div>`;})()}
-      </div>
+      ${PAGE_TAB==='design'?studioView():''}
       </div>
     </div>
     <div style="position:sticky;top:90px">
-      <div class="sec-label">المعاينة الفورية <span class="ln"></span></div>
-      <div style="width:300px;margin:0 auto;border:6px solid #26242d;border-radius:38px;background:#000;padding:7px;box-shadow:0 30px 60px rgba(0,0,0,.5)">
-        <div style="width:92px;height:18px;background:#17161c;border-radius:0 0 14px 14px;margin:0 auto 5px"></div>
-        <iframe id="pagePrev" src="booking.html" style="width:100%;height:520px;border:none;border-radius:26px;background:#000"></iframe>
-      </div>
+      <div class="sec-label">المعاينة الحية <span class="ln"></span><span style="font-size:11px;color:var(--muted)">الصفحة العامة نفسها — لا محاكاة</span></div>
+      ${(()=>{const wide=(window.STUDIO&&STUDIO.device==='desktop'&&PAGE_TAB==='design');
+      return wide
+      ?`<div style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000">
+          <iframe id="pagePrev" src="booking.html?preview=1" title="معاينة الموقع" style="width:100%;height:560px;border:none;display:block;background:#000"></iframe></div>`
+      :`<div style="width:300px;margin:0 auto;border:6px solid #26242d;border-radius:38px;background:#000;padding:7px;box-shadow:0 30px 60px rgba(0,0,0,.5)">
+          <div style="width:92px;height:18px;background:#17161c;border-radius:0 0 14px 14px;margin:0 auto 5px"></div>
+          <iframe id="pagePrev" src="booking.html?preview=1" title="معاينة الموقع" style="width:100%;height:520px;border:none;border-radius:26px;background:#000"></iframe></div>`;})()}
     </div>
   </div>`;
 };
