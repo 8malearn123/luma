@@ -1,4 +1,12 @@
 /* لوما · داشبورد الصالون — بقية الشاشات، كائن SALON، الحجز والدفع والفواتير، الإقلاع */
+/* ── إشعارات واتساب: تُرسل عبر مزوّد الصالون، ولا تُعطّل أي تدفق عند الفشل ── */
+const clientPhone=n=>{const c=(typeof CLIENTS!=='undefined')?CLIENTS.find(x=>x.n===n):null;return c&&c.phone||'';};
+function waNotify(ev,vars,phone){
+  if(!window.LumaWA)return;
+  try{LumaWA.send(ev,{salon:(typeof pageCfg==='function'?pageCfg().title:'صالون لمسة'),...vars},phone);}catch(e){}
+}
+window.waNotify=waNotify;
+
 /* ── CLIENTS ── */
 const CLIENTS=[
   {n:'نوف العتيبي',v:14,sp:'9,200',last:'قبل ٣ أيام',staff:'أمل',tag:'VIP',tc:'gold'},
@@ -16,10 +24,11 @@ const CLIENTS_BASE_TOTAL=312-6; /* the sample table shows 6 of the base 312 */
 
 SCREENS.clients=()=>{
   const C=CLIENTS;
+  const TL=tiersSorted();
   const total=CLIENTS_BASE_TOTAL+CLIENTS.length;
   return `
-  <style>.ctab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.cth,.ctr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 40px;gap:12px;align-items:center;padding:14px 20px}.cth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.ctr{border-bottom:1px solid var(--line-soft)}.ctr:last-child{border-bottom:none}.ctr:hover{background:var(--surface2)}.cnm{display:flex;align-items:center;gap:11px}.cnm .av{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px}.cc{font-size:13px;color:var(--cream)}.cc .num{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr}@media(max-width:1080px){.cth{display:none}.ctr{grid-template-columns:1fr auto}.ctr .hide{display:none}}</style>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="LOY.settings()">★ برنامج الولاء</button><button class="btn btn-gold" onclick="SALON.addClient()">+ عميلة جديدة</button></div></div>
+  <style>.ctab{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}.cth,.ctr{display:grid;grid-template-columns:2fr 1.2fr 1fr 1.2fr 1fr 40px;gap:12px;align-items:center;padding:14px 20px}.cth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600}.ctr{border-bottom:1px solid var(--line-soft)}.ctr:last-child{border-bottom:none}.ctr:hover{background:var(--surface2)}.cnm{display:flex;align-items:center;gap:11px}.cnm .av{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px}.cc{font-size:13px;color:var(--cream)}.cc .num{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr}@media(max-width:1080px){.cth{display:none}.ctr{grid-template-columns:1fr auto}.ctr .hide{display:none}}</style>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">عملاء الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">قاعدة عملاء مشتركة بين جميع الموظفات</div></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="TIERS.settings()">◈ فئات العملاء</button><button class="btn btn-ghost" onclick="LOY.settings()">★ برنامج الولاء</button><button class="btn btn-gold" onclick="SALON.addClient()">+ عميلة جديدة</button></div></div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('users',19)}</div><div class="delta">▲ 8</div></div><div class="val">${total}</div><div class="k">إجمالي العملاء</div></div>
     <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('star',19)}</div></div><div class="val">68<span class="u">%</span></div><div class="k">عميلات متكررات</div></div>
@@ -37,8 +46,31 @@ SCREENS.clients=()=>{
       <button class="btn btn-gold" style="padding:12px 26px" onclick="SALON.regClient()">تسجيل</button>
     </div>
   </div>
-  <div class="ctab"><div class="cth"><span>العميلة</span><span>الزيارات</span><span>الإنفاق</span><span>آخر زيارة</span><span>الموظفة المفضّلة</span><span></span></div>
-  ${C.map(c=>`<div class="ctr"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span> <button class="badge gold loypts" onclick="LOY.redeem('${c.n.replace(/'/g,"\\'")}')" style="cursor:pointer;border:none;margin-top:3px" title="استبدال نقاط الولاء">★ ${loyPts(c.n).toLocaleString('en')}</button>${c.phone?` <span style="font-size:11px;color:var(--muted);direction:ltr;display:inline-block;margin-right:6px">${c.phone}</span>`:''}</div></div><div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${c.sp}</span> ر.س</div><div class="cc hide">${c.last}</div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`).join('')}
+  <div class="sec-label">فئات العملاء <span class="ln"></span><span style="font-size:11px;color:var(--muted)">الفئة تُحتسب تلقائياً من الإنفاق السنوي — اضغطي الفئة لعرض مميزاتها وعميلاتها</span></div>
+  <div style="display:grid;grid-template-columns:repeat(${Math.min(4,TL.length)},1fr);gap:14px;margin-bottom:20px">
+    ${TL.map(t=>{const n=tierClients(t.id).length;
+      return `<div class="card" style="cursor:pointer;padding:15px 17px" onclick="TIERS.view('${t.id}')">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span class="badge ${t.color||'soft'}" style="font-size:12px">${t.name}</span>
+          <span class="num" style="font-size:21px;color:var(--white)">${n}</span></div>
+        <div style="font-size:11.5px;color:var(--gold-pale);margin-top:8px">من <span class="num">${(t.min||0).toLocaleString('en')}</span> ر.س سنوياً${t.discount?` · خصم ${t.discount}٪`:''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.7">${(t.perks||[]).slice(0,2).map(p=>'✦ '+p).join('<br/>')||'بلا مميزات محدَّدة'}${(t.perks||[]).length>2?`<br/><span style="color:var(--gold-pale)">+${(t.perks||[]).length-2} مميزة</span>`:''}</div>
+      </div>`;}).join('')}
+  </div>
+  <div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+    <div data-tierbar style="display:flex;gap:8px;flex-wrap:wrap;flex:1">
+      <button data-tid="" class="on" onclick="TIERS.pick('')" style="font-family:inherit;font-size:12.5px;padding:7px 15px;border-radius:30px;cursor:pointer;border:1px solid transparent;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217">كل العميلات</button>
+      ${TL.map(t=>`<button data-tid="${t.id}" onclick="TIERS.pick('${t.id}')" style="font-family:inherit;font-size:12.5px;padding:7px 15px;border-radius:30px;cursor:pointer;border:1px solid var(--line);background:var(--surface3);color:var(--cream)">${t.name} · ${tierClients(t.id).length}</button>`).join('')}
+    </div>
+    <input id="cliSearch" oninput="TIERS.apply()" placeholder="بحث بالاسم أو الجوال…" style="min-width:210px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 13px;color:var(--white);font-family:inherit;font-size:13px;outline:none"/>
+    <span style="font-size:12px;color:var(--muted)">المعروض: <b id="cliCount" style="color:var(--gold-light)">${C.length}</b></span>
+  </div>
+  <div class="ctab"><div class="cth"><span>العميلة</span><span>الفئة</span><span>الزيارات</span><span>الإنفاق السنوي</span><span>الموظفة المفضّلة</span><span></span></div>
+  ${C.map(c=>{const t=tierOf(c)||{},nx=tierNext(c);
+    return `<div class="ctr" data-tier="${t.id||''}" data-find="${(c.n+' '+(c.phone||'')).replace(/"/g,'')}"><div class="cnm"><span class="av">${c.n.charAt(0)}</span><div><div style="font-size:14px;color:var(--white);font-weight:500">${c.n}</div><span class="badge ${c.tc}" style="margin-top:3px">${c.tag}</span> <button class="badge gold loypts" onclick="LOY.redeem('${c.n.replace(/'/g,"\\'")}')" style="cursor:pointer;border:none;margin-top:3px" title="استبدال نقاط الولاء">★ ${loyPts(c.n).toLocaleString('en')}</button>${c.phone?` <span style="font-size:11px;color:var(--muted);direction:ltr;display:inline-block;margin-right:6px">${c.phone}</span>`:''}</div></div>
+    <div class="cc"><button class="badge ${t.color||'soft'}" onclick="TIERS.view('${t.id||''}')" style="cursor:pointer;font-size:11.5px" title="${(t.perks||[]).join(' · ')||'بلا مميزات'}">${t.name||'—'}${t.discount?` · ${t.discount}٪`:''}</button>${nx?`<div style="font-size:10px;color:var(--muted);margin-top:4px">تبقّى <span class="num">${nx.gap.toLocaleString('en')}</span> ر.س لـ«${nx.tier.name}»</div>`:''}</div>
+    <div class="cc hide"><span class="num">${c.v}</span> زيارة</div><div class="cc hide"><span class="num">${clientYearSpend(c).toLocaleString('en')}</span> ر.س<div style="font-size:10px;color:var(--muted)">${c.last}</div></div><div class="cc hide">${c.staff}</div><button style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">⋯</button></div>`;}).join('')}
+  <div id="cliEmpty" style="display:none;padding:26px;text-align:center;color:var(--muted);font-size:13px">لا عميلات تطابق الفلترة الحالية.</div>
   </div>`;
 };
 
@@ -68,23 +100,69 @@ window.svcImgPick=n=>{
 window.svcImgClear=n=>{svcImgSet(n,null);LUX.toast('أُزيلت صورة «'+n+'»','ok');};
 
 /* ── SERVICES (كتالوج حي — يغذي الحجز والأسعار والتقارير) ── */
+/* بطاقة خدمة: صورة كبيرة + سعر + آلية تعديل ظاهرة (صورة · تحرير) */
+function svcCard(s){
+  const im=svcImgs()[s[0]];const esc=s[0].replace(/'/g,"\\'");
+  const by=(STAFF.find(x=>x.role===(s[3]||'أخرى'))||{}).n;
+  return `<div class="svc">
+    <button type="button" class="svc-im" onclick="svcImgPick('${esc}')" title="${im?'تغيير صورة الخدمة':'إضافة صورة للخدمة'}">
+      ${im?`<img src="${im}" alt="${s[0]}"/>`
+         :`<div class="svc-ph">${icon('image',26)}<span>اضغطي لإضافة صورة</span></div>`}
+      <span class="svc-cat">${s[3]||'أخرى'}</span>
+      <span class="svc-pr"><b class="num">${s[2]}</b> ر.س</span>
+      <div class="svc-ov"><span>${icon('image',15)} ${im?'تغيير الصورة':'إضافة صورة'}</span></div>
+    </button>
+    <div class="svc-bd">
+      <div class="svc-n">${s[0]}</div>
+      <div class="svc-m">◷ ${s[1]*30} دقيقة${by?` · ${by}`:''}</div>
+    </div>
+    <div class="svc-ft">
+      <button class="btn btn-gold" style="flex:1;padding:9px 0;font-size:12.5px" onclick="SALON.svcForm('${esc}')">${icon('pencil',14)} تحرير الخدمة</button>
+      ${im?`<button class="btn btn-ghost svc-x" title="إزالة الصورة" onclick="svcImgClear('${esc}')">✕</button>`:''}
+    </div>
+  </div>`;
+}
 SCREENS.services=()=>{
   const cats=[...new Set(SVC_CATALOG.map(s=>s[3]||'أخرى'))];
+  const withImg=SVC_CATALOG.filter(s=>svcImgs()[s[0]]).length;
+  const avg=Math.round(SVC_CATALOG.reduce((t,s)=>t+ (+s[2]||0),0)/(SVC_CATALOG.length||1));
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">خدمات الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${SVC_CATALOG.length} خدمة عبر ${cats.length} أقسام — كل تعديل ينعكس فوراً على الحجز والفواتير والتقارير</div></div><button class="btn btn-gold" onclick="SALON.svcForm()">+ خدمة جديدة</button></div>
+  <style>
+  .svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:18px;margin-bottom:26px}
+  .svc{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,border-color .18s,box-shadow .18s}
+  .svc:hover{transform:translateY(-3px);border-color:var(--gold-deep);box-shadow:0 14px 34px rgba(0,0,0,.42)}
+  .svc-im{position:relative;width:100%;padding:0;font-family:inherit;border:none;aspect-ratio:4/3;max-height:215px;background:var(--surface3);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .svc-im img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+  .svc:hover .svc-im img{transform:scale(1.05)}
+  .svc-ph{display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--gold-deep);font-size:11.5px}
+  .svc-ph span{color:var(--muted)}
+  .svc-cat{position:absolute;top:10px;right:10px;background:rgba(12,11,14,.72);backdrop-filter:blur(6px);border:1px solid var(--line);color:var(--gold-pale);font-size:10.5px;padding:4px 10px;border-radius:20px}
+  .svc-pr{position:absolute;bottom:10px;left:10px;background:rgba(12,11,14,.78);backdrop-filter:blur(6px);border:1px solid var(--gold-deep);color:var(--gold-light);font-size:10.5px;padding:4px 10px;border-radius:20px}
+  .svc-pr b{font-family:'Bodoni Moda',serif;font-size:16px;color:var(--white);direction:ltr}
+  .svc-ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(12,11,14,.62);opacity:0;transition:opacity .2s}
+  .svc-im:hover .svc-ov{opacity:1}
+  .svc-ov span{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-size:12px;font-weight:600;padding:9px 16px;border-radius:24px}
+  .svc-bd{padding:13px 15px 4px;flex:1}
+  .svc-n{font-size:15px;color:var(--white);font-weight:600}
+  .svc-m{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .svc-ft{display:flex;gap:8px;padding:12px 15px 15px;align-items:center}
+  .svc-ft .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  .svc-x{padding:9px 12px;color:#e29aa6}
+  .svc-add{background:var(--surface2);border:1.5px dashed var(--gold-deep);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:200px;color:var(--gold-light);cursor:pointer;font-size:13px;transition:background .18s}
+  .svc-add:hover{background:var(--surface3)}
+  </style>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">خدمات الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${SVC_CATALOG.length} خدمة عبر ${cats.length} أقسام — اضغطي صورة الخدمة لتغييرها، و«تحرير الخدمة» للاسم والسعر والمدة</div></div><button class="btn btn-gold" onclick="SALON.svcForm()">+ خدمة جديدة</button></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('scissors',19)}</div></div><div class="val">${SVC_CATALOG.length}</div><div class="k">خدمة في الكتالوج · ${cats.length} أقسام</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('image',19)}</div></div><div class="val">${withImg}<span class="u">/${SVC_CATALOG.length}</span></div><div class="k">خدمة لها صورة تظهر بصفحة الحجز</div></div>
+    <div class="stat"><div class="glow"></div><div class="top"><div class="ico">${icon('wallet',19)}</div></div><div class="val">${avg.toLocaleString('en')}<span class="u">ر.س</span></div><div class="k">متوسط سعر الخدمة</div></div>
+  </div>
   ${cats.map(cat=>{
     const items=SVC_CATALOG.filter(s=>(s[3]||'أخرى')===cat);
-    const by=(STAFF.find(x=>x.role===cat)||{}).n;
-    return `<div class="sec-label">${cat} <span class="ln"></span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">${items.map(s=>{
-      const im=svcImgs()[s[0]];const esc=s[0].replace(/'/g,"\\'");
-      return `<div class="card" style="display:flex;align-items:center;gap:16px;padding:15px 18px">${
-        im?`<img src="${im}" alt="${s[0]}" style="width:52px;height:52px;border-radius:11px;object-fit:cover;border:1px solid var(--gold-deep)"/>`
-          :`<div style="width:52px;height:52px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('scissors',19)}</div>`
-      }<div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${s[0]}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">◷ ${s[1]*30} دقيقة${by?` · تُقدّم بواسطة ${by}`:''}</div></div><div class="num" style="font-size:24px;color:var(--gold-light)">${s[2]} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div>
-      <button class="btn btn-ghost svc-img-btn" style="padding:8px 12px;display:inline-flex;align-items:center;gap:6px" title="${im?'تغيير صورة الخدمة':'إضافة صورة للخدمة'}" onclick="svcImgPick('${esc}')">${icon('image',15)} ${im?'تغيير الصورة':'إضافة صورة'}</button>
-      ${im?`<button class="btn btn-ghost" style="padding:8px 11px;color:#e29aa6" title="إزالة الصورة" onclick="svcImgClear('${esc}')">✕</button>`:''}
-      <button class="btn btn-ghost" style="padding:8px 14px" onclick="SALON.svcForm('${esc}')">تحرير</button></div>`;}).join('')}</div>`;
+    return `<div class="sec-label">${cat} <span class="ln"></span><span style="font-size:11px;color:var(--muted)">${items.length} خدمة</span></div>
+    <div class="svc-grid">${items.map(svcCard).join('')}</div>`;
   }).join('')}
+  <div class="svc-add" style="max-width:280px;margin-bottom:26px" onclick="SALON.svcForm()">${icon('scissors',24)}<span>+ إضافة خدمة جديدة</span></div>
   <div class="sec-label" style="margin-top:8px">المنتجات — بيع التجزئة للعميلات <span class="ln"></span><span style="font-size:11px;color:var(--muted)">اضغطي أيقونة المنتج لإضافة صورته</span></div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px">${SALON_PRODUCTS.map(salonProductCard).join('')}</div>`;
 };
@@ -121,7 +199,6 @@ const SALON_PRODUCTS=[
   {n:'كريم أساس',c:'مكياج',price:150,sold:19,q:8,sc:'gold'},
   {n:'ماسك بشرة',c:'عناية',price:95,sold:14,q:3,sc:'gold'},
 ];
-/* بطاقة منتج واحدة — مع رفع/تغيير/إزالة الصورة */
 function salonProductCard(p){
   const pim=salonProdImgs()[p.n];const esc=p.n.replace(/'/g,"\\'");
   return `<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="position:relative"><div onclick="SALONPIMG.pick('${esc}')" title="${pim?'تغيير صورة المنتج':'إضافة صورة للمنتج'}" style="width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);cursor:pointer;overflow:hidden">${pim?`<img src="${pim}" alt="" style="width:100%;height:100%;object-fit:cover"/>`:icon('bag',22)}</div>${pim?`<button onclick="SALONPIMG.clear('${esc}')" title="إزالة الصورة" style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#e29aa6;cursor:pointer;font-size:10px;line-height:1">✕</button>`:`<span style="position:absolute;bottom:-5px;left:-5px;width:17px;height:17px;border-radius:50%;background:var(--gold-deep);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;pointer-events:none">📷</span>`}</div><div style="text-align:left"><div class="num" style="font-size:22px;color:var(--gold-light)">${p.price} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:11px;color:var(--muted)">ر.س</span></div></div></div><div style="font-size:15px;color:var(--white);font-weight:600;margin-top:14px">${p.n}</div><div style="font-size:12px;color:var(--muted)">${p.c}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)"><div style="font-size:12px;color:var(--cream)">مباع: <b style="color:var(--white);font-family:'Bodoni Moda',serif;font-size:17px">${p.sold}</b></div><div style="font-size:12px;color:var(--gold-pale)">${(p.sold*p.price).toLocaleString('en')} ر.س</div></div></div>`;
@@ -371,20 +448,22 @@ const NAV=[
   {id:'overview',label:'نظرة عامة',icon:'grid',crumb:'SALON'},
   {id:'board',label:'لوحة الحجوزات',icon:'board',crumb:'SALON'},
   {id:'hr',label:'الطاقم والموارد البشرية',icon:'staff',crumb:'SALON'},
-  {id:'page',label:'متجري الإلكتروني',icon:'bag',crumb:'GROWTH'},
+  {id:'page',label:'موقع الصالون',icon:'palette',crumb:'GROWTH'},
   {id:'clients',label:'العملاء',icon:'users',crumb:'SALON'},
   {id:'services',label:'الخدمات',icon:'scissors',crumb:'SALON'},
   {id:'inventory',label:'المخزون',icon:'boxes',crumb:'SALON'},
   {id:'subscriptions',label:'الاشتراكات',icon:'ticket',crumb:'SALON'},
   {id:'invoices',label:'الفواتير البيعية',icon:'invoice',crumb:'FINANCE'},
   {id:'marketing',label:'التسويق',icon:'mega',crumb:'GROWTH'},
+  {id:'whatsapp',label:'إشعارات واتساب',icon:'mega',crumb:'GROWTH'},
   {id:'finance',label:'المالية',icon:'wallet',crumb:'FINANCE'},
+  {id:'accounting',label:'المحاسبة',icon:'clipboard',crumb:'FINANCE'},
   {id:'reports',label:'التقارير',icon:'chart',crumb:'FINANCE'},
   {id:'branches',label:'الفروع',icon:'pin',crumb:'SALON'},
   {id:'settings',label:'الإعدادات',icon:'gear',crumb:'SYSTEM'},
 ];
 const NAV_FLAT={};NAV.forEach(n=>NAV_FLAT[n.id]=n);
-const PAGE_SUBNAV=[['general','عام'],['visits','الزيارات'],['svc','الخدمات'],['prod','المنتجات'],['books','الحجوزات'],['team','الفريق'],['identity','الهوية'],['design','تصميم المتجر'],['front','الواجهة'],['banners','البنرات'],['pages','الصفحات'],['cats','التصنيفات']];
+const PAGE_SUBNAV=[['general','عام'],['visits','الزيارات'],['svc','الخدمات'],['books','الحجوزات'],['team','الفريق'],['identity','الهوية'],['design','استوديو التصميم'],['front','الواجهة'],['banners','البنرات'],['pages','الصفحات'],['cats','التصنيفات']];
 document.getElementById('sb-nav').innerHTML=NAV.map(it=>{
   if(it.id==='page')return `<div class="nav-item" data-id="page" onclick="window.togglePageMenu()"><span class="ico">${icon(it.icon,20)}</span><span class="lbl">${it.label}</span><span class="dot"></span><span id="pgCaret" style="font-size:10px;color:var(--muted);transition:transform .2s">▾</span></div>
     <div id="pgSub" style="display:none;padding:2px 0 4px">${PAGE_SUBNAV.map(([k,l])=>`<div class="nav-item pgsub" data-sub="${k}" style="padding:8.5px 34px 8.5px 13px;margin-bottom:1px;font-size:13.5px" onclick="PAGE.showTab('${k}')"><span class="lbl">${l}</span><span class="dot"></span></div>`).join('')}</div>`;
@@ -512,6 +591,9 @@ const SALON={
         try{window.LumaEvents&&LumaEvents.push(k==='block'?'block':'booking',k==='block'
           ?'وقت محجوب بلوحة صالون لمسة: '+st.n+' — '+q('reason').value+' ('+slotLabel(start)+')'
           :'حجز من لوحة صالون لمسة: '+q('client').value.trim()+' · '+sv[0]+' مع '+st.n+' ('+slotLabel(start)+')','salon.html#board');}catch(e){}
+        /* إشعار واتساب: تأكيد الحجز للعميلة عبر مزوّد الصالون */
+        if(k!=='block')waNotify('booking',{client:q('client').value.trim(),service:sv[0],staff:st.n,
+          date:'اليوم',time:slotLabel(start)},q('phone')&&q('phone').value);
         LUX.toast(k==='block'
           ?'حُجب وقت '+st.n+' <bdo dir="ltr">'+slotLabel(start)+'</bdo> ✓'
           :'تم حجز '+q('client').value.trim()+' مع '+st.n+' الساعة '+slotLabel(start)+' ✓','ok');
@@ -574,12 +656,16 @@ const SALON={
         setTimeout(()=>{
           a.st='confirmed';saveAppts();
           const total=+(price*1.15+tip).toFixed(2);
-          markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
+          const invNo=nextInvNo();
+          markPaid(a.id,{no:invNo,method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
           const pts=typeof loyAward==='function'?loyAward(a.client,total):0;
           const stk=typeof stockConsume==='function'?stockConsume(a.service):{alerts:[]};
           /* طلب تقييم ما بعد الزيارة — يفتح في review.html ويُنشر موثقاً في المتجر */
           try{LumaStore.update('luma_review_reqs',l=>{l.push({id:'rv'+a.id+'_'+Date.now(),client:a.client,service:a.service,staff:(STAFF.find(x=>x.id===a.staff)||{n:''}).n,salon:'صالون لمسة',date:new Date().toISOString().slice(0,10),st:'sent'});return l;},[]);}catch(e){}
-          setTimeout(()=>LUX.toast('📱 أُرسل للعميلة رابط تقييم الزيارة عبر واتساب (محاكاة)','ok'),2800);
+          /* إشعارا واتساب: الفاتورة ثم طلب التقييم — عبر مزوّد الصالون أو رابط يدوي */
+          waNotify('receipt',{client:a.client,service:a.service,amount:total.toLocaleString('en'),invoice:invNo},clientPhone(a.client));
+          waNotify('review',{client:a.client,service:a.service,link:location.origin+'/review.html'},clientPhone(a.client));
+          setTimeout(()=>LUX.toast('📱 أُرسل للعميلة إشعار الفاتورة ورابط التقييم عبر واتساب','ok'),2800);
           close();SALON.go('board');
           try{window.LumaEvents&&LumaEvents.push('pay','دفعة مستلمة بصالون لمسة: '+a.client+' · '+a.service+' — '+total.toLocaleString('en')+' ر.س ('+method+')','salon.html#invoices');}catch(e){}
           LUX.toast('تم الدفع بنجاح عبر '+method+' ✓'+(pts?' — أُضيفت '+pts+' نقطة ولاء لرصيد '+a.client:''),'ok');

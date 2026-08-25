@@ -135,7 +135,7 @@ test('الخدمات: إضافة صورة لكل خدمة وتظهر بصفحة 
   const [fc] = await Promise.all([page.waitForEvent('filechooser'), firstBtn.click()]);
   await fc.setFiles({ name: 'svc.png', mimeType: 'image/png', buffer: Buffer.from(PX, 'base64') });
   await page.waitForTimeout(700);
-  await expect(page.locator('.card img[alt="مكياج سهرة"]')).toBeVisible();
+  await expect(page.locator('.svc img[alt="مكياج سهرة"]')).toBeVisible();
   await expect(page.locator('button:has-text("تغيير الصورة")').first()).toBeVisible();
   // الصورة تظهر لعميلات صفحة الحجز
   await page.goto('/booking.html');
@@ -146,7 +146,7 @@ test('الخدمات: إضافة صورة لكل خدمة وتظهر بصفحة 
   await page.waitForTimeout(800);
   await page.locator('button[title="إزالة الصورة"]').first().click();
   await page.waitForTimeout(500);
-  await expect(page.locator('.card img[alt="مكياج سهرة"]')).toHaveCount(0);
+  await expect(page.locator('.svc img[alt="مكياج سهرة"]')).toHaveCount(0);
   // قسم المنتجات انتقل لشاشة الخدمات — مع رفع صورة للمنتج
   await expect(page.getByText('المنتجات — بيع التجزئة للعميلات')).toBeVisible();
   await expect(page.getByText('سيروم ترطيب').first()).toBeVisible();
@@ -330,30 +330,6 @@ test('سهم الرجوع من تبويب جديد يعيد لصفحة المص�
   await pop.waitForURL(/client\.html/);
 });
 
-test('المتجر الإلكتروني بصفحة الصالون: سلة وإتمام طلب يصل الإشعارات', async ({ page }) => {
-  await page.goto('/booking.html');
-  await page.waitForTimeout(700);
-  await expect(page.getByText('متجر صالون لمسة — توصيل حتى بابك')).toBeVisible();
-  // إضافة منتجين للسلة
-  await page.locator('.shp', { hasText: 'سيروم ترطيب' }).locator('button:has-text("أضيفي")').click();
-  await page.waitForTimeout(300);
-  await page.locator('.shp', { hasText: 'سيروم ترطيب' }).locator('button:has-text("+")').click();
-  await page.waitForTimeout(300);
-  await expect(page.locator('#cartFab')).toContainText('360');
-  // إتمام الطلب
-  await page.click('#cartFab');
-  await page.waitForTimeout(400);
-  await page.fill('#odName', 'سارة التجريبية');
-  await page.fill('#odPhone', '0551112233');
-  await page.click('label:has-text("تابي")');
-  await page.click('button:has-text("تأكيد الطلب")');
-  await page.waitForTimeout(500);
-  await expect(page.getByText('تم استلام طلبك')).toBeVisible();
-  await expect(page.getByText(/ORD-\d+/)).toBeVisible();
-  const orders = await page.evaluate(() => JSON.parse(localStorage.getItem('luma_salon_orders') || '[]'));
-  expect(orders.length).toBeGreaterThan(0);
-  expect(orders[0].total).toBe(360);
-});
 
 test('حجز أكثر من خدمة في موعد واحد مع مجموع السعر والمدة', async ({ page }) => {
   await page.goto('/booking.html');
@@ -551,7 +527,7 @@ test('سياسة الحجز والخدمات المميزة تظهر في صفح
   await page.waitForTimeout(800);
   await page.click('button:has-text("الصفحات")');
   await page.waitForTimeout(300);
-  await expect(page.getByText('صفحات المتجر')).toBeVisible();
+  await expect(page.getByText('صفحات الموقع')).toBeVisible();
   // تمييز خدمة إضافية بشارة «عرض خاص» — من قسم التصنيفات
   await page.click('button:has-text("التصنيفات")');
   await page.waitForTimeout(300);
@@ -571,15 +547,15 @@ test('سياسة الحجز والخدمات المميزة تظهر في صفح
   await expect(page.locator('.policy.compact')).toBeVisible();
 });
 
-test('متجري الإلكتروني: قائمة منسدلة بسبعة أقسام + بنرات وتصنيفات تعمل بالمتجر', async ({ page }) => {
+test('موقع الصالون: قائمة منسدلة بسبعة أقسام + بنرات وتصنيفات تعمل بالموقع', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
   // القائمة الجانبية: النقر يفتح الفروع السبعة
   await page.click('.nav-item[data-id="page"]');
   await page.waitForTimeout(300);
-  for (const l of ['عام', 'الهوية', 'تصميم المتجر', 'الواجهة', 'البنرات', 'الصفحات', 'التصنيفات'])
+  for (const l of ['عام', 'الهوية', 'استوديو التصميم', 'الواجهة', 'البنرات', 'الصفحات', 'التصنيفات'])
     await expect(page.locator('.pgsub', { hasText: l })).toBeVisible();
-  // البنرات: إضافة بنر يظهر بالمتجر
+  // البنرات: إضافة بنر يظهر بالموقع
   await page.locator('.pgsub[data-sub="banners"]').click();
   await page.waitForTimeout(400);
   await page.fill('#bnIn', 'توصيل مجاني للطلبات فوق 200 ر.س');
@@ -591,15 +567,10 @@ test('متجري الإلكتروني: قائمة منسدلة بسبعة أقس
   await page.waitForTimeout(400);
   await page.click('button:has-text("عناية")');
   await page.waitForTimeout(400);
-  // المتجر العام: البنر ظاهر، فلاتر التصنيفات بدون «عناية»، ومنتجاتها مخفية
+  // موقع الصالون العام: البنر ظاهر
   await page.goto('/booking.html');
   await page.waitForTimeout(700);
   await expect(page.getByText('توصيل مجاني للطلبات فوق 200 ر.س')).toBeVisible();
-  await expect(page.locator('.shp', { hasText: 'سيروم ترطيب' })).toHaveCount(0);
-  await page.click('.shopcat:has-text("أظافر")');
-  await page.waitForTimeout(400);
-  await expect(page.locator('.shp')).toHaveCount(1);
-  await expect(page.locator('.shp', { hasText: 'طلاء أظافر' })).toBeVisible();
 });
 
 test('الشعار والغلاف: رفع صورة من الجهاز ينعكس على صفحة الحجز', async ({ page }) => {
@@ -685,14 +656,18 @@ test('محرر الثيم المخصص: الألوان والزوايا تنعك
   await page.waitForTimeout(600);
   const ac = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ac').trim());
   expect(ac).toBe('#ff2277');
-  // القالب الجاهز يعيد الاختيار كنقطة بداية
+  // قالب الاستوديو الجاهز يعيد ضبط اللون والخط والقالب معاً
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await page.click('button:has-text("تصميم المتجر")');
-  await page.waitForTimeout(300);
-  await page.click('button:has-text("زمرد هادئ")');
-  await page.waitForTimeout(600);
-  await expect(page.locator('#thx-ac')).toHaveValue('#8fd0c0');
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(500);
+  await page.click('.st-tpl[data-tpl="spa"]');
+  await page.waitForTimeout(500);
+  await page.click('button:has-text("نشر التغييرات")');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الهوية")');
+  await page.waitForTimeout(400);
+  await expect(page.locator('#thx-ac')).toHaveValue('#0f766e');
 });
 
 test('إدارة الخدمات: إضافة خدمة تنعكس في الكتالوج', async ({ page }) => {
@@ -703,14 +678,14 @@ test('إدارة الخدمات: إضافة خدمة تنعكس في الكتا�
   await page.fill('#svP', '300');
   await page.click('.lux-modal [data-ok]');
   await page.waitForTimeout(500);
-  await expect(page.locator('.card', { hasText: 'باديكير سبا' })).toBeVisible();
-  await expect(page.locator('.card', { hasText: 'باديكير سبا' })).toContainText('300');
+  await expect(page.locator('.svc', { hasText: 'باديكير سبا' })).toBeVisible();
+  await expect(page.locator('.svc', { hasText: 'باديكير سبا' })).toContainText('300');
   // تحرير سعر خدمة قائمة
-  await page.locator('.card', { hasText: 'منيكير جل' }).locator('button:has-text("تحرير")').click();
+  await page.locator('.svc', { hasText: 'منيكير جل' }).locator('button:has-text("تحرير")').click();
   await page.fill('#svP', '180');
   await page.click('.lux-modal [data-ok]');
   await page.waitForTimeout(500);
-  await expect(page.locator('.card', { hasText: 'منيكير جل' })).toContainText('180');
+  await expect(page.locator('.svc', { hasText: 'منيكير جل' })).toContainText('180');
 });
 
 test('التقارير: تصدير للطباعة وملخص أسبوعي', async ({ page }) => {
@@ -898,38 +873,6 @@ test('صفحة الخبيرة: نبذة ورابط أعمالها وتقييما
   await page.click('#rvSend');
   await expect(page.locator('#revList .rv', { hasText: 'تجربة راقية والنتيجة فاقت التوقع' })).toBeVisible();
   await expect(page.locator('#revList').getByText('عميلة موثقة ✓').first()).toBeVisible();
-  // كل منتج له صورة SVG مدمجة
-  await page.click('#tab-shop');
-  await expect(page.locator('.pcard .art svg')).toHaveCount(6);
-  // زر رفع صورة المنتج لا يظهر للزائرة — إدارة المنتجات للصالون فقط
-  await expect(page.locator('.pcam')).toHaveCount(0);
-  // حتى جلسة الخبيرة لا تضيف منتجات
-  await page.evaluate(() => localStorage.setItem('luma_role', 'expert'));
-  await page.reload();
-  await page.waitForTimeout(600);
-  await page.click('#tab-shop');
-  await expect(page.locator('.pcam')).toHaveCount(0);
-  // جلسة الصالون → يظهر الرفع ويعمل ثم الإزالة
-  await page.evaluate(() => localStorage.setItem('luma_role', 'salon'));
-  await page.reload();
-  await page.waitForTimeout(600);
-  await page.click('#tab-shop');
-  const PPX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
-  const [fc] = await Promise.all([page.waitForEvent('filechooser'), page.locator('.pcam').first().click()]);
-  await fc.setFiles({ name: 'prod.png', mimeType: 'image/png', buffer: Buffer.from(PPX, 'base64') });
-  await page.waitForTimeout(700);
-  await expect(page.locator('.pimg')).toHaveCount(1);
-  await page.locator('.pcam.del').click();
-  await page.waitForTimeout(400);
-  await expect(page.locator('.pimg')).toHaveCount(0);
-  // تابي وتمارا في إتمام الطلب مع تفصيل الأقساط
-  await page.locator('.pcard .add').first().click();
-  await page.click('#cartFab');
-  await page.click('button:has-text("إتمام الطلب")');
-  await page.click('.paym[data-p="tabby"]');
-  await expect(page.locator('#bnplHint')).toContainText('4 دفعات');
-  await page.click('.paym[data-p="tamara"]');
-  await expect(page.locator('#bnplHint')).toContainText('3 دفعات');
 });
 
 test('تعليقات المتجر للعميلات فقط: رقم غير مسجل يُرفض والموثق ينشر', async ({ page }) => {
@@ -1048,37 +991,29 @@ test('المتجر: نافذة الصالون بالتعليقات والاست�
   await expect(page.getByText('استفسارات')).toBeVisible();
 });
 
-test('لوحة أداء المتجر في «عام»: أرقام حية وتغذية آخر الطلبات', async ({ page }) => {
+test('لوحة أداء الموقع في «عام»: أرقام حية وتغذية آخر الحجوزات', async ({ page }) => {
   // اللوحة تظهر افتراضياً في تبويب «عام» مع كل الأقسام المطلوبة
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await expect(page.getByText('أداء المتجر')).toBeVisible();
-  for (const lbl of ['زيارة للمتجر', 'طلب منتجات', 'قيمة المبيعات', 'حجز', 'عميلة'])
+  await expect(page.getByText('أداء الموقع')).toBeVisible();
+  for (const lbl of ['زيارة للموقع', 'قيمة المبيعات', 'حجز', 'عميلة'])
     await expect(page.getByText(lbl, { exact: true }).first()).toBeVisible();
-  await expect(page.getByText('المنتجات الأكثر مبيعاً')).toBeVisible();
   await expect(page.getByText('الخدمات الأكثر حجزاً')).toBeVisible();
-  await expect(page.getByText('آخر الطلبات والحجوزات')).toBeVisible();
-  // لا طلبات بعد: رسالة فارغة
-  await expect(page.getByText('لا طلبات أو حجوزات أونلاين بعد')).toBeVisible();
-  // زيارة المتجر تزيد العداد + طلب جديد يظهر في التغذية
+  await expect(page.getByText('آخر الحجوزات')).toBeVisible();
+  // لا حجوزات بعد: رسالة فارغة
+  await expect(page.getByText('لا حجوزات أونلاين بعد')).toBeVisible();
+  // زيارة الموقع تزيد العداد
   await page.goto('/booking.html');
   await page.waitForTimeout(700);
   const v1 = await page.evaluate(() => parseInt(localStorage.getItem('luma_store_visits') || '0'));
   expect(v1).toBeGreaterThan(0);
-  await page.locator('.shp', { hasText: 'سيروم ترطيب' }).locator('button:has-text("أضيفي")').click();
-  await page.waitForTimeout(300);
-  await page.click('#cartFab');
-  await page.waitForTimeout(400);
-  await page.fill('#odName', 'أروى الاختبار');
-  await page.fill('#odPhone', '0559998877');
-  await page.click('button:has-text("تأكيد الطلب")');
-  await page.waitForTimeout(500);
-  await expect(page.getByText('تم استلام طلبك')).toBeVisible();
-  // العودة للوحة: الطلب في «آخر الطلبات والحجوزات» وعداد الطلبات = 1
+  // حجز أونلاين يظهر في تغذية «آخر الحجوزات»
+  await page.evaluate(() => localStorage.setItem('luma_public_bookings', JSON.stringify(
+    [{ client: 'أروى الاختبار', service: 'مكياج سهرة', time: '6:00 م', at: new Date().toISOString() }])));
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
-  await expect(page.getByText('أروى الاختبار')).toBeVisible();
-  await expect(page.locator('.badge', { hasText: 'طلب' }).first()).toBeVisible();
+  await expect(page.getByText('أروى الاختبار').first()).toBeVisible();
+  await expect(page.locator('.badge', { hasText: 'حجز' }).first()).toBeVisible();
 });
 
 test('قسم «الهوية» موحّد: الاسم والشعار والألوان والخط والموقع وحسابات التواصل', async ({ page }) => {
@@ -1107,51 +1042,6 @@ test('قسم «الهوية» موحّد: الاسم والشعار والألو
   await expect(page.locator('#thBadge')).toBeVisible();
 });
 
-test('منشئ تخطيط المتجر: إظهار/إخفاء الأقسام وترتيبها ولكل صالون متجر مختلف', async ({ page }) => {
-  // الافتراضي في المتجر: آراء العملاء ظاهرة والعروض وفريقنا مخفية
-  await page.goto('/booking.html');
-  await page.waitForTimeout(700);
-  await expect(page.getByText('آراء العملاء')).toBeVisible();
-  await expect(page.getByText('أمل القحطاني')).toBeVisible();
-  await expect(page.locator('.offer-c')).toHaveCount(0);
-  await expect(page.locator('.team-c')).toHaveCount(0);
-  // المحرر: 8 أقسام قابلة للسحب والإفلات + «الخدمات» قسم أساسي لا يُخفى
-  await page.goto('/salon.html#page');
-  await page.waitForTimeout(800);
-  await page.click('button:has-text("تصميم المتجر")');
-  await page.waitForTimeout(300);
-  await expect(page.getByText('شكل الصفحة الرئيسية — الأقسام وترتيبها')).toBeVisible();
-  await expect(page.locator('.sec-row')).toHaveCount(8);
-  await expect(page.locator('.sec-row[draggable="true"]')).toHaveCount(8);
-  await expect(page.locator('.sec-row', { hasText: 'الخدمات المميزة' }).getByText('أساسي ✓')).toBeVisible();
-  await expect(page.locator('.sec-row', { hasText: 'الخدمات المميزة' }).locator('.sec-tgl')).toHaveCount(0);
-  // إخفاء آراء العملاء + إظهار العروض وفريقنا
-  await page.locator('.sec-row', { hasText: 'آراء العملاء' }).locator('.sec-tgl').click();
-  await page.waitForTimeout(400);
-  await page.locator('.sec-row', { hasText: 'العروض' }).locator('.sec-tgl').click();
-  await page.waitForTimeout(400);
-  await page.locator('.sec-row', { hasText: 'فريقنا' }).locator('.sec-tgl').click();
-  await page.waitForTimeout(400);
-  // رفع «المنتجات المميزة» درجة بالأسهم — تسبق الخدمات
-  await page.locator('.sec-row', { hasText: 'المنتجات المميزة' }).locator('.sec-up').click();
-  await page.waitForTimeout(400);
-  const layout = await page.evaluate(() =>
-    (JSON.parse(localStorage.getItem('luma_page_cfg') || '{}').layout || []).map(x => x.k + ':' + (x.on ? 1 : 0)));
-  expect(layout).toContain('reviews:0');
-  expect(layout).toContain('offers:1');
-  expect(layout).toContain('team:1');
-  expect(layout.indexOf('products:1')).toBeLessThan(layout.indexOf('services:1'));
-  // المتجر يعكس التخصيص: العروض وفريقنا ظاهرة، الآراء مختفية، والمنتجات قبل الخدمات
-  await page.goto('/booking.html');
-  await page.waitForTimeout(700);
-  await expect(page.locator('.offer-c')).toHaveCount(3);
-  await expect(page.getByText('خصم منتصف الأسبوع')).toBeVisible();
-  await expect(page.locator('.team-c').first()).toBeVisible();
-  await expect(page.getByText('آراء العملاء')).toHaveCount(0);
-  const prodBox = await page.getByText('متجر صالون لمسة — توصيل حتى بابك').boundingBox();
-  const svcBox = await page.getByText('اختاري خدمتك').boundingBox();
-  expect(prodBox.y).toBeLessThan(svcBox.y);
-});
 
 test('محرر «الواجهة»: ألوان وخط وأشكال وطرق عرض وFooter تنعكس على المتجر', async ({ page }) => {
   await page.goto('/salon.html#page');
@@ -1167,11 +1057,10 @@ test('محرر «الواجهة»: ألوان وخط وأشكال وطرق عر�
   await expect(page.locator('.font-chip2')).toHaveCount(8);
   await expect(page.getByText('شكل البطاقات')).toBeVisible();
   await expect(page.getByText('شكل الأزرار')).toBeVisible();
-  await expect(page.getByText('طريقة عرض المنتجات')).toBeVisible();
   await expect(page.getByText('طريقة عرض الخدمات')).toBeVisible();
   await expect(page.getByText('شكل القائمة')).toBeVisible();
   await expect(page.getByText('Footer — تذييل الصفحة')).toBeVisible();
-  // لون الأزرار مخصص + بطاقات حادة + منتجات قائمة + أزرار كبسولة + قائمة شريط سفلي
+  // لون الأزرار مخصص + بطاقات حادة + أزرار كبسولة + قائمة بخط سفلي
   await page.fill('#uix-btn', '#22aa88');
   await page.locator('#uix-btn').evaluate(el => el.dispatchEvent(new Event('change')));
   await page.waitForTimeout(400);
@@ -1179,13 +1068,11 @@ test('محرر «الواجهة»: ألوان وخط وأشكال وطرق عر�
   await page.waitForTimeout(350);
   await page.locator('[data-ui="btnStyle:pill"]').click();
   await page.waitForTimeout(350);
-  await page.locator('[data-ui="prodView:list"]').click();
-  await page.waitForTimeout(350);
   await page.locator('[data-ui="menuStyle:underline"]').click();
   await page.waitForTimeout(350);
   await page.fill('#ftNote', 'نسعد بخدمتكم يومياً');
   await page.waitForTimeout(400);
-  // المتجر يعكس كل شيء
+  // الموقع يعكس كل شيء
   await page.goto('/booking.html');
   await page.waitForTimeout(700);
   const btnColor = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--btn').trim());
@@ -1193,7 +1080,6 @@ test('محرر «الواجهة»: ألوان وخط وأشكال وطرق عر�
   const cls = await page.evaluate(() => document.body.className);
   expect(cls).toContain('ui-card-sharp');
   expect(cls).toContain('ui-btn-pill');
-  expect(cls).toContain('ui-prod-list');
   expect(cls).toContain('ui-menu-underline');
   // Footer ظاهر باسم الصالون والسطر الإضافي وشعار لوما
   await expect(page.locator('.foot')).toBeVisible();
@@ -1219,10 +1105,8 @@ test('تبويب «الزيارات»: الزوار والمشاهدات وال�
   await page.waitForTimeout(300);
   await expect(page.getByText('تحليلات الزيارات')).toBeVisible();
   await expect(page.getByText('الزوار', { exact: true })).toBeVisible();
-  await expect(page.getByText('مشاهدات المنتجات', { exact: true })).toBeVisible();
   await expect(page.getByText('مشاهدات الخدمات', { exact: true })).toBeVisible();
   await expect(page.getByText('معدل التحويل', { exact: true })).toBeVisible();
-  await expect(page.getByText('مشاهدات المنتجات — الأعلى')).toBeVisible();
   await expect(page.getByText('مشاهدات الخدمات — الأعلى')).toBeVisible();
   await expect(page.getByText('أكثر الصفحات زيارة')).toBeVisible();
   await expect(page.getByText('مصادر الزيارات')).toBeVisible();
@@ -1231,14 +1115,14 @@ test('تبويب «الزيارات»: الزوار والمشاهدات وال�
   await expect(page.locator('.card', { hasText: 'الأجهزة' }).getByText('جوال')).toBeVisible();
 });
 
-test('صفحات المتجر: الجاهزة والإضافية تظهر بتذييل المتجر وتفتح بنافذة', async ({ page }) => {
+test('صفحات الموقع: الجاهزة والإضافية تظهر بتذييل الموقع وتفتح بنافذة', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
   await page.click('button:has-text("الصفحات")');
   await page.waitForTimeout(300);
-  // 8 صفحات جاهزة + محررات الأسئلة والسياسات
-  await expect(page.getByText('صفحات متجرك الجاهزة')).toBeVisible();
-  await expect(page.locator('.spg-row')).toHaveCount(8);
+  // 7 صفحات جاهزة + محررات الأسئلة والسياسات
+  await expect(page.getByText('صفحات موقعك الجاهزة')).toBeVisible();
+  await expect(page.locator('.spg-row')).toHaveCount(7);
   await expect(page.locator('#faqIn')).toBeVisible();
   await expect(page.locator('#privIn')).toBeVisible();
   await expect(page.locator('#retIn')).toBeVisible();
@@ -1249,7 +1133,7 @@ test('صفحات المتجر: الجاهزة والإضافية تظهر بتذ
   await page.fill('#xpB', 'نقدم باقات خاصة للفعاليات والمناسبات الكبرى\nتواصلوا معنا لتفاصيل الأسعار');
   await page.click('button:has-text("+ إضافة الصفحة")');
   await page.waitForTimeout(500);
-  // تذييل المتجر: الروابط الصحيحة ظاهرة والمخفية غائبة
+  // تذييل الموقع: الروابط الصحيحة ظاهرة والمخفية غائبة
   await page.goto('/booking.html');
   await page.waitForTimeout(700);
   await expect(page.locator('.fpages')).toBeVisible();
@@ -1270,17 +1154,17 @@ test('صفحات المتجر: الجاهزة والإضافية تظهر بتذ
   await expect(page.locator('.pg-lb')).toContainText('مكياج عروس');
 });
 
-test('تصنيفات لكل متجر: إضافة وحذف وإخفاء تنعكس على خدمات المتجر', async ({ page }) => {
+test('تصنيفات لكل موقع: إضافة وحذف وإخفاء تنعكس على خدمات الموقع', async ({ page }) => {
   await page.goto('/salon.html#page');
   await page.waitForTimeout(800);
   await page.click('button:has-text("التصنيفات")');
   await page.waitForTimeout(300);
   // القائمة الافتراضية: شعر/أظافر/مكياج/بشرة/عناية/عناية بالجسم/منتجات
-  await expect(page.getByText('تصنيفات متجرك')).toBeVisible();
+  await expect(page.getByText('تصنيفات موقعك')).toBeVisible();
   await expect(page.locator('.cat-chip')).toHaveCount(7);
   // إضافة تصنيف جديد
   await page.fill('#catIn', 'رموش وحواجب');
-  await page.locator('.card', { hasText: 'تصنيفات متجرك' }).locator('button:has-text("+ إضافة")').click();
+  await page.locator('.card', { hasText: 'تصنيفات موقعك' }).locator('button:has-text("+ إضافة")').click();
   await page.waitForTimeout(400);
   await expect(page.locator('.cat-chip')).toHaveCount(8);
   await expect(page.locator('.cat-chip', { hasText: 'رموش وحواجب' })).toBeVisible();
@@ -1323,34 +1207,6 @@ test('قسم «الخدمات» المستقل: وصف وموظفات وحالة
   await expect(page.locator('.svc', { hasText: 'مكياج عروس' }).first()).toBeVisible();
 });
 
-test('قسم «المنتجات» المستقل: مخزون وحالة وإضافة تنعكس على المتجر', async ({ page }) => {
-  await page.goto('/salon.html#page');
-  await page.waitForTimeout(800);
-  await page.click('.nav-item[data-id="page"]');
-  await page.waitForTimeout(300);
-  await page.locator('.pgsub[data-sub="prod"]').click();
-  await page.waitForTimeout(400);
-  await expect(page.getByText('إدارة المنتجات')).toBeVisible();
-  await expect(page.locator('.mprd')).toHaveCount(6);
-  // تصفير مخزون «ماسك بشرة» يخفيه تلقائياً
-  const mask = page.locator('.mprd[data-n="ماسك بشرة"]');
-  await mask.locator('.mprd-s').fill('0');
-  await mask.locator('.mprd-s').evaluate(el => el.dispatchEvent(new Event('change')));
-  await page.waitForTimeout(500);
-  await expect(page.getByText('نفد المخزون', { exact: false }).first()).toBeVisible();
-  // إضافة منتج جديد
-  await page.fill('#npN', 'شمعة عطرية فاخرة');
-  await page.fill('#npP', '60');
-  await page.fill('#npS', '10');
-  await page.click('button:has-text("+ إضافة المنتج")');
-  await page.waitForTimeout(500);
-  await expect(page.locator('.mprd')).toHaveCount(7);
-  // المتجر: الجديد ظاهر والنافد مخفي
-  await page.goto('/booking.html');
-  await page.waitForTimeout(700);
-  await expect(page.locator('.shp', { hasText: 'شمعة عطرية فاخرة' })).toBeVisible();
-  await expect(page.locator('.shp', { hasText: 'ماسك بشرة' })).toHaveCount(0);
-});
 
 test('قسم «الحجوزات» المستقل: قادمة ومكتملة وملغاة مع الإجراءات', async ({ page }) => {
   await page.goto('/salon.html#page');
@@ -1359,7 +1215,7 @@ test('قسم «الحجوزات» المستقل: قادمة ومكتملة وم
   await page.waitForTimeout(300);
   await page.locator('.pgsub[data-sub="books"]').click();
   await page.waitForTimeout(400);
-  await expect(page.getByText('حجوزات المتجر')).toBeVisible();
+  await expect(page.getByText('حجوزات الموقع')).toBeVisible();
   // القادمة: حجزان مبدئيان بعميل وخدمة وموظفة ووقت
   await expect(page.locator('.mbk')).toHaveCount(2);
   const b1 = page.locator('.mbk', { hasText: 'نوف العتيبي' });
@@ -1403,4 +1259,222 @@ test('قسم «الفريق» المستقل: التخصص والخدمات وا
   await page.locator('.pgsub[data-sub="team"]').click();
   await page.waitForTimeout(400);
   await expect(page.locator('.mteam', { hasText: 'أمل' }).locator('.mteam-bio')).toHaveValue('خبرة 8 سنوات في مكياج العرائس والمناسبات');
+});
+
+test('استوديو التصميم: قوالب جاهزة وقالب الصفحة ينعكسان في المعاينة الحية', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(700);
+  const pf = () => page.frames().find(f => f.url().includes('preview=1'));
+  // المعاينة إطار حقيقي للصفحة العامة لا محاكاة
+  expect(pf()).toBeTruthy();
+  await expect(page.locator('.st-tpl')).toHaveCount(6);
+  await expect(page.locator('.st-theme')).toHaveCount(4);
+  // قالب جاهز واحد يغيّر لون الموقع كلياً خلال أقل من ثانية
+  await page.click('.st-tpl[data-tpl="rose"]');
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ac').trim())).toBe('#db2777');
+  // قالب الصفحة له أثر بصري مثبت: الاستدارة والصنف على الجذر
+  await page.click('.st-theme[data-theme="classic"]');
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => document.body.className)).toContain('theme-classic');
+  expect(await pf().evaluate(() => getComputedStyle(document.body).getPropertyValue('--rad').trim())).toBe('0px');
+  await page.click('.st-theme[data-theme="bold"]');
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => document.body.className)).toContain('theme-bold');
+  expect(await pf().evaluate(() => getComputedStyle(document.body).getPropertyValue('--rad').trim())).toBe('10px');
+});
+
+test('استوديو التصميم: إخفاء وترتيب وتكرار الأقسام ينعكس فوراً بلا حفظ قبل النشر', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(700);
+  const pf = () => page.frames().find(f => f.url().includes('preview=1'));
+  // الأقسام التسعة عشر كلها معروضة وقابلة للسحب
+  await expect(page.locator('.sec-row')).toHaveCount(19);
+  await expect(page.locator('.sec-row[draggable="true"]')).toHaveCount(19);
+  // «خدماتنا» ثابت: لا زر إخفاء ولا حذف
+  const svcRow = page.locator('.sec-row', { hasText: 'خدماتنا' });
+  await expect(svcRow.locator('.sec-tgl')).toHaveCount(0);
+  await expect(svcRow.locator('.sec-del')).toHaveCount(0);
+  // إخفاء «آراء العميلات» يخفيها من الصفحة العامة فوراً
+  expect(await pf().evaluate(() => !!document.querySelector('[data-sec^="reviews"]').innerHTML)).toBe(true);
+  await page.locator('.sec-row', { hasText: 'آراء العميلات' }).locator('.sec-tgl').click();
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => !!document.querySelector('[data-sec^="reviews"]'))).toBe(false);
+  // تكرار «لماذا نحن» يعرضه مرتين
+  await page.locator('.sec-row', { hasText: 'لماذا نحن' }).locator('.sec-dup').click();
+  await page.waitForTimeout(600);
+  expect(await pf().evaluate(() => document.querySelectorAll('[data-sec^="perks"]').length)).toBe(2);
+  // لا شيء يُحفظ حتى النشر
+  expect(await page.evaluate(() => (JSON.parse(localStorage.getItem('luma_page_cfg') || '{}').layout || []).length)).toBe(0);
+  await expect(page.getByText('لديك تغييرات غير منشورة')).toBeVisible();
+  await page.click('button:has-text("نشر التغييرات")');
+  await page.waitForTimeout(800);
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('luma_page_cfg') || '{}').layout || []);
+  expect(saved.length).toBe(20);
+  expect(saved.filter(x => x.k === 'perks').length).toBe(2);
+  expect(saved.find(x => x.k === 'reviews').on).toBe(false);
+});
+
+test('استوديو التصميم: التراجع يرجع الحالة والكتابة السريعة لقطة واحدة', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(700);
+  // ثلاث خطوات ثم ثلاث تراجعات ترجع للأصل
+  await page.click('.st-theme[data-theme="minimal"]');
+  await page.waitForTimeout(800);
+  await page.click('.st-theme[data-theme="bold"]');
+  await page.waitForTimeout(800);
+  await page.click('.st-theme[data-theme="classic"]');
+  await page.waitForTimeout(800);
+  expect(await page.evaluate(() => STUDIO.val('themeId'))).toBe('classic');
+  for (let i = 0; i < 3; i++) { await page.click('button:has-text("تراجع")'); await page.waitForTimeout(700); }
+  expect(await page.evaluate(() => STUDIO.form.themeId)).toBeUndefined();
+  // تجاهل المسودة يعيد كل شيء
+  await page.click('.st-theme[data-theme="bold"]');
+  await page.waitForTimeout(600);
+  await expect(page.getByText('لديك تغييرات غير منشورة')).toBeVisible();
+});
+
+test('استوديو التصميم: محرر محتوى القسم يضيف عنصراً يظهر بالصفحة العامة', async ({ page }) => {
+  await page.goto('/salon.html#page');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => PAGE.showTab('design'));
+  await page.waitForTimeout(700);
+  // فتح محرر «الباقات والعروض» وإضافة عرض
+  await page.locator('.sec-row', { hasText: 'الباقات والعروض' }).locator('.sec-ed').click();
+  await page.waitForTimeout(500);
+  await page.click('.st-add');
+  await page.waitForTimeout(500);
+  await expect(page.locator('.st-row')).toHaveCount(1);
+  await page.locator('.st-row input').nth(1).fill('باقة العروس الماسية');
+  await page.locator('.st-row input').nth(1).dispatchEvent('change');
+  await page.waitForTimeout(600);
+  // إظهار القسم ثم التحقق من ظهوره في المعاينة
+  await page.click('button:has-text("رجوع للأقسام")');
+  await page.waitForTimeout(400);
+  await page.locator('.sec-row', { hasText: 'الباقات والعروض' }).locator('.sec-tgl').click();
+  await page.waitForTimeout(700);
+  const pf = page.frames().find(f => f.url().includes('preview=1'));
+  expect(await pf.evaluate(() => document.body.innerText)).toContain('باقة العروس الماسية');
+});
+
+test('المعاينة الحية: تتجاهل الرسائل غير المطابقة ولا تعمل بدون preview=1', async ({ page }) => {
+  // بدون preview=1 لا يُسجَّل مستقبِل ولا تتأثر الصفحة
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await page.evaluate(() => window.postMessage({ type: 'salon-preview', settings: { title: 'اختراق' } }, window.location.origin));
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => CFG.title)).not.toBe('اختراق');
+  // مع preview=1: رسالة بنوع خاطئ تُتجاهل، والصحيحة تُطبَّق
+  await page.goto('/booking.html?preview=1');
+  await page.waitForTimeout(700);
+  await page.evaluate(() => window.postMessage({ type: 'other-thing', settings: { title: 'اختراق' } }, window.location.origin));
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => CFG.title)).not.toBe('اختراق');
+  await page.evaluate(() => window.postMessage({ type: 'salon-preview', settings: { title: 'صالون المعاينة' } }, window.location.origin));
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => CFG.title)).toBe('صالون المعاينة');
+  // وضع المعاينة لا يزيد عدّاد الزيارات ولا يحفظ شيئاً
+  const before = await page.evaluate(() => localStorage.getItem('luma_store_visits'));
+  await page.reload();
+  await page.waitForTimeout(600);
+  expect(await page.evaluate(() => localStorage.getItem('luma_store_visits'))).toBe(before);
+});
+
+test('واتساب: ربط مزوّد خاص بكل صالون وحالة الربط والاختبار في وضع التجربة', async ({ page }) => {
+  await page.goto('/salon.html#whatsapp');
+  await page.waitForTimeout(900);
+  // خمسة مزوّدين وحالة «موقوف» ابتداءً
+  await expect(page.locator('.wa-prov')).toHaveCount(5);
+  await expect(page.getByText('موقوف')).toBeVisible();
+  await expect(page.getByText('الربط غير مكتمل')).toBeVisible();
+  // تعبئة حقول Meta ثم تفعيل الربط → الحالة «متصل»
+  await page.locator('.wa-f[data-f="sender"]').fill('1234567890');
+  await page.locator('.wa-f[data-f="sender"]').dispatchEvent('change');
+  await page.locator('.wa-f[data-f="token"]').fill('TESTTOKEN');
+  await page.locator('.wa-f[data-f="token"]').dispatchEvent('change');
+  await page.evaluate(() => WA.toggle());
+  await page.waitForTimeout(600);
+  await expect(page.getByText('متصل')).toBeVisible();
+  await expect(page.getByText('الربط مكتمل')).toBeVisible();
+  // تبديل المزوّد يغيّر الحقول المطلوبة
+  await page.locator('.wa-prov[data-prov="twilio"]').click();
+  await page.waitForTimeout(500);
+  await expect(page.locator('.wa-f[data-f="sid"]')).toBeVisible();
+  await page.locator('.wa-prov[data-prov="meta"]').click();
+  await page.waitForTimeout(500);
+  // اختبار الإرسال في وضع التجربة يُسجَّل بلا إرسال فعلي
+  await page.evaluate(() => WA.test());
+  await page.waitForTimeout(500);
+  await page.fill('input[name=ph]', '0551234567');
+  await page.click('.lux-btn.lux-gold[data-ok]');
+  await page.waitForTimeout(900);
+  const log = await page.evaluate(() => JSON.parse(localStorage.getItem('luma_wa_log') || '[]'));
+  expect(log.length).toBe(1);
+  expect(log[0].status).toBe('sandbox');
+  expect(log[0].to).toBe('966551234567');   // تحويل 05… إلى E.164
+});
+
+test('واتساب: قوالب الأحداث قابلة للتحرير والتعطيل والمتغيرات تُملأ', async ({ page }) => {
+  await page.goto('/salon.html#whatsapp');
+  await page.waitForTimeout(900);
+  await page.evaluate(() => WA.go('events'));
+  await page.waitForTimeout(600);
+  await expect(page.locator('.wa-ev')).toHaveCount(7);
+  // تعطيل حدث «تأكيد الحجز» يمنع إرساله
+  await page.locator('.wa-ev[data-ev="booking"] .wa-tgl').click();
+  await page.waitForTimeout(500);
+  const r = await page.evaluate(() => LumaWA.send('booking', { client: 'نوف' }, '0551112233'));
+  expect(r.status).toBe('skipped');
+  // تحرير قالب «الفاتورة» ثم التحقق من تعبئة المتغيرات
+  await page.locator('.wa-ev[data-ev="receipt"] .wa-tpl').fill('عزيزتي {{client}} فاتورتك {{amount}} ريال من {{salon}}');
+  await page.locator('.wa-ev[data-ev="receipt"] .wa-tpl').dispatchEvent('change');
+  await page.waitForTimeout(500);
+  const txt = await page.evaluate(() =>
+    LumaWA.fill(LumaWA.tplOf(LumaWA.get(), 'receipt'), { client: 'نوف', amount: '530', salon: 'صالون لمسة' }));
+  expect(txt).toBe('عزيزتي نوف فاتورتك 530 ريال من صالون لمسة');
+  // متغير غير معروف لا يظهر كـ {{x}}
+  expect(await page.evaluate(() => LumaWA.fill('مرحباً {{client}} {{unknown}}', { client: 'ريم' }))).toBe('مرحباً ريم');
+});
+
+test('واتساب: بلا ربط يرجع لرابط wa.me اليدوي بدل الفشل الصامت', async ({ page }) => {
+  await page.goto('/salon.html#whatsapp');
+  await page.waitForTimeout(900);
+  const r = await page.evaluate(() => LumaWA.send('booking', { client: 'هند', service: 'مكياج' }, '0509998877'));
+  expect(r.status).toBe('manual');
+  expect(r.link).toContain('wa.me/966509998877');
+  await page.evaluate(() => WA.go('log'));
+  await page.waitForTimeout(600);
+  await expect(page.locator('.wa-row')).toHaveCount(1);
+  await expect(page.getByText('لا يوجد ربط API — رابط إرسال يدوي')).toBeVisible();
+  await expect(page.locator('button:has-text("فتح واتساب")')).toBeVisible();
+});
+
+test('واتساب: بناء طلب كل مزوّد بالشكل الصحيح', async ({ page }) => {
+  await page.goto('/salon.html#whatsapp');
+  await page.waitForTimeout(900);
+  const reqs = await page.evaluate(() => {
+    const mk = p => LumaWA.buildRequest({ provider: p, sender: 'SND', token: 'TK', sid: 'SD', url: 'https://x.test/hook' }, '966500000000', 'مرحباً');
+    const meta = mk('meta'), tw = mk('twilio'), d3 = mk('d360'), um = mk('ultramsg'), cu = mk('custom');
+    return {
+      metaUrl: meta.url, metaAuth: meta.init.headers.Authorization, metaBody: meta.init.body,
+      twUrl: tw.url, twAuth: tw.init.headers.Authorization.slice(0, 6), twBody: tw.init.body,
+      d3Key: d3.init.headers['D360-API-KEY'], umUrl: um.url, cuUrl: cu.url,
+    };
+  });
+  expect(reqs.metaUrl).toBe('https://graph.facebook.com/v21.0/SND/messages');
+  expect(reqs.metaAuth).toBe('Bearer TK');
+  expect(JSON.parse(reqs.metaBody).messaging_product).toBe('whatsapp');
+  expect(JSON.parse(reqs.metaBody).text.body).toBe('مرحباً');
+  expect(reqs.twUrl).toContain('/Accounts/SD/Messages.json');
+  expect(reqs.twAuth).toBe('Basic ');
+  expect(reqs.twBody).toContain('To=whatsapp%3A%2B966500000000');
+  expect(reqs.d3Key).toBe('TK');
+  expect(reqs.umUrl).toBe('https://api.ultramsg.com/SD/messages/chat');
+  expect(reqs.cuUrl).toBe('https://x.test/hook');
 });

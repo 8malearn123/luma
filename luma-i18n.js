@@ -142,7 +142,7 @@
     /* لوحة الصالون — التنقل الرئيسي (تغطية أساسية) */
     'نظرة عامة':'Overview','لوحة الحجوزات':'Booking Board','الطاقم والموارد البشرية':'Staff & HR','صفحتي والرابط':'My Page & Link',
     'العملاء':'Clients','الخدمات':'Services','المنتجات':'Products','المخزون':'Inventory','الاشتراكات':'Subscriptions',
-    'الفواتير البيعية':'Sales Invoices','التسويق':'Marketing','المالية':'Finance','التقارير':'Reports','الفروع':'Branches','الإعدادات':'Settings',
+    'الفواتير البيعية':'Sales Invoices','التسويق':'Marketing','المالية':'Finance','المحاسبة':'Accounting','موقع الصالون':'Salon Site','إشعارات واتساب':'WhatsApp Alerts','استوديو التصميم':'Design Studio','التقارير':'Reports','الفروع':'Branches','الإعدادات':'Settings',
     '+ حجز جديد':'+ New Booking','مديرة الصالون':'Salon Manager',
   };
 
