@@ -62,3 +62,31 @@ test('تسجيل الحضور المتأخر يظهر علماً في جدول �
   await page.click('button:has-text("جدول الدوام")');
   await expect(page.getByText(/تأخير \d+ دقيقة/).first()).toBeVisible();
 });
+
+test('طلب استئذان من البوابة يصل للوحة الصالون بساعاته', async ({ page }) => {
+  await login(page);
+  await page.click('.tabs button[data-t="req"]');
+  await page.click('button:has-text("+ طلب جديد")');
+  await page.waitForTimeout(300);
+  // النوع متاح للموظفة حتى دون أن تفتح المالكة شاشة الموارد البشرية أولاً
+  await expect(page.locator('#rqType option', { hasText: 'طلب استئذان' })).toHaveCount(1);
+  await page.selectOption('#rqType', 't3');
+  await page.waitForTimeout(200);
+  await page.fill('[data-f="0"]', '2026-09-03');
+  await page.fill('[data-f="2"]', '09:00');
+  await page.fill('[data-f="3"]', '08:00');
+  await page.click('#rqSend');
+  await expect(page.getByText('يجب أن يكون بعد')).toBeVisible();
+  await page.fill('[data-f="3"]', '12:00');
+  await page.click('#rqSend');
+  await expect(page.getByText('أُرسل طلبك')).toBeVisible();
+
+  await page.goto('/salon.html#hr');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الطلبات")');
+  const card = page.locator('.card', { hasText: 'طلب استئذان' });
+  await expect(card.getByText('ريم')).toBeVisible();
+  await expect(card).toContainText('09:00');
+  await expect(card).toContainText('12:00');
+  await expect(card.locator('button', { hasText: 'اعتماد' })).toBeVisible();
+});

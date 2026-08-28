@@ -1449,3 +1449,49 @@ test('واجهة المتجر متجاوبة: موقع كامل العرض عل�
   const flow = await page.locator('#app').boundingBox();
   expect(flow.width).toBeLessThanOrEqual(560);
 });
+
+test('طلب استئذان: نوع جاهز بحقول وقت وتحقق من الترتيب وسلسلة اعتماد', async ({ page }) => {
+  await page.goto('/salon.html#hr');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الطلبات")');
+  await page.click('button:has-text("+ طلب جديد")');
+  await page.waitForTimeout(300);
+  // النوع الجديد يظهر ضمن أنواع الطلبات الجاهزة
+  await expect(page.locator('[name=type] option', { hasText: 'طلب استئذان' })).toHaveCount(1);
+  await page.selectOption('[name=type]', 't3');
+  await page.click('[data-ok]');
+  await page.waitForTimeout(300);
+  // نموذج الاستئذان: تاريخ + نوع + وقتان + سبب
+  await expect(page.locator('.lux-ov [data-f]')).toHaveCount(5);
+  expect(await page.locator('[data-f="2"]').getAttribute('type')).toBe('time');
+  expect(await page.locator('[data-f="3"]').getAttribute('type')).toBe('time');
+
+  // «إلى الساعة» قبل «من الساعة» يُرفض ولا يُرسل الطلب
+  await page.fill('[data-f="0"]', '2026-09-02');
+  await page.fill('[data-f="2"]', '14:00');
+  await page.fill('[data-f="3"]', '11:00');
+  await page.click('[data-ok]');
+  await expect(page.getByText('يجب أن يكون بعد')).toBeVisible();
+  await expect(page.locator('.lux-ov [data-f]')).toHaveCount(5);   // النموذج ما زال مفتوحاً
+
+  // بعد التصحيح يُرسل ويظهر في «الطلبات العامة» بانتظار الاعتماد
+  await page.fill('[data-f="3"]', '16:30');
+  await page.fill('[data-f="4"]', 'مراجعة طبية');
+  await page.click('[data-ok]');
+  await page.waitForTimeout(600);
+  const card = page.locator('.card', { hasText: 'طلب استئذان' });
+  await expect(card).toHaveCount(1);
+  await expect(card).toContainText('14:00');
+  await expect(card).toContainText('16:30');
+  await expect(card).toContainText('خروج مبكر');
+  await expect(card).toContainText('مراجعة طبية');
+  await expect(card.locator('button', { hasText: 'اعتماد «المالكة»' })).toBeVisible();
+
+  // الاعتماد يُنهي السلسلة ويحوّل الحالة
+  await card.locator('button', { hasText: 'اعتماد' }).click();
+  await page.waitForTimeout(500);
+  await expect(page.locator('.card', { hasText: 'طلب استئذان' })).toContainText('معتمدة');
+
+  // الاستئذان لا يُخصم من رصيد الإجازات
+  await expect(page.getByText(/الرصيد المتبقي: 21 يوماً/).first()).toBeVisible();
+});

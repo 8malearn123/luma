@@ -6,6 +6,7 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script src="luma-hr-types.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>LUMA — بوابة الموظفة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -116,7 +117,7 @@ function balance(sid){
 }
 const chains=()=>S.get('luma_req_chains',[{id:'c1',name:'اعتماد مباشر',steps:['المالكة']}]);
 const chainOf=id=>chains().find(c=>c.id===id)||chains()[0];
-const rtypes=()=>S.get('luma_req_types',[]);
+const rtypes=()=>LumaReqTypes.all();
 
 /* ═══ الجلسة ═══ */
 let SID=S.get('luma_portal_session',null);
@@ -296,6 +297,7 @@ window.newReq=()=>{
         if(f.type==='select')return `<label>${esc(f.label)}${req}</label><select class="in" data-f="${i}">${(f.options||[]).map(o=>`<option>${esc(o)}</option>`).join('')}</select>`;
         if(f.type==='date')return `<label>${esc(f.label)}${req}</label><input class="in" type="date" data-f="${i}"/>`;
         if(f.type==='number')return `<label>${esc(f.label)}${req}</label><input class="in" type="number" data-f="${i}" dir="ltr"/>`;
+        if(f.type==='time')return `<label>${esc(f.label)}${req}</label><input class="in" type="time" data-f="${i}" dir="ltr"/>`;
         return `<label>${esc(f.label)}${req}</label><input class="in" data-f="${i}"/>`;
       }).join('')+`<div style="font-size:11px;color:var(--mut);margin-top:8px">سلسلة الاعتماد: ${chainOf(t.chain).steps.join(' ← ')}</div>`;
     }
@@ -314,6 +316,14 @@ window.newReq=()=>{
       for(let i=0;i<(t.fields||[]).length;i++){
         const el=wrap.querySelector(`[data-f="${i}"]`);
         if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#c0566a';el.focus();return;}
+        const af=t.fields[i].after;
+        if(af!=null&&t.fields[af]){
+          const prev=wrap.querySelector(`[data-f="${af}"]`);
+          if(prev&&prev.value&&el.value&&el.value<=prev.value){
+            el.style.borderColor='#c0566a';el.focus();
+            toast('«'+t.fields[i].label+'» يجب أن يكون بعد «'+t.fields[af].label+'»');return;
+          }
+        }
         values[t.fields[i].label]=el.value.trim();
       }
       S.update('luma_requests',rs=>{rs.unshift({id:Date.now(),type:tid,staff:SID,values,step:0,status:'pending',at:new Date().toISOString().slice(0,10)});return rs;},[]);

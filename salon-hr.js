@@ -103,14 +103,7 @@ if(!HR_CHAINS){
   ];
   hrSave(REQ_CHAINS_KEY,HR_CHAINS);
 }
-let HR_RTYPES=hrLoad(REQ_TYPES_KEY,null);
-if(!HR_RTYPES){
-  HR_RTYPES=[
-    {id:'t1',name:'طلب سلفة',chain:'c2',fields:[{label:'المبلغ (ر.س)',type:'number',req:1},{label:'سبب السلفة',type:'text',req:0}]},
-    {id:'t2',name:'خطاب تعريف',chain:'c1',fields:[{label:'الجهة الموجَّه لها',type:'text',req:1},{label:'اللغة',type:'select',options:['عربي','إنجليزي'],req:1}]},
-  ];
-  hrSave(REQ_TYPES_KEY,HR_RTYPES);
-}
+let HR_RTYPES=LumaReqTypes.all();
 let HR_REQS=hrLoad(REQS_KEY,[]);
 const hrChainOf=id=>HR_CHAINS.find(c=>c.id===id)||HR_CHAINS[0]||{id:'x',name:'اعتماد مباشر',steps:['المالكة']};
 const hrTypeOf=id=>HR_RTYPES.find(t=>t.id===id);
@@ -176,6 +169,7 @@ const HR={
       if(f.type==='select')return `<div class="lux-f"><label>${f.label}${req}</label><select data-f="${i}">${(f.options||[]).map(o=>`<option>${o}</option>`).join('')}</select></div>`;
       if(f.type==='date')return `<div class="lux-f"><label>${f.label}${req}</label><input type="date" data-f="${i}"/></div>`;
       if(f.type==='number')return `<div class="lux-f"><label>${f.label}${req}</label><input type="number" data-f="${i}" dir="ltr" style="text-align:right"/></div>`;
+      if(f.type==='time')return `<div class="lux-f"><label>${f.label}${req}</label><input type="time" data-f="${i}" dir="ltr" style="text-align:right"/></div>`;
       return `<div class="lux-f"><label>${f.label}${req}</label><input data-f="${i}"/></div>`;
     };
     LUX.modal(t.name+' — '+hrStaffName(staff),`
@@ -187,6 +181,14 @@ const HR={
         for(let i=0;i<t.fields.length;i++){
           const el=ov.querySelector(`[data-f="${i}"]`);
           if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#c0566a';el.focus();return;}
+          const af=t.fields[i].after;
+          if(af!=null&&t.fields[af]){
+            const prev=ov.querySelector(`[data-f="${af}"]`);
+            if(prev&&prev.value&&el.value&&el.value<=prev.value){
+              el.style.borderColor='#c0566a';el.focus();
+              LUX.toast('«'+t.fields[i].label+'» يجب أن يكون بعد «'+t.fields[af].label+'»','err');return;
+            }
+          }
           values[t.fields[i].label]=el.value.trim();
         }
         HR_REQS.unshift({id:Date.now(),type:tid,staff,values,step:0,status:'pending',at:new Date().toISOString().slice(0,10)});
@@ -229,7 +231,7 @@ const HR={
       ov.querySelector('#tbFields').innerHTML=fields.map((f,i)=>`
         <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px">
           <span style="flex:1;color:#f6f2ec">${f.label}</span>
-          <span style="color:#86818d">${{text:'نص',number:'رقم',date:'تاريخ',select:'قائمة'}[f.type]}${f.req?' · إلزامي':''}</span>
+          <span style="color:#86818d">${{text:'نص',number:'رقم',date:'تاريخ',time:'وقت',select:'قائمة'}[f.type]}${f.req?' · إلزامي':''}</span>
           <button style="background:none;border:none;color:#c0566a;cursor:pointer" onclick="this.dispatchEvent(new CustomEvent('rmf',{bubbles:true,detail:${i}}))">×</button>
         </div>`).join('')||'<div style="color:#86818d;font-size:12px;padding:6px 0">أضيفي حقول النموذج…</div>';
     };
@@ -240,7 +242,7 @@ const HR={
       <div id="tbFields"></div>
       <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
         <input id="tbLabel" placeholder="تسمية الحقل" style="flex:2;min-width:120px;background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px 11px;font-family:inherit;font-size:12.5px"/>
-        <select id="tbType" style="background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px;font-family:inherit;font-size:12.5px"><option value="text">نص</option><option value="number">رقم</option><option value="date">تاريخ</option><option value="select">قائمة خيارات</option></select>
+        <select id="tbType" style="background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px;font-family:inherit;font-size:12.5px"><option value="text">نص</option><option value="number">رقم</option><option value="date">تاريخ</option><option value="time">وقت</option><option value="select">قائمة خيارات</option></select>
         <label style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:#86818d"><input type="checkbox" id="tbReq"/> إلزامي</label>
       </div>
       <input id="tbOpts" placeholder="الخيارات مفصولة بفاصلة (للقائمة فقط)" style="display:none;width:100%;margin-top:8px;background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px 11px;font-family:inherit;font-size:12.5px"/>
