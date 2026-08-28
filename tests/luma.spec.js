@@ -1404,3 +1404,48 @@ test('قسم «الفريق» المستقل: التخصص والخدمات وا
   await page.waitForTimeout(400);
   await expect(page.locator('.mteam', { hasText: 'أمل' }).locator('.mteam-bio')).toHaveValue('خبرة 8 سنوات في مكياج العرائس والمناسبات');
 });
+
+test('واجهة المتجر متجاوبة: موقع كامل العرض على الشاشة وعمود الجوال كما هو', async ({ page }) => {
+  // ── سطح المكتب: الصفحة تملأ العرض بترويسة ثابتة وبطاقات منتجات مريحة ──
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.locator('#app')).toHaveClass(/wide/);
+  await expect(page.locator('.topbar')).toBeVisible();
+  await expect(page.locator('.topbar .tb-name')).toContainText('صالون لمسة');
+  const wide = await page.locator('#app').boundingBox();
+  expect(wide.width).toBeGreaterThan(1000);
+  // البطاقة كانت ~120px داخل عمود 430px — الآن بعرض قابل للقراءة
+  const card = await page.locator('.shp').first().boundingBox();
+  expect(card.width).toBeGreaterThan(200);
+  // السعر وزر الإضافة لا يتراكبان
+  const pr = await page.locator('.shp').first().locator('.pr').boundingBox();
+  const add = await page.locator('.shp').first().locator('.add').boundingBox();
+  expect(pr.x).toBeGreaterThanOrEqual(add.x + add.width - 1);
+  // الحدود ظاهرة فعلاً (متغيّر --ln كان غير معرّف فتختفي كل الحدود)
+  const ln = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ln').trim());
+  expect(ln).not.toBe('');
+  const bw = await page.locator('.shp').first().evaluate(el => getComputedStyle(el).borderTopWidth);
+  expect(bw).not.toBe('0px');
+
+  // ── الجوال: تجربة العمود الضيّق تبقى كما هي بشبكة منتجات من عمودين ──
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await page.waitForTimeout(700);
+  await expect(page.locator('.topbar')).toBeHidden();
+  const narrow = await page.locator('#app').boundingBox();
+  expect(narrow.width).toBeLessThanOrEqual(430);
+  const cols = await page.locator('.shop-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  expect(cols).toBe(2);
+
+  // ── خطوات الحجز تبقى عموداً مركّزاً حتى على الشاشة الواسعة ──
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.reload();
+  await page.waitForTimeout(700);
+  await page.locator('.svc').first().click();
+  await page.click('button:has-text("متابعة")');
+  await page.waitForTimeout(400);
+  await expect(page.locator('#app')).not.toHaveClass(/wide/);
+  const flow = await page.locator('#app').boundingBox();
+  expect(flow.width).toBeLessThanOrEqual(560);
+});
