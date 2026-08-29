@@ -6,6 +6,7 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script src="luma-branches.js"></script>
 <link rel="stylesheet" href="luma-core.css"/>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>LUMA — إدارة المنصة</title>
@@ -140,6 +141,7 @@ const IC = {
   gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M5 5l2 2M17 17l2 2M2 12h3M19 12h3M5 19l2-2M17 7l2-2"/>',
   star:'<path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/>',
   check:'<path d="M20 6L9 17l-5-5"/>',
+  pin:'<path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/>',
 };
 function icon(name,size=21){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${IC[name]||''}</svg>`;}
 window.icon=icon;
@@ -152,6 +154,7 @@ const NAV = [
   {id:'payments', label:'المدفوعات', icon:'wallet', crumb:'FINANCE'},
   {id:'commissions', label:'العمولات', icon:'commission', crumb:'FINANCE'},
   {id:'marketers', label:'المسوّقون', icon:'pulse', crumb:'GROWTH'},
+  {id:'branchreqs', label:'طلبات الفروع', icon:'pin', crumb:'PLATFORM'},
   {id:'plans', label:'الباقات', icon:'box', crumb:'PLATFORM'},
   {id:'reports', label:'التقارير', icon:'report', crumb:'PLATFORM'},
   {id:'settings', label:'الإعدادات', icon:'gear', crumb:'SYSTEM'},
@@ -226,6 +229,7 @@ setInterval(ntfBadge,15000);
 <script src="admin-screens1.js"></script>
 <script src="admin-screens2.js"></script>
 <script src="admin-screens3.js"></script>
+<script src="admin-branches.js"></script>
 <script>
 addEventListener('DOMContentLoaded',()=>{const s=(location.hash||'').replace('#','')||'overview';ADMIN.go(NAV_FLAT[s]?s:'overview');});
 if(document.readyState!=='loading'){const s=(location.hash||'').replace('#','')||'overview';ADMIN.go(NAV_FLAT[s]?s:'overview');}

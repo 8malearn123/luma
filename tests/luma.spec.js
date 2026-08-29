@@ -1547,3 +1547,102 @@ test('الهوية المعتمدة: الرموز والقواعد غير الق
   expect(halo.so).toBe('.5');
   expect(halo.r / halo.tile).toBeCloseTo(16 / 30, 1);
 });
+
+// ═══ فتح فرع جديد: طلب يعتمده لوما، أو دفع يفعّله فوراً ═══
+async function branchForm(page, name, phone) {
+  await page.goto('/salon.html#branches');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("طلب فرع جديد")');
+  await page.waitForTimeout(300);
+  await page.fill('[name=bname]', name);
+  await page.fill('[name=bcity]', 'جدة');
+  await page.fill('[name=bphone]', phone);
+}
+
+test('فرع جديد: الطلب لا يفتح فرعاً — اعتماد لوما هو ما يفتحه', async ({ page }) => {
+  await branchForm(page, 'فرع النخيل', '0551234567');
+  await page.click('[data-send]');
+  await expect(page.getByText('أُرسل الطلب')).toBeVisible();
+
+  // لدى الصالون: طلب معلّق، والفرعان المؤسِّسان فقط في المبدّل
+  await expect(page.locator('.card', { hasText: 'فرع النخيل' })).toContainText('بانتظار اعتماد لوما');
+  await expect(page.locator('.br-switch button')).toHaveCount(2);
+
+  // لدى إدارة لوما: الطلب ظاهر ببياناته
+  await page.goto('/admin.html#branchreqs');
+  await page.waitForTimeout(800);
+  const row = page.locator('.card', { hasText: 'فرع النخيل' });
+  await expect(row).toContainText('صالون لمسة');
+  await expect(row).toContainText('0551234567');
+  await row.locator('button:has-text("اعتماد وفتح الفرع")').click();
+  await page.waitForTimeout(500);
+
+  // صار فرعاً عاملاً لدى الصالون، وقابلاً للتبديل إليه
+  await page.goto('/salon.html#branches');
+  await page.waitForTimeout(800);
+  await expect(page.locator('.br-switch button')).toHaveCount(3);
+  await expect(page.locator('.card', { hasText: 'فرع النخيل' }).first()).toContainText('نشط');
+  await page.locator('.card', { hasText: 'فرع النخيل' }).first()
+    .locator('button:has-text("التبديل لهذا الفرع")').click();
+  await page.waitForTimeout(900);
+  expect(await page.evaluate(() => localStorage.getItem('luma_branch'))).toMatch(/^br-\d+$/);
+});
+
+test('فرع جديد: الدفع يفعّله فوراً بلا انتظار اعتماد', async ({ page }) => {
+  await branchForm(page, 'فرع السلامة', '0559876543');
+  await page.click('[data-pay]');
+  await page.waitForTimeout(300);
+  await expect(page.getByText('تفعيل فوري لفرع')).toBeVisible();
+  await page.click('[data-ok]');
+  await page.waitForTimeout(600);
+
+  // مُفعَّل فوراً: بطاقة نشطة + زر في المبدّل، بلا مرور على الاعتماد
+  await expect(page.locator('.br-switch button')).toHaveCount(3);
+  await expect(page.locator('.card', { hasText: 'فرع السلامة' }).first()).toContainText('نشط');
+
+  // ويصل إدارة لوما مُعتمداً بسجلّ دفع، فلا يطلب قراراً
+  await page.goto('/admin.html#branchreqs');
+  await page.waitForTimeout(800);
+  const row = page.locator('.card', { hasText: 'فرع السلامة' });
+  await expect(row).toContainText('مدفوع');
+  await expect(row).toContainText(/BR-\d{6}/);
+  await expect(row.locator('button:has-text("اعتماد")')).toHaveCount(0);
+});
+
+test('فرع جديد: الرفض يصل للصالون بسببه ولا يفتح فرعاً', async ({ page }) => {
+  await branchForm(page, 'فرع الحمراء', '0555555555');
+  await page.click('[data-send]');
+  await page.waitForTimeout(500);
+
+  await page.goto('/admin.html#branchreqs');
+  await page.waitForTimeout(800);
+  await page.locator('.card', { hasText: 'فرع الحمراء' }).locator('button:has-text("رفض")').click();
+  await page.waitForTimeout(300);
+  await page.fill('#brNote', 'يلزم صك الإيجار والرخصة البلدية');
+  await page.click('[data-ok]');
+  await page.waitForTimeout(500);
+
+  await page.goto('/salon.html#branches');
+  await page.waitForTimeout(800);
+  const card = page.locator('.card', { hasText: 'فرع الحمراء' });
+  await expect(card).toContainText('مرفوض');
+  await expect(card).toContainText('يلزم صك الإيجار والرخصة البلدية');
+  await expect(page.locator('.br-switch button')).toHaveCount(2);   // لم يُفتح فرع
+});
+
+test('فرع جديد: النموذج يرفض البيانات الناقصة', async ({ page }) => {
+  await page.goto('/salon.html#branches');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("طلب فرع جديد")');
+  await page.waitForTimeout(300);
+  // بلا اسم: لا يُرسل
+  await page.click('[data-send]');
+  await expect(page.locator('[name=bname]')).toBeFocused();
+  // جوال غير صحيح: لا يُرسل
+  await page.fill('[name=bname]', 'فرع تجريبي');
+  await page.fill('[name=bcity]', 'جدة');
+  await page.fill('[name=bphone]', '12345');
+  await page.click('[data-send]');
+  await expect(page.getByText('رقم الجوال غير صحيح')).toBeVisible();
+  await expect(page.locator('[name=bname]')).toHaveValue('فرع تجريبي');   // النموذج ما زال مفتوحاً
+});

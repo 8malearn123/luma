@@ -183,15 +183,147 @@ SCREENS.finance=()=>{
 
 /* ── BRANCHES ── */
 SCREENS.branches=()=>{
-  const B=[
-    {id:'shatee',n:'فرع الشاطئ',c:'جدة · حي الشاطئ',staff:4,chairs:6,st:'رئيسي',sc:'gold',rev:'52,400'},
-    {id:'rawdah',n:'فرع الروضة',c:'جدة · حي الروضة',staff:4,chairs:4,st:'نشط',sc:'green',rev:'34,100'},
-  ];
+  const REQ=LumaBranches.requests();
+  const LIVE=LumaBranches.active();
+  /* أرقام تشغيلية للفرعين المؤسِّسين؛ الفرع المُضاف حديثاً يبدأ من الصفر */
+  const DEMO={shatee:{staff:4,chairs:6,rev:'52,400'},rawdah:{staff:4,chairs:4,rev:'34,100'}};
+  const ST={pending:['بانتظار اعتماد لوما','gold'],rejected:['مرفوض','soft'],active:['نشط','green']};
+
+  const card=b=>{
+    const d=DEMO[b.id]||{staff:0,chairs:0,rev:'0'};
+    const cur=typeof CUR_BRANCH!=='undefined'&&CUR_BRANCH===b.id;
+    return `<div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="display:flex;align-items:center;gap:13px">
+          <div style="width:48px;height:48px;border-radius:8px;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('pin',22)}</div>
+          <div><div style="font-size:16px;color:var(--white);font-weight:600">${b.n}</div>
+          <div style="font-size:12.5px;color:var(--muted)">${b.c}</div></div>
+        </div><span class="badge green">نشط</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line-soft);text-align:center">
+        <div><div class="num" style="font-size:22px;color:var(--white)">${d.staff}</div><div style="font-size:11px;color:var(--muted)">موظفات</div></div>
+        <div><div class="num" style="font-size:22px;color:var(--white)">${d.chairs}</div><div style="font-size:11px;color:var(--muted)">كراسي</div></div>
+        <div><div class="num" style="font-size:22px;color:var(--gold-light)">${d.rev}</div><div style="font-size:11px;color:var(--muted)">دخل شهري</div></div>
+      </div>
+      <button class="btn ${cur?'btn-gold':'btn-ghost'}" style="width:100%;justify-content:center;margin-top:16px" onclick="BR.go('${b.id}')">${cur?'الفرع النشط الآن ✓':'التبديل لهذا الفرع'}</button>
+    </div>`;
+  };
+
+  const openReqs=REQ.filter(r=>r.status!=='active');
+  const reqRows=openReqs.map(r=>{
+    const st=ST[r.status]||ST.pending;
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="width:42px;height:42px;border-radius:8px;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('pin',20)}</div>
+        <div style="flex:1;min-width:200px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:15px;color:var(--white);font-weight:600">${esc(r.name)}</span>
+            <span class="badge ${st[1]}">${st[0]}</span>
+            <span style="font-size:11px;color:var(--muted-deep)" dir="ltr">${r.at}</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:3px">${esc(r.city)}${r.area?' · '+esc(r.area):''} · ${r.chairs} كراسي · ${r.staff} موظفات</div>
+          ${r.status==='rejected'&&r.note?`<div style="font-size:12px;color:var(--red);margin-top:5px">سبب الرفض: ${esc(r.note)}</div>`:''}
+        </div>
+        ${r.status==='pending'
+          ?`<button class="btn btn-gold" style="padding:9px 18px" onclick="BRQ.pay('${r.id}')">الدفع والتفعيل الآن · ${r.fee} ر.س</button>
+            <button class="btn btn-ghost" style="padding:9px 16px" onclick="BRQ.cancel('${r.id}')">سحب الطلب</button>`
+          :`<button class="btn btn-ghost" style="padding:9px 16px" onclick="BRQ.cancel('${r.id}')">إزالة</button>`}
+      </div></div>`;}).join('');
+
   return `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"><div><div style="font-weight:600;font-size:19px;color:var(--white)">فروع الصالون</div><div style="font-size:13px;color:var(--gold-pale);margin-top:2px">فرعان · إدارة موحّدة</div></div><button class="btn btn-gold">+ إضافة فرع</button></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">${B.map(b=>`<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div style="display:flex;align-items:center;gap:13px"><div style="width:48px;height:48px;border-radius:13px;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('pin',22)}</div><div><div style="font-size:16px;color:var(--white);font-weight:600">${b.n}</div><div style="font-size:12.5px;color:var(--muted)">${b.c}</div></div></div><span class="badge ${b.sc}">${b.st}</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line-soft);text-align:center"><div><div class="num" style="font-size:22px;color:var(--white)">${b.staff}</div><div style="font-size:11px;color:var(--muted)">موظفات</div></div><div><div class="num" style="font-size:22px;color:var(--white)">${b.chairs}</div><div style="font-size:11px;color:var(--muted)">كراسي</div></div><div><div class="num" style="font-size:22px;color:var(--gold-light)">${b.rev}</div><div style="font-size:11px;color:var(--muted)">دخل شهري</div></div></div><button class="btn ${typeof CUR_BRANCH!=='undefined'&&CUR_BRANCH===b.id?'btn-gold':'btn-ghost'}" style="width:100%;justify-content:center;margin-top:16px" onclick="BR.go('${b.id}')">${typeof CUR_BRANCH!=='undefined'&&CUR_BRANCH===b.id?'الفرع النشط الآن ✓':'التبديل لهذا الفرع'}</button></div>`).join('')}</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <div><div style="font-weight:600;font-size:19px;color:var(--white)">فروع الصالون</div>
+    <div style="font-size:13px;color:var(--gold-pale);margin-top:2px">${LIVE.length} فروع عاملة · إدارة موحّدة${openReqs.length?` · ${openReqs.length} طلب قيد المعالجة`:''}</div></div>
+    <button class="btn btn-gold" onclick="BRQ.open()">+ طلب فرع جديد</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">${LIVE.map(card).join('')}</div>
+  ${openReqs.length?`<div class="sec-label" style="margin-top:26px">طلبات الفروع <span class="ln"></span></div>${reqRows}`:''}
   <div class="card" style="margin-top:18px;font-size:13px;color:var(--gold-pale);line-height:2">بيانات كل فرع معزولة تماماً: الحجوزات، المدفوعات، الموارد البشرية، المخزون، والعميلات — بدّلي الفرع من هنا أو من الشريط الجانبي.</div>`;
 };
+
+/* ═══ طلب فتح فرع جديد — إرسال للاعتماد، أو دفع يُفعّل الفرع فوراً ═══ */
+const BRQ={
+  fields(v){v=v||{};return `
+    <div class="lux-f"><label>اسم الفرع <span style="color:var(--red)">*</span></label><input name="bname" placeholder="مثال: فرع النخيل" value="${esc(v.name||'')}"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="lux-f"><label>المدينة <span style="color:var(--red)">*</span></label><input name="bcity" placeholder="جدة" value="${esc(v.city||'')}"/></div>
+      <div class="lux-f"><label>الحي</label><input name="barea" placeholder="حي النخيل" value="${esc(v.area||'')}"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="lux-f"><label>عدد الكراسي</label><input name="bchairs" type="number" min="1" dir="ltr" style="text-align:right" value="${v.chairs||4}"/></div>
+      <div class="lux-f"><label>عدد الموظفات المتوقع</label><input name="bstaff" type="number" min="1" dir="ltr" style="text-align:right" value="${v.staff||3}"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="lux-f"><label>جوال مسؤولة الفرع <span style="color:var(--red)">*</span></label><input name="bphone" dir="ltr" style="text-align:right" placeholder="05xxxxxxxx" value="${esc(v.phone||'')}"/></div>
+      <div class="lux-f"><label>تاريخ الافتتاح المتوقع</label><input name="bopen" type="date" value="${v.openAt||''}"/></div>
+    </div>`;},
+
+  read(ov){
+    const g=n=>(ov.querySelector('[name='+n+']')||{}).value||'';
+    const d={name:g('bname').trim(),city:g('bcity').trim(),area:g('barea').trim(),
+             chairs:g('bchairs'),staff:g('bstaff'),phone:g('bphone').trim(),openAt:g('bopen')};
+    const bad=k=>{const el=ov.querySelector('[name='+k+']');el.style.borderColor='var(--red)';el.focus();};
+    if(!d.name){bad('bname');return null;}
+    if(!d.city){bad('bcity');return null;}
+    if(!/^0?5\d{8}$/.test(d.phone.replace(/[\s-]/g,''))){bad('bphone');LUX.toast('رقم الجوال غير صحيح','err');return null;}
+    return d;
+  },
+
+  open(){
+    const fee=LumaBranches.FEE;
+    LUX.modal('طلب فتح فرع جديد',`
+      <div class="lux-lead">الفرع لا يُفتح بمجرد الطلب: إمّا تعتمده إدارة لوما، أو تُفعّلينه فوراً بالدفع. بياناته تبقى معزولة عن بقية الفروع.</div>
+      ${BRQ.fields()}
+      <div class="lux-row" style="margin-top:6px"><span class="k">اشتراك الفرع الإضافي</span><span class="v">${fee} ر.س / شهر</span></div>
+      <button class="lux-btn lux-gold" data-pay style="width:100%;margin-top:14px">الدفع والتفعيل الفوري · ${fee} ر.س</button>
+      <button class="lux-btn lux-ghost" data-send style="width:100%;margin-top:9px">إرسال الطلب لاعتماد لوما</button>`,
+    {onMount(ov,close){
+      ov.querySelector('[data-send]').onclick=()=>{
+        const d=BRQ.read(ov);if(!d)return;
+        LumaBranches.submit(d,{paid:false});close();SALON.go('branches');BR.paint();
+        LUX.toast('أُرسل الطلب — بانتظار اعتماد لوما ✓','ok');
+      };
+      ov.querySelector('[data-pay]').onclick=()=>{
+        const d=BRQ.read(ov);if(!d)return;close();BRQ.checkout(d);
+      };
+    }});
+  },
+
+  /* الدفع — يفتح الفرع فوراً بلا انتظار اعتماد */
+  checkout(d,reqId){
+    const fee=LumaBranches.FEE;
+    LUX.modal('الدفع وتفعيل الفرع',`
+      <div class="lux-lead">تفعيل فوري لفرع «${esc(d.name)}» — يصبح جاهزاً للاستخدام فور إتمام الدفع.</div>
+      <div class="lux-row"><span class="k">الفرع</span><span class="v">${esc(d.name)} — ${esc(d.city)}</span></div>
+      <div class="lux-row"><span class="k">الاشتراك الشهري</span><span class="v">${fee} ر.س</span></div>
+      <div class="lux-f"><label>طريقة الدفع</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          ${['mada','Apple Pay','تحويل بنكي'].map((m,i)=>`<label style="display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:30px;padding:9px 15px;font-size:12.5px;cursor:pointer"><input type="radio" name="bpay" value="${m}" ${i?'':'checked'} style="accent-color:var(--gold)"/>${m}</label>`).join('')}
+        </div></div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:14px">تأكيد الدفع ${fee} ر.س وتفعيل الفرع</button>`,
+    {onMount(ov,close){
+      ov.querySelector('[data-ok]').onclick=()=>{
+        const m=(ov.querySelector('[name=bpay]:checked')||{}).value||'mada';
+        if(reqId)LumaBranches.remove(reqId);      /* الطلب المعلّق يُستبدل بسجلّ مدفوع */
+        const r=LumaBranches.submit(d,{paid:true,method:m});
+        close();SALON.go('branches');BR.paint();
+        LUX.toast('تم الدفع — فرع «'+r.name+'» مُفعَّل الآن ✓ ('+r.payRef+')','ok');
+      };
+    }});
+  },
+
+  pay(id){
+    const r=LumaBranches.requests().find(x=>x.id===id);if(!r)return;
+    BRQ.checkout(r,id);
+  },
+
+  cancel(id){
+    const r=LumaBranches.requests().find(x=>x.id===id);if(!r)return;
+    LUX.confirm?LUX.confirm('سحب طلب «'+r.name+'»؟',()=>{LumaBranches.remove(id);SALON.go('branches');BR.paint();LUX.toast('سُحب الطلب','ok');})
+      :(LumaBranches.remove(id),SALON.go('branches'),BR.paint(),LUX.toast('سُحب الطلب','ok'));
+  },
+};
+window.BRQ=BRQ;
 
 /* ── SETTINGS ── */
 SCREENS.settings=()=>{

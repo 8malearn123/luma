@@ -82,6 +82,11 @@ function spReadImage(file,maxPx,cb){
   };im.src=rd.result;};
   rd.readAsDataURL(file);
 }
+/* تهريب النصوص التي تكتبها المالكة قبل حقنها في HTML */
+const esc=v=>String(v==null?'':v)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+window.esc=esc;
+
 function spAvatar(s,size){
   const p=spOf(s.id);
   return p.photo
