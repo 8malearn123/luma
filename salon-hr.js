@@ -414,7 +414,11 @@ const HR={
       const all=hrLoad(HR_CLOSE_KEY,{});
       all[hrMonth()]={total,at:new Date().toISOString(),slips:STAFF.map(s=>({staff:s.n,...hrLedger(s.id)}))};
       hrSave(HR_CLOSE_KEY,all);SALON.go('hr');
-      LUX.toast('تمت التصفية ✓ صدرت '+STAFF.length+' قسائم راتب وحُدّث النظام المحاسبي','ok');
+      /* المحاسبة: استحقاق الرواتب والعمولات قيداً في الدفتر */
+      if(window.LumaAcc&&LumaAcc.Bridge){
+        LumaAcc.Bridge.onPayrollClose(hrMonth(),STAFF.map(s=>hrLedger(s.id)).map(l=>({base:l.p.base,svcComm:l.svcComm,prodComm:l.prodComm})));
+      }
+      LUX.toast('تمت التصفية ✓ صدرت '+STAFF.length+' قسائم راتب وتُرحّل قيد الرواتب','ok');
     });
   },
 };

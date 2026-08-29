@@ -511,6 +511,7 @@ const NAV=[
   {id:'invoices',label:'الفواتير البيعية',icon:'invoice',crumb:'FINANCE'},
   {id:'marketing',label:'التسويق',icon:'mega',crumb:'GROWTH'},
   {id:'finance',label:'المالية',icon:'wallet',crumb:'FINANCE'},
+  {id:'accounting',label:'المحاسبة',icon:'report',crumb:'FINANCE'},
   {id:'reports',label:'التقارير',icon:'chart',crumb:'FINANCE'},
   {id:'branches',label:'الفروع',icon:'pin',crumb:'SALON'},
   {id:'settings',label:'الإعدادات',icon:'gear',crumb:'SYSTEM'},
@@ -708,7 +709,12 @@ const SALON={
           const total=+(price*1.15+tip).toFixed(2);
           markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
           const pts=typeof loyAward==='function'?loyAward(a.client,total):0;
-          const stk=typeof stockConsume==='function'?stockConsume(a.service):{alerts:[]};
+          const stk=typeof stockConsume==='function'?stockConsume(a.service):{alerts:[],consumed:[]};
+          /* المحاسبة: الدفعة تُنتج قيدها، والمستلزمات المستهلكة تُنتج تكلفتها */
+          if(window.LumaAcc&&LumaAcc.Bridge){
+            LumaAcc.Bridge.onServicePayment(a.id,{no:paidOf(a.id).no,method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)},{client:a.client,service:a.service});
+            LumaAcc.Bridge.onSuppliesConsumed(a.id,stk.consumed);
+          }
           /* طلب تقييم ما بعد الزيارة — يفتح في review.html ويُنشر موثقاً في المتجر */
           try{LumaStore.update('luma_review_reqs',l=>{l.push({id:'rv'+a.id+'_'+Date.now(),client:a.client,service:a.service,staff:(STAFF.find(x=>x.id===a.staff)||{n:''}).n,salon:'صالون لمسة',date:new Date().toISOString().slice(0,10),st:'sent'});return l;},[]);}catch(e){}
           setTimeout(()=>LUX.toast('📱 أُرسل للعميلة رابط تقييم الزيارة عبر واتساب (محاكاة)','ok'),2800);

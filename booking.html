@@ -735,6 +735,7 @@ window.confirmOrder=()=>{
   const ref='ORD-'+Math.floor(100000+Math.random()*900000);
   const total=cartTotal();
   try{LumaStore.update('luma_salon_orders',l=>{l.unshift({ref,client:nm.value.trim(),phone:ph.value.trim(),items:{...cart},total,pay,at:new Date().toISOString()});return l;},[]);}catch(e){}
+  /* المحاسبة تعمل في لوحة الصالون؛ هنا نحفظ الطلب فقط ويُرحَّل عند فتح اللوحة */
   try{LumaEvents.push('order','طلب متجر جديد ('+ref+') لدى '+CFG.title+': '+nm.value.trim()+' — '+total+' ر.س ('+pay+')','salon.html#services');}catch(e){}
   const sh=document.querySelector('.shs');
   if(sh)sh.innerHTML=`<div style="text-align:center;padding:22px 6px">
