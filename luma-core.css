@@ -1,41 +1,153 @@
-/* ===== LUMA Core — نظام التصميم المشترك =====
-   المصدر الكنسي لمتغيرات الهوية ومكونات الداشبوردات المشتركة.
-   يُحمَّل قبل أنماط كل صفحة؛ أنماط الصفحة تكسب عند الاختلاف، لذا
-   إدراجه لا يغيّر أي مظهر قائم — لكنه المرجع الواحد لأي تعديل هوية
-   قادم ولأي صفحة/مكوّن جديد. (ألوان الوضع الفاتح تُدار في luma-theme.js) */
+/* ═══════════ LUMA Core — نظام التصميم المشترك ═══════════
+   المصدر الوحيد لمتغيرات الهوية، مبنيّ حرفياً على:
+   LUMA · IDENTITY HANDOFF · VOLUME 01 · 2026 (صفحة 10 — CSS tokens)
+
+   القواعد غير القابلة للتفاوض (صفحة 11):
+     • الداكن هو الثيم الوحيد — لا يوجد وضع فاتح.
+     • النص فوق أي تعبئة ذهبية هو #1A1206 دائماً، لا Pearl ولا أبيض.
+     • وهج محيطي واحد لكل شاشة، مثبّت أعلى اليمين.
+     • الأسطح الذهبية تبقى تحت ١٠٪ من أي شاشة — التوازن ٧٠ ابسيديان / ٢٢ حبر / ٨ ذهب.
+     • الحدود شعرة 1px، لا 2px فأكثر.
+
+   الخط: الهوية لاتينية (Bodoni Moda + Jost). التطبيق عربي، فترتيب العائلة
+   يضع اللاتيني أولاً ليلتقط الأرقام والكلمات الإنجليزية، ويسقط للعربي (Tajawal)
+   لبقية الحروف — فيبقى «LUMA» و«SAR 4,820» على الهوية والنص العربي مقروءاً. */
 
 :root{
-  /* Eclipse — Black & Gold (الهوية الأساسية) */
-  --bg:#131217; --bg2:#0C0B0E;
-  --surface:#18171d; --surface2:#1b1a21; --surface3:#201f26;
-  --panel:#141319; --panel2:#19181e; --panel3:#1b1a21;
-  --gold:#9c8047; --gold-light:#ccab64; --gold-bright:#dbbd81;
-  --gold-pale:#e6ce95; --gold-deep:#846a38;
-  --white:#f6f2ec; --cream:#ece6da;
-  --muted:#86818d; --muted-deep:#58545f;
-  --line:#26242d; --line-soft:#1e1d24;
-  --green:#6fa86a; --green-bg:rgba(111,168,106,0.12);
-  --red:#c2705f; --red-bg:rgba(194,112,95,0.12);
-  --rose:#d98a93; --blue:#6f93b8;
-  --font-ar:'IBM Plex Sans Arabic','Cairo',sans-serif;
-  --font-display:'Bodoni Moda',serif;
-  --font-mono:'IBM Plex Mono',monospace;
+  /* ── surface ── */
+  --luma-obsidian:      #0C0B0E;
+  --luma-ink:           #15141A;
+  --luma-ink-raised:    #1A1820;
+  /* ── gold ── */
+  --luma-gold:          #C9A75E;
+  --luma-champagne:     #E9D29A;
+  --luma-gilt:          #E7D2A0;
+  --luma-gold-antique:  #8A6E34;
+  --luma-bronze:        #5A4520;
+  /* ── text ── */
+  --luma-pearl:         #EDE7DA;
+  --luma-stone:         #9D978A;
+  --luma-ash:           #8C8676;
+  --luma-slate:         #5E594F;
+  --luma-on-gold:       #1A1206;
+  /* ── semantic ── */
+  --luma-success:       #9CC59B;
+  --luma-danger:        #C97A6A;
+  --luma-notice:        #E9D29A;
+  /* ── lines ── */
+  --luma-hairline:      rgba(201,167,94,.14);
+  --luma-hairline-hi:   rgba(201,167,94,.30);
+  /* ── gradients ── */
+  --luma-grad-gold:
+    linear-gradient(150deg,#F3E2B0 0%,#D9B86F 30%,#C9A75E 52%,#EEDDA6 78%,#C29A4E 100%);
+  --luma-grad-fill:  linear-gradient(150deg,#E9D29A,#C9A75E);
+  --luma-grad-deep:  linear-gradient(150deg,#C9A75E,#8A6E34);
+  --luma-mark:
+    radial-gradient(circle at 36% 30%,#F8EBC4 0%,#DEBE7C 26%,#C9A75E 44%,#5A4520 72%,#0f0a04 100%);
+  --luma-glow-page:
+    radial-gradient(120% 78% at 78% 14%,rgba(201,167,94,.20) 0%,rgba(201,167,94,0) 52%);
+  /* ── shadow ── */
+  --luma-glow-mark:   0 0 48px 6px rgba(201,167,94,.30);
+  --luma-shadow-lift: 0 24px 50px rgba(0,0,0,.5);
+  /* ── type ── */
+  --luma-font-display: 'Bodoni Moda','Tajawal',serif;
+  --luma-font-ui:      'Jost','Tajawal',sans-serif;
+  --luma-font-quote:   'Cormorant Garamond','Tajawal',serif;
+  --luma-size-display: 48px;
+  --luma-size-heading: 30px;
+  --luma-size-subhead: 20px;
+  --luma-size-body:    16px;
+  --luma-size-quote:   24px;
+  --luma-size-label:   11px;
+  --luma-track-wordmark: .30em;
+  --luma-track-label:    .28em;
+  /* ── geometry ── */
+  --luma-radius-panel: 6px;
+  --luma-radius-card:  8px;
+  --luma-radius-pill:  30px;
+  --luma-radius-phone: 38px;
+  --luma-pad-section:  110px;
+  --luma-pad-panel:    26px;
+
+  /* ═══ أسماء الاستخدام في الصفحات — كلها تشير لرموز الهوية أعلاه ═══
+     الصفحات تكتب var(--gold) و var(--line)… فتبقى كما هي وتأخذ قيم الهوية. */
+  --bg:var(--luma-obsidian); --bg2:#08070A; --bg-soft:var(--luma-obsidian);
+  --charcoal:var(--luma-obsidian); --warm-black:var(--luma-obsidian);
+  --surface:var(--luma-ink); --surface2:var(--luma-ink-raised); --surface3:#1F1D26;
+  --panel:var(--luma-ink);  --panel2:var(--luma-ink-raised);  --panel3:#1F1D26;
+  --card-bg:var(--luma-ink);
+
+  --gold:var(--luma-gold); --gold-light:var(--luma-gilt); --gold-bright:var(--luma-champagne);
+  --gold-pale:#F3E2B0; --gold-deep:var(--luma-gold-antique); --on-gold:var(--luma-on-gold);
+
+  --white:var(--luma-pearl); --off-white:var(--luma-pearl); --text:var(--luma-pearl);
+  --cream:var(--luma-pearl);
+  --muted:var(--luma-stone); --muted2:var(--luma-ash); --muted-deep:var(--luma-slate);
+  --ash:var(--luma-ash); --stone:var(--luma-stone);
+
+  --line:var(--luma-hairline); --line-soft:rgba(201,167,94,.08);
+  --line-hi:var(--luma-hairline-hi); --border:var(--luma-hairline);
+
+  --green:var(--luma-success); --green-bg:rgba(156,197,155,.12);
+  --red:var(--luma-danger);    --red-bg:rgba(201,122,106,.12);
+  --rose:var(--luma-danger);   --blue:var(--luma-stone);
+
+  --font-ar:var(--luma-font-ui);
+  --font-display:var(--luma-font-display);
+  --font-mono:var(--luma-font-ui);
 }
 
-/* ── مكونات الداشبورد المشتركة (قاعدة موحدة قابلة للتجاوز) ── */
-.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 11px;border-radius:30px;border:1px solid var(--line);color:var(--cream);background:var(--surface3);}
-.badge.gold{background:rgba(205,172,80,.14);border-color:var(--gold-deep);color:var(--gold-light);}
-.badge.green{background:var(--green-bg);border-color:rgba(111,168,106,.4);color:#9fce99;}
-.badge.soft{background:var(--surface3);border-color:var(--line);color:var(--muted);}
+/* ── الأساس ── */
+body{
+  background:var(--luma-obsidian);
+  color:var(--luma-pearl);
+  font-family:var(--luma-font-ui);
+  font-weight:300;
+}
+h1,h2,h3{font-family:var(--luma-font-display);font-weight:500;letter-spacing:normal;}
 
-.btn{font-family:var(--font-ar);font-weight:600;font-size:13.5px;padding:10px 20px;border-radius:9px;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
-.btn-gold{background:linear-gradient(120deg,var(--gold-bright),var(--gold-light) 45%,var(--gold));color:#131217;}
-.btn-gold:hover{filter:brightness(1.07);}
-.btn-ghost{background:transparent;border:1px solid var(--gold-deep);color:var(--gold-light);}
-.btn-ghost:hover{background:rgba(156,124,58,.12);}
+/* ── العناصر التوقيعية (صفحة 07) ── */
+.luma-overline{
+  font-size:var(--luma-size-label);letter-spacing:var(--luma-track-label);
+  text-transform:uppercase;color:var(--luma-gold);
+  /* كل عنصر متباعد الحروف يحتاج padding مقابلاً ليبقى متوازناً بصرياً */
+  padding-inline-start:var(--luma-track-label);
+}
+.luma-mark{border-radius:50%;background:var(--luma-mark);box-shadow:var(--luma-glow-mark);}
+.luma-goldtext{
+  background:var(--luma-grad-gold);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+/* وهج الصفحة — واحد فقط لكل شاشة، أعلى اليمين */
+.luma-glow{background:var(--luma-glow-page),var(--luma-obsidian);}
+/* خط فاصل متلاشٍ */
+.luma-rule{height:1px;border:none;background:linear-gradient(90deg,var(--luma-gold),transparent);}
 
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;}
-.sec-label{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--gold);font-weight:700;margin:4px 0 14px;}
-.sec-label .ln{flex:1;height:1px;background:var(--line);}
-.sec-label .more{font-size:12px;color:var(--gold-pale);cursor:pointer;font-weight:400;}
-.sec-label .more:hover{color:var(--gold-light);}
+/* ── مكونات الداشبورد المشتركة ── */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 11px;
+  border-radius:var(--luma-radius-pill);border:1px solid var(--luma-hairline);
+  color:var(--luma-stone);background:var(--luma-ink-raised);}
+.badge.gold{background:rgba(201,167,94,.12);border-color:var(--luma-hairline-hi);color:var(--luma-gilt);}
+.badge.green{background:rgba(156,197,155,.12);border-color:rgba(156,197,155,.34);color:var(--luma-success);}
+.badge.soft{background:var(--luma-ink-raised);border-color:var(--luma-hairline);color:var(--luma-ash);}
+
+.btn{font-family:var(--luma-font-ui);font-weight:500;font-size:13px;letter-spacing:.08em;
+  padding:11px 22px;border-radius:var(--luma-radius-pill);cursor:pointer;border:none;
+  transition:filter .2s,background .2s,border-color .2s;white-space:nowrap;}
+.btn-gold{background:var(--luma-grad-fill);color:var(--luma-on-gold);}
+.btn-gold:hover{filter:brightness(1.06);}
+.btn-ghost{background:transparent;border:1px solid var(--luma-hairline-hi);color:var(--luma-gilt);}
+.btn-ghost:hover{background:rgba(201,167,94,.08);border-color:var(--luma-gold);}
+.btn:disabled{background:#2a2831;color:var(--luma-ash);cursor:default;filter:none;}
+
+.card{background:var(--luma-ink);border:1px solid var(--luma-hairline);
+  border-radius:var(--luma-radius-card);padding:var(--luma-pad-panel);}
+
+.sec-label{display:flex;align-items:center;gap:12px;font-size:var(--luma-size-label);
+  letter-spacing:var(--luma-track-label);text-transform:uppercase;
+  color:var(--luma-gold);font-weight:400;margin:4px 0 14px;}
+.sec-label .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--luma-hairline),transparent);}
+.sec-label .more{font-size:12px;letter-spacing:normal;text-transform:none;
+  color:var(--luma-gilt);cursor:pointer;font-weight:300;}
+.sec-label .more:hover{color:var(--luma-champagne);}

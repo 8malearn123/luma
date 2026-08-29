@@ -19,7 +19,7 @@
   .pl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}@media(max-width:980px){.pl-grid{grid-template-columns:1fr;}}
   .plan{position:relative;background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:18px;padding:26px 24px;display:flex;flex-direction:column;}
   .plan.hot{border-color:var(--gold-deep);}
-  .plan .tag{position:absolute;top:-11px;right:24px;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;}
+  .plan .tag{position:absolute;top:-11px;right:24px;background:linear-gradient(120deg,#E9D29A,#C9A75E);color:#1A1206;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;}
   .plan .nm{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:30px;color:var(--white);}
   .plan .mean{font-family:'Bodoni Moda',serif;font-style:italic;font-size:15px;color:var(--gold-pale);direction:ltr;text-align:right;}
   .plan .price{display:flex;align-items:baseline;gap:6px;margin:16px 0 4px;}
@@ -45,7 +45,7 @@
 <div class="card" style="margin-top:20px">
   <div class="sec-label">العروض الترويجية <span class="ln"></span><span class="more" onclick="LUX_offerNew&&LUX_offerNew()">+ إضافة عرض</span></div>
   ${OFFERS.map((o,oi)=>`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:14px 0;border-bottom:1px solid var(--line-soft)">
-    <div style="display:flex;align-items:center;gap:14px"><div style="width:46px;height:46px;border-radius:12px;background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('star',22)}</div><div><div style="font-size:15px;color:var(--white);font-weight:600">${o.t} <span class="badge ${o.active?'green':'gold'}" style="margin-right:6px">${o.active?'مُفعّل':'مجدول'}</span></div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:2px">${o.d}</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px">${o.meta}</div></div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div style="width:46px;height:46px;border-radius:12px;background:rgba(201,167,94,0.16);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('star',22)}</div><div><div style="font-size:15px;color:var(--white);font-weight:600">${o.t} <span class="badge ${o.active?'green':'gold'}" style="margin-right:6px">${o.active?'مُفعّل':'مجدول'}</span></div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:2px">${o.d}</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px">${o.meta}</div></div></div>
     <button class="btn btn-ghost" onclick="LUX_offerEdit&&LUX_offerEdit(${oi})">إدارة العرض</button>
   </div>`).join('')}
 </div>`; }};
@@ -68,13 +68,13 @@
   .srow{display:flex;align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line-soft);}.srow:last-child{border-bottom:none;}
   .srow .ti{flex:1;}.srow .ti .n{font-size:14.5px;color:var(--white);font-weight:500;}.srow .ti .d{font-size:12.5px;color:var(--muted);margin-top:1px;}
   .toggle{width:46px;height:27px;border-radius:20px;border:none;cursor:pointer;position:relative;transition:background .25s;flex-shrink:0;}
-  .toggle.on{background:linear-gradient(120deg,#dbbd81,#9c8047);}.toggle.off{background:var(--surface3);}
+  .toggle.on{background:linear-gradient(120deg,#E9D29A,#C9A75E);}.toggle.off{background:var(--surface3);}
   .toggle .k{position:absolute;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.25s;}.toggle.on .k{left:3px;}.toggle.off .k{right:3px;}
   .frow{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}.frow label{font-size:13px;color:var(--gold-pale);font-weight:500;}
   .inp{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;outline:none;width:100%;}.inp:focus{border-color:var(--gold-deep);}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .trow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft);}.trow:last-child{border-bottom:none;}
-  .trow .av{width:36px;height:36px;border-radius:10px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;}
+  .trow .av{width:36px;height:36px;border-radius:10px;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;}
   .trow .info{flex:1;}.trow .info .n{font-size:14px;color:var(--white);font-weight:500;}.trow .info .r{font-size:12px;color:var(--muted);}
 </style>
 <div class="set-grid">
@@ -136,8 +136,8 @@
     const body=`<div class="lux-lead">تعديل سريع لأسعار وعمولات جميع الباقات دفعة واحدة.</div>
       ${PLANS.map((p,i)=>`<div class="lux-pr"><div style="flex:1"><div class="nm">${p.nm}</div><div class="bk" style="direction:rtl;text-align:right">${p.subs} مشترك</div></div>
         <div style="display:flex;gap:8px">
-          <div style="display:flex;align-items:center;gap:4px;background:#0e0d11;border:1px solid var(--line,#1b1a21);border-radius:8px;padding:7px 8px"><input data-price="${i}" value="${p.price}" dir="ltr" style="width:50px;background:none;border:none;color:#f6f2ec;font-family:'IBM Plex Mono',monospace;text-align:center;outline:none"/><span style="color:#86818d;font-size:11px">ر.س</span></div>
-          <div style="display:flex;align-items:center;gap:4px;background:#0e0d11;border:1px solid var(--line,#1b1a21);border-radius:8px;padding:7px 8px"><input data-com="${i}" value="${parseInt(p.com)}" dir="ltr" style="width:32px;background:none;border:none;color:var(--gold-light,#ccab64);font-family:'IBM Plex Mono',monospace;text-align:center;outline:none"/><span style="color:#86818d;font-size:11px">%</span></div>
+          <div style="display:flex;align-items:center;gap:4px;background:#0C0B0E;border:1px solid var(--line,#1A1820);border-radius:8px;padding:7px 8px"><input data-price="${i}" value="${p.price}" dir="ltr" style="width:50px;background:none;border:none;color:#EDE7DA;font-family:'IBM Plex Mono',monospace;text-align:center;outline:none"/><span style="color:#9D978A;font-size:11px">ر.س</span></div>
+          <div style="display:flex;align-items:center;gap:4px;background:#0C0B0E;border:1px solid var(--line,#1A1820);border-radius:8px;padding:7px 8px"><input data-com="${i}" value="${parseInt(p.com)}" dir="ltr" style="width:32px;background:none;border:none;color:var(--gold-light,#E7D2A0);font-family:'IBM Plex Mono',monospace;text-align:center;outline:none"/><span style="color:#9D978A;font-size:11px">%</span></div>
         </div></div>`).join('')}
       <div class="lux-foot" style="margin-top:14px"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-s style="flex:1.4">حفظ الأسعار</button></div>`;
     window.LUX.modal('تعديل أسعار الباقات',body,{onMount(ov,close){
@@ -183,7 +183,7 @@
   function teamBody(t){
     const full=!t||/مالك/.test(t.role);
     const granted=full?PERMS:(t&&t._perms)||['لوحة التحكّم','الحجوزات','مزوّدو الخدمة'];
-    return `<div class="lux-pr" style="border-bottom:1px solid var(--line,#1b1a21)"><span class="lux-av">${t?t.n.charAt(0):'+'}</span><div style="flex:1"><div class="nm">${t?t.n:'عضو جديد'}</div><div class="bk" style="direction:rtl;text-align:right">${t?t.role:'تعيين دور وصلاحيات'}</div></div></div>
+    return `<div class="lux-pr" style="border-bottom:1px solid var(--line,#1A1820)"><span class="lux-av">${t?t.n.charAt(0):'+'}</span><div style="flex:1"><div class="nm">${t?t.n:'عضو جديد'}</div><div class="bk" style="direction:rtl;text-align:right">${t?t.role:'تعيين دور وصلاحيات'}</div></div></div>
       <div class="lux-two" style="margin-top:14px"><div class="lux-f"><label>الاسم</label><input id="tm-n" value="${t?t.n:''}"/></div><div class="lux-f"><label>البريد</label><input id="tm-e" dir="ltr" style="text-align:right" value="${t&&t.email?t.email:''}" placeholder="name@luma.sa"/></div></div>
       <div class="lux-f"><label>الدور</label><select id="tm-r">${ROLES.map(r=>`<option ${t&&t.role===r?'selected':''}>${r}</option>`).join('')}</select></div>
       <div class="lux-f"><label>الصلاحيات</label><div class="lux-chips" id="tm-p">${PERMS.map(p=>`<button type="button" class="lux-chip ${granted.indexOf(p)>-1?'on':''}" data-v="${p}">${p}</button>`).join('')}</div></div>
@@ -194,7 +194,7 @@
       ov.querySelectorAll('#tm-p .lux-chip').forEach(c=>c.onclick=()=>c.classList.toggle('on'));
       ov.querySelector('[data-c]').onclick=close;
       ov.querySelector('[data-s]').onclick=()=>{
-        const n=ov.querySelector('#tm-n');if(!n.value.trim()){n.style.borderColor='#c0566a';n.focus();return;}
+        const n=ov.querySelector('#tm-n');if(!n.value.trim()){n.style.borderColor='#C97A6A';n.focus();return;}
         const perms=[...ov.querySelectorAll('#tm-p .lux-chip.on')].map(c=>c.dataset.v);
         save({n:n.value.trim(),role:ov.querySelector('#tm-r').value,email:ov.querySelector('#tm-e').value.trim(),_perms:perms});
         close();window.ADMIN&&window.ADMIN.go('settings');
@@ -241,11 +241,11 @@
   .rp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}@media(max-width:1000px){.rp-cards{grid-template-columns:1fr 1fr;}}@media(max-width:680px){.rp-cards{grid-template-columns:1fr;}}
   .rp-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px;transition:border-color .25s,transform .25s;}
   .rp-card:hover{border-color:var(--gold-deep);transform:translateY(-3px);}
-  .rp-card .ic{width:40px;height:40px;border-radius:10px;background:rgba(156,124,58,0.14);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);margin-bottom:6px;}
+  .rp-card .ic{width:40px;height:40px;border-radius:10px;background:rgba(201,167,94,0.14);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-light);margin-bottom:6px;}
   .rp-card .t{font-size:14.5px;color:var(--white);font-weight:600;}
   .rp-card .d{font-size:12.5px;color:var(--muted);flex:1;line-height:1.6;}
   .rp-card .b{display:flex;gap:8px;margin-top:10px;}
-  .rp-card .gen{flex:1;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;border:none;border-radius:8px;padding:9px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+  .rp-card .gen{flex:1;background:linear-gradient(120deg,#E9D29A,#C9A75E);color:#1A1206;border:none;border-radius:8px;padding:9px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
   .rp-card .csv{background:none;border:1px solid var(--line);color:var(--gold-pale);border-radius:8px;padding:9px 12px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;cursor:pointer;}.rp-card .csv:hover{border-color:var(--gold-deep);color:var(--gold-light);}
 </style>
 <div class="rp-top">
@@ -274,7 +274,7 @@ ${REPGROUPS.map(grp=>`<div class="rp-grp">
   window.LUX_reportCSV=function(name){if(!window.LUX)return;downloadCSV(name);window.LUX.toast('تم تصدير «'+name+'» (CSV) ✓','ok');};
   window.LUX_reportGen=function(name){
     if(!window.LUX)return;
-    const body=`<div class="lux-lead">إعداد التقرير: <b style="color:#f6f2ec">${name}</b></div>
+    const body=`<div class="lux-lead">إعداد التقرير: <b style="color:#EDE7DA">${name}</b></div>
       <div class="lux-f"><label>الفترة الزمنية</label><select id="rp-p"><option>هذا الشهر</option><option>آخر ٣٠ يومًا</option><option>الربع الحالي</option><option>هذه السنة</option><option>كل الوقت</option></select></div>
       <div class="lux-f"><label>الصيغة</label><div class="lux-chips" id="rp-f"><button type="button" class="lux-chip on" data-v="csv">CSV / إكسل</button><button type="button" class="lux-chip" data-v="pdf">PDF</button><button type="button" class="lux-chip" data-v="view">معاينة</button></div></div>
       <div class="lux-foot" style="margin-top:8px"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-s style="flex:1.4">توليد التقرير</button></div>`;
@@ -286,8 +286,8 @@ ${REPGROUPS.map(grp=>`<div class="rp-grp">
         if(fmt==='view'){
           const {head,rows}=repData();
           const tbl=`<div class="lux-lead">${name} · ${period}</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
-            <tr>${head.map(h=>`<th style="text-align:right;color:var(--gold-light,#ccab64);padding:9px;border-bottom:1px solid var(--line,#1b1a21);font-weight:600">${h}</th>`).join('')}</tr>
-            ${rows.map(r=>`<tr>${r.map((c,ci)=>`<td style="padding:9px;border-bottom:1px solid rgba(255,255,255,.05);color:${ci===0?'#f6f2ec':'#e6ce95'};direction:${ci===0?'rtl':'ltr'};text-align:${ci===0?'right':'left'}">${typeof c==='number'?c.toLocaleString('en'):c}</td>`).join('')}</tr>`).join('')}
+            <tr>${head.map(h=>`<th style="text-align:right;color:var(--gold-light,#E7D2A0);padding:9px;border-bottom:1px solid var(--line,#1A1820);font-weight:600">${h}</th>`).join('')}</tr>
+            ${rows.map(r=>`<tr>${r.map((c,ci)=>`<td style="padding:9px;border-bottom:1px solid rgba(255,255,255,.05);color:${ci===0?'#EDE7DA':'#F3E2B0'};direction:${ci===0?'rtl':'ltr'};text-align:${ci===0?'right':'left'}">${typeof c==='number'?c.toLocaleString('en'):c}</td>`).join('')}</tr>`).join('')}
           </table></div><button class="lux-btn lux-gold" data-x style="margin-top:14px;width:100%">تصدير CSV</button>`;
           ov.querySelector('.lux-b').innerHTML=tbl;
           ov.querySelector('[data-x]').onclick=()=>{downloadCSV(name);window.LUX.toast('تم التصدير ✓','ok');};

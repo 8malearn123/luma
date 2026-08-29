@@ -195,7 +195,7 @@
     b.textContent=LANG==='en'?'ع':'EN';
     b.title=LANG==='en'?'التبديل إلى العربية':'Switch to English';
     b.setAttribute('aria-label',b.title);
-    b.style.cssText='position:fixed;bottom:14px;left:68px;z-index:80;width:44px;height:44px;border-radius:50%;border:1px solid rgba(160,132,80,.5);background:rgba(20,19,24,.82);color:#dbbd81;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.3)';
+    b.style.cssText='position:fixed;bottom:14px;left:68px;z-index:80;width:44px;height:44px;border-radius:50%;border:1px solid rgba(160,132,80,.5);background:rgba(20,19,24,.82);color:#E9D29A;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.3)';
     b.onclick=()=>{set(LANG==='en'?'ar':'en');location.reload();};
     document.body.appendChild(b);
   }

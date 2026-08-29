@@ -47,20 +47,24 @@ async function pickDayWithSlots(page) {
   }
 }
 
-for (const theme of ['dark', 'light']) {
-  test(`كل الصفحات بلا أخطاء JS — ${theme}`, async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', e => errors.push(`${e.message}`));
-    await page.addInitScript(t => localStorage.setItem('luma_theme', t), theme);
-    for (const f of PAGES) {
-      await page.goto('/' + encodeURIComponent(f));
-      await page.waitForTimeout(400);
-      expect(errors, `${f} (${theme})`).toEqual([]);
-      expect(await page.evaluate(() => document.body.innerText.trim().length),
-        `${f} فارغة`).toBeGreaterThan(20);
-    }
-  });
-}
+// الهوية المعتمدة: الداكن هو الثيم الوحيد — لا وضع فاتح.
+// نحقن قيمة فاتحة قديمة عمداً لنتأكد أن متصفحاً محفوظاً عليها لا يعلق على ثيم زائل.
+test('كل الصفحات بلا أخطاء JS — والثيم داكن دائماً', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(`${e.message}`));
+  await page.addInitScript(() => localStorage.setItem('luma_theme', 'light'));
+  for (const f of PAGES) {
+    await page.goto('/' + encodeURIComponent(f));
+    await page.waitForTimeout(400);
+    expect(errors, f).toEqual([]);
+    expect(await page.evaluate(() => document.body.innerText.trim().length),
+      `${f} فارغة`).toBeGreaterThan(20);
+    expect(await page.evaluate(() => document.documentElement.dataset.theme),
+      `${f} ثيم`).toBe('dark');
+    // لا زر تبديل ثيم، ولا سطح فاتح خلف الصفحة
+    expect(await page.locator('.luma-theme-btn').count(), `${f} زر الثيم`).toBe(0);
+  }
+});
 
 test('التحويلات من الروابط العربية القديمة تعمل', async ({ page }) => {
   await page.goto('/' + encodeURIComponent('LUMA - المتجر.html'));
@@ -1403,4 +1407,242 @@ test('قسم «الفريق» المستقل: التخصص والخدمات وا
   await page.locator('.pgsub[data-sub="team"]').click();
   await page.waitForTimeout(400);
   await expect(page.locator('.mteam', { hasText: 'أمل' }).locator('.mteam-bio')).toHaveValue('خبرة 8 سنوات في مكياج العرائس والمناسبات');
+});
+
+test('واجهة المتجر متجاوبة: موقع كامل العرض على الشاشة وعمود الجوال كما هو', async ({ page }) => {
+  // ── سطح المكتب: الصفحة تملأ العرض بترويسة ثابتة وبطاقات منتجات مريحة ──
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/booking.html');
+  await page.waitForTimeout(700);
+  await expect(page.locator('#app')).toHaveClass(/wide/);
+  await expect(page.locator('.topbar')).toBeVisible();
+  await expect(page.locator('.topbar .tb-name')).toContainText('صالون لمسة');
+  const wide = await page.locator('#app').boundingBox();
+  expect(wide.width).toBeGreaterThan(1000);
+  // البطاقة كانت ~120px داخل عمود 430px — الآن بعرض قابل للقراءة
+  const card = await page.locator('.shp').first().boundingBox();
+  expect(card.width).toBeGreaterThan(200);
+  // السعر وزر الإضافة لا يتراكبان
+  const pr = await page.locator('.shp').first().locator('.pr').boundingBox();
+  const add = await page.locator('.shp').first().locator('.add').boundingBox();
+  expect(pr.x).toBeGreaterThanOrEqual(add.x + add.width - 1);
+  // الحدود ظاهرة فعلاً (متغيّر --ln كان غير معرّف فتختفي كل الحدود)
+  const ln = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ln').trim());
+  expect(ln).not.toBe('');
+  const bw = await page.locator('.shp').first().evaluate(el => getComputedStyle(el).borderTopWidth);
+  expect(bw).not.toBe('0px');
+
+  // ── الجوال: تجربة العمود الضيّق تبقى كما هي بشبكة منتجات من عمودين ──
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await page.waitForTimeout(700);
+  await expect(page.locator('.topbar')).toBeHidden();
+  const narrow = await page.locator('#app').boundingBox();
+  expect(narrow.width).toBeLessThanOrEqual(430);
+  const cols = await page.locator('.shop-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  expect(cols).toBe(2);
+
+  // ── خطوات الحجز تبقى عموداً مركّزاً حتى على الشاشة الواسعة ──
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.reload();
+  await page.waitForTimeout(700);
+  await page.locator('.svc').first().click();
+  await page.click('button:has-text("متابعة")');
+  await page.waitForTimeout(400);
+  await expect(page.locator('#app')).not.toHaveClass(/wide/);
+  const flow = await page.locator('#app').boundingBox();
+  expect(flow.width).toBeLessThanOrEqual(560);
+});
+
+test('طلب استئذان: نوع جاهز بحقول وقت وتحقق من الترتيب وسلسلة اعتماد', async ({ page }) => {
+  await page.goto('/salon.html#hr');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("الطلبات")');
+  await page.click('button:has-text("+ طلب جديد")');
+  await page.waitForTimeout(300);
+  // النوع الجديد يظهر ضمن أنواع الطلبات الجاهزة
+  await expect(page.locator('[name=type] option', { hasText: 'طلب استئذان' })).toHaveCount(1);
+  await page.selectOption('[name=type]', 't3');
+  await page.click('[data-ok]');
+  await page.waitForTimeout(300);
+  // نموذج الاستئذان: تاريخ + نوع + وقتان + سبب
+  await expect(page.locator('.lux-ov [data-f]')).toHaveCount(5);
+  expect(await page.locator('[data-f="2"]').getAttribute('type')).toBe('time');
+  expect(await page.locator('[data-f="3"]').getAttribute('type')).toBe('time');
+
+  // «إلى الساعة» قبل «من الساعة» يُرفض ولا يُرسل الطلب
+  await page.fill('[data-f="0"]', '2026-09-02');
+  await page.fill('[data-f="2"]', '14:00');
+  await page.fill('[data-f="3"]', '11:00');
+  await page.click('[data-ok]');
+  await expect(page.getByText('يجب أن يكون بعد')).toBeVisible();
+  await expect(page.locator('.lux-ov [data-f]')).toHaveCount(5);   // النموذج ما زال مفتوحاً
+
+  // بعد التصحيح يُرسل ويظهر في «الطلبات العامة» بانتظار الاعتماد
+  await page.fill('[data-f="3"]', '16:30');
+  await page.fill('[data-f="4"]', 'مراجعة طبية');
+  await page.click('[data-ok]');
+  await page.waitForTimeout(600);
+  const card = page.locator('.card', { hasText: 'طلب استئذان' });
+  await expect(card).toHaveCount(1);
+  await expect(card).toContainText('14:00');
+  await expect(card).toContainText('16:30');
+  await expect(card).toContainText('خروج مبكر');
+  await expect(card).toContainText('مراجعة طبية');
+  await expect(card.locator('button', { hasText: 'اعتماد «المالكة»' })).toBeVisible();
+
+  // الاعتماد يُنهي السلسلة ويحوّل الحالة
+  await card.locator('button', { hasText: 'اعتماد' }).click();
+  await page.waitForTimeout(500);
+  await expect(page.locator('.card', { hasText: 'طلب استئذان' })).toContainText('معتمدة');
+
+  // الاستئذان لا يُخصم من رصيد الإجازات
+  await expect(page.getByText(/الرصيد المتبقي: 21 يوماً/).first()).toBeVisible();
+});
+
+test('الهوية المعتمدة: الرموز والقواعد غير القابلة للتفاوض مطبَّقة', async ({ page }) => {
+  await page.goto('/salon.html');
+  await page.waitForTimeout(700);
+  const t = await page.evaluate(() => {
+    const cs = getComputedStyle(document.documentElement);
+    const v = n => cs.getPropertyValue(n).trim();
+    return {
+      obsidian: v('--luma-obsidian'), ink: v('--luma-ink'), gold: v('--luma-gold'),
+      pearl: v('--luma-pearl'), onGold: v('--luma-on-gold'),
+      hairline: v('--luma-hairline'), card: v('--luma-radius-card'), pill: v('--luma-radius-pill'),
+      // الأسماء القديمة صارت تشير لرموز الهوية
+      bg: getComputedStyle(document.body).backgroundColor,
+    };
+  });
+  expect(t.obsidian).toBe('#0C0B0E');
+  expect(t.ink).toBe('#15141A');
+  expect(t.gold).toBe('#C9A75E');
+  expect(t.pearl).toBe('#EDE7DA');
+  expect(t.onGold).toBe('#1A1206');
+  expect(t.hairline).toBe('rgba(201,167,94,.14)');
+  expect(t.card).toBe('8px');
+  expect(t.pill).toBe('30px');
+  expect(t.bg).toBe('rgb(12, 11, 14)');           // ابسيديان خلف كل شيء
+
+  // النص فوق أي تعبئة ذهبية = #1A1206، لا Pearl ولا أبيض
+  const goldBtn = page.locator('.btn-gold').first();
+  if (await goldBtn.count()) {
+    expect(await goldBtn.evaluate(el => getComputedStyle(el).color)).toBe('rgb(26, 18, 6)');
+  }
+  // حدود شعرة: 1px لا أكثر
+  const w = await page.locator('.card').first().evaluate(el => getComputedStyle(el).borderTopWidth);
+  expect(parseFloat(w)).toBeLessThanOrEqual(1);
+
+  // نمط الهالة المعتمد: بلاطة بنسبة r/tile ≈ .53 وسُمك .7 وشفافية .5
+  await page.goto('/index.html');
+  await page.waitForTimeout(500);
+  const halo = await page.evaluate(() => {
+    const p = document.querySelector('pattern');
+    const c = p && p.querySelector('circle');
+    const g = p && p.querySelector('g');
+    return p && { tile: +p.getAttribute('width'), r: +c.getAttribute('r'),
+                  sw: g.getAttribute('stroke-width'), so: g.getAttribute('stroke-opacity') };
+  });
+  expect(halo.sw).toBe('.7');
+  expect(halo.so).toBe('.5');
+  expect(halo.r / halo.tile).toBeCloseTo(16 / 30, 1);
+});
+
+// ═══ فتح فرع جديد: طلب يعتمده لوما، أو دفع يفعّله فوراً ═══
+async function branchForm(page, name, phone) {
+  await page.goto('/salon.html#branches');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("طلب فرع جديد")');
+  await page.waitForTimeout(300);
+  await page.fill('[name=bname]', name);
+  await page.fill('[name=bcity]', 'جدة');
+  await page.fill('[name=bphone]', phone);
+}
+
+test('فرع جديد: الطلب لا يفتح فرعاً — اعتماد لوما هو ما يفتحه', async ({ page }) => {
+  await branchForm(page, 'فرع النخيل', '0551234567');
+  await page.click('[data-send]');
+  await expect(page.getByText('أُرسل الطلب')).toBeVisible();
+
+  // لدى الصالون: طلب معلّق، والفرعان المؤسِّسان فقط في المبدّل
+  await expect(page.locator('.card', { hasText: 'فرع النخيل' })).toContainText('بانتظار اعتماد لوما');
+  await expect(page.locator('.br-switch button')).toHaveCount(2);
+
+  // لدى إدارة لوما: الطلب ظاهر ببياناته
+  await page.goto('/admin.html#branchreqs');
+  await page.waitForTimeout(800);
+  const row = page.locator('.card', { hasText: 'فرع النخيل' });
+  await expect(row).toContainText('صالون لمسة');
+  await expect(row).toContainText('0551234567');
+  await row.locator('button:has-text("اعتماد وفتح الفرع")').click();
+  await page.waitForTimeout(500);
+
+  // صار فرعاً عاملاً لدى الصالون، وقابلاً للتبديل إليه
+  await page.goto('/salon.html#branches');
+  await page.waitForTimeout(800);
+  await expect(page.locator('.br-switch button')).toHaveCount(3);
+  await expect(page.locator('.card', { hasText: 'فرع النخيل' }).first()).toContainText('نشط');
+  await page.locator('.card', { hasText: 'فرع النخيل' }).first()
+    .locator('button:has-text("التبديل لهذا الفرع")').click();
+  await page.waitForTimeout(900);
+  expect(await page.evaluate(() => localStorage.getItem('luma_branch'))).toMatch(/^br-\d+$/);
+});
+
+test('فرع جديد: الدفع يفعّله فوراً بلا انتظار اعتماد', async ({ page }) => {
+  await branchForm(page, 'فرع السلامة', '0559876543');
+  await page.click('[data-pay]');
+  await page.waitForTimeout(300);
+  await expect(page.getByText('تفعيل فوري لفرع')).toBeVisible();
+  await page.click('[data-ok]');
+  await page.waitForTimeout(600);
+
+  // مُفعَّل فوراً: بطاقة نشطة + زر في المبدّل، بلا مرور على الاعتماد
+  await expect(page.locator('.br-switch button')).toHaveCount(3);
+  await expect(page.locator('.card', { hasText: 'فرع السلامة' }).first()).toContainText('نشط');
+
+  // ويصل إدارة لوما مُعتمداً بسجلّ دفع، فلا يطلب قراراً
+  await page.goto('/admin.html#branchreqs');
+  await page.waitForTimeout(800);
+  const row = page.locator('.card', { hasText: 'فرع السلامة' });
+  await expect(row).toContainText('مدفوع');
+  await expect(row).toContainText(/BR-\d{6}/);
+  await expect(row.locator('button:has-text("اعتماد")')).toHaveCount(0);
+});
+
+test('فرع جديد: الرفض يصل للصالون بسببه ولا يفتح فرعاً', async ({ page }) => {
+  await branchForm(page, 'فرع الحمراء', '0555555555');
+  await page.click('[data-send]');
+  await page.waitForTimeout(500);
+
+  await page.goto('/admin.html#branchreqs');
+  await page.waitForTimeout(800);
+  await page.locator('.card', { hasText: 'فرع الحمراء' }).locator('button:has-text("رفض")').click();
+  await page.waitForTimeout(300);
+  await page.fill('#brNote', 'يلزم صك الإيجار والرخصة البلدية');
+  await page.click('[data-ok]');
+  await page.waitForTimeout(500);
+
+  await page.goto('/salon.html#branches');
+  await page.waitForTimeout(800);
+  const card = page.locator('.card', { hasText: 'فرع الحمراء' });
+  await expect(card).toContainText('مرفوض');
+  await expect(card).toContainText('يلزم صك الإيجار والرخصة البلدية');
+  await expect(page.locator('.br-switch button')).toHaveCount(2);   // لم يُفتح فرع
+});
+
+test('فرع جديد: النموذج يرفض البيانات الناقصة', async ({ page }) => {
+  await page.goto('/salon.html#branches');
+  await page.waitForTimeout(800);
+  await page.click('button:has-text("طلب فرع جديد")');
+  await page.waitForTimeout(300);
+  // بلا اسم: لا يُرسل
+  await page.click('[data-send]');
+  await expect(page.locator('[name=bname]')).toBeFocused();
+  // جوال غير صحيح: لا يُرسل
+  await page.fill('[name=bname]', 'فرع تجريبي');
+  await page.fill('[name=bcity]', 'جدة');
+  await page.fill('[name=bphone]', '12345');
+  await page.click('[data-send]');
+  await expect(page.getByText('رقم الجوال غير صحيح')).toBeVisible();
+  await expect(page.locator('[name=bname]')).toHaveValue('فرع تجريبي');   // النموذج ما زال مفتوحاً
 });

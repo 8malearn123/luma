@@ -6,27 +6,27 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script src="luma-hr-types.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>LUMA — بوابة الموظفة</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&family=Bodoni+Moda:opsz,wght@6..96,500&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+
+<link rel="stylesheet" href="luma-core.css"/>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#0C0B0E;--card:#15141A;--card2:#1B1A21;--ac:#ccab64;--acB:#dbbd81;--acD:#846a38;--tx:#f6f2ec;--mut:#86818d;--line:#26242d;--green:#9fce99;--red:#e29aa6}
-  body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+  :root{--card:var(--luma-ink);--card2:var(--luma-ink-raised);--ac:var(--luma-gilt);--acB:var(--luma-champagne);--acD:var(--luma-gold-antique);--tx:var(--luma-pearl);--mut:var(--luma-stone);}
+  body{font-family:var(--luma-font-ui);background:var(--bg);color:var(--tx);min-height:100vh}
   .wrap{max-width:440px;margin:0 auto;padding:16px 16px 90px}
-  .brand{font-family:'Bodoni Moda',serif;letter-spacing:.26em;color:var(--ac);font-size:18px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
-  .btn{width:100%;border:none;border-radius:13px;padding:13px;background:linear-gradient(120deg,var(--acB),var(--ac) 45%,#9c8047);color:#131217;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  .brand{font-family:var(--luma-font-display);letter-spacing:.26em;color:var(--ac);font-size:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+  .btn{width:100%;border:none;border-radius:30px;padding:13px;background:linear-gradient(120deg,var(--acB),var(--ac) 45%,#C9A75E);color:#1A1206;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
   .btn.ghost{background:transparent;border:1px solid var(--acD);color:var(--ac)}
   .btn:disabled{opacity:.4}
-  .in{width:100%;background:#0e0d11;border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--tx);font-family:inherit;font-size:14px;outline:none}
+  .in{width:100%;background:#0C0B0E;border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--tx);font-family:inherit;font-size:14px;outline:none}
   .in:focus{border-color:var(--acD)}
-  label{display:block;font-size:12px;color:#e6ce95;margin:10px 0 6px}
-  .badge{display:inline-block;font-size:10.5px;padding:3px 10px;border-radius:20px;border:1px solid var(--line);color:var(--mut)}
+  label{display:block;font-size:12px;color:#F3E2B0;margin:10px 0 6px}
+  .badge{display:inline-block;font-size:10.5px;padding:3px 10px;border-radius:30px;border:1px solid var(--line);color:var(--mut)}
   .badge.g{background:rgba(111,168,106,.14);border-color:rgba(111,168,106,.4);color:var(--green)}
-  .badge.a{background:rgba(205,172,80,.14);border-color:var(--acD);color:var(--ac)}
+  .badge.a{background:rgba(201,167,94,.14);border-color:var(--acD);color:var(--ac)}
   .badge.r{background:rgba(192,86,106,.14);border-color:#7c4a55;color:var(--red)}
   .tabs{position:fixed;bottom:0;right:0;left:0;background:#111015ee;border-top:1px solid var(--line);backdrop-filter:blur(14px);display:flex;z-index:50}
   .tabs button{flex:1;background:none;border:none;color:var(--mut);font-family:inherit;font-size:10.5px;padding:10px 4px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -39,18 +39,21 @@
   .stepper{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px}
   .stp{font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--mut)}
   .stp.done{background:rgba(111,168,106,.14);color:var(--green);border-color:rgba(111,168,106,.4)}
-  .stp.cur{background:rgba(205,172,80,.14);color:var(--ac);border-color:var(--acD)}
-  .notif{background:linear-gradient(120deg,rgba(220,192,106,.16),rgba(156,124,58,.05));border:1px solid var(--acD);border-radius:14px;padding:12px 14px;font-size:12.5px;margin-bottom:12px;color:#e6ce95}
-  .av{width:46px;height:46px;border-radius:50%;background:var(--card2);border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:19px;flex-shrink:0;overflow:hidden}
+  .stp.cur{background:rgba(201,167,94,.14);color:var(--ac);border-color:var(--acD)}
+  .notif{background:linear-gradient(120deg,rgba(233,210,154,.16),rgba(201,167,94,.05));border:1px solid var(--acD);border-radius:14px;padding:12px 14px;font-size:12.5px;margin-bottom:12px;color:#F3E2B0}
+  .av{width:46px;height:46px;border-radius:50%;background:var(--card2);border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-family:var(--luma-font-display);font-size:19px;flex-shrink:0;overflow:hidden}
   .av img{width:100%;height:100%;object-fit:cover}
-  .big{font-family:'Bodoni Moda',serif;font-size:30px;color:var(--ac)}
-  .toast{position:fixed;bottom:74px;right:50%;transform:translateX(50%);background:#18171d;border:1px solid var(--acD);color:var(--ac);padding:11px 20px;border-radius:28px;font-size:13px;z-index:99;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .big{font-family:var(--luma-font-display);font-size:30px;color:var(--ac)}
+  .toast{position:fixed;bottom:74px;right:50%;transform:translateX(50%);background:#15141A;border:1px solid var(--acD);color:var(--ac);padding:11px 20px;border-radius:28px;font-size:13px;z-index:99;box-shadow:0 12px 30px rgba(0,0,0,.5)}
   .picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
   .pick{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;text-align:center;cursor:pointer;font-family:inherit;color:var(--tx)}
-  .pick.on{border-color:var(--ac);background:rgba(205,172,80,.08)}
+  .pick.on{border-color:var(--ac);background:rgba(201,167,94,.08)}
   /* زر الثيم العائم يرتفع فوق شريط التبويبات حتى لا يحجب «حضوري» */
   .luma-theme-btn{bottom:78px !important;left:14px !important}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Cormorant+Garamond:ital,wght@1,400&family=Jost:wght@300;400;500&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -63,8 +66,8 @@
 <script>
 /* ═══ بيانات مشتركة مع داشبورد الصالون (نفس مفاتيح LumaStore) ═══ */
 const SEED_STAFF=[
-  {id:'amal',n:'أمل',role:'مكياج',color:'#ccab64'},{id:'sara',n:'سارة',role:'شعر',color:'#d98a93'},
-  {id:'nora',n:'نورة',role:'بشرة',color:'#7d9bc0'},{id:'reem',n:'ريم',role:'أظافر',color:'#6fa86a'},
+  {id:'amal',n:'أمل',role:'مكياج',color:'#E7D2A0'},{id:'sara',n:'سارة',role:'شعر',color:'#C97A6A'},
+  {id:'nora',n:'نورة',role:'بشرة',color:'#9D978A'},{id:'reem',n:'ريم',role:'أظافر',color:'#9CC59B'},
 ];
 const SEED_APPTS=[
   {staff:'amal',start:0,dur:2,client:'نوف العتيبي',service:'مكياج سهرة',st:'confirmed'},
@@ -116,7 +119,7 @@ function balance(sid){
 }
 const chains=()=>S.get('luma_req_chains',[{id:'c1',name:'اعتماد مباشر',steps:['المالكة']}]);
 const chainOf=id=>chains().find(c=>c.id===id)||chains()[0];
-const rtypes=()=>S.get('luma_req_types',[]);
+const rtypes=()=>LumaReqTypes.all();
 
 /* ═══ الجلسة ═══ */
 let SID=S.get('luma_portal_session',null);
@@ -209,8 +212,8 @@ function homeView(me){
   const today=new Date().toISOString().slice(0,10);
   const onLeave=S.get('luma_hr_leaves',[]).some(l=>l.staff===SID&&l.status==='approved'&&l.from<=today&&l.to>=today);
   const items=appts.map(a=>`<div class="row">
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ac);min-width:52px" dir="ltr">${slotLabel(a.start)}</span>
-    <span style="flex:1"><b>${a.st==='blocked'?'<span style="display:inline-flex;vertical-align:-2px;color:#e29aa6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M5.9 5.9l12.2 12.2"/></svg></span> '+esc(a.client):esc(a.client)}</b><br><span style="font-size:11px;color:var(--mut)">${esc(a.service)}</span></span>
+    <span style="font-family:var(--luma-font-ui);font-size:11.5px;color:var(--ac);min-width:52px" dir="ltr">${slotLabel(a.start)}</span>
+    <span style="flex:1"><b>${a.st==='blocked'?'<span style="display:inline-flex;vertical-align:-2px;color:#C97A6A"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M5.9 5.9l12.2 12.2"/></svg></span> '+esc(a.client):esc(a.client)}</b><br><span style="font-size:11px;color:var(--mut)">${esc(a.service)}</span></span>
     <span class="badge ${a.st==='blocked'?'':a.st==='pending'?'a':'g'}">${a.st==='blocked'?'محجوب':a.st==='pending'?'بانتظار الدفع':'مؤكد'}</span>
   </div>`).join('');
   return `
@@ -228,8 +231,8 @@ function payView(me){
   const L=ledger(SID);
   const row=(k,v,c)=>`<div class="row"><span class="k">${k}</span><b style="${c?'color:'+c:''}" dir="ltr">${v}</b></div>`;
   return `
-    <div class="card" style="text-align:center;background:linear-gradient(160deg,#1E1C24,#15141A);border-color:var(--acD)">
-      <div style="font-size:11.5px;color:#e6ce95">صافي أرباحك هذا الشهر (حتى الآن)</div>
+    <div class="card" style="text-align:center;background:linear-gradient(160deg,#1F1D26,#15141A);border-color:var(--acD)">
+      <div style="font-size:11.5px;color:#F3E2B0">صافي أرباحك هذا الشهر (حتى الآن)</div>
       <div class="big" style="font-size:38px;margin-top:4px">${L.net.toLocaleString('en')} <span style="font-size:12px;font-family:inherit;color:var(--mut)">ر.س</span></div>
     </div>
     <div class="card">
@@ -296,6 +299,7 @@ window.newReq=()=>{
         if(f.type==='select')return `<label>${esc(f.label)}${req}</label><select class="in" data-f="${i}">${(f.options||[]).map(o=>`<option>${esc(o)}</option>`).join('')}</select>`;
         if(f.type==='date')return `<label>${esc(f.label)}${req}</label><input class="in" type="date" data-f="${i}"/>`;
         if(f.type==='number')return `<label>${esc(f.label)}${req}</label><input class="in" type="number" data-f="${i}" dir="ltr"/>`;
+        if(f.type==='time')return `<label>${esc(f.label)}${req}</label><input class="in" type="time" data-f="${i}" dir="ltr"/>`;
         return `<label>${esc(f.label)}${req}</label><input class="in" data-f="${i}"/>`;
       }).join('')+`<div style="font-size:11px;color:var(--mut);margin-top:8px">سلسلة الاعتماد: ${chainOf(t.chain).steps.join(' ← ')}</div>`;
     }
@@ -313,7 +317,15 @@ window.newReq=()=>{
       const t=rtypes().find(x=>x.id===tid);const values={};
       for(let i=0;i<(t.fields||[]).length;i++){
         const el=wrap.querySelector(`[data-f="${i}"]`);
-        if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#c0566a';el.focus();return;}
+        if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#C97A6A';el.focus();return;}
+        const af=t.fields[i].after;
+        if(af!=null&&t.fields[af]){
+          const prev=wrap.querySelector(`[data-f="${af}"]`);
+          if(prev&&prev.value&&el.value&&el.value<=prev.value){
+            el.style.borderColor='#C97A6A';el.focus();
+            toast('«'+t.fields[i].label+'» يجب أن يكون بعد «'+t.fields[af].label+'»');return;
+          }
+        }
         values[t.fields[i].label]=el.value.trim();
       }
       S.update('luma_requests',rs=>{rs.unshift({id:Date.now(),type:tid,staff:SID,values,step:0,status:'pending',at:new Date().toISOString().slice(0,10)});return rs;},[]);

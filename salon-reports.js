@@ -28,7 +28,7 @@ SCREENS.reports=()=>{
   const {live,month,estRevenue,paid,collected,avgInvoice,occupancy,topSvc,srcList,perf}=reportData();
   const maxSvc=Math.max(1,...topSvc.map(([,x])=>x.v));
   const maxSrc=Math.max(1,...srcList.map(([,v])=>v));
-  const SRC_COLORS=['#ccab64','#d98a93','#7d9bc0','#6fa86a','#b39add','#8accd6'];
+  const SRC_COLORS=['#E7D2A0','#C97A6A','#9D978A','#9CC59B','#b39add','#8accd6'];
   const maxPerf=Math.max(1,...perf.map(p=>p.rev));
 
   const bar=(label,val,max,txt,color)=>`
@@ -36,7 +36,7 @@ SCREENS.reports=()=>{
       <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">
         <span style="color:var(--white)">${label}</span><span class="num" style="color:var(--gold-light)">${txt}</span></div>
       <div style="height:9px;background:var(--surface3);border-radius:6px;overflow:hidden">
-        <div style="width:${Math.round(val/max*100)}%;height:100%;border-radius:6px;background:${color||'linear-gradient(90deg,#dbbd81,#9c8047)'}"></div></div>
+        <div style="width:${Math.round(val/max*100)}%;height:100%;border-radius:6px;background:${color||'linear-gradient(90deg,#E9D29A,#C9A75E)'}"></div></div>
     </div>`;
 
   const stat=(ic,val,unit,label,delta)=>`
@@ -80,7 +80,7 @@ function REPORTS_PRINT(){
   const w=window.open('','_blank','width=720,height=900');
   if(!w){LUX.toast('اسمحي بالنوافذ المنبثقة للتصدير','err');return;}
   w.document.write(`<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>تقرير ${c.title||'LUMA'} — ${d.month}</title>
-  <style>body{margin:0;padding:34px;background:#fdfbf7;color:#2e241b;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif}h1{font-size:20px}h2{font-size:14px;color:#9c8047;margin:22px 0 6px}table{width:100%;border-collapse:collapse;font-size:13px}.sub{font-size:12px;color:#8d8172}</style></head><body>
+  <style>body{margin:0;padding:34px;background:#fdfbf7;color:#2e241b;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif}h1{font-size:20px}h2{font-size:14px;color:#C9A75E;margin:22px 0 6px}table{width:100%;border-collapse:collapse;font-size:13px}.sub{font-size:12px;color:#8d8172}</style></head><body>
   <h1>${c.title||'LUMA'} — تقرير الأداء الشهري</h1>
   <div class="sub">شهر ${d.month} · أُصدر من نظام لوما</div>
   <h2>المؤشرات</h2><table>
@@ -103,7 +103,7 @@ function WEEKLY_DIGEST(){
   const d=reportData();
   const low=(window.INVENTORY||[]).filter(i=>i.q<i.min);
   let pendReqs=0;try{pendReqs=(typeof HR_REQS!=='undefined'?HR_REQS:[]).filter(r=>r.status==='pending').length;}catch(e){}
-  const li=(ic,t)=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line-soft,#26242d);font-size:13.5px"><span>${ic}</span><span style="flex:1">${t}</span></div>`;
+  const li=(ic,t)=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line-soft,rgba(201,167,94,.14));font-size:13.5px"><span>${ic}</span><span style="flex:1">${t}</span></div>`;
   LUX.modal('💌 الملخص الأسبوعي',`
     <div style="border:1px solid var(--line,#333);border-radius:13px;padding:16px 18px;margin-bottom:4px">
       <div style="font-size:11.5px;color:var(--muted,#888)">من: لوما &lt;digest@luma.beauty&gt; · إلى: المالكة</div>

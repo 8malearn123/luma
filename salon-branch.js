@@ -2,10 +2,8 @@
    يعمل بعد salon-core.js: يبدّل طاقم وحجوزات الفرع النشط، ويضيف مبدّل الفرع
    في الشريط الجانبي. البيانات المحفوظة معزولة لكل فرع (انظر رأس salon.html). */
 
-const BRANCHES_META=[
-  {id:'shatee',n:'فرع الشاطئ',c:'جدة · حي الشاطئ',main:true},
-  {id:'rawdah',n:'فرع الروضة',c:'جدة · حي الروضة'},
-];
+/* الفروع العاملة تأتي من luma-branches.js: المؤسِّسة + ما اعتُمد أو دُفع */
+const BRANCHES_META=LumaBranches.active();
 const CUR_BRANCH=window.LUMA_BRANCH||'shatee';
 const CUR_BRANCH_META=BRANCHES_META.find(b=>b.id===CUR_BRANCH)||BRANCHES_META[0];
 
@@ -14,10 +12,10 @@ if(CUR_BRANCH==='rawdah'){
   const savedStaff=STAFF.filter(s=>!['amal','sara','nora','reem'].includes(s.id));
   STAFF.length=0;
   STAFF.push(
-    {id:'amal',n:'شهد',role:'مكياج',color:'#ccab64'},
-    {id:'sara',n:'عهود',role:'شعر',color:'#d98a93'},
-    {id:'nora',n:'لين',role:'بشرة',color:'#7d9bc0'},
-    {id:'reem',n:'غلا',role:'أظافر',color:'#6fa86a'},
+    {id:'amal',n:'شهد',role:'مكياج',color:'#E7D2A0'},
+    {id:'sara',n:'عهود',role:'شعر',color:'#C97A6A'},
+    {id:'nora',n:'لين',role:'بشرة',color:'#9D978A'},
+    {id:'reem',n:'غلا',role:'أظافر',color:'#9CC59B'},
     ...savedStaff);
   const savedAppts=APPTS.filter(a=>a.custom);
   APPTS.length=0;
@@ -39,21 +37,25 @@ const BR={
     try{localStorage.setItem('luma_branch',id);}catch(e){}
     location.reload();
   },
+  /* يُعاد بناء المبدّل بعد كل تغيّر في الفروع (اعتماد أو دفع)، فالفرع
+     الجديد يظهر فوراً بلا إعادة تحميل. البيانات تبقى معزولة لأن التبديل
+     نفسه يعيد تحميل الصفحة. */
+  paint(){
+    const card=document.querySelector('.salon');
+    if(!card)return;
+    const nm=document.querySelector('.salon .nm');
+    if(nm)nm.innerHTML=`<b>صالون لمسة</b><span>${CUR_BRANCH_META.n} · ${CUR_BRANCH_META.c.split('· ')[1]||''}</span>`;
+    let sw=document.querySelector('.br-switch');
+    if(!sw){
+      sw=document.createElement('div');sw.className='br-switch';
+      sw.style.cssText='display:flex;gap:7px;margin:10px 14px 0;flex-wrap:wrap';
+      card.insertAdjacentElement('afterend',sw);
+    }
+    sw.innerHTML=LumaBranches.active().map(b=>`
+      <button onclick="BR.go('${b.id}')" style="flex:1 1 44%;padding:7px 4px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:11.5px;
+        border:1px solid ${b.id===CUR_BRANCH?'var(--gold-deep)':'var(--line)'};
+        background:${b.id===CUR_BRANCH?'rgba(201,167,94,.12)':'transparent'};
+        color:${b.id===CUR_BRANCH?'var(--gold-pale)':'var(--muted)'}">${b.n.replace('فرع ','')}${b.id===CUR_BRANCH?' ●':''}</button>`).join('');
+  },
 };
-
-/* مبدّل الفرع في الشريط الجانبي + تحديث بطاقة الصالون */
-(function(){
-  const nm=document.querySelector('.salon .nm');
-  if(nm)nm.innerHTML=`<b>صالون لمسة</b><span>${CUR_BRANCH_META.n} · ${CUR_BRANCH_META.c.split('· ')[1]||''}</span>`;
-  const card=document.querySelector('.salon');
-  if(!card)return;
-  const sw=document.createElement('div');
-  sw.className='br-switch';
-  sw.style.cssText='display:flex;gap:7px;margin:10px 14px 0';
-  sw.innerHTML=BRANCHES_META.map(b=>`
-    <button onclick="BR.go('${b.id}')" style="flex:1;padding:7px 4px;border-radius:9px;cursor:pointer;font-family:inherit;font-size:11.5px;
-      border:1px solid ${b.id===CUR_BRANCH?'var(--gold-deep)':'var(--line)'};
-      background:${b.id===CUR_BRANCH?'rgba(156,128,71,0.16)':'transparent'};
-      color:${b.id===CUR_BRANCH?'var(--gold-pale)':'var(--muted)'}">${b.n.replace('فرع ','')}${b.id===CUR_BRANCH?' ●':''}</button>`).join('');
-  card.insertAdjacentElement('afterend',sw);
-})();
+BR.paint();
