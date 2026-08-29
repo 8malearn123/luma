@@ -12,11 +12,11 @@
       this.addEventListener('click',()=>this.pick());
     }
     empty(){
-      this.innerHTML=`<div style="position:absolute;inset:10px;border:1.5px dashed rgba(156,124,58,.55);border-radius:11px;
+      this.innerHTML=`<div style="position:absolute;inset:10px;border:1.5px dashed rgba(201,167,94,.55);border-radius:11px;
         display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:14px">
         <span style="font-size:26px;opacity:.7">🖼️</span>
-        <span style="font-size:12.5px;color:#9c8047;line-height:1.8">${this.getAttribute('placeholder')||'أضيفي صورة هنا'}</span>
-        <span style="font-size:10px;color:#58545f">اضغطي للرفع</span></div>`;
+        <span style="font-size:12.5px;color:#C9A75E;line-height:1.8">${this.getAttribute('placeholder')||'أضيفي صورة هنا'}</span>
+        <span style="font-size:10px;color:#5E594F">اضغطي للرفع</span></div>`;
     }
     show(src){
       const fit=this.getAttribute('fit')||'cover';

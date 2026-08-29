@@ -14,7 +14,7 @@
     {m:'مارس',sub:14,com:9},{m:'أبريل',sub:18,com:11},{m:'مايو',sub:21,com:13},
     {m:'يونيو',sub:26,com:16},{m:'يوليو',sub:31,com:20},{m:'أغسطس',sub:36,com:23},{m:'سبتمبر',sub:40,com:24},
   ];
-  const TIERS=[['فَرِيد',28,'#dbbd81'],['وَهَج',86,'#ccab64'],['سَناء',50,'#9c8047']];
+  const TIERS=[['فَرِيد',28,'#E9D29A'],['وَهَج',86,'#E7D2A0'],['سَناء',50,'#C9A75E']];
   const TIER_TOTAL=164;
 
   const NEWP=[
@@ -38,21 +38,21 @@
   function revChart(){
     const W=640,H=240,pad={t:18,r:12,b:32,l:34},iw=W-pad.l-pad.r,ih=H-pad.t-pad.b,max=70,step=iw/REV.length,bw=Math.min(30,step*0.42);
     let grid='';
-    for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1" stroke-dasharray="2 4"/><text x="${pad.l-7}" y="${y+4}" fill="#58545f" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
+    for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(201,167,94,.14)" stroke-width="1" stroke-dasharray="2 4"/><text x="${pad.l-7}" y="${y+4}" fill="#5E594F" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
     let bars=REV.map((d,i)=>{
       const x=pad.l+i*step+(step-bw)/2;
       const hs=(d.sub/max)*ih, hc=(d.com/max)*ih;
       const yb=pad.t+ih-hs, yc=yb-hc;
-      return `<g><rect x="${x}" y="${yb}" width="${bw}" height="${hs}" rx="3" fill="url(#gsub)"/><rect x="${x}" y="${yc}" width="${bw}" height="${hc}" rx="3" fill="url(#gcom)"/><text x="${x+bw/2}" y="${H-12}" fill="#86818d" font-size="10" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text></g>`;
+      return `<g><rect x="${x}" y="${yb}" width="${bw}" height="${hs}" rx="3" fill="url(#gsub)"/><rect x="${x}" y="${yc}" width="${bw}" height="${hc}" rx="3" fill="url(#gcom)"/><text x="${x+bw/2}" y="${H-12}" fill="#9D978A" font-size="10" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text></g>`;
     }).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs>
-      <linearGradient id="gsub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c8047"/><stop offset="1" stop-color="#6e5526"/></linearGradient>
-      <linearGradient id="gcom" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dbbd81"/><stop offset="1" stop-color="#caa85f"/></linearGradient>
+      <linearGradient id="gsub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9A75E"/><stop offset="1" stop-color="#6e5526"/></linearGradient>
+      <linearGradient id="gcom" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9D29A"/><stop offset="1" stop-color="#E7D2A0"/></linearGradient>
     </defs>${grid}${bars}</svg>`;
   }
   function donut(){
     const r=52,c=2*Math.PI*r; let off=0; const segs=TIERS.map(t=>{const frac=t[1]/TIER_TOTAL;const seg=`<circle cx="70" cy="70" r="${r}" fill="none" stroke="${t[2]}" stroke-width="16" stroke-dasharray="${(frac*c).toFixed(1)} ${c}" stroke-dashoffset="${(-off*c).toFixed(1)}" transform="rotate(-90 70 70)"/>`;off+=frac;return seg;}).join('');
-    return `<svg width="140" height="140" viewBox="0 0 140 140">${segs}<text x="70" y="66" fill="#f6f2ec" font-size="26" font-family="Cormorant Garamond" font-weight="500" text-anchor="middle">${TIER_TOTAL}</text><text x="70" y="86" fill="#86818d" font-size="11" font-family="IBM Plex Sans Arabic" text-anchor="middle">مشترك</text></svg>`;
+    return `<svg width="140" height="140" viewBox="0 0 140 140">${segs}<text x="70" y="66" fill="#EDE7DA" font-size="26" font-family="Cormorant Garamond" font-weight="500" text-anchor="middle">${TIER_TOTAL}</text><text x="70" y="86" fill="#9D978A" font-size="11" font-family="IBM Plex Sans Arabic" text-anchor="middle">مشترك</text></svg>`;
   }
 
   A.overview = { render(){ return `
@@ -77,19 +77,19 @@
   .donut-leg .r .v{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold-pale);direction:ltr;}
   .row-item{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--line-soft);}
   .row-item:last-child{border-bottom:none;}
-  .row-item .av{width:38px;height:38px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:16px;flex-shrink:0;}
+  .row-item .av{width:38px;height:38px;border-radius:50%;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:16px;flex-shrink:0;}
   .row-item .ti{flex:1;min-width:0;} .row-item .ti .n{font-size:14px;color:var(--white);font-weight:500;} .row-item .ti .s{font-size:12px;color:var(--muted);}
   .row-item .when{font-size:11.5px;color:var(--muted-deep);}
   .pay .amt{font-family:'Bodoni Moda',serif;font-size:18px;direction:ltr;}
   .pay .amt.in{color:var(--green);} .pay .amt.out{color:var(--gold-light);}
   .ic-box{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .ic-box.gold{background:rgba(156,124,58,0.16);color:var(--gold-light);border:0.5px solid var(--gold-deep);}
-  .ic-box.soft{background:var(--surface3);color:var(--gold-pale);border:0.5px solid var(--line);}
+  .ic-box.gold{background:rgba(201,167,94,0.16);color:var(--gold-light);border:1px solid var(--gold-deep);}
+  .ic-box.soft{background:var(--surface3);color:var(--gold-pale);border:1px solid var(--line);}
   .alert{display:flex;align-items:flex-start;gap:13px;padding:14px 0;border-bottom:1px solid var(--line-soft);}
   .alert:last-child{border-bottom:none;}
   .alert .tx{flex:1;} .alert .tx .t{font-size:13.8px;color:var(--white);font-weight:500;} .alert .tx .d{font-size:12px;color:var(--muted);margin-top:2px;}
-  .alert .go{font-size:12px;color:var(--gold-light);border:0.5px solid var(--gold-deep);border-radius:20px;padding:6px 13px;cursor:pointer;white-space:nowrap;transition:all .25s;}
-  .alert .go:hover{background:var(--gold-light);color:#131217;}
+  .alert .go{font-size:12px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:6px 13px;cursor:pointer;white-space:nowrap;transition:all .25s;}
+  .alert .go:hover{background:var(--gold-light);color:#1A1206;}
 </style>
 <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px">
   <div>
@@ -104,7 +104,7 @@
 <div class="ov-main">
   <div class="card">
     <div class="ov-hi"><div><div class="t">إيراد المنصة</div><div class="s">اشتراكات + عمولات · آخر ٧ أشهر (بالألف ر.س)</div></div>
-      <div class="legend"><span class="lg"><span class="sw" style="background:#dbbd81"></span> عمولات</span><span class="lg"><span class="sw" style="background:#9c8047"></span> اشتراكات</span></div></div>
+      <div class="legend"><span class="lg"><span class="sw" style="background:#E9D29A"></span> عمولات</span><span class="lg"><span class="sw" style="background:#C9A75E"></span> اشتراكات</span></div></div>
     ${revChart()}
   </div>
   <div class="card">

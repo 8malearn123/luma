@@ -76,7 +76,7 @@
       return panel('المخزون','تابعي مستلزماتكِ — ولكل صنف كم حجزاً يكفي تقريباً قبل النفاد.',
         `<button class="btn btn-gold">+ صنف جديد</button>`,
         `<div class="thead5"><span>الصنف</span><span>المتوفر</span><span>الحد الأدنى</span><span>يكفي لـ</span><span>الحالة</span></div>`+
-        I.map(i=>{const L=left(i);const lc=L<=10?'#c0566a':L<=25?'var(--gold-light)':'var(--green,#6fa86a)';
+        I.map(i=>{const L=left(i);const lc=L<=10?'#C97A6A':L<=25?'var(--gold-light)':'var(--green,#9CC59B)';
         return `<div class="trow5"><span class="n">${i.n}<span style="display:block;font-size:10.5px;color:var(--muted);margin-top:2px">الوحدة تكفي ${i.bpu===1?'حجزاً واحداً':i.bpu+' حجوزات'}</span></span><span class="num2">${i.q}</span><span class="num2 mut">${i.min}</span><span class="num2" style="font-size:17px;color:${lc}">≈ ${L} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:10.5px;color:var(--muted)">حجز</span></span><span class="badge ${i.stc}">${i.st}</span></div>`;}).join(''));
     },
     expenses(){
@@ -112,7 +112,7 @@
     render(){
       return `
 <style>
-  .adv-hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:radial-gradient(120% 100% at 85% 0%,rgba(156,124,58,0.16),var(--surface) 60%);padding:34px 32px;margin-bottom:22px;}
+  .adv-hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:radial-gradient(120% 100% at 85% 0%,rgba(201,167,94,0.16),var(--surface) 60%);padding:34px 32px;margin-bottom:22px;}
   .adv-hero .k{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--gold);direction:ltr;}
   .adv-hero h2{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:30px;color:var(--white);margin-top:8px;}
   .adv-hero .line{width:64px;height:2px;background:linear-gradient(90deg,var(--gold-light),transparent);margin-top:14px;border-radius:2px;}
@@ -121,15 +121,15 @@
   .adv-chip .i{color:var(--muted);display:flex;}
   .adv-chip:hover{border-color:var(--gold-deep);color:var(--gold-light);}
   .adv-chip:hover .i{color:var(--gold-pale);}
-  .adv-chip.on{background:linear-gradient(120deg,rgba(156,124,58,0.22),rgba(156,124,58,0.06));border-color:var(--gold-deep);color:var(--gold-light);font-weight:600;}
+  .adv-chip.on{background:linear-gradient(120deg,rgba(201,167,94,0.22),rgba(201,167,94,0.06));border-color:var(--gold-deep);color:var(--gold-light);font-weight:600;}
   .adv-chip.on .i{color:var(--gold-light);}
   .tool-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
   .tool-head .tt{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:21px;color:var(--white);}
   .tool-head .td{font-size:13.5px;color:var(--gold-pale);margin-top:4px;max-width:54ch;}
   .trow,.trow4{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 18px;margin-bottom:10px;}
   .trow .ti{flex:1;min-width:0;} .trow .ti .n{font-size:14.5px;color:var(--white);font-weight:500;} .trow .ti .s{font-size:12.5px;color:var(--muted);margin-top:1px;}
-  .avi,.avx{width:38px;height:38px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:16px;color:var(--gold-light);flex-shrink:0;}
-  .trow .gi{width:38px;height:38px;border-radius:10px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);flex-shrink:0;}
+  .avi,.avx{width:38px;height:38px;border-radius:50%;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:16px;color:var(--gold-light);flex-shrink:0;}
+  .trow .gi{width:38px;height:38px;border-radius:10px;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);flex-shrink:0;}
   .trow .amt{font-family:'Bodoni Moda',serif;font-size:19px;color:var(--gold-light);direction:ltr;}
   .cards2{display:grid;grid-template-columns:1fr 1fr;gap:16px;} @media(max-width:820px){.cards2{grid-template-columns:1fr;}}
   .bigcard{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:16px;padding:22px;}
@@ -158,7 +158,7 @@
   .giftc .gtop{display:flex;justify-content:space-between;font-family:'Bodoni Moda',serif;letter-spacing:0.2em;color:var(--gold-light);direction:ltr;font-size:14px;}
   .giftc .gval{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:17px;color:var(--white);} .giftc .gname{font-size:12px;color:var(--gold-pale);}
   .toggle{width:46px;height:27px;border-radius:20px;border:none;cursor:pointer;position:relative;transition:background .25s;flex-shrink:0;}
-  .toggle.on{background:linear-gradient(120deg,#dbbd81,#9c8047);} .toggle.off{background:var(--surface3);}
+  .toggle.on{background:linear-gradient(120deg,#E9D29A,#C9A75E);} .toggle.off{background:var(--surface3);}
   .toggle .k{position:absolute;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:right .25s,left .25s;}
   .toggle.on .k{left:3px;} .toggle.off .k{right:3px;}
 </style>
@@ -184,9 +184,9 @@
             ov.querySelector('[data-c]').onclick=close;
             ov.querySelector('[data-ok]').onclick=()=>{
               const name=ov.querySelector('[name=name]');
-              if(!name.value.trim()){name.style.borderColor='#c0566a';name.focus();return;}
+              if(!name.value.trim()){name.style.borderColor='#C97A6A';name.focus();return;}
               const phone=ov.querySelector('[name=phone]').value.trim();
-              if(phone&&!/^0?5\d{8}$/.test(phone.replace(/[\s-]/g,''))){const p=ov.querySelector('[name=phone]');p.style.borderColor='#c0566a';p.focus();LUX.toast('رقم الجوال غير صحيح — مثال: 0551234567','err');return;}
+              if(phone&&!/^0?5\d{8}$/.test(phone.replace(/[\s-]/g,''))){const p=ov.querySelector('[name=phone]');p.style.borderColor='#C97A6A';p.focus();LUX.toast('رقم الجوال غير صحيح — مثال: 0551234567','err');return;}
               TEAM.push({n:name.value.trim(),role:ov.querySelector('[name=role]').value,
                 shift:ov.querySelector('[name=shift]').value,phone,today:0,c:'soft',custom:true});
               saveTeam();close();window.__adv.go('staff');
@@ -218,14 +218,14 @@
 <style>
   .sy-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:start;} @media(max-width:1000px){.sy-grid{grid-template-columns:1fr;}}
   .intg{display:flex;align-items:center;gap:15px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:11px;}
-  .intg .ic{width:46px;height:46px;border-radius:12px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);flex-shrink:0;}
+  .intg .ic{width:46px;height:46px;border-radius:12px;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light);flex-shrink:0;}
   .intg .ti{flex:1;} .intg .ti .n{font-size:15px;color:var(--white);font-weight:600;} .intg .ti .d{font-size:12.5px;color:var(--muted);margin-top:2px;}
   .comply{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;}
   .crow{display:flex;align-items:flex-start;gap:13px;padding:14px 0;border-bottom:1px solid var(--line-soft);} .crow:last-child{border-bottom:none;}
-  .crow .ck{width:24px;height:24px;border-radius:50%;background:var(--green-bg);border:0.5px solid var(--green);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+  .crow .ck{width:24px;height:24px;border-radius:50%;background:var(--green-bg);border:1px solid var(--green);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
   .crow .n{font-size:14px;color:var(--white);font-weight:500;} .crow .d{font-size:12.5px;color:var(--muted);margin-top:1px;}
   .toggle{width:46px;height:27px;border-radius:20px;border:none;cursor:pointer;position:relative;transition:background .25s;flex-shrink:0;}
-  .toggle.on{background:linear-gradient(120deg,#dbbd81,#9c8047);} .toggle.off{background:var(--surface3);} .toggle .k{position:absolute;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.25s;} .toggle.on .k{left:3px;} .toggle.off .k{right:3px;}
+  .toggle.on{background:linear-gradient(120deg,#E9D29A,#C9A75E);} .toggle.off{background:var(--surface3);} .toggle .k{position:absolute;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.25s;} .toggle.on .k{left:3px;} .toggle.off .k{right:3px;}
 </style>
 <div class="sy-grid">
   <div>
@@ -235,7 +235,7 @@
   <div>
     <div class="sec-label">الاعتماد والجاهزية <span class="ln"></span></div>
     <div class="comply">
-      <div style="display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--line-soft);margin-bottom:6px"><div style="width:44px;height:44px;border-radius:12px;background:var(--green-bg);border:0.5px solid var(--green);display:flex;align-items:center;justify-content:center;color:var(--green)">${icon('shield',22)}</div><div><div style="font-size:15px;color:var(--white);font-weight:600">حسابك موثّق ومعتمد</div><div style="font-size:12.5px;color:var(--gold-pale)">جاهزة للعمل باحترافية كاملة</div></div></div>
+      <div style="display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--line-soft);margin-bottom:6px"><div style="width:44px;height:44px;border-radius:12px;background:var(--green-bg);border:1px solid var(--green);display:flex;align-items:center;justify-content:center;color:var(--green)">${icon('shield',22)}</div><div><div style="font-size:15px;color:var(--white);font-weight:600">حسابك موثّق ومعتمد</div><div style="font-size:12.5px;color:var(--gold-pale)">جاهزة للعمل باحترافية كاملة</div></div></div>
       ${COMPLY.map(c=>`<div class="crow"><span class="ck">✓</span><div><div class="n">${c.t}</div><div class="d">${c.d}</div></div></div>`).join('')}
     </div>
     <div class="card" style="margin-top:16px"><div class="sec-label">تصدير البيانات <span class="ln"></span></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-ghost">كشف الحجوزات</button><button class="btn btn-ghost">التقرير المالي</button><button class="btn btn-ghost">قائمة العملاء</button></div></div>

@@ -8,17 +8,17 @@
     const pts=data.map((d,i)=>[pad.l+i*step,pad.t+ih-(d.v/max)*ih]);
     const line=pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
     const ar=`${line} L${pad.l+iw} ${pad.t+ih} L${pad.l} ${pad.t+ih} Z`;
-    let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1" stroke-dasharray="2 4"/><text x="${pad.l-7}" y="${y+4}" fill="#58545f" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
-    const dots=pts.map((p,i)=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${i===pts.length-1?4:2.4}" fill="${i===pts.length-1?'#dbbd81':'#9c8047'}"/>`).join('');
-    const labels=data.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="10" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text>`).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs><linearGradient id="aag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c8047" stop-opacity="0.32"/><stop offset="1" stop-color="#9c8047" stop-opacity="0"/></linearGradient></defs>${grid}<path d="${ar}" fill="url(#aag)"/><path d="${line}" fill="none" stroke="#ccab64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}</svg>`;
+    let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(201,167,94,.14)" stroke-width="1" stroke-dasharray="2 4"/><text x="${pad.l-7}" y="${y+4}" fill="#5E594F" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
+    const dots=pts.map((p,i)=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${i===pts.length-1?4:2.4}" fill="${i===pts.length-1?'#E9D29A':'#C9A75E'}"/>`).join('');
+    const labels=data.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#9D978A" font-size="10" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text>`).join('');
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs><linearGradient id="aag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9A75E" stop-opacity="0.32"/><stop offset="1" stop-color="#C9A75E" stop-opacity="0"/></linearGradient></defs>${grid}<path d="${ar}" fill="url(#aag)"/><path d="${line}" fill="none" stroke="#E7D2A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}</svg>`;
   }
-  function stars(r,sz=12){let s='';for(let i=1;i<=5;i++)s+=`<span style="color:${i<=r?'#ccab64':'#26242d'};font-size:${sz}px">★</span>`;return s;}
+  function stars(r,sz=12){let s='';for(let i=1;i<=5;i++)s+=`<span style="color:${i<=r?'#E7D2A0':'rgba(201,167,94,.14)'};font-size:${sz}px">★</span>`;return s;}
 
   /* ════════ ANALYTICS ════════ */
   const GMV=[{m:'مارس',v:23},{m:'أبريل',v:29},{m:'مايو',v:34},{m:'يونيو',v:42},{m:'يوليو',v:51},{m:'أغسطس',v:58},{m:'سبتمبر',v:62}];
   const GROW=[{m:'مارس',v:96},{m:'أبريل',v:112},{m:'مايو',v:124},{m:'يونيو',v:138},{m:'يوليو',v:149},{m:'أغسطس',v:158},{m:'سبتمبر',v:164}];
-  const CATS=[['مكياج',38,'#dbbd81'],['عناية بالبشرة',24,'#ccab64'],['شعر',18,'#9c8047'],['تصوير',12,'#846a38'],['أظافر',8,'#5a4624']];
+  const CATS=[['مكياج',38,'#E9D29A'],['عناية بالبشرة',24,'#E7D2A0'],['شعر',18,'#C9A75E'],['تصوير',12,'#8A6E34'],['أظافر',8,'#5a4624']];
   const CITIES=[['جدة',42],['الرياض',31],['جازان',14],['الدمام',8],['مكة',5]];
   A.analytics={ render(){ return `
 <style>
@@ -44,7 +44,7 @@
 </div>
 <div class="an-row2">
   <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:12px"><div><div class="ttl">نمو المزوّدين</div><div class="tsub">إجمالي تراكمي</div></div><span class="badge gold">164 مزوّد</span></div>${area(GROW,180,{h:200})}</div>
-  <div class="card"><div class="sec-label">التوزيع الجغرافي <span class="ln"></span></div>${CITIES.map(c=>`<div class="brow"><span class="nm">${c[0]}</span><div class="bar"><span style="width:${c[1]/42*100}%;background:linear-gradient(90deg,#9c8047,#dbbd81)"></span></div><span class="pc">${c[1]}%</span></div>`).join('')}</div>
+  <div class="card"><div class="sec-label">التوزيع الجغرافي <span class="ln"></span></div>${CITIES.map(c=>`<div class="brow"><span class="nm">${c[0]}</span><div class="bar"><span style="width:${c[1]/42*100}%;background:linear-gradient(90deg,#C9A75E,#E9D29A)"></span></div><span class="pc">${c[1]}%</span></div>`).join('')}</div>
 </div>`; }};
 
   /* ════════ PROVIDERS ════════ */
@@ -75,15 +75,15 @@
   .p-seg{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px;}
   .p-seg button{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;display:flex;gap:7px;align-items:center;}
   .p-seg button .c{font-size:11px;background:var(--surface3);padding:1px 7px;border-radius:20px;}
-  .p-seg button.on{background:linear-gradient(120deg,rgba(156,124,58,0.2),rgba(156,124,58,0.06));color:var(--gold-light);}
-  .p-seg button.on .c{background:var(--gold-deep);color:#131217;}
+  .p-seg button.on{background:linear-gradient(120deg,rgba(201,167,94,0.2),rgba(201,167,94,0.06));color:var(--gold-light);}
+  .p-seg button.on .c{background:var(--gold-deep);color:#1A1206;}
   .p-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px;}@media(max-width:760px){.p-kpi{grid-template-columns:1fr;}}
   .ptable{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
   .pth,.ptr{display:grid;grid-template-columns:2.2fr 1fr 1fr 1.2fr 1fr 1.1fr 40px;gap:12px;align-items:center;padding:14px 20px;}
   .pth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600;}
   .ptr{border-bottom:1px solid var(--line-soft);transition:background .2s;cursor:pointer;}.ptr:last-child{border-bottom:none;}.ptr:hover{background:var(--surface2);}
   .pname{display:flex;align-items:center;gap:11px;}.pname .nm{font-size:14px;color:var(--white);font-weight:500;}.pname .s{font-size:11.5px;color:var(--muted);}
-  .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;flex-shrink:0;}
+  .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;flex-shrink:0;}
   .pcell{font-size:13px;color:var(--cream);} .pcell .num{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr;}
   .pmore{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;}
   @media(max-width:1080px){.pth{display:none;}.ptr{grid-template-columns:1fr auto;}.ptr .hide{display:none;}}
@@ -134,7 +134,7 @@
   .b-seg{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px;}
   .b-seg button{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;display:flex;gap:7px;align-items:center;}
   .b-seg button .c{font-size:11px;background:var(--surface3);padding:1px 7px;border-radius:20px;}
-  .b-seg button.on{background:linear-gradient(120deg,rgba(156,124,58,0.2),rgba(156,124,58,0.06));color:var(--gold-light);}.b-seg button.on .c{background:var(--gold-deep);color:#131217;}
+  .b-seg button.on{background:linear-gradient(120deg,rgba(201,167,94,0.2),rgba(201,167,94,0.06));color:var(--gold-light);}.b-seg button.on .c{background:var(--gold-deep);color:#1A1206;}
   .b-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}@media(max-width:1100px){.b-kpi{grid-template-columns:1fr 1fr;}}
   .btable{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
   .bth,.btr{display:grid;grid-template-columns:1.3fr 1.3fr 1.2fr 1fr 0.9fr 1fr;gap:12px;align-items:center;padding:14px 20px;}
@@ -166,7 +166,7 @@
     const p=PROV[i];
     const STS=[['موثّقة','green','تظهر في المتجر وتستقبل الحجوزات'],['بانتظار التوثيق','gold','لا تظهر حتى تُوثّق هويتها'],['موقوفة','red','مخفية ومحظورة من استقبال الحجوزات']];
     const body=`
-      <div class="lux-pr" style="border-bottom:1px solid var(--line,#1b1a21)"><span class="lux-av">${p.n.charAt(0)}</span><div style="flex:1"><div class="nm">${p.n}</div><div class="bk" style="direction:rtl;text-align:right">${p.c} · باقة ${p.tier} · ${p.bk} حجز</div></div><span class="badge ${p.stc}">${p.st}</span></div>
+      <div class="lux-pr" style="border-bottom:1px solid var(--line,#1A1820)"><span class="lux-av">${p.n.charAt(0)}</span><div style="flex:1"><div class="nm">${p.n}</div><div class="bk" style="direction:rtl;text-align:right">${p.c} · باقة ${p.tier} · ${p.bk} حجز</div></div><span class="badge ${p.stc}">${p.st}</span></div>
       <div class="lux-lead" style="margin-top:14px">اختاري حالة المزوّدة — تُطبَّق فورًا على ظهورها واستقبالها للحجوزات.</div>
       <div id="pst">${STS.map(s=>`<div class="lux-pr lux-opt" data-st="${s[0]}"><span class="lux-radio ${p.st===s[0]?'on':''}"></span><div style="flex:1"><div class="nm">${s[0]}</div><div class="bk" style="direction:rtl;text-align:right">${s[2]}</div></div></div>`).join('')}</div>
       <div class="lux-f" id="rsn" style="display:none;margin-top:6px"><label>سبب الإيقاف (يُرسل للمزوّدة)</label><textarea rows="2" placeholder="مثال: مخالفة شروط الخدمة…"></textarea></div>

@@ -35,16 +35,18 @@ window.icon=icon;
 
 /* ── STAFF + APPOINTMENTS (booking board core) ── */
 const STAFF=[
-  {id:'amal',n:'أمل',role:'مكياج',color:'#ccab64'},
-  {id:'sara',n:'سارة',role:'شعر',color:'#d98a93'},
-  {id:'nora',n:'نورة',role:'بشرة',color:'#7d9bc0'},
-  {id:'reem',n:'ريم',role:'أظافر',color:'#6fa86a'},
+  {id:'amal',n:'أمل',role:'مكياج',color:'#E7D2A0'},
+  {id:'sara',n:'سارة',role:'شعر',color:'#C9A75E'},
+  {id:'nora',n:'نورة',role:'بشرة',color:'#9D978A'},
+  {id:'reem',n:'ريم',role:'أظافر',color:'#8A6E34'},
 ];
 /* staff added from the UI persist across reloads */
 const STAFF_KEY='luma_salon_staff';
 LumaStore.get(STAFF_KEY,[]).forEach(s=>{if(s&&s.id&&!STAFF.some(x=>x.id===s.id))STAFF.push(s);});
 function saveStaff(){LumaStore.set(STAFF_KEY,STAFF.filter(s=>s.custom));}
-const STAFF_COLORS=['#c98ab6','#8ac9b8','#9b8ac9','#c97f6f','#6fb0c9','#b8c96f'];
+/* تمييز الخبيرات على لوحة الحجوزات — من سلّم الهوية وحده (ذهب ومحايدات)،
+   لا ألوان خارج اللوحة ولا ألوان دلالية تُقرأ كنجاح أو خطأ */
+const STAFF_COLORS=['#E9D29A','#C9A75E','#9D978A','#8A6E34','#E7D2A0','#8C8676'];
 
 /* ── staff profile overlay: photo, contact, documents, status — the full HR file ── */
 const SP_KEY='luma_staff_profiles', SP_ARCH_KEY='luma_staff_archived';
@@ -84,7 +86,7 @@ function spAvatar(s,size){
   const p=spOf(s.id);
   return p.photo
     ?`<img src="${p.photo}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1px solid ${s.color};flex-shrink:0"/>`
-    :`<span style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface3);border:1px solid ${s.color};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:${s.color};font-size:${Math.round(size*0.42)}px;flex-shrink:0">${s.n.charAt(0)}</span>`;
+    :`<span style="width:${size}px;height:${size}px;border-radius:50%;background:var(--surface3);border:1px solid ${s.color};display:flex;align-items:center;justify-content:center;font-family:var(--luma-font-display);color:${s.color};font-size:${Math.round(size*0.42)}px;flex-shrink:0">${s.n.charAt(0)}</span>`;
 }
 const START_HOUR=10, SLOTS=20, ROW_H=44; /* 10:00 → 20:00, 30-min slots */
 function slotLabel(i){const t=START_HOUR*60+i*30;let h=Math.floor(t/60),m=t%60;const ap=h>=12?'م':'ص';let h12=h>12?h-12:h;return `${h12}:${m===0?'00':'30'} ${ap}`;}
@@ -122,7 +124,7 @@ const SVC_CAT_DEFAULT={'مكياج سهرة':'مكياج','مكياج عروس':
 SVC_CATALOG.forEach(s=>{if(!s[3])s[3]=SVC_CAT_DEFAULT[s[0]]||'أخرى';});
 function saveSvcCatalog(){LumaStore.set(SVC_KEY,SVC_CATALOG);}
 const svcPrice=n=>{const x=SVC_CATALOG.find(s=>s[0]===n);return x?x[2]:350;};
-const ST_STYLE={confirmed:{bg:'rgba(111,168,106,0.16)',bd:'#6fa86a',lb:'مؤكد'},pending:{bg:'rgba(205,172,80,0.16)',bd:'#ccab64',lb:'بانتظار الدفع'},walkin:{bg:'rgba(125,155,192,0.16)',bd:'#7d9bc0',lb:'حضور مباشر'},blocked:{bg:'rgba(134,129,141,0.16)',bd:'#86818d',lb:'وقت محجوب'}};
+const ST_STYLE={confirmed:{bg:'rgba(111,168,106,0.16)',bd:'#9CC59B',lb:'مؤكد'},pending:{bg:'rgba(201,167,94,0.16)',bd:'#E7D2A0',lb:'بانتظار الدفع'},walkin:{bg:'rgba(125,155,192,0.16)',bd:'#9D978A',lb:'حضور مباشر'},blocked:{bg:'rgba(134,129,141,0.16)',bd:'#9D978A',lb:'وقت محجوب'}};
 
 const SCREENS={};
 

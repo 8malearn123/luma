@@ -52,7 +52,7 @@ const LOY={
             <b style="font-family:monospace;letter-spacing:.08em;direction:ltr">${c.code}</b>
             <span style="flex:1;font-size:12px;color:var(--muted,#888)">${c.type==='percent'?c.value+'٪ خصم':c.value+' ر.س خصم'}${c.note?' · '+c.note:''}</span>
             <button type="button" class="lux-chip cpTgl" data-i="${i}">${c.active?'إيقاف':'تفعيل'}</button>
-            <button type="button" class="lux-chip cpDel" data-i="${i}" style="color:#e29aa6">حذف</button>
+            <button type="button" class="lux-chip cpDel" data-i="${i}" style="color:#C97A6A">حذف</button>
           </div>`).join('')||'<div style="font-size:12.5px;color:var(--muted,#888)">لا كوبونات بعد.</div>'}</div>
         <div style="display:flex;gap:8px;margin-top:6px">
           <input id="cpCode" placeholder="الكود (مثال RAMADAN15)" dir="ltr" style="text-align:right;flex:1.4;text-transform:uppercase"/>
@@ -88,7 +88,7 @@ const LOY={
     const pts=loyPts(name);
     const cfg=loyCfg();
     LUX.modal('استبدال نقاط الولاء',`
-      <div class="lux-lead">${name} — الرصيد الحالي <b style="color:var(--gold-light,#ccab64)">★ ${pts.toLocaleString('en')}</b> نقطة</div>
+      <div class="lux-lead">${name} — الرصيد الحالي <b style="color:var(--gold-light,#E7D2A0)">★ ${pts.toLocaleString('en')}</b> نقطة</div>
       ${cfg.rewards.map((r,i)=>`
         <button type="button" class="lux-btn ${pts>=r.pts?'lux-gold':'lux-ghost'}" data-rw="${i}" ${pts>=r.pts?'':'disabled'} style="width:100%;margin-bottom:8px;${pts>=r.pts?'':'opacity:.4'}">
           خصم ${r.value} ر.س — مقابل ${r.pts.toLocaleString('en')} نقطة</button>`).join('')}
@@ -98,7 +98,7 @@ const LOY={
         const code=('LOYA-'+Math.abs((name+Date.now()).split('').reduce((h,ch)=>h*31+ch.charCodeAt(0)|0,7)).toString(36)).toUpperCase().slice(0,10);
         LumaStore.update(LOY_PTS_KEY,m=>{m[name]=(m[name]||0)-r.pts;return m;},{});
         const l=couponsAll();l.push({code,type:'amount',value:r.value,active:true,note:'استبدال نقاط — '+name});saveCoupons(l);
-        ov.querySelector('#rwOut').innerHTML=`<div style="margin-top:10px;padding:13px;border:1px dashed var(--gold,#ccab64);border-radius:11px;text-align:center">
+        ov.querySelector('#rwOut').innerHTML=`<div style="margin-top:10px;padding:13px;border:1px dashed var(--gold,#E7D2A0);border-radius:11px;text-align:center">
           كوبون العميلة الشخصي<br><b style="font-family:monospace;font-size:19px;letter-spacing:.12em;direction:ltr;display:inline-block;margin-top:5px">${code}</b>
           <div style="font-size:11.5px;color:var(--muted,#888);margin-top:5px">خصم ${r.value} ر.س — تدخله في صفحة الحجز أو يُطبق بالكاشير</div></div>`;
         LUX.toast('استُبدلت '+r.pts+' نقطة بكوبون '+r.value+' ر.س ✓','ok');

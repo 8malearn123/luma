@@ -32,14 +32,14 @@
   .f-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
   .f-seg{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px;}
   .f-seg button{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:var(--muted);background:none;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;}
-  .f-seg button.on{background:linear-gradient(120deg,rgba(156,124,58,0.2),rgba(156,124,58,0.06));color:var(--gold-light);}
+  .f-seg button.on{background:linear-gradient(120deg,rgba(201,167,94,0.2),rgba(201,167,94,0.06));color:var(--gold-light);}
   .f-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}@media(max-width:1100px){.f-kpi{grid-template-columns:1fr 1fr;}}
   .ftable{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
   .fth,.ftr{display:grid;grid-template-columns:1.6fr 1.3fr 1fr 1fr 1fr;gap:12px;align-items:center;padding:14px 20px;}
   .fth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600;}
   .ftr{border-bottom:1px solid var(--line-soft);transition:background .2s;}.ftr:last-child{border-bottom:none;}.ftr:hover{background:var(--surface2);}
   .ftr .who{display:flex;align-items:center;gap:11px;}.ftr .who .n{font-size:13.5px;color:var(--white);font-weight:500;}.ftr .who .t{font-size:11.5px;color:var(--muted);}
-  .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;flex-shrink:0;}
+  .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;flex-shrink:0;}
   .ftr .m{font-size:12.5px;color:var(--cream);direction:ltr;text-align:right;} .ftr .when{font-size:11.5px;color:var(--muted);}
   .ftr .amt{font-family:'Bodoni Moda',serif;font-size:18px;direction:ltr;}.ftr .amt.in{color:var(--green);}.ftr .amt.out{color:var(--gold-light);}
   @media(max-width:1080px){.fth{display:none;}.ftr{grid-template-columns:1fr auto;}.ftr .hide{display:none;}}
@@ -80,7 +80,7 @@
   .mcth{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--gold);font-weight:600;}
   .mctr{border-bottom:1px solid var(--line-soft);}.mctr:last-child{border-bottom:none;}.mctr:hover{background:var(--surface2);}
   .mctr .who{display:flex;align-items:center;gap:11px;}.mctr .who .n{font-size:13.5px;color:var(--white);font-weight:500;}.mctr .who .h{font-size:11.5px;color:var(--gold-pale);direction:ltr;text-align:right;}
-  .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:14px;}
+  .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:14px;}
   .mctr .gmv{font-family:'Bodoni Moda',serif;font-size:17px;color:var(--white);direction:ltr;} .mctr .rt{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--gold-pale);direction:ltr;} .mctr .com{font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-light);direction:ltr;}
   .mctr .ed{background:none;border:1px solid var(--line);color:var(--gold-pale);border-radius:8px;padding:7px 12px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;cursor:pointer;justify-self:start;}.mctr .ed:hover{border-color:var(--gold-deep);color:var(--gold-light);}
   @media(max-width:1080px){.mcth{display:none;}.mctr{grid-template-columns:1fr auto;}.mctr .hide{display:none;}}
@@ -115,7 +115,7 @@
   .mtr{border-bottom:1px solid var(--line-soft);}.mtr:last-child{border-bottom:none;}.mtr:hover{background:var(--surface2);}
   .mtr .rk{font-family:'Bodoni Moda',serif;font-size:20px;color:var(--gold-deep);direction:ltr;}
   .mtr .who{display:flex;align-items:center;gap:11px;}.mtr .who .n{font-size:13.5px;color:var(--white);font-weight:500;}.mtr .who .h{font-size:11.5px;color:var(--gold-pale);direction:ltr;text-align:right;}
-  .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;}
+  .avx{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);font-size:15px;}
   .mtr .num{font-family:'Bodoni Moda',serif;font-size:18px;color:var(--white);direction:ltr;} .mtr .earn{font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-light);direction:ltr;}
   @media(max-width:1080px){.mth{display:none;}.mtr{grid-template-columns:auto 1fr auto;}.mtr .hide{display:none;}}
 </style>
@@ -133,10 +133,10 @@
   /* ════════ MARKETER COMMISSION EDITORS ════════ */
   window.LUX_mkRate=function(i){
     if(!window.LUX)return;const m=MKCOM[i];
-    const body=`<div class="lux-pr" style="border-bottom:1px solid var(--line,#1b1a21)"><span class="lux-av">${m.n.charAt(0)}</span><div style="flex:1"><div class="nm">${m.n}</div><div class="bk">${m.h}</div></div></div>
-      <div class="lux-lead" style="margin-top:14px">نسبة العمولة التي تأخذها <b style="color:#f6f2ec">${m.n}</b> من المبيعات التي تجلبها.</div>
-      <div class="lux-f"><label>نسبة العمولة (%)</label><div style="display:flex;align-items:center;gap:12px"><input type="range" min="0" max="25" step="0.5" value="${m.rate}" id="mkr" style="flex:1"/><div style="display:flex;align-items:center;gap:4px;background:#0e0d11;border:1px solid var(--line,#1b1a21);border-radius:8px;padding:8px 10px;min-width:64px;justify-content:center"><input id="mkn" value="${m.rate}" dir="ltr" style="width:34px;background:none;border:none;color:var(--gold-light,#ccab64);font-family:'IBM Plex Mono',monospace;text-align:center;outline:none"/><span style="color:#86818d">%</span></div></div></div>
-      <div class="lux-row"><span class="k">العمولة على مبيعات ${m.sales.toLocaleString('en')} ر.س</span><span class="v" id="mkc" style="color:var(--gold-light,#ccab64)">—</span></div>
+    const body=`<div class="lux-pr" style="border-bottom:1px solid var(--line,#1A1820)"><span class="lux-av">${m.n.charAt(0)}</span><div style="flex:1"><div class="nm">${m.n}</div><div class="bk">${m.h}</div></div></div>
+      <div class="lux-lead" style="margin-top:14px">نسبة العمولة التي تأخذها <b style="color:#EDE7DA">${m.n}</b> من المبيعات التي تجلبها.</div>
+      <div class="lux-f"><label>نسبة العمولة (%)</label><div style="display:flex;align-items:center;gap:12px"><input type="range" min="0" max="25" step="0.5" value="${m.rate}" id="mkr" style="flex:1"/><div style="display:flex;align-items:center;gap:4px;background:#0C0B0E;border:1px solid var(--line,#1A1820);border-radius:8px;padding:8px 10px;min-width:64px;justify-content:center"><input id="mkn" value="${m.rate}" dir="ltr" style="width:34px;background:none;border:none;color:var(--gold-light,#E7D2A0);font-family:'IBM Plex Mono',monospace;text-align:center;outline:none"/><span style="color:#9D978A">%</span></div></div></div>
+      <div class="lux-row"><span class="k">العمولة على مبيعات ${m.sales.toLocaleString('en')} ر.س</span><span class="v" id="mkc" style="color:var(--gold-light,#E7D2A0)">—</span></div>
       <div class="lux-foot" style="margin-top:10px"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-s style="flex:1.4">حفظ</button></div>`;
     window.LUX.modal('تعديل عمولة المسوّقة',body,{onMount(ov,close){
       const r=ov.querySelector('#mkr'),n=ov.querySelector('#mkn'),c=ov.querySelector('#mkc');
@@ -174,10 +174,10 @@
     const selTotal=()=>due.filter(p=>p.sel).reduce((s,p)=>s+p.amount,0);
     const selCount=()=>due.filter(p=>p.sel).length;
     const rows=()=>due.map((p,i)=>`<div class="lux-pr"><button type="button" class="lux-ck on" data-ck="${i}">✓</button><div><div class="nm">${p.n}</div><div class="bk">${p.bank}</div></div><div class="amt">${fmt(p.amount)} ر.س</div></div>`).join('');
-    const body=`<div class="lux-lead">يوجد <b style="color:#f6f2ec">${due.length} تحويلًا</b> مستحقًا للمزوّدين. عند التنفيذ تتحوّل حالتها في جدول المدفوعات إلى «مكتمل».</div>
-      <div class="lux-pr" style="border-bottom:1px solid var(--line,#1b1a21)"><button type="button" class="lux-ck on" id="luxAll">✓</button><div class="nm">تحديد الكل</div></div>
+    const body=`<div class="lux-lead">يوجد <b style="color:#EDE7DA">${due.length} تحويلًا</b> مستحقًا للمزوّدين. عند التنفيذ تتحوّل حالتها في جدول المدفوعات إلى «مكتمل».</div>
+      <div class="lux-pr" style="border-bottom:1px solid var(--line,#1A1820)"><button type="button" class="lux-ck on" id="luxAll">✓</button><div class="nm">تحديد الكل</div></div>
       <div id="luxRows">${rows()}</div>
-      <div class="lux-row" style="margin-top:8px"><span class="k">الإجمالي المحدد</span><span class="v" id="luxSum" style="color:var(--gold-light,#ccab64);font-family:'Bodoni Moda',serif;font-size:20px">${fmt(selTotal())} ر.س</span></div>
+      <div class="lux-row" style="margin-top:8px"><span class="k">الإجمالي المحدد</span><span class="v" id="luxSum" style="color:var(--gold-light,#E7D2A0);font-family:'Bodoni Moda',serif;font-size:20px">${fmt(selTotal())} ر.س</span></div>
       <div class="lux-foot" style="margin-top:14px"><button class="lux-btn lux-ghost" data-cancel style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-go style="flex:1.4">تنفيذ <span id="luxGoN">${selCount()}</span> تحويل</button></div>`;
     window.LUX.modal('تنفيذ التحويلات للمزوّدين',body,{onMount(ov,close){
       const sumEl=ov.querySelector('#luxSum'),goN=ov.querySelector('#luxGoN'),allBtn=ov.querySelector('#luxAll');
@@ -190,7 +190,7 @@
         if(!chosen.length){window.LUX.toast('اختاري تحويلًا واحدًا على الأقل','err');return;}
         const total=chosen.reduce((s,p)=>s+p.amount,0),cnt=chosen.length;
         const b=ov.querySelector('.lux-b');
-        b.innerHTML=`<div style="text-align:center;padding:14px 0"><div class="lux-spin"></div><div style="color:#f6f2ec;font-size:15px;font-weight:500">جارٍ تنفيذ ${cnt} تحويل…</div><div style="color:#86818d;font-size:12.5px;margin-top:6px">يتم التحقق عبر بوابة الدفع</div></div>`;
+        b.innerHTML=`<div style="text-align:center;padding:14px 0"><div class="lux-spin"></div><div style="color:#EDE7DA;font-size:15px;font-weight:500">جارٍ تنفيذ ${cnt} تحويل…</div><div style="color:#9D978A;font-size:12.5px;margin-top:6px">يتم التحقق عبر بوابة الدفع</div></div>`;
         setTimeout(()=>{
           chosen.forEach(p=>{
             const ex=TX.find(t=>t.dir==='out'&&t.st!=='مكتمل'&&t.n===p.n);
@@ -199,9 +199,9 @@
             const src=PAYDUE.find(x=>x.n===p.n);if(src)src.done=true;
           });
           const ref='PAYOUT-'+Math.floor(100000+Math.random()*900000);
-          b.innerHTML=`<div style="text-align:center"><div class="lux-ok">✓</div><h3 style="color:#f6f2ec;font-size:20px;font-weight:600;margin:0">تم تنفيذ التحويلات ✨</h3><div style="color:var(--gold-pale,#e6ce95);font-size:13.5px;margin-top:8px">حُوّل <b style="color:#f6f2ec">${fmt(total)} ر.س</b> إلى <b style="color:#f6f2ec">${cnt}</b> مزوّدة، وتم تحديث حالتها إلى «مكتمل».</div></div>
-            <div class="lux-row" style="margin-top:18px"><span class="k">رقم الدفعة</span><span class="v" style="font-family:'IBM Plex Mono',monospace;color:var(--gold-light,#ccab64)">${ref}</span></div>
-            ${chosen.map(p=>`<div class="lux-pr done"><span style="color:#6fa86a;font-size:15px">✓</span><div><div class="nm">${p.n}</div><div class="bk">${p.bank}</div></div><div class="amt">${fmt(p.amount)} ر.س</div></div>`).join('')}
+          b.innerHTML=`<div style="text-align:center"><div class="lux-ok">✓</div><h3 style="color:#EDE7DA;font-size:20px;font-weight:600;margin:0">تم تنفيذ التحويلات ✨</h3><div style="color:var(--gold-pale,#F3E2B0);font-size:13.5px;margin-top:8px">حُوّل <b style="color:#EDE7DA">${fmt(total)} ر.س</b> إلى <b style="color:#EDE7DA">${cnt}</b> مزوّدة، وتم تحديث حالتها إلى «مكتمل».</div></div>
+            <div class="lux-row" style="margin-top:18px"><span class="k">رقم الدفعة</span><span class="v" style="font-family:'IBM Plex Mono',monospace;color:var(--gold-light,#E7D2A0)">${ref}</span></div>
+            ${chosen.map(p=>`<div class="lux-pr done"><span style="color:#9CC59B;font-size:15px">✓</span><div><div class="nm">${p.n}</div><div class="bk">${p.bank}</div></div><div class="amt">${fmt(p.amount)} ر.س</div></div>`).join('')}
             <button class="lux-btn lux-gold" data-done style="margin-top:16px">عرض المدفوعات المحدّثة</button>`;
           b.querySelector('[data-done]').onclick=()=>{close();window.ADMIN&&window.ADMIN.go('payments');};
           window.LUX.toast('تم تنفيذ '+cnt+' تحويل بقيمة '+fmt(total)+' ر.س ✓','ok');

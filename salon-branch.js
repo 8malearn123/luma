@@ -14,10 +14,10 @@ if(CUR_BRANCH==='rawdah'){
   const savedStaff=STAFF.filter(s=>!['amal','sara','nora','reem'].includes(s.id));
   STAFF.length=0;
   STAFF.push(
-    {id:'amal',n:'شهد',role:'مكياج',color:'#ccab64'},
-    {id:'sara',n:'عهود',role:'شعر',color:'#d98a93'},
-    {id:'nora',n:'لين',role:'بشرة',color:'#7d9bc0'},
-    {id:'reem',n:'غلا',role:'أظافر',color:'#6fa86a'},
+    {id:'amal',n:'شهد',role:'مكياج',color:'#E7D2A0'},
+    {id:'sara',n:'عهود',role:'شعر',color:'#C97A6A'},
+    {id:'nora',n:'لين',role:'بشرة',color:'#9D978A'},
+    {id:'reem',n:'غلا',role:'أظافر',color:'#9CC59B'},
     ...savedStaff);
   const savedAppts=APPTS.filter(a=>a.custom);
   APPTS.length=0;

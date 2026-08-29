@@ -43,7 +43,7 @@
     gate(host,onDone){
       const bd='1px solid rgba(150,130,90,.4)';
       const inp='width:100%;background:transparent;border:'+bd+';border-radius:10px;padding:11px 13px;color:inherit;font-family:inherit;font-size:13.5px;outline:none;text-align:right';
-      const btn='border:'+bd+';background:linear-gradient(120deg,#dbbd81,#caa85f 45%,#937842);color:#141013;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap';
+      const btn='border:'+bd+';background:linear-gradient(120deg,#E9D29A,#E7D2A0 45%,#C9A75E);color:#141013;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap';
       const stepA=(err)=>{
         host.innerHTML=`
         <div style="border:${bd};border-radius:13px;padding:15px 16px;margin-top:8px">

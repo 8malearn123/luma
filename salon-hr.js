@@ -14,7 +14,7 @@ function hrStaffTab(){
     </div>
     <div style="text-align:center"><div class="num" style="font-size:22px;color:var(--white)">${cnt}</div><div style="font-size:11px;color:var(--muted)">مواعيد اليوم</div></div>
     <div style="text-align:center"><div class="num" style="font-size:22px;color:var(--gold-light)">${rev.toLocaleString('en')}</div><div style="font-size:11px;color:var(--muted)">دخل اليوم (ر.س)</div></div>
-    <button class="btn btn-gold" style="padding:8px 18px" onclick="SALON.viewStaff('${s.id}')">الملف الكامل</button>
+    <button class="btn btn-ghost" style="padding:8px 18px" onclick="SALON.viewStaff('${s.id}')">الملف الكامل</button>
   </div>`;}).join('');
   return `
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px">
@@ -114,8 +114,8 @@ function hrStepper(chain,step,status){
     const done=status==='approved'||i<step, cur=status==='pending'&&i===step;
     return `${i?'<span style="color:var(--muted-deep)">←</span>':''}
       <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;
-        ${done?'background:rgba(111,168,106,.14);color:#9fce99;border:1px solid rgba(111,168,106,.4)'
-        :cur?'background:rgba(205,172,80,.14);color:var(--gold-light);border:1px solid var(--gold-deep)'
+        ${done?'background:rgba(111,168,106,.14);color:#9CC59B;border:1px solid rgba(111,168,106,.4)'
+        :cur?'background:rgba(201,167,94,.14);color:var(--gold-light);border:1px solid var(--gold-deep)'
         :'background:var(--surface3);color:var(--muted);border:1px solid var(--line)'}">
         ${done?'✓':cur?'●':'○'} ${nm}</span>`;}).join('')}</div>`;
 }
@@ -165,7 +165,7 @@ const HR={
     const t=hrTypeOf(tid);if(!t)return;
     const chain=hrChainOf(t.chain);
     const fld=(f,i)=>{
-      const req=f.req?' <span style="color:#c0566a">*</span>':'';
+      const req=f.req?' <span style="color:#C97A6A">*</span>':'';
       if(f.type==='select')return `<div class="lux-f"><label>${f.label}${req}</label><select data-f="${i}">${(f.options||[]).map(o=>`<option>${o}</option>`).join('')}</select></div>`;
       if(f.type==='date')return `<div class="lux-f"><label>${f.label}${req}</label><input type="date" data-f="${i}"/></div>`;
       if(f.type==='number')return `<div class="lux-f"><label>${f.label}${req}</label><input type="number" data-f="${i}" dir="ltr" style="text-align:right"/></div>`;
@@ -173,19 +173,19 @@ const HR={
       return `<div class="lux-f"><label>${f.label}${req}</label><input data-f="${i}"/></div>`;
     };
     LUX.modal(t.name+' — '+hrStaffName(staff),`
-      <div class="lux-lead">سلسلة الاعتماد: <b style="color:var(--gold-light,#ccab64)">${chain.steps.join(' ← ')}</b></div>
+      <div class="lux-lead">سلسلة الاعتماد: <b style="color:var(--gold-light,#E7D2A0)">${chain.steps.join(' ← ')}</b></div>
       ${t.fields.map(fld).join('')}
       <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:6px">إرسال الطلب</button>`,{onMount(ov,close){
       ov.querySelector('[data-ok]').onclick=()=>{
         const values={};
         for(let i=0;i<t.fields.length;i++){
           const el=ov.querySelector(`[data-f="${i}"]`);
-          if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#c0566a';el.focus();return;}
+          if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#C97A6A';el.focus();return;}
           const af=t.fields[i].after;
           if(af!=null&&t.fields[af]){
             const prev=ov.querySelector(`[data-f="${af}"]`);
             if(prev&&prev.value&&el.value&&el.value<=prev.value){
-              el.style.borderColor='#c0566a';el.focus();
+              el.style.borderColor='#C97A6A';el.focus();
               LUX.toast('«'+t.fields[i].label+'» يجب أن يكون بعد «'+t.fields[af].label+'»','err');return;
             }
           }
@@ -218,7 +218,7 @@ const HR={
     LUX.modal('أنواع الطلبات',`
       <div class="lux-lead">النوع يحدد النموذج الذي تعبّئه الموظفة وسلسلة الموافقات التي يمر بها.</div>
       <div class="lux-row"><span class="k">إجازة (نظامي)<br><span style="font-size:10.5px">نموذج ثابت + رصيد وتعارضات</span></span>
-        <span class="v"><select id="lvChain" style="background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:7px 9px;font-family:inherit;font-size:12px">${HR_CHAINS.map(c=>`<option value="${c.id}" ${hrLeaveChain().id===c.id?'selected':''}>${c.name}</option>`).join('')}</select></span></div>
+        <span class="v"><select id="lvChain" style="background:#0C0B0E;border:1px solid var(--line,rgba(201,167,94,.14));border-radius:7px;color:#EDE7DA;padding:7px 9px;font-family:inherit;font-size:12px">${HR_CHAINS.map(c=>`<option value="${c.id}" ${hrLeaveChain().id===c.id?'selected':''}>${c.name}</option>`).join('')}</select></span></div>
       ${rows}
       <button class="lux-btn lux-gold" data-new style="width:100%;margin-top:14px">+ نوع طلب جديد</button>`,{onMount(ov,close){
       ov.querySelector('#lvChain').onchange=e=>{hrSave(LEAVE_CHAIN_KEY,e.target.value);LUX.toast('حُدّثت سلسلة موافقات الإجازات ✓','ok');};
@@ -230,22 +230,22 @@ const HR={
     const render=ov=>{
       ov.querySelector('#tbFields').innerHTML=fields.map((f,i)=>`
         <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px">
-          <span style="flex:1;color:#f6f2ec">${f.label}</span>
-          <span style="color:#86818d">${{text:'نص',number:'رقم',date:'تاريخ',time:'وقت',select:'قائمة'}[f.type]}${f.req?' · إلزامي':''}</span>
-          <button style="background:none;border:none;color:#c0566a;cursor:pointer" onclick="this.dispatchEvent(new CustomEvent('rmf',{bubbles:true,detail:${i}}))">×</button>
-        </div>`).join('')||'<div style="color:#86818d;font-size:12px;padding:6px 0">أضيفي حقول النموذج…</div>';
+          <span style="flex:1;color:#EDE7DA">${f.label}</span>
+          <span style="color:#9D978A">${{text:'نص',number:'رقم',date:'تاريخ',time:'وقت',select:'قائمة'}[f.type]}${f.req?' · إلزامي':''}</span>
+          <button style="background:none;border:none;color:#C97A6A;cursor:pointer" onclick="this.dispatchEvent(new CustomEvent('rmf',{bubbles:true,detail:${i}}))">×</button>
+        </div>`).join('')||'<div style="color:#9D978A;font-size:12px;padding:6px 0">أضيفي حقول النموذج…</div>';
     };
     LUX.modal('نوع طلب جديد',`
       <div class="lux-f"><label>اسم النوع</label><input name="tname" placeholder="مثال: طلب دورة تدريبية"/></div>
       <div class="lux-f"><label>سلسلة الموافقات</label><select name="tchain">${HR_CHAINS.map(c=>`<option value="${c.id}">${c.name} (${c.steps.join(' ← ')})</option>`).join('')}</select></div>
-      <div style="font-size:12px;color:#9c8047;font-weight:700;margin:12px 0 6px">حقول النموذج</div>
+      <div style="font-size:12px;color:#C9A75E;font-weight:700;margin:12px 0 6px">حقول النموذج</div>
       <div id="tbFields"></div>
       <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
-        <input id="tbLabel" placeholder="تسمية الحقل" style="flex:2;min-width:120px;background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px 11px;font-family:inherit;font-size:12.5px"/>
-        <select id="tbType" style="background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px;font-family:inherit;font-size:12.5px"><option value="text">نص</option><option value="number">رقم</option><option value="date">تاريخ</option><option value="time">وقت</option><option value="select">قائمة خيارات</option></select>
-        <label style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:#86818d"><input type="checkbox" id="tbReq"/> إلزامي</label>
+        <input id="tbLabel" placeholder="تسمية الحقل" style="flex:2;min-width:120px;background:#0C0B0E;border:1px solid var(--line,rgba(201,167,94,.14));border-radius:7px;color:#EDE7DA;padding:9px 11px;font-family:inherit;font-size:12.5px"/>
+        <select id="tbType" style="background:#0C0B0E;border:1px solid var(--line,rgba(201,167,94,.14));border-radius:7px;color:#EDE7DA;padding:9px;font-family:inherit;font-size:12.5px"><option value="text">نص</option><option value="number">رقم</option><option value="date">تاريخ</option><option value="time">وقت</option><option value="select">قائمة خيارات</option></select>
+        <label style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:#9D978A"><input type="checkbox" id="tbReq"/> إلزامي</label>
       </div>
-      <input id="tbOpts" placeholder="الخيارات مفصولة بفاصلة (للقائمة فقط)" style="display:none;width:100%;margin-top:8px;background:#0e0d11;border:1px solid var(--line,#26242d);border-radius:7px;color:#f6f2ec;padding:9px 11px;font-family:inherit;font-size:12.5px"/>
+      <input id="tbOpts" placeholder="الخيارات مفصولة بفاصلة (للقائمة فقط)" style="display:none;width:100%;margin-top:8px;background:#0C0B0E;border:1px solid var(--line,rgba(201,167,94,.14));border-radius:7px;color:#EDE7DA;padding:9px 11px;font-family:inherit;font-size:12.5px"/>
       <button class="lux-btn lux-ghost" data-addf style="width:100%;margin-top:10px;padding:9px">+ إضافة الحقل</button>
       <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:12px">حفظ نوع الطلب</button>`,{onMount(ov,close){
       render(ov);
@@ -260,7 +260,7 @@ const HR={
       };
       ov.querySelector('[data-ok]').onclick=()=>{
         const nm=ov.querySelector('[name=tname]').value.trim();
-        if(!nm){ov.querySelector('[name=tname]').style.borderColor='#c0566a';return;}
+        if(!nm){ov.querySelector('[name=tname]').style.borderColor='#C97A6A';return;}
         if(!fields.length){LUX.toast('أضيفي حقلاً واحداً على الأقل','err');return;}
         HR_RTYPES.push({id:'t'+Date.now(),name:nm,chain:ov.querySelector('[name=tchain]').value,fields});
         hrSave(REQ_TYPES_KEY,HR_RTYPES);close();SALON.go('hr');LUX.toast('أُنشئ نوع «'+nm+'» ✓','ok');
@@ -280,15 +280,15 @@ const HR={
     LUX.modal('سلاسل الموافقات',`
       <div class="lux-lead">السلسلة تحدّد مَن يوقّع على الطلب وبأي ترتيب — يعتمد الطلب نهائياً بعد آخر توقيع.</div>
       ${rows}
-      <div style="font-size:12px;color:#9c8047;font-weight:700;margin:14px 0 6px">سلسلة جديدة</div>
+      <div style="font-size:12px;color:#C9A75E;font-weight:700;margin:14px 0 6px">سلسلة جديدة</div>
       <div class="lux-f"><label>اسم السلسلة</label><input id="chName" placeholder="مثال: اعتماد ثلاثي"/></div>
       <div class="lux-f"><label>الخطوات بالترتيب (مفصولة بفاصلة)</label><input id="chSteps" placeholder="مديرة الفرع، مديرة الموارد البشرية، المالكة"/></div>
       <button class="lux-btn lux-gold" data-ok style="width:100%">إضافة السلسلة</button>`,{onMount(ov,close){
       ov.querySelector('[data-ok]').onclick=()=>{
         const nm=ov.querySelector('#chName').value.trim();
         const steps=ov.querySelector('#chSteps').value.split(/[،,]/).map(x=>x.trim()).filter(Boolean);
-        if(!nm){ov.querySelector('#chName').style.borderColor='#c0566a';return;}
-        if(!steps.length){ov.querySelector('#chSteps').style.borderColor='#c0566a';LUX.toast('أدخلي خطوة واحدة على الأقل','err');return;}
+        if(!nm){ov.querySelector('#chName').style.borderColor='#C97A6A';return;}
+        if(!steps.length){ov.querySelector('#chSteps').style.borderColor='#C97A6A';LUX.toast('أدخلي خطوة واحدة على الأقل','err');return;}
         HR_CHAINS.push({id:'c'+Date.now(),name:nm,steps});
         hrSave(REQ_CHAINS_KEY,HR_CHAINS);close();SALON.go('hr');
         LUX.toast('أُنشئت سلسلة «'+nm+'» ('+steps.length+' خطوات) ✓','ok');
@@ -354,9 +354,9 @@ const HR={
       <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft)">
         <span style="width:70px;font-size:13px;color:var(--cream)">${d}</span>
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)"><input type="checkbox" data-off="${i}" ${sh.off?'checked':''}/> إجازة</label>
-        <input type="time" data-s="${i}" value="${sh.start||'10:00'}" ${sh.off?'disabled':''} style="background:#0e0d11;border:1px solid var(--line);border-radius:6px;color:var(--white);padding:6px 8px;font-size:12px"/>
+        <input type="time" data-s="${i}" value="${sh.start||'10:00'}" ${sh.off?'disabled':''} style="background:#0C0B0E;border:1px solid var(--line);border-radius:6px;color:var(--white);padding:6px 8px;font-size:12px"/>
         <span style="color:var(--muted)">←</span>
-        <input type="time" data-e="${i}" value="${sh.end||'20:00'}" ${sh.off?'disabled':''} style="background:#0e0d11;border:1px solid var(--line);border-radius:6px;color:var(--white);padding:6px 8px;font-size:12px"/>
+        <input type="time" data-e="${i}" value="${sh.end||'20:00'}" ${sh.off?'disabled':''} style="background:#0C0B0E;border:1px solid var(--line);border-radius:6px;color:var(--white);padding:6px 8px;font-size:12px"/>
       </div>`;}).join('');
     LUX.modal('دوام '+hrStaffName(sid),`<div class="lux-lead">هذه الساعات هي مصدر الحقيقة لمواعيد الحجز المتاحة في صفحة العملاء.</div>`+rows+`<button class="lux-btn lux-gold" data-ok style="margin-top:16px;width:100%">حفظ الجدول</button>`,{onMount(ov,close){
       ov.querySelectorAll('[data-off]').forEach(cb=>cb.onchange=()=>{const i=cb.dataset.off;ov.querySelector(`[data-s="${i}"]`).disabled=cb.checked;ov.querySelector(`[data-e="${i}"]`).disabled=cb.checked;});
@@ -455,8 +455,8 @@ SCREENS.hr=()=>{
             <div style="font-size:12px;color:var(--muted);margin-top:3px">${l.type} · <span dir="ltr">${l.from}</span> ← <span dir="ltr">${l.to}</span>${l.reason?` · «${l.reason}»`:''}</div>
           </div>
           ${l.status==='pending'
-            ?`<button class="btn btn-gold" style="padding:8px 18px" onclick="HR.review(${l.id},true)">اعتماد «${lvChain.steps[l.step||0]}»</button>
-               <button class="btn btn-ghost" style="padding:8px 18px;border-color:#7c4a55;color:#e29aa6" onclick="HR.review(${l.id},false)">رفض</button>`
+            ?`<button class="btn btn-ghost" style="padding:8px 18px" onclick="HR.review(${l.id},true)">اعتماد «${lvChain.steps[l.step||0]}»</button>
+               <button class="btn btn-ghost" style="padding:8px 18px;border-color:#7c4a55;color:#C97A6A" onclick="HR.review(${l.id},false)">رفض</button>`
             :`<span class="badge ${ST[l.status][1]}">${ST[l.status][0]}</span>`}
         </div>
         ${l.status!=='rejected'?hrStepper(lvChain,l.step||0,l.status):''}
@@ -478,8 +478,8 @@ SCREENS.hr=()=>{
             <div style="font-size:12px;color:var(--cream);margin-top:3px">${vals||'—'}</div>
           </div>
           ${r.status==='pending'
-            ?`<button class="btn btn-gold" style="padding:8px 18px" onclick="HR.reviewReq(${r.id},true)">اعتماد «${chain.steps[r.step]}»</button>
-               <button class="btn btn-ghost" style="padding:8px 18px;border-color:#7c4a55;color:#e29aa6" onclick="HR.reviewReq(${r.id},false)">رفض</button>`
+            ?`<button class="btn btn-ghost" style="padding:8px 18px" onclick="HR.reviewReq(${r.id},true)">اعتماد «${chain.steps[r.step]}»</button>
+               <button class="btn btn-ghost" style="padding:8px 18px;border-color:#7c4a55;color:#C97A6A" onclick="HR.reviewReq(${r.id},false)">رفض</button>`
             :`<span class="badge ${ST[r.status][1]}">${ST[r.status][0]}</span>`}
         </div>
         ${r.status!=='rejected'?hrStepper(chain,r.step,r.status):''}
@@ -503,9 +503,9 @@ SCREENS.hr=()=>{
           return `
           <tr style="border-top:1px solid var(--line-soft)">
             <td style="padding:12px 16px;color:var(--white);font-weight:600">${s.n}${hrOnLeaveToday(s.id)?' <span class="badge gold" style="margin-right:6px">في إجازة اليوم</span>':''}
-              ${led.late||led.abs?`<div style="font-size:10px;color:#e29aa6;font-weight:400;margin-top:3px">هذا الشهر: ${led.late?led.late+' دقيقة تأخير':''}${led.late&&led.abs?' · ':''}${led.abs?led.abs+' غياب':''}</div>`:''}</td>
+              ${led.late||led.abs?`<div style="font-size:10px;color:#C97A6A;font-weight:400;margin-top:3px">هذا الشهر: ${led.late?led.late+' دقيقة تأخير':''}${led.late&&led.abs?' · ':''}${led.abs?led.abs+' غياب':''}</div>`:''}</td>
             ${HR_DAYS.map((_,i)=>{const sh=hrShiftOf(s.id,i);const att=hrAttOf(s.id,i);
-              return `<td style="padding:8px;text-align:center;${att?'background:rgba(192,86,106,0.10)':''}">${sh.off?'<span style="color:var(--muted-deep);font-size:11.5px">إجازة</span>':`<span dir="ltr" style="background:var(--surface3);border-radius:6px;padding:3px 7px;font-size:11px;color:var(--gold-pale)">${sh.start}–${sh.end}</span>`}${att?`<div style="font-size:10px;color:#e29aa6;margin-top:4px">${att.absent?'غياب':'تأخير '+att.late+' دقيقة'}</div>`:''}</td>`;}).join('')}
+              return `<td style="padding:8px;text-align:center;${att?'background:rgba(192,86,106,0.10)':''}">${sh.off?'<span style="color:var(--muted-deep);font-size:11.5px">إجازة</span>':`<span dir="ltr" style="background:var(--surface3);border-radius:6px;padding:3px 7px;font-size:11px;color:var(--gold-pale)">${sh.start}–${sh.end}</span>`}${att?`<div style="font-size:10px;color:#C97A6A;margin-top:4px">${att.absent?'غياب':'تأخير '+att.late+' دقيقة'}</div>`:''}</td>`;}).join('')}
             <td style="padding:8px"><button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="HR.editShift('${s.id}')">تعديل</button></td>
           </tr>`;}).join('')}</tbody>
       </table>
@@ -521,11 +521,11 @@ SCREENS.hr=()=>{
       <td style="padding:11px 14px;color:var(--white);font-weight:600">${s.n}<span style="font-size:11px;color:var(--muted);margin-right:8px">${s.role}</span></td>
       <td style="padding:11px" class="num">${L.p.base.toLocaleString('en')}</td>
       <td style="padding:11px" class="num">${L.svc.toLocaleString('en')}</td>
-      <td style="padding:11px;color:var(--gold-pale)" class="num">${L.svcComm.toLocaleString('en')} <span style="font-size:10px;color:${L.rate!==L.p.pct?'#9fce99':'var(--muted)'}">(${L.rate}٪${L.rate!==L.p.pct?' شريحة ▲':''})</span></td>
+      <td style="padding:11px;color:var(--gold-pale)" class="num">${L.svcComm.toLocaleString('en')} <span style="font-size:10px;color:${L.rate!==L.p.pct?'#9CC59B':'var(--muted)'}">(${L.rate}٪${L.rate!==L.p.pct?' شريحة ▲':''})</span></td>
       <td style="padding:11px;color:var(--gold-pale)" class="num">${L.prodComm.toLocaleString('en')} <span style="font-size:10px;color:var(--muted)">(${L.p.prodPct}٪ من ${L.prod.toLocaleString('en')})</span></td>
-      <td style="padding:11px;color:#9fce99" class="num">${L.tips.toLocaleString('en')}</td>
-      <td style="padding:11px;color:#e29aa6" class="num">−${L.adv.toLocaleString('en')}${closed?'':` <button class="btn btn-ghost" style="padding:3px 9px;font-size:10px" onclick="HR.addAdvance('${s.id}')">+ سلفة</button>`}</td>
-      <td style="padding:11px;font-size:11px;color:${L.late||L.abs?'#e29aa6':'#9fce99'}">${L.late||L.abs?L.late+' د · '+L.abs+' غياب':'منتظم ✓'}</td>
+      <td style="padding:11px;color:#9CC59B" class="num">${L.tips.toLocaleString('en')}</td>
+      <td style="padding:11px;color:#C97A6A" class="num">−${L.adv.toLocaleString('en')}${closed?'':` <button class="btn btn-ghost" style="padding:3px 9px;font-size:10px" onclick="HR.addAdvance('${s.id}')">+ سلفة</button>`}</td>
+      <td style="padding:11px;font-size:11px;color:${L.late||L.abs?'#C97A6A':'#9CC59B'}">${L.late||L.abs?L.late+' د · '+L.abs+' غياب':'منتظم ✓'}</td>
       <td style="padding:11px;color:var(--gold-light);font-weight:700" class="num">${L.net.toLocaleString('en')}</td>
       <td style="padding:8px">${closed?'<span style="font-size:10.5px;color:var(--muted)">قسيمة ✓</span>':`<button class="btn btn-ghost" style="padding:6px 12px;font-size:11px" onclick="HR.editPay('${s.id}')">تعديل</button>`}</td>
     </tr>`;}).join('');

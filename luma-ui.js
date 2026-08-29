@@ -9,57 +9,57 @@
   /* ---------- styles ---------- */
   const css=`
   .lux-toast-wrap{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none;}
-  .lux-toast{background:#18171d;border:1px solid var(--gold-deep,#7c6335);color:var(--gold-light,#ccab64);padding:12px 22px;border-radius:30px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;box-shadow:0 12px 34px rgba(0,0,0,.5);opacity:0;transform:translateY(14px);transition:all .3s;max-width:90vw;}
+  .lux-toast{background:#15141A;border:1px solid var(--gold-deep,#8A6E34);color:var(--gold-light,#E7D2A0);padding:12px 22px;border-radius:30px;font-family:var(--luma-font-ui);font-size:14px;box-shadow:0 12px 34px rgba(0,0,0,.5);opacity:0;transform:translateY(14px);transition:all .3s;max-width:90vw;}
   .lux-toast.show{opacity:1;transform:none;}
-  .lux-toast.ok{border-color:#6fa86a;color:#9fce99;}
-  .lux-toast.err{border-color:#c0566a;color:#e29aa6;}
+  .lux-toast.ok{border-color:#9CC59B;color:#9CC59B;}
+  .lux-toast.err{border-color:#C97A6A;color:#C97A6A;}
   .lux-ov{position:fixed;inset:0;z-index:8900;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .25s;}
   .lux-ov.show{opacity:1;}
-  .lux-modal{background:linear-gradient(168deg,#1f1b16,#18171d);border:1px solid var(--line,#1b1a21);border-radius:16px;width:460px;max-width:100%;max-height:90vh;overflow-y:auto;transform:translateY(12px) scale(.98);transition:transform .25s;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;}
+  .lux-modal{background:var(--luma-ink);border:1px solid var(--line,#1A1820);border-radius:8px;width:460px;max-width:100%;max-height:90vh;overflow-y:auto;transform:translateY(12px) scale(.98);transition:transform .25s;font-family:var(--luma-font-ui);}
   .lux-ov.show .lux-modal{transform:none;}
-  .lux-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 22px;border-bottom:1px solid var(--line,#1b1a21);position:sticky;top:0;background:#18171d;z-index:2;}
-  .lux-h h3{font-size:18px;color:#f6f2ec;font-weight:600;margin:0;}
-  .lux-h .x{background:none;border:none;color:#86818d;font-size:24px;cursor:pointer;line-height:1;}
+  .lux-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 22px;border-bottom:1px solid var(--line,#1A1820);position:sticky;top:0;background:#15141A;z-index:2;}
+  .lux-h h3{font-size:18px;color:#EDE7DA;font-weight:600;margin:0;}
+  .lux-h .x{background:none;border:none;color:#9D978A;font-size:24px;cursor:pointer;line-height:1;}
   .lux-b{padding:22px;}
-  .lux-b .lux-lead{font-size:13.5px;color:#86818d;margin-bottom:18px;line-height:1.8;}
-  .lux-f{margin-bottom:15px;} .lux-f label{display:block;font-size:13px;color:var(--gold-pale,#e6ce95);margin-bottom:7px;}
-  .lux-f input,.lux-f select,.lux-f textarea{width:100%;background:#0e0d11;border:1px solid var(--line,#1b1a21);border-radius:8px;padding:12px 14px;color:#f6f2ec;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;outline:none;resize:vertical;}
-  .lux-f input:focus,.lux-f select:focus,.lux-f textarea:focus{border-color:var(--gold-deep,#7c6335);}
+  .lux-b .lux-lead{font-size:13.5px;color:#9D978A;margin-bottom:18px;line-height:1.8;}
+  .lux-f{margin-bottom:15px;} .lux-f label{display:block;font-size:13px;color:var(--gold-pale,#F3E2B0);margin-bottom:7px;}
+  .lux-f input,.lux-f select,.lux-f textarea{width:100%;background:#0C0B0E;border:1px solid var(--line,#1A1820);border-radius:8px;padding:12px 14px;color:#EDE7DA;font-family:var(--luma-font-ui);font-size:14px;outline:none;resize:vertical;}
+  .lux-f input:focus,.lux-f select:focus,.lux-f textarea:focus{border-color:var(--gold-deep,#8A6E34);}
   .lux-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .lux-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px;}
-  .lux-row:last-child{border-bottom:none;} .lux-row .k{color:#86818d;} .lux-row .v{color:#f6f2ec;font-weight:500;text-align:left;max-width:62%;}
-  .lux-btn{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:14.5px;padding:13px 20px;border-radius:8px;cursor:pointer;border:none;transition:all .2s;}
-  .lux-gold{background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);color:#131217;width:100%;}
+  .lux-row:last-child{border-bottom:none;} .lux-row .k{color:#9D978A;} .lux-row .v{color:#EDE7DA;font-weight:500;text-align:left;max-width:62%;}
+  .lux-btn{font-family:var(--luma-font-ui);font-weight:600;font-size:14.5px;padding:13px 20px;border-radius:8px;cursor:pointer;border:none;transition:all .2s;}
+  .lux-gold{background:linear-gradient(120deg,#E9D29A,#E7D2A0 45%,#C9A75E);color:#1A1206;width:100%;}
   .lux-gold:hover{filter:brightness(1.07);}
-  .lux-ghost{background:transparent;border:1px solid var(--gold-deep,#7c6335);color:var(--gold-light,#ccab64);}
+  .lux-ghost{background:transparent;border:1px solid var(--gold-deep,#8A6E34);color:var(--gold-light,#E7D2A0);}
   .lux-foot{display:flex;gap:10px;margin-top:8px;}
-  .lux-menu{position:fixed;z-index:9100;background:#18171d;border:1px solid var(--line,#1b1a21);border-radius:10px;padding:6px;box-shadow:0 16px 40px rgba(0,0,0,.55);min-width:170px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;}
-  .lux-menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:right;background:none;border:none;color:#ece6da;font-size:13.5px;padding:10px 12px;border-radius:7px;cursor:pointer;}
-  .lux-menu button:hover{background:rgba(156,124,58,.16);color:var(--gold-light,#ccab64);}
-  .lux-menu button.danger:hover{background:rgba(192,86,106,.16);color:#e29aa6;}
-  .lux-ok{width:74px;height:74px;border-radius:50%;border:1px solid var(--gold-deep,#7c6335);background:rgba(156,124,58,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:34px;color:var(--gold-light,#ccab64);}
+  .lux-menu{position:fixed;z-index:9100;background:#15141A;border:1px solid var(--line,#1A1820);border-radius:10px;padding:6px;box-shadow:0 16px 40px rgba(0,0,0,.55);min-width:170px;font-family:var(--luma-font-ui);}
+  .lux-menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:right;background:none;border:none;color:#EDE7DA;font-size:13.5px;padding:10px 12px;border-radius:7px;cursor:pointer;}
+  .lux-menu button:hover{background:rgba(201,167,94,.16);color:var(--gold-light,#E7D2A0);}
+  .lux-menu button.danger:hover{background:rgba(192,86,106,.16);color:#C97A6A;}
+  .lux-ok{width:74px;height:74px;border-radius:50%;border:1px solid var(--gold-deep,#8A6E34);background:rgba(201,167,94,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:34px;color:var(--gold-light,#E7D2A0);}
   .lux-seg{display:flex;gap:8px;margin-bottom:16px;}
-  .lux-seg button{flex:1;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13.5px;color:#86818d;background:#0e0d11;border:1px solid var(--line,#1b1a21);border-radius:9px;padding:11px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
-  .lux-seg button.on{background:linear-gradient(120deg,rgba(220,192,106,.16),rgba(156,124,58,.05));border-color:var(--gold-light,#ccab64);color:var(--gold-light,#ccab64);}
+  .lux-seg button{flex:1;font-family:var(--luma-font-ui);font-size:13.5px;color:#9D978A;background:#0C0B0E;border:1px solid var(--line,#1A1820);border-radius:9px;padding:11px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
+  .lux-seg button.on{background:linear-gradient(120deg,rgba(233,210,154,.16),rgba(201,167,94,.05));border-color:var(--gold-light,#E7D2A0);color:var(--gold-light,#E7D2A0);}
   .lux-chips{display:flex;flex-wrap:wrap;gap:8px;}
-  .lux-chip{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:13px;color:#ece6da;background:#0e0d11;border:1px solid var(--line,#1b1a21);border-radius:30px;padding:8px 16px;cursor:pointer;transition:all .2s;}
-  .lux-chip:hover{border-color:var(--gold-deep,#7c6335);}
-  .lux-chip.on{background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;border-color:transparent;font-weight:500;}
+  .lux-chip{font-family:var(--luma-font-ui);font-size:13px;color:#EDE7DA;background:#0C0B0E;border:1px solid var(--line,#1A1820);border-radius:30px;padding:8px 16px;cursor:pointer;transition:all .2s;}
+  .lux-chip:hover{border-color:var(--gold-deep,#8A6E34);}
+  .lux-chip.on{background:linear-gradient(120deg,#E9D29A,#C9A75E);color:#1A1206;border-color:transparent;font-weight:500;}
   .lux-pr{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);}
   .lux-pr:last-child{border-bottom:none;}
-  .lux-ck{width:20px;height:20px;border-radius:6px;border:1px solid var(--gold-deep,#7c6335);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:transparent;font-size:13px;background:#0e0d11;}
-  .lux-ck.on{background:linear-gradient(120deg,#dbbd81,#9c8047);border-color:transparent;color:#131217;}
-  .lux-pr .nm{font-size:14px;color:#f6f2ec;font-weight:500;} .lux-pr .bk{font-size:11.5px;color:#86818d;direction:ltr;text-align:right;}
-  .lux-pr .amt{margin-right:auto;font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-light,#ccab64);direction:ltr;}
+  .lux-ck{width:20px;height:20px;border-radius:6px;border:1px solid var(--gold-deep,#8A6E34);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:transparent;font-size:13px;background:#0C0B0E;}
+  .lux-ck.on{background:linear-gradient(120deg,#E9D29A,#C9A75E);border-color:transparent;color:#1A1206;}
+  .lux-pr .nm{font-size:14px;color:#EDE7DA;font-weight:500;} .lux-pr .bk{font-size:11.5px;color:#9D978A;direction:ltr;text-align:right;}
+  .lux-pr .amt{margin-right:auto;font-family:'Bodoni Moda',serif;font-size:18px;color:var(--gold-light,#E7D2A0);direction:ltr;}
   .lux-pr.done{opacity:.75;}
-  .lux-spin{width:44px;height:44px;border:3px solid rgba(205,172,80,.25);border-top-color:#ccab64;border-radius:50%;margin:8px auto 16px;animation:luxspin .8s linear infinite;}
+  .lux-spin{width:44px;height:44px;border:3px solid rgba(201,167,94,.25);border-top-color:#E7D2A0;border-radius:50%;margin:8px auto 16px;animation:luxspin .8s linear infinite;}
   @keyframes luxspin{to{transform:rotate(360deg)}}
-  .lux-radio{width:18px;height:18px;border-radius:50%;border:1px solid var(--gold-deep,#7c6335);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-  .lux-radio.on{border-color:var(--gold-light,#ccab64);}
-  .lux-radio.on::after{content:'';width:9px;height:9px;border-radius:50%;background:linear-gradient(120deg,#dbbd81,#9c8047);}
-  .lux-av{width:38px;height:38px;border-radius:50%;background:#201f26;border:1px solid var(--gold-deep,#7c6335);display:flex;align-items:center;justify-content:center;color:var(--gold-light,#ccab64);font-family:'Bodoni Moda',serif;font-size:16px;flex-shrink:0;}
+  .lux-radio{width:18px;height:18px;border-radius:50%;border:1px solid var(--gold-deep,#8A6E34);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .lux-radio.on{border-color:var(--gold-light,#E7D2A0);}
+  .lux-radio.on::after{content:'';width:9px;height:9px;border-radius:50%;background:linear-gradient(120deg,#E9D29A,#C9A75E);}
+  .lux-av{width:38px;height:38px;border-radius:50%;background:#1A1820;border:1px solid var(--gold-deep,#8A6E34);display:flex;align-items:center;justify-content:center;color:var(--gold-light,#E7D2A0);font-family:'Bodoni Moda',serif;font-size:16px;flex-shrink:0;}
   .lux-opt{cursor:pointer;border-radius:8px;padding:11px 10px;transition:background .15s;}
-  .lux-opt:hover{background:rgba(156,124,58,.08);}
+  .lux-opt:hover{background:rgba(201,167,94,.08);}
   `;
   const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
@@ -108,7 +108,7 @@
       ov.querySelector('[data-ok]').onclick=()=>{
         const data={};ov.querySelectorAll('input,select,textarea').forEach(el=>data[el.name]=el.value);
         const req=ov.querySelector('input,select,textarea');
-        if(req && !req.value.trim()){req.style.borderColor='#c0566a';req.focus();return;}
+        if(req && !req.value.trim()){req.style.borderColor='#C97A6A';req.focus();return;}
         close();onOk?onOk(data):toast('تم الحفظ بنجاح ✓','ok');
       };
     }});
@@ -154,10 +154,10 @@
     const selCount=()=>list.filter(p=>p.sel).length;
     const rowsHTML=()=>list.map((p,i)=>`<div class="lux-pr"><button type="button" class="lux-ck on" data-ck="${i}">✓</button><div><div class="nm">${p.n}</div><div class="bk">${p.bank}</div></div><div class="amt">${fmt(p.amount)} ر.س</div></div>`).join('');
     const body=`
-      <div class="lux-lead">يوجد <b style="color:#f6f2ec">${list.length} تحويلًا</b> مستحقًا للمزوّدين. اختاري التحويلات ثم نفّذيها دفعة واحدة عبر بوابة الدفع.</div>
-      <div class="lux-pr" style="border-bottom:1px solid var(--line,#1b1a21)"><button type="button" class="lux-ck on" id="luxAll">✓</button><div class="nm">تحديد الكل</div></div>
+      <div class="lux-lead">يوجد <b style="color:#EDE7DA">${list.length} تحويلًا</b> مستحقًا للمزوّدين. اختاري التحويلات ثم نفّذيها دفعة واحدة عبر بوابة الدفع.</div>
+      <div class="lux-pr" style="border-bottom:1px solid var(--line,#1A1820)"><button type="button" class="lux-ck on" id="luxAll">✓</button><div class="nm">تحديد الكل</div></div>
       <div id="luxRows">${rowsHTML()}</div>
-      <div class="lux-row" style="margin-top:8px"><span class="k">الإجمالي المحدد</span><span class="v" id="luxSum" style="color:var(--gold-light,#ccab64);font-family:'Bodoni Moda',serif;font-size:20px">${fmt(selTotal())} ر.س</span></div>
+      <div class="lux-row" style="margin-top:8px"><span class="k">الإجمالي المحدد</span><span class="v" id="luxSum" style="color:var(--gold-light,#E7D2A0);font-family:'Bodoni Moda',serif;font-size:20px">${fmt(selTotal())} ر.س</span></div>
       <div class="lux-foot" style="margin-top:14px"><button class="lux-btn lux-ghost" data-cancel style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-go style="flex:1.4">تنفيذ <span id="luxGoN">${selCount()}</span> تحويل</button></div>`;
     modal('تنفيذ التحويلات للمزوّدين',body,{onMount(ov,close){
       const sumEl=ov.querySelector('#luxSum'),goN=ov.querySelector('#luxGoN'),allBtn=ov.querySelector('#luxAll');
@@ -170,12 +170,12 @@
         if(!chosen.length){toast('اختاري تحويلًا واحدًا على الأقل','err');return;}
         const total=chosen.reduce((s,p)=>s+p.amount,0),cnt=chosen.length;
         const b=ov.querySelector('.lux-b');
-        b.innerHTML=`<div style="text-align:center;padding:14px 0"><div class="lux-spin"></div><div style="color:#f6f2ec;font-size:15px;font-weight:500">جارٍ تنفيذ ${cnt} تحويل…</div><div style="color:#86818d;font-size:12.5px;margin-top:6px">يتم التحقق عبر بوابة الدفع</div></div>`;
+        b.innerHTML=`<div style="text-align:center;padding:14px 0"><div class="lux-spin"></div><div style="color:#EDE7DA;font-size:15px;font-weight:500">جارٍ تنفيذ ${cnt} تحويل…</div><div style="color:#9D978A;font-size:12.5px;margin-top:6px">يتم التحقق عبر بوابة الدفع</div></div>`;
         setTimeout(()=>{
           const ref='PAYOUT-'+Math.floor(100000+Math.random()*900000);
-          b.innerHTML=`<div style="text-align:center"><div class="lux-ok">✓</div><h3 style="color:#f6f2ec;font-size:20px;font-weight:600;margin:0">تم تنفيذ التحويلات ✨</h3><div style="color:var(--gold-pale,#e6ce95);font-size:13.5px;margin-top:8px">حُوّل <b style="color:#f6f2ec">${fmt(total)} ر.س</b> إلى <b style="color:#f6f2ec">${cnt}</b> مزوّدة بنجاح.</div></div>
-            <div class="lux-row" style="margin-top:18px"><span class="k">رقم الدفعة</span><span class="v" style="font-family:'IBM Plex Mono',monospace;color:var(--gold-light,#ccab64)">${ref}</span></div>
-            ${chosen.map(p=>`<div class="lux-pr done"><span style="color:#6fa86a;font-size:15px">✓</span><div><div class="nm">${p.n}</div><div class="bk">${p.bank}</div></div><div class="amt">${fmt(p.amount)} ر.س</div></div>`).join('')}
+          b.innerHTML=`<div style="text-align:center"><div class="lux-ok">✓</div><h3 style="color:#EDE7DA;font-size:20px;font-weight:600;margin:0">تم تنفيذ التحويلات ✨</h3><div style="color:var(--gold-pale,#F3E2B0);font-size:13.5px;margin-top:8px">حُوّل <b style="color:#EDE7DA">${fmt(total)} ر.س</b> إلى <b style="color:#EDE7DA">${cnt}</b> مزوّدة بنجاح.</div></div>
+            <div class="lux-row" style="margin-top:18px"><span class="k">رقم الدفعة</span><span class="v" style="font-family:'IBM Plex Mono',monospace;color:var(--gold-light,#E7D2A0)">${ref}</span></div>
+            ${chosen.map(p=>`<div class="lux-pr done"><span style="color:#9CC59B;font-size:15px">✓</span><div><div class="nm">${p.n}</div><div class="bk">${p.bank}</div></div><div class="amt">${fmt(p.amount)} ر.س</div></div>`).join('')}
             <button class="lux-btn lux-gold" data-done style="margin-top:16px">تم</button>`;
           b.querySelector('[data-done]').onclick=close;
           toast('تم تنفيذ '+cnt+' تحويل بقيمة '+fmt(total)+' ر.س ✓','ok');
@@ -189,12 +189,12 @@
     const TIERS=[{nm:'سَناء',rate:12,subs:50},{nm:'وَهَج',rate:10,subs:86},{nm:'فَرِيد',rate:8,subs:28}];
     const body=`
       <div class="lux-lead">تحكّمي في نسبة عمولة المنصة لكل باقة. تُطبَّق على حجوزات المزوّدات ضمن كل باقة فورًا بعد الحفظ.</div>
-      ${TIERS.map((t,i)=>`<div class="lux-f"><label>${t.nm} <span style="color:#86818d;font-weight:400">· ${t.subs} مزوّدة</span></label>
+      ${TIERS.map((t,i)=>`<div class="lux-f"><label>${t.nm} <span style="color:#9D978A;font-weight:400">· ${t.subs} مزوّدة</span></label>
         <div style="display:flex;align-items:center;gap:12px">
           <input type="range" min="0" max="25" step="0.5" value="${t.rate}" data-r="${i}" style="flex:1"/>
-          <div style="display:flex;align-items:center;gap:4px;background:#0e0d11;border:1px solid var(--line,#1b1a21);border-radius:8px;padding:8px 10px;min-width:74px;justify-content:center"><input data-n="${i}" value="${t.rate}" dir="ltr" style="width:38px;background:none;border:none;color:var(--gold-light,#ccab64);font-family:'IBM Plex Mono',monospace;font-size:15px;text-align:center;outline:none"/><span style="color:#86818d">%</span></div>
+          <div style="display:flex;align-items:center;gap:4px;background:#0C0B0E;border:1px solid var(--line,#1A1820);border-radius:8px;padding:8px 10px;min-width:74px;justify-content:center"><input data-n="${i}" value="${t.rate}" dir="ltr" style="width:38px;background:none;border:none;color:var(--gold-light,#E7D2A0);font-family:'IBM Plex Mono',monospace;font-size:15px;text-align:center;outline:none"/><span style="color:#9D978A">%</span></div>
         </div></div>`).join('')}
-      <div class="lux-row" style="margin-top:6px"><span class="k">متوسط العمولة المرجّح</span><span class="v" id="luxAvg" style="color:var(--gold-light,#ccab64)">—</span></div>
+      <div class="lux-row" style="margin-top:6px"><span class="k">متوسط العمولة المرجّح</span><span class="v" id="luxAvg" style="color:var(--gold-light,#E7D2A0)">—</span></div>
       <div class="lux-foot" style="margin-top:14px"><button class="lux-btn lux-ghost" data-c style="flex:1">إلغاء</button><button class="lux-btn lux-gold" data-s style="flex:1.4">حفظ نِسب العمولات</button></div>`;
     modal('التحكم في العمولات',body,{onMount(ov,close){
       const totSubs=TIERS.reduce((s,t)=>s+t.subs,0);
@@ -262,8 +262,8 @@
       ov.querySelector('[data-ok]').onclick=()=>{
         const name=ov.querySelector('[name=name]');
         const svc=[...ov.querySelectorAll('#luxSvc .lux-chip.on')].map(c=>c.dataset.v);
-        if(!name.value.trim()){name.style.borderColor='#c0566a';name.focus();return;}
-        if(!svc.length){ov.querySelector('#luxSvc').style.outline='1px solid #c0566a';toast('اختاري تخصّصًا واحدًا على الأقل','err');return;}
+        if(!name.value.trim()){name.style.borderColor='#C97A6A';name.focus();return;}
+        if(!svc.length){ov.querySelector('#luxSvc').style.outline='1px solid #C97A6A';toast('اختاري تخصّصًا واحدًا على الأقل','err');return;}
         close();
         toast('تم إرسال الدعوة إلى '+(type==='salon'?'صالون':'خبيرة')+' · '+svc.length+' تخصّص ✓','ok');
       };
@@ -312,12 +312,12 @@
       if(/عرض الكل|المزيد|عرض|التفاصيل|إدارة/.test(t)){
         const row=btn.closest('.ptr,.btr,.ftr');
         if(row){rowDetail(row);}
-        else{modal(t||'تفاصيل', ctxName?`<div class="lux-lead">القسم: <b style="color:#f6f2ec">${ctxName}</b></div>`:'' + '<div class="lux-lead">هذه نافذة تفاعلية ضمن نموذج العرض. ستُربط بالبيانات الفعلية عند تشغيل الواجهة الخلفية.</div>',{});}
+        else{modal(t||'تفاصيل', ctxName?`<div class="lux-lead">القسم: <b style="color:#EDE7DA">${ctxName}</b></div>`:'' + '<div class="lux-lead">هذه نافذة تفاعلية ضمن نموذج العرض. ستُربط بالبيانات الفعلية عند تشغيل الواجهة الخلفية.</div>',{});}
         return e.preventDefault();
       }
       // generic fallback for any other labelled button
       if(t.length){
-        modal(t, `<div class="lux-lead">"${t}"</div><div class="lux-row"><span class="k">القسم</span><span class="v">${ctxName||'—'}</span></div><div class="lux-row"><span class="k">الحالة</span><span class="v" style="color:#9fce99">جاهزة ✓</span></div><button class="lux-btn lux-gold" data-ok style="margin-top:16px">متابعة</button>`,
+        modal(t, `<div class="lux-lead">"${t}"</div><div class="lux-row"><span class="k">القسم</span><span class="v">${ctxName||'—'}</span></div><div class="lux-row"><span class="k">الحالة</span><span class="v" style="color:#9CC59B">جاهزة ✓</span></div><button class="lux-btn lux-gold" data-ok style="margin-top:16px">متابعة</button>`,
           {onMount(ov,close){ov.querySelector('[data-ok]').onclick=()=>{close();toast('تم ✓','ok');};}});
         return e.preventDefault();
       }

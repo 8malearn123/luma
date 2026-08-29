@@ -4,7 +4,7 @@
 
   /* curated luxury palettes */
   const PALS = {
-    gold:    {name:'ذهبي كلاسيك', sw:['#ccab64','#9c8047','#1b1a21'], bg:'#131217', surf:'#221b13', soft:'#201f26', acc:'#ccab64', acc2:'#9c8047', txt:'#f6f2ec', sub:'#e6ce95', line:'#3a2f1f', tile:'linear-gradient(150deg,#2a2218,#131217)', dark:true},
+    gold:    {name:'ذهبي كلاسيك', sw:['#E7D2A0','#C9A75E','#1A1820'], bg:'#0C0B0E', surf:'#221b13', soft:'#1A1820', acc:'#E7D2A0', acc2:'#C9A75E', txt:'#EDE7DA', sub:'#F3E2B0', line:'#3a2f1f', tile:'linear-gradient(150deg,#2a2218,#0C0B0E)', dark:true},
     rose:    {name:'وردي هادئ', sw:['#dda5ab','#b87f86','#271c20'], bg:'#1b1416', surf:'#271c20', soft:'#31242a', acc:'#dda5ab', acc2:'#b87f86', txt:'#f7eff1', sub:'#d6bcc0', line:'#3a2c33', tile:'linear-gradient(150deg,#31242a,#1a1214)', dark:true},
     emerald: {name:'أخضر زمردي', sw:['#86b89a','#5f8a6f','#17211c'], bg:'#0f1613', surf:'#17211c', soft:'#1f2c25', acc:'#8fc1a1', acc2:'#5f8a6f', txt:'#eef5f0', sub:'#b6cfbf', line:'#26352c', tile:'linear-gradient(150deg,#1f2c25,#0d1410)', dark:true},
     plum:    {name:'بنفسجي ملكي', sw:['#bf9bd1','#9472a8','#221b29'], bg:'#16121b', surf:'#221b29', soft:'#2b2235', acc:'#c4a2d6', acc2:'#9472a8', txt:'#f4eff7', sub:'#cdbcd8', line:'#312640', tile:'linear-gradient(150deg,#2b2235,#140f1a)', dark:true},
@@ -48,7 +48,7 @@
 
     const stars = `<span style="color:${p.acc};font-size:12px;letter-spacing:1px">★★★★★</span>`;
     const REV=[['منى','احترافية عالية ونتيجة مبهرة فاقت توقعاتي.'],['هند','في الموعد بالضبط ولمسة راقية تدوم.']];
-    const revBlocks = REV.map((r,i)=>`<div style="${i?`margin-top:13px;padding-top:13px;border-top:1px solid ${p.line}`:''}"><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:50%;background:${p.soft};border:0.5px solid ${p.line};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:12px;color:${p.acc}">${r[0].charAt(0)}</span><span style="font-size:12.5px;color:${p.txt};font-weight:500">${r[0]}</span></div>${stars}</div><div style="font-size:12px;color:${p.sub};line-height:1.7;margin-top:7px">${r[1]}</div></div>`).join('');
+    const revBlocks = REV.map((r,i)=>`<div style="${i?`margin-top:13px;padding-top:13px;border-top:1px solid ${p.line}`:''}"><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:50%;background:${p.soft};border:1px solid ${p.line};display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:12px;color:${p.acc}">${r[0].charAt(0)}</span><span style="font-size:12.5px;color:${p.txt};font-weight:500">${r[0]}</span></div>${stars}</div><div style="font-size:12px;color:${p.sub};line-height:1.7;margin-top:7px">${r[1]}</div></div>`).join('');
 
     const FAQ=[['كم مدة الجلسة؟','تختلف حسب الخدمة، من ٤٥ إلى ١٢٠ دقيقة.'],['هل يوجد دفع مسبق؟','نعم، لتأكيد الموعد عبر mada أو Apple Pay.']];
     const faqRows = FAQ.map((f,i)=>`<div style="padding:11px 0;${i<1?`border-bottom:1px solid ${p.line}`:''}"><div style="font-size:13px;color:${p.txt};font-weight:500">${f[0]}</div><div style="font-size:11.5px;color:${p.sub};margin-top:4px;line-height:1.6">${f[1]}</div></div>`).join('');
@@ -110,19 +110,19 @@
   .pal{display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:border-color .2s,transform .2s;}
   .pal:hover{transform:translateY(-2px);}
   .pal.on{border-color:var(--gold-light);box-shadow:0 0 0 1px var(--gold-light);}
-  .pal .strip{display:flex;height:30px;border-radius:7px;overflow:hidden;border:0.5px solid var(--line);}
+  .pal .strip{display:flex;height:30px;border-radius:7px;overflow:hidden;border:1px solid var(--line);}
   .pal .pn{font-size:12px;color:var(--cream);text-align:center;}
   .pal.on .pn{color:var(--gold-light);}
   .seg{display:flex;gap:5px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px;}
   .seg button{flex:1;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;color:var(--muted);background:none;border:none;padding:9px 8px;border-radius:7px;cursor:pointer;transition:all .2s;}
-  .seg button.on{background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-weight:600;}
+  .seg button.on{background:linear-gradient(120deg,#E9D29A,#C9A75E);color:#1A1206;font-weight:600;}
   .sec-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-soft);}
   .sec-row:last-child{border-bottom:none;}
   .sec-row .drag{color:var(--muted-deep);cursor:grab;font-size:13px;letter-spacing:-2px;}
   .sec-row .nm{flex:1;font-size:14px;color:var(--cream);}
   .sb-preview{display:flex;flex-direction:column;align-items:center;gap:16px;position:sticky;top:90px;}
-  .phone{width:330px;height:680px;border-radius:42px;background:#0c0b0e;border:1px solid var(--line);padding:11px;box-shadow:0 30px 80px rgba(0,0,0,0.5);position:relative;}
-  .phone .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#0c0b0e;border-radius:0 0 16px 16px;z-index:5;}
+  .phone{width:330px;height:680px;border-radius:42px;background:#0C0B0E;border:1px solid var(--line);padding:11px;box-shadow:0 30px 80px rgba(0,0,0,0.5);position:relative;}
+  .phone .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#0C0B0E;border-radius:0 0 16px 16px;z-index:5;}
   .phone .scr{width:100%;height:100%;border-radius:32px;overflow:hidden;position:relative;}
   .phone .scr-inner{width:100%;height:100%;overflow-y:auto;}
   .phone .scr-inner::-webkit-scrollbar{width:0;}

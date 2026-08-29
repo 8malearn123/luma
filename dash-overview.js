@@ -48,7 +48,7 @@
     const max=20, step=iw/CHART.length;
     const bw=Math.min(38, step*0.5);
     let grid='';
-    for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;const lbl=(g/4)*max;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1" stroke-dasharray="2 4"/><text x="${pad.l-8}" y="${y+4}" fill="#58545f" font-size="10" font-family="IBM Plex Mono" text-anchor="end">${lbl}</text>`;}
+    for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;const lbl=(g/4)*max;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(201,167,94,.14)" stroke-width="1" stroke-dasharray="2 4"/><text x="${pad.l-8}" y="${y+4}" fill="#5E594F" font-size="10" font-family="IBM Plex Mono" text-anchor="end">${lbl}</text>`;}
     let bars=CHART.map((d,i)=>{
       const x=pad.l+i*step+(step-bw)/2;
       const h=(d.v/max)*ih; const y=pad.t+ih-h;
@@ -56,19 +56,19 @@
       return `<g class="bar">
         <rect x="${x}" y="${pad.t}" width="${bw}" height="${ih}" fill="transparent"/>
         <rect class="b" x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" fill="url(#barg${last?'2':''})" />
-        <text x="${x+bw/2}" y="${H-14}" fill="${last?'#ccab64':'#86818d'}" font-size="10.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text>
-        ${last?`<text x="${x+bw/2}" y="${y-9}" fill="#ccab64" font-size="12" font-family="IBM Plex Mono" text-anchor="middle">18.4k</text>`:''}
+        <text x="${x+bw/2}" y="${H-14}" fill="${last?'#E7D2A0':'#9D978A'}" font-size="10.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d.m}</text>
+        ${last?`<text x="${x+bw/2}" y="${y-9}" fill="#E7D2A0" font-size="12" font-family="IBM Plex Mono" text-anchor="middle">18.4k</text>`:''}
       </g>`;}).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">
       <defs>
-        <linearGradient id="barg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#846a38"/><stop offset="1" stop-color="#5a4624"/></linearGradient>
-        <linearGradient id="barg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dbbd81"/><stop offset="1" stop-color="#9c8047"/></linearGradient>
+        <linearGradient id="barg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8A6E34"/><stop offset="1" stop-color="#5a4624"/></linearGradient>
+        <linearGradient id="barg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9D29A"/><stop offset="1" stop-color="#C9A75E"/></linearGradient>
       </defs>
       ${grid}${bars}
     </svg>`;
   }
 
-  function stars(r){let s='';for(let i=1;i<=5;i++)s+=`<span style="color:${i<=r?'#ccab64':'#26242d'}">★</span>`;return s;}
+  function stars(r){let s='';for(let i=1;i<=5;i++)s+=`<span style="color:${i<=r?'#E7D2A0':'rgba(201,167,94,.14)'}">★</span>`;return s;}
 
   window.LUMA_SCREENS = window.LUMA_SCREENS || {};
   window.LUMA_SCREENS.overview = {
@@ -99,25 +99,25 @@
   .rev:last-child{border-bottom:none;}
   .rev .top{display:flex;align-items:center;justify-content:space-between;}
   .rev .top .nm{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--white);font-weight:500;}
-  .rev .top .av{width:30px;height:30px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:14px;color:var(--gold-light);}
+  .rev .top .av{width:30px;height:30px;border-radius:50%;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:14px;color:var(--gold-light);}
   .rev .st{font-size:13px;letter-spacing:1px;}
   .rev .txt{font-size:13px;color:var(--cream);line-height:1.7;margin-top:8px;font-weight:300;}
   .rev .ago{font-size:11px;color:var(--muted-deep);margin-top:6px;}
   .task{display:flex;align-items:flex-start;gap:13px;padding:14px 0;border-bottom:1px solid var(--line-soft);}
   .task:last-child{border-bottom:none;}
   .task .ti{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .task .ti.gold{background:rgba(156,124,58,0.16);color:var(--gold-light);border:0.5px solid var(--gold-deep);}
-  .task .ti.soft{background:var(--surface3);color:var(--gold-pale);border:0.5px solid var(--line);}
+  .task .ti.gold{background:rgba(201,167,94,0.16);color:var(--gold-light);border:1px solid var(--gold-deep);}
+  .task .ti.soft{background:var(--surface3);color:var(--gold-pale);border:1px solid var(--line);}
   .task .tx{flex:1;}
   .task .tx .t{font-size:13.8px;color:var(--white);font-weight:500;}
   .task .tx .d{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;}
-  .task .go{font-size:12px;color:var(--gold-light);border:0.5px solid var(--gold-deep);border-radius:20px;padding:6px 13px;cursor:pointer;white-space:nowrap;transition:all .25s;}
-  .task .go:hover{background:var(--gold-light);color:#131217;}
+  .task .go{font-size:12px;color:var(--gold-light);border:1px solid var(--gold-deep);border-radius:20px;padding:6px 13px;cursor:pointer;white-space:nowrap;transition:all .25s;}
+  .task .go:hover{background:var(--gold-light);color:#1A1206;}
   .prog-ring{display:flex;align-items:center;gap:18px;margin-bottom:6px;}
   .check li{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:13px;color:var(--cream);font-weight:300;list-style:none;}
   .check li:last-child{border-bottom:none;}
   .check li .bx{width:19px;height:19px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
-  .check li .bx.on{background:var(--gold-light);color:#131217;}
+  .check li .bx.on{background:var(--gold-light);color:#1A1206;}
   .check li .bx.off{border:1px solid var(--line);color:var(--muted-deep);}
   .check li.off-t{color:var(--muted);}
 </style>
@@ -191,10 +191,10 @@
       <div class="sec-label">اكتمال ملفك على لوما <span class="ln"></span></div>
       <div class="prog-ring">
         <svg width="92" height="92" viewBox="0 0 92 92">
-          <circle cx="46" cy="46" r="40" fill="none" stroke="#201f26" stroke-width="9"/>
+          <circle cx="46" cy="46" r="40" fill="none" stroke="#1A1820" stroke-width="9"/>
           <circle cx="46" cy="46" r="40" fill="none" stroke="url(#pg)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${2*Math.PI*40}" stroke-dashoffset="${2*Math.PI*40*0.2}" transform="rotate(-90 46 46)"/>
-          <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dbbd81"/><stop offset="1" stop-color="#9c8047"/></linearGradient></defs>
-          <text x="46" y="52" fill="#f6f2ec" font-size="22" font-family="Cormorant Garamond" font-weight="500" text-anchor="middle">80%</text>
+          <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E9D29A"/><stop offset="1" stop-color="#C9A75E"/></linearGradient></defs>
+          <text x="46" y="52" fill="#EDE7DA" font-size="22" font-family="Cormorant Garamond" font-weight="500" text-anchor="middle">80%</text>
         </svg>
         <div>
           <div style="font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:16px;color:var(--white)">ملفك شبه مكتمل</div>

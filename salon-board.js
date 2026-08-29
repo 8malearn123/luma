@@ -9,19 +9,19 @@ SCREENS.overview=()=>{
   const APVAL=[['16',5.4],['17',6.8],['18',5.1],['19',9.2],['20',11.4],['21',9.1],['22',4.2]];
   function apptBars(){
     const W=540,H=230,pad={t:18,r:8,b:34,l:30},iw=W-pad.l-pad.r,ih=H-pad.t-pad.b,max=12,step=iw/WEEK.length,bw=Math.min(30,step*0.42);
-    let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1"/><text x="${pad.l-6}" y="${y+4}" fill="#58545f" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
-    let bars=WEEK.map((d,i)=>{const x=pad.l+i*step+(step-bw)/2;const hc=(d[1]/max)*ih,hx=(d[2]/max)*ih;const yC=pad.t+ih-hc,yX=yC-hx;return `<g><rect x="${x}" y="${yC}" width="${bw}" height="${hc}" rx="3" fill="url(#abg)"/>${d[2]?`<rect x="${x}" y="${yX}" width="${bw}" height="${hx}" rx="3" fill="#c2705f"/>`:''}<text x="${x+bw/2}" y="${H-14}" fill="#86818d" font-size="9.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d[0]}</text></g>`;}).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs><linearGradient id="abg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dbbd81"/><stop offset="1" stop-color="#9c8047"/></linearGradient></defs>${grid}${bars}</svg>`;
+    let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(201,167,94,.14)" stroke-width="1"/><text x="${pad.l-6}" y="${y+4}" fill="#5E594F" font-size="9.5" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}</text>`;}
+    let bars=WEEK.map((d,i)=>{const x=pad.l+i*step+(step-bw)/2;const hc=(d[1]/max)*ih,hx=(d[2]/max)*ih;const yC=pad.t+ih-hc,yX=yC-hx;return `<g><rect x="${x}" y="${yC}" width="${bw}" height="${hc}" rx="3" fill="url(#abg)"/>${d[2]?`<rect x="${x}" y="${yX}" width="${bw}" height="${hx}" rx="3" fill="#C97A6A"/>`:''}<text x="${x+bw/2}" y="${H-14}" fill="#9D978A" font-size="9.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d[0]}</text></g>`;}).join('');
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible"><defs><linearGradient id="abg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9D29A"/><stop offset="1" stop-color="#C9A75E"/></linearGradient></defs>${grid}${bars}</svg>`;
   }
   function salesLines(){
     const W=540,H=230,pad={t:18,r:10,b:30,l:38},iw=W-pad.l-pad.r,ih=H-pad.t-pad.b,max=28,step=iw/(SALES.length-1);
     const toPts=arr=>arr.map((d,i)=>[pad.l+i*step,pad.t+ih-(d[1]/max)*ih]);
     const p1=toPts(SALES),p2=toPts(APVAL);
     const path=p=>p.map((q,i)=>`${i?'L':'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' ');
-    let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#26242d" stroke-width="1"/><text x="${pad.l-6}" y="${y+4}" fill="#58545f" font-size="9" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}k</text>`;}
+    let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(201,167,94,.14)" stroke-width="1"/><text x="${pad.l-6}" y="${y+4}" fill="#5E594F" font-size="9" font-family="IBM Plex Mono" text-anchor="end">${((g/4)*max).toFixed(0)}k</text>`;}
     const dots=(p,c)=>p.map(q=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="2.6" fill="${c}"/>`).join('');
-    const labels=SALES.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#86818d" font-size="9.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d[0]}</text>`).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">${grid}<path d="${path(p2)}" fill="none" stroke="#6fa86a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="${path(p1)}" fill="none" stroke="#ccab64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots(p2,'#6fa86a')}${dots(p1,'#ccab64')}${labels}</svg>`;
+    const labels=SALES.map((d,i)=>`<text x="${(pad.l+i*step).toFixed(1)}" y="${H-12}" fill="#9D978A" font-size="9.5" font-family="IBM Plex Sans Arabic" text-anchor="middle">${d[0]}</text>`).join('');
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">${grid}<path d="${path(p2)}" fill="none" stroke="#9CC59B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="${path(p1)}" fill="none" stroke="#E7D2A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots(p2,'#9CC59B')}${dots(p1,'#E7D2A0')}${labels}</svg>`;
   }
   const STATS=[
     {ic:'board',k:'حجوزات اليوم',v:todayCount,u:'',d:'+4'},
@@ -45,12 +45,12 @@ SCREENS.overview=()=>{
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px"><div><div style="font-weight:600;font-size:16px;color:var(--white)">المواعيد القادمة</div><div style="font-size:12px;color:var(--muted)">الأيام السبعة القادمة</div></div><div style="text-align:left"><div class="num" style="font-size:26px;color:var(--white)">45</div><div style="font-size:11px;color:var(--gold-pale)">محجوز</div></div></div>
       <div style="display:flex;gap:16px;margin:4px 0 8px;font-size:11.5px"><span style="color:var(--muted)">مؤكد <b style="color:var(--white)">44</b></span><span style="color:var(--muted)">ملغى <b style="color:var(--red)">1</b></span></div>
       ${apptBars()}
-      <div style="display:flex;gap:18px;justify-content:flex-end;margin-top:4px;font-size:11px"><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:10px;border-radius:3px;background:#ccab64"></span>مؤكد</span><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:10px;border-radius:3px;background:#c2705f"></span>ملغى</span></div>
+      <div style="display:flex;gap:18px;justify-content:flex-end;margin-top:4px;font-size:11px"><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:10px;border-radius:3px;background:#E7D2A0"></span>مؤكد</span><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:10px;border-radius:3px;background:#C97A6A"></span>ملغى</span></div>
     </div>
     <div class="card">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px"><div><div style="font-weight:600;font-size:16px;color:var(--white)">المبيعات الأخيرة</div><div style="font-size:12px;color:var(--muted)">آخر ٧ أيام · بالألف ر.س</div></div><div style="text-align:left"><div class="num gold-fill" style="font-size:24px">128,025</div><div style="font-size:11px;color:var(--gold-pale)">إجمالي المبيعات (ر.س)</div></div></div>
       ${salesLines()}
-      <div style="display:flex;gap:18px;justify-content:flex-end;margin-top:4px;font-size:11px"><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:3px;border-radius:3px;background:#ccab64"></span>المبيعات</span><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:3px;border-radius:3px;background:#6fa86a"></span>قيمة المواعيد</span></div>
+      <div style="display:flex;gap:18px;justify-content:flex-end;margin-top:4px;font-size:11px"><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:3px;border-radius:3px;background:#E7D2A0"></span>المبيعات</span><span style="display:flex;align-items:center;gap:6px;color:var(--cream)"><span style="width:10px;height:3px;border-radius:3px;background:#9CC59B"></span>قيمة المواعيد</span></div>
     </div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start">
@@ -71,7 +71,7 @@ SCREENS.board=()=>{
       const top=a.start*ROW_H+2, h=a.dur*ROW_H-4;
       const paid=a.st!=='blocked'&&paidOf(a.id);
       return `<div class="appt" onclick="event.stopPropagation();SALON.apptDetail('${a.id}')" style="top:${top}px;height:${h}px;background:${st.bg};border-color:${st.bd}${a.st==='blocked'?';border-style:dashed':''}">
-        <div class="ap-t">${slotLabel(a.start)} – ${slotLabel(a.start+a.dur)}${paid?' <span style="color:#9fce99">· مدفوعة ✓</span>':''}</div>
+        <div class="ap-t">${slotLabel(a.start)} – ${slotLabel(a.start+a.dur)}${paid?' <span style="color:#9CC59B">· مدفوعة ✓</span>':''}</div>
         <div class="ap-c">${a.st==='blocked'?'⛔ '+a.client:a.client}</div>
         <div class="ap-s">${a.service}</div>
       </div>`;
@@ -79,7 +79,7 @@ SCREENS.board=()=>{
     return `<div class="col"><div class="col-track" data-staff="${s.id}" title="اضغطي على خانة فارغة لحجز موعد" onclick="if(!event.target.closest('.appt'))SALON.newBooking({staff:this.dataset.staff,start:Math.floor(event.offsetY/${ROW_H})})" style="height:${SLOTS*ROW_H}px">${gridLines()}${nowLine}${blocks}</div></div>`;
   }).join('');
   const heads=STAFF.map(s=>{const blocked=hrOnLeaveToday(s.id)?'في إجازة — محظورة الحجز':(spOf(s.id).status!=='active'?'موقوفة — محظورة الحجز':null);
-    return `<div class="col-h" ${blocked?'style="opacity:.55"':''}><span class="ch-av" style="border-color:${s.color};color:${s.color}">${s.n.charAt(0)}</span><div><div class="ch-n">${s.n}</div><div class="ch-r">${blocked?'<span style="color:#ccab64">'+blocked+'</span>':s.role}</div></div></div>`;}).join('');
+    return `<div class="col-h" ${blocked?'style="opacity:.55"':''}><span class="ch-av" style="border-color:${s.color};color:${s.color}">${s.n.charAt(0)}</span><div><div class="ch-n">${s.n}</div><div class="ch-r">${blocked?'<span style="color:#E7D2A0">'+blocked+'</span>':s.role}</div></div></div>`;}).join('');
   const timeCol=Array.from({length:SLOTS}).map((_,i)=>`<div class="tl" style="height:${ROW_H}px">${i%2===0?slotLabel(i):''}</div>`).join('');
   /* agenda view: compact time+client bars sorted by start (like a month-cell) */
   const agenda=live.slice().sort((a,b)=>a.start-b.start).map(a=>{
@@ -103,7 +103,7 @@ SCREENS.board=()=>{
     .legend .lg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--cream);} .legend .lg .sw{width:11px;height:11px;border-radius:3px;border:1px solid;}
     .vsw{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
     .vsw button{background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--muted);padding:9px 16px;cursor:pointer;}
-    .vsw button.on{background:linear-gradient(120deg,rgba(220,192,106,.18),rgba(156,124,58,.06));color:var(--gold-light);}
+    .vsw button.on{background:linear-gradient(120deg,rgba(233,210,154,.18),rgba(201,167,94,.06));color:var(--gold-light);}
     .board{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
     .board-head{display:grid;grid-template-columns:66px repeat(${STAFF.length},1fr);border-bottom:1px solid var(--line);background:var(--surface2);}
     .board-head .corner{border-left:1px solid var(--line);}
@@ -121,8 +121,8 @@ SCREENS.board=()=>{
     .appt:hover{transform:scale(1.015);z-index:5;box-shadow:0 10px 26px rgba(0,0,0,.4);}
     .col-track{cursor:cell;}
     .col-track:hover .gl{border-bottom-color:var(--line);}
-    .nowline{position:absolute;left:0;right:0;height:0;border-top:2px solid #c2705f;z-index:4;pointer-events:none;}
-    .nowline::before{content:'الآن';position:absolute;right:4px;top:-9px;background:#c2705f;color:#fff;font-size:8.5px;padding:1px 7px;border-radius:8px;}
+    .nowline{position:absolute;left:0;right:0;height:0;border-top:2px solid #C97A6A;z-index:4;pointer-events:none;}
+    .nowline::before{content:'الآن';position:absolute;right:4px;top:-9px;background:#C97A6A;color:#fff;font-size:8.5px;padding:1px 7px;border-radius:8px;}
     .appt .ap-t{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-pale);direction:ltr;}
     .appt .ap-c{font-size:12.5px;color:var(--white);font-weight:600;margin-top:1px;} .appt .ap-s{font-size:11px;color:var(--cream);opacity:0.85;margin-top:1px;}
     .agitem{display:flex;align-items:center;gap:11px;border:1px solid;border-right-width:4px;border-radius:9px;padding:9px 13px;margin-bottom:7px;cursor:pointer;font-size:13px;color:var(--white);}

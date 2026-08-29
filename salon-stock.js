@@ -46,7 +46,7 @@ const STOCK={
       <div class="rcRow" style="display:flex;gap:8px;margin-bottom:7px;align-items:center">
         <select class="rcItem" style="flex:1.6">${items.map(n=>`<option ${r&&r.n===n?'selected':''}>${n}</option>`).join('')}</select>
         <input class="rcQty" type="number" min="1" value="${r?r.q:1}" dir="ltr" style="flex:.5;text-align:right" placeholder="كمية"/>
-        <button type="button" class="lux-chip rcDel" style="color:#e29aa6">✕</button>
+        <button type="button" class="lux-chip rcDel" style="color:#C97A6A">✕</button>
       </div>`;
     LUX.modal('وصفات الخدمات — استهلاك المواد',`
       <div class="lux-lead">حدّدي المواد التي تُستهلك مع كل خدمة — تُخصم من المخزون تلقائياً عند الدفع.</div>

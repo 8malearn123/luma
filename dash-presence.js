@@ -2,16 +2,16 @@
 (function(){
   const S = window.LUMA_SCREENS = window.LUMA_SCREENS || {};
   const tile = (label='',h=150,badge='')=>`<div class="pf-tile" style="height:${h}px">${badge?`<span class="pf-badge">${badge}</span>`:''}<svg class="lat" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#dlat)"/></svg><span class="mk">◆</span>${label?`<span class="pf-lbl">${label}</span>`:''}</div>`;
-  const LATDEF = `<svg width="0" height="0" style="position:absolute"><defs><pattern id="dlat" width="64" height="64" patternUnits="userSpaceOnUse"><g fill="none" stroke="#9c8047" stroke-width="1" opacity="0.5"><circle cx="0" cy="0" r="32"/><circle cx="64" cy="0" r="32"/><circle cx="0" cy="64" r="32"/><circle cx="64" cy="64" r="32"/><circle cx="32" cy="32" r="32"/></g></pattern></defs></svg>`;
+  const LATDEF = `<svg width="0" height="0" style="position:absolute"><defs><pattern id="dlat" width="64" height="64" patternUnits="userSpaceOnUse"><g fill="none" stroke="#C9A75E" stroke-width="1" opacity="0.5"><circle cx="0" cy="0" r="32"/><circle cx="64" cy="0" r="32"/><circle cx="0" cy="64" r="32"/><circle cx="64" cy="64" r="32"/><circle cx="32" cy="32" r="32"/></g></pattern></defs></svg>`;
 
   const COMMON = `
 <style>
-  .pf-tile{position:relative;border-radius:12px;background:linear-gradient(150deg,#1b1a21,#18171d);border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .25s,transform .25s;}
+  .pf-tile{position:relative;border-radius:12px;background:linear-gradient(150deg,#1A1820,#15141A);border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .25s,transform .25s;}
   .pf-tile:hover{border-color:var(--gold-deep);transform:translateY(-3px);}
   .pf-tile .lat{position:absolute;inset:0;opacity:0.4;}
   .pf-tile .mk{position:relative;color:var(--gold-deep);font-size:22px;}
   .pf-tile .pf-lbl{position:absolute;bottom:12px;right:14px;font-size:12.5px;color:var(--cream);font-weight:500;}
-  .pf-badge{position:absolute;top:10px;left:10px;z-index:3;font-size:10px;color:var(--gold-light);background:rgba(23,18,13,0.8);border:0.5px solid var(--gold-deep);border-radius:20px;padding:3px 9px;}
+  .pf-badge{position:absolute;top:10px;left:10px;z-index:3;font-size:10px;color:var(--gold-light);background:rgba(23,18,13,0.8);border:1px solid var(--gold-deep);border-radius:20px;padding:3px 9px;}
   .form-row{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
   .form-row label{font-size:13px;color:var(--gold-pale);font-weight:500;}
   .inp,.ta{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:13px 15px;color:var(--white);font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:14px;font-weight:300;outline:none;transition:border-color .25s;width:100%;}
@@ -20,11 +20,11 @@
   .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   @media(max-width:560px){.two{grid-template-columns:1fr;}}
   .toggle{width:46px;height:27px;border-radius:20px;border:none;cursor:pointer;position:relative;transition:background .25s;flex-shrink:0;}
-  .toggle.on{background:linear-gradient(120deg,#dbbd81,#9c8047);}
+  .toggle.on{background:linear-gradient(120deg,#E9D29A,#C9A75E);}
   .toggle.off{background:var(--surface3);}
   .toggle .k{position:absolute;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:right .25s,left .25s;}
   .toggle.on .k{left:3px;} .toggle.off .k{right:3px;}
-  .chip-tag{font-size:12.5px;color:var(--gold-pale);border:0.5px solid var(--gold-deep);background:rgba(156,124,58,0.08);padding:7px 14px;border-radius:20px;display:inline-flex;align-items:center;gap:8px;}
+  .chip-tag{font-size:12.5px;color:var(--gold-pale);border:1px solid var(--gold-deep);background:rgba(201,167,94,0.08);padding:7px 14px;border-radius:20px;display:inline-flex;align-items:center;gap:8px;}
   .chip-tag .x{color:var(--muted);cursor:pointer;}
   .twocol{display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start;}
   @media(max-width:1050px){.twocol{grid-template-columns:1fr;}}
@@ -72,7 +72,7 @@
   <div>
     <div class="card" style="text-align:center;position:sticky;top:90px">
       <div class="sec-label" style="justify-content:center">معاينة بطاقتك <span style="position:absolute;left:22px"></span></div>
-      <div style="width:96px;height:96px;border-radius:50%;margin:6px auto 0;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:42px;color:var(--gold-light);position:relative">ر<button style="position:absolute;bottom:0;left:0;width:30px;height:30px;border-radius:50%;background:var(--gold-light);border:2px solid var(--surface);color:#131217;cursor:pointer;font-size:13px">✎</button></div>
+      <div style="width:96px;height:96px;border-radius:50%;margin:6px auto 0;background:linear-gradient(140deg,#1A1820,#15141A);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:42px;color:var(--gold-light);position:relative">ر<button style="position:absolute;bottom:0;left:0;width:30px;height:30px;border-radius:50%;background:var(--gold-light);border:2px solid var(--surface);color:#1A1206;cursor:pointer;font-size:13px">✎</button></div>
       <div style="font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:19px;color:var(--white);margin-top:14px;display:flex;align-items:center;gap:7px;justify-content:center">رهف العتيبي <span style="color:var(--gold-light);font-size:13px">◆</span></div>
       <div style="font-size:13px;color:var(--gold-pale)">خبيرة مكياج · جدة</div>
       <div style="display:flex;align-items:center;gap:7px;justify-content:center;margin-top:10px;font-size:13px;color:var(--cream)"><span style="color:var(--gold-light)">★</span> 4.9 <span style="color:var(--muted)">· ٢١٣ حجز</span></div>
@@ -124,7 +124,7 @@
           <span style="flex:1;margin-right:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);direction:ltr;text-align:left">luma.sa/rahaf</span>
         </div>
         <div style="padding:24px 20px;text-align:center">
-          <div style="width:64px;height:64px;border-radius:50%;margin:0 auto;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:28px;color:var(--gold-light)">ر</div>
+          <div style="width:64px;height:64px;border-radius:50%;margin:0 auto;background:linear-gradient(140deg,#1A1820,#15141A);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:28px;color:var(--gold-light)">ر</div>
           <div style="font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:700;font-size:17px;color:var(--white);margin-top:12px">رهف · استوديو مكياج</div>
           <div style="font-size:12px;color:var(--gold-pale)">خبيرة مكياج · جدة</div>
           <div style="font-size:11.5px;color:var(--cream);margin-top:4px"><span style="color:var(--gold-light)">★</span> 4.9 · ٢١٣ حجز</div>
@@ -139,7 +139,7 @@
   /* ════════ PORTFOLIO ════════ */
   const CATS=['الكل','مكياج عرائس','سهرات','مكياج ناعم','قبل / بعد'];
   S.portfolio = { render(){ return COMMON + `
-<style>.pf-cat{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;padding:8px 16px;border-radius:20px;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--muted);}.pf-cat.on{background:rgba(156,124,58,0.14);border-color:var(--gold-deep);color:var(--gold-light);}</style>
+<style>.pf-cat{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-size:12.5px;padding:8px 16px;border-radius:20px;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--muted);}.pf-cat.on{background:rgba(201,167,94,0.14);border-color:var(--gold-deep);color:var(--gold-light);}</style>
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
   <div style="display:flex;gap:8px;flex-wrap:wrap">${CATS.map((c,i)=>`<button class="pf-cat ${i===0?'on':''}" onclick="this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${c}</button>`).join('')}</div>
   <div style="margin-right:auto;display:flex;gap:10px"><button class="btn btn-gold">+ رفع صور</button></div>
@@ -175,7 +175,7 @@
 <div class="sec-label">خدماتك <span class="ln"></span><span class="more"><button class="btn btn-gold" style="padding:9px 18px">+ خدمة جديدة</button></span></div>
 <div style="display:flex;flex-direction:column;gap:11px">
   ${SVC.map(s=>`<div style="display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 20px;${s.on?'':'opacity:0.6'}">
-    <div style="width:44px;height:44px;border-radius:11px;background:var(--surface3);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('services',20)}</div>
+    <div style="width:44px;height:44px;border-radius:11px;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold-light)">${icon('services',20)}</div>
     <div style="flex:1"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:15.5px;color:var(--white);font-weight:600">${s.n}</span>${s.book?`<span class="badge gold">★ ${s.book}</span>`:''}</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">◷ ${s.d}</div></div>
     <div style="font-family:'Bodoni Moda',serif;font-size:26px;color:var(--gold-light);direction:ltr">${s.p} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:12px;color:var(--muted)">ر.س</span></div>
     <button class="toggle ${s.on?'on':'off'}" onclick="this.classList.toggle('on');this.classList.toggle('off');this.closest('div').style.opacity=this.classList.contains('on')?'1':'0.6'"><span class="k"></span></button>
@@ -186,9 +186,9 @@
   function qr(){ // decorative QR
     let r=''; const cells=11, sz=74/cells;
     const seed=[0,2,3,5,8,10,1,4,7,9,2,6,3,8,5,0,10,4,7,1,6,9,3];
-    for(let y=0;y<cells;y++)for(let x=0;x<cells;x++){if(((x*7+y*3+ (seed[(x+y)%seed.length]))%3)===0)r+=`<rect x="${x*sz}" y="${y*sz}" width="${sz}" height="${sz}" fill="#131217"/>`;}
+    for(let y=0;y<cells;y++)for(let x=0;x<cells;x++){if(((x*7+y*3+ (seed[(x+y)%seed.length]))%3)===0)r+=`<rect x="${x*sz}" y="${y*sz}" width="${sz}" height="${sz}" fill="#0C0B0E"/>`;}
     // finder squares
-    const finder=(fx,fy)=>`<rect x="${fx}" y="${fy}" width="${sz*3}" height="${sz*3}" fill="#131217"/><rect x="${fx+sz}" y="${fy+sz}" width="${sz}" height="${sz}" fill="#fff"/>`;
+    const finder=(fx,fy)=>`<rect x="${fx}" y="${fy}" width="${sz*3}" height="${sz*3}" fill="#0C0B0E"/><rect x="${fx+sz}" y="${fy+sz}" width="${sz}" height="${sz}" fill="#fff"/>`;
     return r+finder(0,0)+finder(74-sz*3,0)+finder(0,74-sz*3);
   }
 })();

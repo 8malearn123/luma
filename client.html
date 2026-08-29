@@ -9,26 +9,17 @@
 <link rel="stylesheet" href="luma-core.css"/>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>LUMA — حساب العميلة</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Cairo:wght@200;300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  :root{
-    --bg:#131217; --bg2:#0c0b0e; --surface:#18171d; --surface2:#1b1a21; --surface3:#201f26;
-    --gold:#9c8047; --gold-light:#ccab64; --gold-bright:#dbbd81; --gold-pale:#e6ce95; --gold-deep:#846a38;
-    --white:#f6f2ec; --cream:#ece6da; --muted:#86818d; --muted-deep:#58545f;
-    --line:#26242d; --line-soft:#1e1d24; --green:#6fa86a; --rose:#d98a93;
-  }
-  body{background:radial-gradient(ellipse at 50% 0%,#1f1812,#0c0b0e 70%);min-height:100vh;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;color:var(--white);-webkit-font-smoothing:antialiased;}
-  .serif{font-family:'Bodoni Moda',serif;}
-  .mono{font-family:'IBM Plex Mono',monospace;letter-spacing:0.2em;direction:ltr;}
-  .num{font-family:'Bodoni Moda',serif;font-weight:500;direction:ltr;}
-  .gold-fill{background:linear-gradient(120deg,#dbbd81,#ccab64 35%,#9c8047);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-  ::selection{background:var(--gold);color:#131217;}
+  
+  body{background:var(--luma-glow-page),var(--luma-obsidian);min-height:100vh;font-family:var(--luma-font-ui);color:var(--white);-webkit-font-smoothing:antialiased;}
+  .serif{font-family:var(--luma-font-display);}
+  .mono{font-family:var(--luma-font-ui);letter-spacing:0.2em;direction:ltr;}
+  .num{font-family:var(--luma-font-display);font-weight:500;direction:ltr;}
+  .gold-fill{background:linear-gradient(120deg,#E9D29A,#E7D2A0 35%,#C9A75E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  ::selection{background:var(--gold);color:#1A1206;}
   .head-brand{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 22px;background:rgba(14,10,7,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);}
-  .head-brand .b{font-family:'Bodoni Moda',serif;font-size:22px;letter-spacing:0.3em;color:var(--gold-light);direction:ltr;}
+  .head-brand .b{font-family:var(--luma-font-display);font-size:22px;letter-spacing:0.3em;color:var(--gold-light);direction:ltr;}
   .head-brand .s{font-size:12px;color:var(--muted);}
   .head-brand .acts{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
 
@@ -37,35 +28,37 @@
   .scr{width:100%;min-height:calc(100vh - 58px);position:relative;background:var(--bg);display:flex;flex-direction:column;}
   .view{flex:1;width:100%;max-width:760px;margin:0 auto;padding:14px 20px 110px;}
   .tabbar{position:fixed;bottom:0;left:0;right:0;height:72px;background:rgba(14,10,7,0.92);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;align-items:flex-start;justify-content:center;padding:11px 14px 0;z-index:55;}
-  .tab{flex:0 1 140px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;color:var(--muted);transition:color .2s;background:none;border:none;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;}
+  .tab{flex:0 1 140px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;color:var(--muted);transition:color .2s;background:none;border:none;font-family:var(--luma-font-ui);}
   .tab .ic{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
   .tab .lb{font-size:10.5px;}
   .tab.on{color:var(--gold-light);}
 
   /* shared */
   .greet{padding:8px 4px 4px;}
-  .greet .d{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:var(--gold);direction:ltr;}
-  .greet .h{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:23px;color:var(--white);margin-top:6px;}
+  .greet .d{font-family:var(--luma-font-ui);font-size:9.5px;letter-spacing:0.14em;color:var(--gold);direction:ltr;}
+  .greet .h{font-family:var(--luma-font-ui);font-weight:600;font-size:23px;color:var(--white);margin-top:6px;}
   .greet .h .w{color:var(--gold-light);}
   .greet .s{font-size:13px;color:var(--gold-pale);margin-top:3px;}
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;}
   .seclab{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;}
-  .seclab .t{font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:15px;color:var(--white);}
+  .seclab .t{font-family:var(--luma-font-ui);font-weight:600;font-size:15px;color:var(--white);}
   .seclab .m{font-size:12px;color:var(--gold-light);cursor:pointer;}
-  .avc{border-radius:50%;background:linear-gradient(140deg,#201f26,#18171d);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;color:var(--gold-light);flex-shrink:0;}
+  .avc{border-radius:50%;background:linear-gradient(140deg,#1A1820,#15141A);border:1px solid var(--gold-deep);display:flex;align-items:center;justify-content:center;font-family:var(--luma-font-display);color:var(--gold-light);flex-shrink:0;}
   .stars{color:var(--gold-light);letter-spacing:1px;}
-  .badge{font-size:11px;padding:4px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
-  .badge.gold{color:var(--gold-light);background:rgba(156,124,58,0.16);border:0.5px solid var(--gold-deep);}
+  .badge{font-size:11px;padding:4px 11px;border-radius:30px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .badge.gold{color:var(--gold-light);background:rgba(201,167,94,0.16);border:1px solid var(--gold-deep);}
   .badge.green{color:var(--green);background:rgba(111,168,106,0.14);}
   .badge.soft{color:var(--muted);background:var(--surface3);}
-  .gbtn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:14.5px;color:#131217;background:linear-gradient(120deg,#dbbd81,#ccab64 45%,#9c8047);box-shadow:0 8px 22px rgba(156,124,58,0.25);}
-  .ghbtn{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:500;font-size:14px;color:var(--gold-pale);background:none;}
+  .gbtn{width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:var(--luma-font-ui);font-weight:600;font-size:14.5px;color:#1A1206;background:linear-gradient(120deg,#E9D29A,#E7D2A0 45%,#C9A75E);box-shadow:0 8px 22px rgba(201,167,94,0.25);}
+  .ghbtn{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;font-family:var(--luma-font-ui);font-weight:500;font-size:14px;color:var(--gold-pale);background:none;}
   .lat{position:absolute;inset:0;opacity:0.4;}
   .fade{animation:fd .4s ease both;}@keyframes fd{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
   @media(prefers-reduced-motion:reduce){.fade{animation:none;}}
-  .reset{font-size:12px;color:var(--gold-pale);background:none;border:1px solid var(--line);border-radius:30px;padding:9px 22px;cursor:pointer;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;}
+  .reset{font-size:12px;color:var(--gold-pale);background:none;border:1px solid var(--line);border-radius:30px;padding:9px 22px;cursor:pointer;font-family:var(--luma-font-ui);}
 </style>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Cormorant+Garamond:ital,wght@1,400&family=Jost:wght@300;400;500&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet"/>
 </head>
 <body>
 <div class="head-brand">
@@ -83,7 +76,7 @@
   </div>
 </div>
 
-<svg width="0" height="0" style="position:absolute"><defs><pattern id="clat" width="60" height="60" patternUnits="userSpaceOnUse"><g fill="none" stroke="#9c8047" stroke-width="1" opacity="0.5"><circle cx="0" cy="0" r="30"/><circle cx="60" cy="0" r="30"/><circle cx="0" cy="60" r="30"/><circle cx="60" cy="60" r="30"/><circle cx="30" cy="30" r="30"/></g></pattern></defs></svg>
+<svg width="0" height="0" style="position:absolute"><defs><pattern id="clat" width="60" height="60" patternUnits="userSpaceOnUse"><g fill="none" stroke="#C9A75E" stroke-opacity=".5" stroke-width=".7"><circle cx="0" cy="0" r="32"/><circle cx="60" cy="0" r="32"/><circle cx="0" cy="60" r="32"/><circle cx="60" cy="60" r="32"/><circle cx="30" cy="30" r="32"/></g></pattern></defs></svg>
 
 <script>
 const IC={
@@ -105,7 +98,7 @@ const IC={
   whatsapp:'<path d="M3.5 20.5l1.4-4.1A8.5 8.5 0 1112 20.5a8.4 8.4 0 01-3.8-.9z"/><path d="M8.8 9.2c.7 1.9 2.1 3.3 4 4 .5.2.9 0 1.2-.4"/>',
 };
 const icon=(n,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
-const stars=(r,sz=12)=>{let s='';for(let i=1;i<=5;i++)s+=`<span style="color:${i<=r?'#ccab64':'#26242d'};font-size:${sz}px">★</span>`;return s;}
+const stars=(r,sz=12)=>{let s='';for(let i=1;i<=5;i++)s+=`<span style="color:${i<=r?'#E7D2A0':'rgba(201,167,94,.14)'};font-size:${sz}px">★</span>`;return s;}
 const av=(n,sz=44,fs=18)=>`<span class="avc" style="width:${sz}px;height:${sz}px;font-size:${fs}px">${n.charAt(0)}</span>`;
 
 /* DATA */
@@ -131,7 +124,7 @@ const RECO=[
 ];
 
 /* SCREENS */
-function tile(h){return `<div style="height:${h}px;border-radius:11px;background:linear-gradient(150deg,#2a2218,#131217);border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg class="lat" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#clat)"/></svg><span style="position:relative;color:var(--gold-deep)">◆</span></div>`;}
+function tile(h){return `<div style="height:${h}px;border-radius:11px;background:linear-gradient(150deg,#2a2218,#0C0B0E);border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg class="lat" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#clat)"/></svg><span style="position:relative;color:var(--gold-deep)">◆</span></div>`;}
 function expertCard(e){return `<div class="card" style="display:flex;align-items:center;gap:13px;margin-bottom:11px;cursor:pointer">${av(e.n,48,20)}<div style="flex:1;min-width:0"><div style="font-size:15px;color:var(--white);font-weight:600">${e.n}</div><div style="font-size:12.5px;color:var(--gold-pale);margin-top:1px">${e.role}</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--cream)">${stars(Math.round(e.r))} ${e.r}</div></div><div style="text-align:left"><div style="font-size:10px;color:var(--muted)">يبدأ من</div><div class="num" style="font-size:18px;color:var(--gold-light)">${e.from} <span style="font-family:'IBM Plex Sans Arabic',Cairo;font-size:10px;color:var(--muted)">ر.س</span></div></div></div>`;}
 /* ── دليل المزوّدات الكامل (نفس بيانات المتجر) للاستكشاف داخل التطبيق ── */
 const PROVIDERS=[
@@ -179,7 +172,7 @@ function expertBookURL(e){
 }
 /* WhatsApp is the client's main channel on LUMA */
 function waLink(msg){return 'https://wa.me/966501234567?text='+encodeURIComponent(msg);}
-function waBtn(msg,label){return `<a href="${waLink(msg)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#06351c;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:13px;border-radius:9px;padding:11px;text-decoration:none;margin-top:12px">${icon('whatsapp',16)} ${label||'تواصل عبر واتساب'}</a>`;}
+function waBtn(msg,label){return `<a href="${waLink(msg)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#06351c;font-family:var(--luma-font-ui);font-weight:600;font-size:13px;border-radius:9px;padding:11px;text-decoration:none;margin-top:12px">${icon('whatsapp',16)} ${label||'تواصل عبر واتساب'}</a>`;}
 
 /* ── استكشفي: دليل كامل بالفلاتر داخل التطبيق (نفس الموقع) ── */
 function exFiltered(){
@@ -198,7 +191,7 @@ function exCard(p){
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:14.5px;color:var(--white);font-weight:600">${p.n}</span>
           <span class="badge ${isS?'blue':'gold'}" style="font-size:9px">${isS?'صالون':'خبيرة'}</span>
-          ${p.offer?`<span style="font-size:9px;color:#fff;background:linear-gradient(120deg,#d98a93,#b25a6c);border-radius:12px;padding:2px 8px">🎓 خصم ${p.offer.pct}%</span>`:''}</div>
+          ${p.offer?`<span style="font-size:9px;color:#fff;background:linear-gradient(120deg,#C97A6A,#b25a6c);border-radius:12px;padding:2px 8px">🎓 خصم ${p.offer.pct}%</span>`:''}</div>
         <div style="font-size:11.5px;color:var(--gold-pale);margin-top:2px">${p.role} · ⌖ ${p.city}</div>
         <div style="display:flex;align-items:center;gap:6px;margin-top:5px;font-size:11px;color:var(--cream)">${stars(Math.round(p.rating),11)} <b>${p.rating}</b> <span style="color:var(--muted)">(${p.reviews})</span>${isS?`<span style="color:var(--muted)">· ${p.branches} ${p.branches===1?'فرع':'فروع'} · ${p.staff} خبيرات</span>`:''}</div>
       </div>
@@ -214,7 +207,7 @@ function exCard(p){
 /* مبدّل النوع — ثلاثة أزرار متساوية واضحة */
 function exSeg(){
   return `<div style="display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-top:10px">
-    ${[['all','الكل'],['expert','خبيرات'],['salon','صوالين']].map(([v,l])=>`<button onclick="CLI.exf('ftype','${v}')" style="flex:1;font-family:inherit;font-size:12.5px;padding:9px 0;border-radius:9px;border:none;cursor:pointer;transition:background .2s;${CLI.ftype===v?'background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-weight:700':'background:transparent;color:var(--cream)'}">${l}</button>`).join('')}</div>`;
+    ${[['all','الكل'],['expert','خبيرات'],['salon','صوالين']].map(([v,l])=>`<button onclick="CLI.exf('ftype','${v}')" style="flex:1;font-family:inherit;font-size:12.5px;padding:9px 0;border-radius:9px;border:none;cursor:pointer;transition:background .2s;${CLI.ftype===v?'background:linear-gradient(120deg,#E9D29A,#C9A75E);color:#1A1206;font-weight:700':'background:transparent;color:var(--cream)'}">${l}</button>`).join('')}</div>`;
 }
 /* شريط الفلاتر — زر واحد يفتح اللوحة + وسوم الفلاتر النشطة قابلة للإزالة */
 const EX_CATS=[['مكياج','مكياج'],['بشرة','بشرة'],['شعر','شعر'],['أظافر','أظافر'],['رموش','رموش'],['تصوير','تصوير'],['متكامل','متكامل'],['سبا','سبا']];
@@ -232,7 +225,7 @@ function exFilterBar(){
 /* لوحة الفلاتر السفلية — التخصص والمدينة في مكان واحد */
 function exSheetBody(){
   const n=exFiltered().length;
-  const chip=(k,v,l)=>`<button onclick="CLI.exs('${k}','${v}')" style="font-family:inherit;font-size:12px;padding:9px 16px;border-radius:20px;cursor:pointer;border:1px solid ${CLI[k]===v?'var(--gold-light)':'var(--line)'};background:${CLI[k]===v?'linear-gradient(120deg,#dbbd81,#9c8047)':'var(--bg,#131217)'};color:${CLI[k]===v?'#131217':'var(--cream)'};font-weight:${CLI[k]===v?'700':'400'}">${l}</button>`;
+  const chip=(k,v,l)=>`<button onclick="CLI.exs('${k}','${v}')" style="font-family:inherit;font-size:12px;padding:9px 16px;border-radius:20px;cursor:pointer;border:1px solid ${CLI[k]===v?'var(--gold-light)':'var(--line)'};background:${CLI[k]===v?'linear-gradient(120deg,#E9D29A,#C9A75E)':'var(--bg,#0C0B0E)'};color:${CLI[k]===v?'#0C0B0E':'var(--cream)'};font-weight:${CLI[k]===v?'700':'400'}">${l}</button>`;
   return `<div class="bk-grab"></div>
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div style="font-size:16.5px;color:var(--white);font-weight:700">الفلاتر</div>
@@ -267,7 +260,7 @@ const SCREENS={
     <div style="flex:1;font-size:12.5px;color:var(--cream);line-height:1.6">تأكيد الحجز والتذكيرات تصلك على <b style="color:#5fe08a">واتساب</b>، وتقدرين تتواصلين مع خبيرتك مباشرة منه.</div>
   </div>
 
-  <div class="card" style="margin-top:12px;background:linear-gradient(150deg,#201f26,#131217);border-color:var(--gold-deep);position:relative;overflow:hidden">
+  <div class="card" style="margin-top:12px;background:linear-gradient(150deg,#1A1820,#0C0B0E);border-color:var(--gold-deep);position:relative;overflow:hidden">
     <svg class="lat" width="100%" height="100%" style="opacity:0.25"><rect width="100%" height="100%" fill="url(#clat)"/></svg>
     <div style="position:relative">
       <div style="display:flex;align-items:center;justify-content:space-between"><span class="badge gold">موعدك القادم</span><span style="font-size:12px;color:var(--gold-pale)">${NEXT.city}</span></div>
@@ -298,7 +291,7 @@ const SCREENS={
     <button class="seg-b on" onclick="CLI.seg(this,'up')">قادمة</button>
     <button class="seg-b" onclick="CLI.seg(this,'pa')">سابقة</button>
   </div>
-  <style>.seg-b{flex:1;font-family:'Cairo';font-size:13px;color:var(--muted);background:none;border:none;padding:9px;border-radius:7px;cursor:pointer}.seg-b.on{background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-weight:600}</style>
+  <style>.seg-b{flex:1;font-family:'Cairo';font-size:13px;color:var(--muted);background:none;border:none;padding:9px;border-radius:7px;cursor:pointer}.seg-b.on{background:linear-gradient(120deg,#E9D29A,#C9A75E);color:#1A1206;font-weight:600}</style>
   <div id="bk-up">
     ${UPCOMING.map(b=>`<div class="card" style="margin-bottom:11px"><div style="display:flex;align-items:center;gap:12px">${av(b.pr,46,18)}<div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${b.pr}</div><div style="font-size:12.5px;color:var(--gold-pale)">${b.s}</div></div><span class="badge ${b.stc}">${b.st}</span></div><div style="display:flex;align-items:center;gap:7px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line-soft);color:var(--cream);font-size:13px">${icon('cal',15)} ${b.date}</div><div style="display:flex;gap:9px;margin-top:12px"><a href="${waLink('مرحبًا '+b.pr+'، بخصوص موعدي ('+b.s+') '+b.date+'.')}" target="_blank" rel="noopener" class="ghbtn" style="padding:11px;display:flex;align-items:center;justify-content:center;gap:7px;color:#25D366;border-color:rgba(37,211,102,0.35);text-decoration:none">${icon('whatsapp',15)} واتساب</a><button class="ghbtn" style="padding:11px">تعديل</button><button class="ghbtn" style="padding:11px;color:var(--rose);border-color:rgba(217,138,147,0.3)">إلغاء</button></div></div>`).join('')}
   </div>
@@ -313,14 +306,14 @@ const SCREENS={
   `;},
 
   account(){return `
-  <div class="card" style="display:flex;align-items:center;gap:14px;margin-top:10px;background:linear-gradient(150deg,#201f26,#131217);border-color:var(--gold-deep)">
+  <div class="card" style="display:flex;align-items:center;gap:14px;margin-top:10px;background:linear-gradient(150deg,#1A1820,#0C0B0E);border-color:var(--gold-deep)">
     ${av('سارة',60,26)}<div style="flex:1"><div style="font-size:18px;color:var(--white);font-weight:700">سارة الأحمدي</div><div style="font-size:12.5px;color:var(--gold-pale)">عضوة منذ ٢٠٢٦</div><div style="display:flex;align-items:center;gap:5px;margin-top:4px;font-size:11.5px;color:#5fe08a">${icon('whatsapp',13)} +966 50 123 4567 · موثّق عبر واتساب</div></div><button class="ghbtn" style="width:auto;padding:8px 14px;font-size:12px">تعديل</button>
   </div>
 
   <div class="card" style="margin-top:14px">
     <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:9px;color:var(--gold-light)">${icon('loyalty',20)}<span style="font-size:14.5px;color:var(--white);font-weight:600">نقاط الولاء</span></div><span class="badge gold">عضوة ذهبية</span></div>
     <div style="display:flex;align-items:baseline;gap:7px;margin:12px 0 8px"><span class="num gold-fill" style="font-size:34px">1,240</span><span style="font-size:13px;color:var(--muted)">نقطة</span></div>
-    <div style="height:7px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:62%;background:linear-gradient(90deg,#9c8047,#dbbd81);border-radius:10px"></span></div>
+    <div style="height:7px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:62%;background:linear-gradient(90deg,#C9A75E,#E9D29A);border-radius:10px"></span></div>
     <div style="font-size:11.5px;color:var(--muted);margin-top:8px">٢٦٠ نقطة للوصول لمكافأة جلسة مجانية</div>
   </div>
 
@@ -395,7 +388,7 @@ const CLI={
       .bk-grab{width:44px;height:4px;border-radius:4px;background:var(--line);margin:0 auto 14px}
       .bk-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
       .bk-row:last-child{border-bottom:none}
-      .bk-go{background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-family:inherit;font-weight:700;font-size:11.5px;border-radius:20px;padding:8px 16px;text-decoration:none;white-space:nowrap}
+      .bk-go{background:linear-gradient(120deg,#E9D29A,#C9A75E);color:#1A1206;font-family:inherit;font-weight:700;font-size:11.5px;border-radius:20px;padding:8px 16px;text-decoration:none;white-space:nowrap}
     </style>
     <div class="bk-sheet">
       <div class="bk-grab"></div>
@@ -403,7 +396,7 @@ const CLI={
       <div style="font-size:12px;color:var(--gold-pale);margin-bottom:12px">اختاري وجهتك — صالوناً أو خبيرتك المفضلة</div>
       <div class="seclab" style="margin-top:4px"><span class="t">الصوالين</span></div>
       ${BOOK_SALONS.map(x=>`<div class="bk-row">${av(x.n.replace('صالون ','').replace('مركز ','').replace('استوديو ',''),40,16)}
-        <div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--white);font-weight:600">${x.n} ${x.offer?`<span style="font-size:9.5px;color:#fff;background:linear-gradient(120deg,#d98a93,#b25a6c);border-radius:12px;padding:2px 8px">${x.offer}</span>`:''}</div>
+        <div style="flex:1;min-width:0"><div style="font-size:13.5px;color:var(--white);font-weight:600">${x.n} ${x.offer?`<span style="font-size:9.5px;color:#fff;background:linear-gradient(120deg,#C97A6A,#b25a6c);border-radius:12px;padding:2px 8px">${x.offer}</span>`:''}</div>
         <div style="font-size:11px;color:var(--muted)">${x.role} · ${x.city}</div></div>
         <a class="bk-go" href="${salonBookURL(x)}" target="_blank" rel="noopener">احجزي ←</a></div>`).join('')}
       <div class="seclab"><span class="t">خبيراتكِ المفضلات</span></div>

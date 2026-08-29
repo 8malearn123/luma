@@ -47,20 +47,24 @@ async function pickDayWithSlots(page) {
   }
 }
 
-for (const theme of ['dark', 'light']) {
-  test(`كل الصفحات بلا أخطاء JS — ${theme}`, async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', e => errors.push(`${e.message}`));
-    await page.addInitScript(t => localStorage.setItem('luma_theme', t), theme);
-    for (const f of PAGES) {
-      await page.goto('/' + encodeURIComponent(f));
-      await page.waitForTimeout(400);
-      expect(errors, `${f} (${theme})`).toEqual([]);
-      expect(await page.evaluate(() => document.body.innerText.trim().length),
-        `${f} فارغة`).toBeGreaterThan(20);
-    }
-  });
-}
+// الهوية المعتمدة: الداكن هو الثيم الوحيد — لا وضع فاتح.
+// نحقن قيمة فاتحة قديمة عمداً لنتأكد أن متصفحاً محفوظاً عليها لا يعلق على ثيم زائل.
+test('كل الصفحات بلا أخطاء JS — والثيم داكن دائماً', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(`${e.message}`));
+  await page.addInitScript(() => localStorage.setItem('luma_theme', 'light'));
+  for (const f of PAGES) {
+    await page.goto('/' + encodeURIComponent(f));
+    await page.waitForTimeout(400);
+    expect(errors, f).toEqual([]);
+    expect(await page.evaluate(() => document.body.innerText.trim().length),
+      `${f} فارغة`).toBeGreaterThan(20);
+    expect(await page.evaluate(() => document.documentElement.dataset.theme),
+      `${f} ثيم`).toBe('dark');
+    // لا زر تبديل ثيم، ولا سطح فاتح خلف الصفحة
+    expect(await page.locator('.luma-theme-btn').count(), `${f} زر الثيم`).toBe(0);
+  }
+});
 
 test('التحويلات من الروابط العربية القديمة تعمل', async ({ page }) => {
   await page.goto('/' + encodeURIComponent('LUMA - المتجر.html'));
@@ -1494,4 +1498,52 @@ test('طلب استئذان: نوع جاهز بحقول وقت وتحقق من �
 
   // الاستئذان لا يُخصم من رصيد الإجازات
   await expect(page.getByText(/الرصيد المتبقي: 21 يوماً/).first()).toBeVisible();
+});
+
+test('الهوية المعتمدة: الرموز والقواعد غير القابلة للتفاوض مطبَّقة', async ({ page }) => {
+  await page.goto('/salon.html');
+  await page.waitForTimeout(700);
+  const t = await page.evaluate(() => {
+    const cs = getComputedStyle(document.documentElement);
+    const v = n => cs.getPropertyValue(n).trim();
+    return {
+      obsidian: v('--luma-obsidian'), ink: v('--luma-ink'), gold: v('--luma-gold'),
+      pearl: v('--luma-pearl'), onGold: v('--luma-on-gold'),
+      hairline: v('--luma-hairline'), card: v('--luma-radius-card'), pill: v('--luma-radius-pill'),
+      // الأسماء القديمة صارت تشير لرموز الهوية
+      bg: getComputedStyle(document.body).backgroundColor,
+    };
+  });
+  expect(t.obsidian).toBe('#0C0B0E');
+  expect(t.ink).toBe('#15141A');
+  expect(t.gold).toBe('#C9A75E');
+  expect(t.pearl).toBe('#EDE7DA');
+  expect(t.onGold).toBe('#1A1206');
+  expect(t.hairline).toBe('rgba(201,167,94,.14)');
+  expect(t.card).toBe('8px');
+  expect(t.pill).toBe('30px');
+  expect(t.bg).toBe('rgb(12, 11, 14)');           // ابسيديان خلف كل شيء
+
+  // النص فوق أي تعبئة ذهبية = #1A1206، لا Pearl ولا أبيض
+  const goldBtn = page.locator('.btn-gold').first();
+  if (await goldBtn.count()) {
+    expect(await goldBtn.evaluate(el => getComputedStyle(el).color)).toBe('rgb(26, 18, 6)');
+  }
+  // حدود شعرة: 1px لا أكثر
+  const w = await page.locator('.card').first().evaluate(el => getComputedStyle(el).borderTopWidth);
+  expect(parseFloat(w)).toBeLessThanOrEqual(1);
+
+  // نمط الهالة المعتمد: بلاطة بنسبة r/tile ≈ .53 وسُمك .7 وشفافية .5
+  await page.goto('/index.html');
+  await page.waitForTimeout(500);
+  const halo = await page.evaluate(() => {
+    const p = document.querySelector('pattern');
+    const c = p && p.querySelector('circle');
+    const g = p && p.querySelector('g');
+    return p && { tile: +p.getAttribute('width'), r: +c.getAttribute('r'),
+                  sw: g.getAttribute('stroke-width'), so: g.getAttribute('stroke-opacity') };
+  });
+  expect(halo.sw).toBe('.7');
+  expect(halo.so).toBe('.5');
+  expect(halo.r / halo.tile).toBeCloseTo(16 / 30, 1);
 });
