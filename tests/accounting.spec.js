@@ -18,15 +18,15 @@ test('النواة: دليل الحسابات وطبيعة الحسابات وط
     const { COA, Mapping } = LumaAcc;
     return {
       count: COA.all().length,
-      cashType: COA.get('1101').type,
-      cashNature: COA.get('1101').nature,
+      cashType: COA.get('110101').type,
+      cashNature: COA.get('110101').nature,
       revNature: COA.get('4101').nature,
       contraNature: COA.get('4190').nature,      // مردودات المبيعات: مقابل للإيراد
       accumNature: COA.get('1202').nature,       // مجمع الإهلاك: مقابل للأصل
       groupNotPostable: COA.postable('1'),
-      leafPostable: COA.postable('1101'),
+      leafPostable: COA.postable('110101'),
       mappedCash: Mapping.acc('cash'),
-      parentOf1101: COA.get('1101').parent,
+      parentOf1101: COA.get('110101').parent,
     };
   });
   expect(r.count).toBeGreaterThan(30);
@@ -37,8 +37,8 @@ test('النواة: دليل الحسابات وطبيعة الحسابات وط
   expect(r.accumNature).toBe('credit');
   expect(r.groupNotPostable).toBe(false);        // لا ترحيل على حساب أب
   expect(r.leafPostable).toBe(true);
-  expect(r.mappedCash).toBe('1101');
-  expect(r.parentOf1101).toBe('11');
+  expect(r.mappedCash).toBe('110101');
+  expect(r.parentOf1101).toBe('1101');
 });
 
 test('المحرك: يرفض القيد غير المتوازن ولا يسمح بتعديل المرحَّل', async ({ page }) => {
@@ -47,19 +47,19 @@ test('المحرك: يرفض القيد غير المتوازن ولا يسمح 
     const out = {};
     // غير متوازن
     try { Journal.create({ desc:'خطأ', lines:[
-      {account:'1101',debit:100},{account:'4101',credit:90}]}); out.unbalanced='لم يُرفض'; }
+      {account:'110101',debit:100},{account:'4101',credit:90}]}); out.unbalanced='لم يُرفض'; }
     catch(e){ out.unbalanced = e.message; }
     // سطر مدين ودائن معاً
     try { Journal.create({ desc:'خطأ', lines:[
-      {account:'1101',debit:100,credit:100},{account:'4101',credit:100}]}); out.bothSides='لم يُرفض'; }
+      {account:'110101',debit:100,credit:100},{account:'4101',credit:100}]}); out.bothSides='لم يُرفض'; }
     catch(e){ out.bothSides = e.message; }
     // حساب أب
     try { Journal.create({ desc:'خطأ', lines:[
-      {account:'1',debit:100},{account:'4101',credit:100}]}); out.groupAcc='لم يُرفض'; }
+      {account:'1101',debit:100},{account:'4101',credit:100}]}); out.groupAcc='لم يُرفض'; }
     catch(e){ out.groupAcc = e.message; }
     // قيد سليم ثم محاولة تعديله بعد الترحيل
     const je = Journal.create({ desc:'سليم', lines:[
-      {account:'1101',debit:100},{account:'4101',credit:100}]}, {post:true});
+      {account:'110101',debit:100},{account:'4101',credit:100}]}, {post:true});
     out.posted = je.status;
     try { Journal.update(je.id,{desc:'تلاعب'}); out.editPosted='لم يُرفض'; }
     catch(e){ out.editPosted = e.message; }
@@ -88,7 +88,7 @@ test('سيناريو بيع نقدي: 1,000 + ضريبة ١٥٪ — الإيرا
       status: je.status,
       debit: je.lines.reduce((t,l)=>t+l.debit,0),
       credit: je.lines.reduce((t,l)=>t+l.credit,0),
-      cash: Ledger.balance('1101'),            // 1,150 ر.س = 115000 هللة
+      cash: Ledger.balance('110101'),          // 1,150 ر.س = 115000 هللة
       revenue: Ledger.balance('4101'),         // 1,000
       vatOut: Ledger.balance('2110'),          // 150
       netProfit: is.netProfit,
@@ -145,7 +145,7 @@ test('سيناريو شراء آجل ثم دفع للمورد: المخزون و
     const after = { inv: Ledger.balance('1120'), vatIn: Ledger.balance('1130'), ap: Ledger.balance('2101') };
     Events.post('supplier_payment', {source:'payment',sourceId:'SP-1',date:'2026-03-20',
       method:'تحويل بنكي',amount:5750,party,desc:'دفع مورد'});
-    return { after, ap: Ledger.balance('2101'), bank: Ledger.balance('1102'),
+    return { after, ap: Ledger.balance('2101'), bank: Ledger.balance('110201'),
              supplierRows: Ledger.party('supplier','S1').rows.length,
              tb: Ledger.trialBalance().balanced, bs: Reports.balanceSheet().balanced };
   });
@@ -173,7 +173,7 @@ test('سيناريو مصروف ومرتجع: المصروف يُحمَّل وا
     return {
       rent: Ledger.balance('5203'), vatIn: Ledger.balance('1130'),
       returns: Ledger.balance('4190'), vatOut: Ledger.balance('2110'),
-      cash: Ledger.balance('1101'),
+      cash: Ledger.balance('110101'),
       beforeReturn, netProfit: is.netProfit,
       tb: Ledger.trialBalance().balanced, bs: Reports.balanceSheet().balanced,
     };
@@ -352,4 +352,211 @@ test('التكامل الحي: دفع موعد في اللوحة يُنتج قي
   expect(r.costCenter).toBeTruthy();             // مركز التكلفة = الفرع
   expect(r.tb).toBe(true);
   expect(r.integrity.ok).toBe(true);
+});
+
+// ═══ الوحدات التكميلية ═══
+
+test('الأرصدة الافتتاحية: الفرق يذهب لرأس المال والقيد يتوازن', async ({ page }) => {
+  const r = await acc(page, () => {
+    const { Opening, Ledger, Reports } = LumaAcc;
+    const je = Opening.post('2026-01-01', [
+      {account:'110101',debit:50000},        // صندوق
+      {account:'1120',debit:20000},          // مخزون
+      {account:'2101',credit:15000},         // موردون
+    ]);
+    let dup='';
+    try { Opening.post('2026-01-01',[{account:'110101',debit:1}]); } catch(e){ dup=e.message; }
+    return {
+      balanced: je.lines.reduce((t,l)=>t+l.debit,0) === je.lines.reduce((t,l)=>t+l.credit,0),
+      cash: Ledger.balance('110101'), inv: Ledger.balance('1120'),
+      ap: Ledger.balance('2101'), capital: Ledger.balance('3101'),
+      dup, tb: Ledger.trialBalance().balanced, bs: Reports.balanceSheet().balanced,
+    };
+  });
+  expect(r.balanced).toBe(true);
+  expect(r.cash).toBe(5000000);
+  expect(r.inv).toBe(2000000);
+  expect(r.ap).toBe(1500000);
+  expect(r.capital).toBe(5500000);             // 70,000 − 15,000
+  expect(r.dup).toContain('يوجد قيد افتتاحي');
+  expect(r.tb).toBe(true);
+  expect(r.bs).toBe(true);
+});
+
+test('الصناديق والبنوك: إنشاء حساب وتحويل برسوم', async ({ page }) => {
+  const r = await acc(page, () => {
+    const { Cash, Ledger, Reports } = LumaAcc;
+    const safe = Cash.add({kind:'cash', name:'صندوق الروضة'});
+    const bank = Cash.add({kind:'bank', name:'الراجحي — الرئيسي', bank:'الراجحي'});
+    // موّلي الصندوق برصيد افتتاحي حتى يكون التحويل واقعياً
+    LumaAcc.Opening.post('2026-02-01',[{account:safe.account,debit:10000}]);
+    const je = Cash.transfer(safe.id, bank.id, 3000, {fee:15, date:'2026-02-05'});
+    return {
+      safeCode: safe.account, bankCode: bank.account,
+      safeBal: Cash.balance(safe.id), bankBal: Cash.balance(bank.id),
+      fee: Ledger.balance('5206'),
+      balanced: je.lines.reduce((t,l)=>t+l.debit,0)===je.lines.reduce((t,l)=>t+l.credit,0),
+      tb: Ledger.trialBalance().balanced, bs: Reports.balanceSheet().balanced,
+    };
+  });
+  expect(r.safeCode).toMatch(/^1101\d\d$/);     // حساب فرعي تحت الصندوق
+  expect(r.bankCode).toMatch(/^1102\d\d$/);
+  expect(r.safeBal).toBe(1000000 - 301500);     // 3,000 + 15 رسوم
+  expect(r.bankBal).toBe(300000);
+  expect(r.fee).toBe(1500);
+  expect(r.balanced).toBe(true);
+  expect(r.tb).toBe(true);
+  expect(r.bs).toBe(true);
+});
+
+test('الجهات: كشف حساب المورد ورصيده من الدفتر', async ({ page }) => {
+  const r = await acc(page, () => {
+    const { Parties, Events } = LumaAcc;
+    const s = Parties.add({kind:'supplier', name:'كلر لاين', phone:'0551112222'});
+    const party = {kind:'supplier', id:s.id, name:s.name};
+    Events.post('purchase',{source:'purchase',sourceId:'PP-1',date:'2026-02-10',
+      toInventory:true,net:4000,vat:600,paid:false,party,desc:'صبغات'});
+    Events.post('supplier_payment',{source:'payment',sourceId:'SP-9',date:'2026-02-20',
+      method:'تحويل بنكي',amount:2000,party,desc:'دفعة'});
+    const st = Parties.statement(s.id);
+    return { id:s.id, balance: Parties.balance(s.id), rows: st.rows.length, closing: st.closing };
+  });
+  expect(r.id).toMatch(/^S-\d+$/);
+  expect(r.rows).toBe(2);
+  expect(r.balance).toBe(260000);               // 4,600 − 2,000
+  expect(r.closing).toBe(260000);
+});
+
+test('التسوية البنكية: مطابقة ورسوم ولا إقفال مع فرق', async ({ page }) => {
+  const r = await acc(page, () => {
+    const { Cash, Recon, Ledger } = LumaAcc;
+    const bank = Cash.add({kind:'bank', name:'الأهلي'});
+    LumaAcc.Opening.post('2026-03-01',[{account:bank.account,debit:10000}]);
+    Cash.transfer(bank.id, Cash.add({kind:'cash',name:'صندوق'}).id, 1000, {date:'2026-03-05'});
+    // كشف البنك يُظهر الرصيد الافتتاحي فقط (التحويل لم يصل بعد)
+    const rc = Recon.open(bank.id, '2026-03-31', 10000);
+    const st0 = Recon.status(rc.id);
+    let closeErr='';
+    try { Recon.close(rc.id,'محاولة'); } catch(e){ closeErr = e.message; }
+    // طابقي الحركة الافتتاحية فقط
+    Recon.toggle(rc.id, st0.pending.find(x=>x.amount>0).key);
+    const st1 = Recon.status(rc.id);
+    const closed = Recon.close(rc.id, 'تسوية مارس');
+    return { pending0: st0.pending.length, closeErr,
+             matched: st1.matched.length, diff: st1.difference, clean: st1.clean,
+             status: closed.status, tb: Ledger.trialBalance().balanced };
+  });
+  expect(r.pending0).toBe(2);                   // الافتتاحي + التحويل
+  expect(r.closeErr).toContain('فرق');
+  expect(r.matched).toBe(1);
+  expect(r.diff).toBe(0);
+  expect(r.clean).toBe(true);
+  expect(r.status).toBe('closed');
+  expect(r.tb).toBe(true);
+});
+
+test('الأصول الثابتة: اقتناء وإهلاك شهري لا يتكرر واستبعاد بربح', async ({ page }) => {
+  const r = await acc(page, () => {
+    const { Assets, Ledger, Reports } = LumaAcc;
+    const a = Assets.add({name:'كراسي تصفيف', cost:12000, life:5, acquiredAt:'2026-01-01'});
+    const afterBuy = { asset: Ledger.balance('1201'), monthly: Assets.monthly(a.id) };
+    const d1 = Assets.runDepreciation('2026-02-28');
+    const d2 = Assets.runDepreciation('2026-02-28');   // نفس الشهر — لا يتكرر
+    const afterDep = { accum: Ledger.balance('1202'), exp: Ledger.balance('5290'), nbv: Assets.nbv(a.id) };
+    const disp = Assets.dispose(a.id, {proceeds:12000, date:'2026-03-01', reason:'بيع'});
+    return { afterBuy, sameEntry: d1.id===d2.id, afterDep,
+             assetAfter: Ledger.balance('1201'), accumAfter: Ledger.balance('1202'),
+             status: Assets.get(a.id).status,
+             dispBalanced: disp.lines.reduce((t,l)=>t+l.debit,0)===disp.lines.reduce((t,l)=>t+l.credit,0),
+             tb: Ledger.trialBalance().balanced, integ: Reports.integrity().ok };
+  });
+  expect(r.afterBuy.asset).toBe(1200000);
+  expect(r.afterBuy.monthly).toBe(20000);       // 12,000 ÷ 60 شهراً = 200 ر.س
+  expect(r.sameEntry).toBe(true);               // إهلاك الشهر مرة واحدة
+  expect(r.afterDep.accum).toBe(20000);
+  expect(r.afterDep.exp).toBe(20000);
+  expect(r.afterDep.nbv).toBe(1180000);
+  expect(r.assetAfter).toBe(0);                 // خرج الأصل من الدفاتر
+  expect(r.accumAfter).toBe(0);                 // وأُقفل مجمع إهلاكه
+  expect(r.status).toBe('disposed');
+  expect(r.dispBalanced).toBe(true);
+  expect(r.tb).toBe(true);
+  expect(r.integ).toBe(true);
+});
+
+test('القيود الدورية: قالب متوازن، ترحيل مرة واحدة لكل فترة', async ({ page }) => {
+  const r = await acc(page, () => {
+    const { Recurring, Ledger, Reports } = LumaAcc;
+    let bad='';
+    try { Recurring.add({name:'غير متوازن', lines:[{account:'5203',debit:100},{account:'2140',credit:90}]}); }
+    catch(e){ bad = e.message; }
+    const rc = Recurring.add({name:'استحقاق إيجار', kind:'accrual', freq:'monthly',
+      lines:[{account:'5203',debit:2000},{account:'2140',credit:2000}]});
+    const a = Recurring.run(rc.id,'2026-05-31');
+    const b = Recurring.run(rc.id,'2026-05-31');   // نفس الشهر
+    const c = Recurring.run(rc.id,'2026-06-30');   // شهر تالٍ
+    return { bad, same: a.id===b.id, different: a.id!==c.id,
+             rent: Ledger.balance('5203'), accrued: Ledger.balance('2140'),
+             tb: Ledger.trialBalance().balanced, integ: Reports.integrity().ok };
+  });
+  expect(r.bad).toContain('غير متوازن');
+  expect(r.same).toBe(true);
+  expect(r.different).toBe(true);
+  expect(r.rent).toBe(400000);                  // شهران × 2,000
+  expect(r.accrued).toBe(400000);
+  expect(r.tb).toBe(true);
+  expect(r.integ).toBe(true);
+});
+
+test('الصلاحيات: مفروضة عند حدود النطاق لا في الواجهة فقط', async ({ page }) => {
+  const r = await acc(page, () => {
+    const { Perm, Journal, Periods, COA } = LumaAcc;
+    const out = { asOwner: Perm.can('acc.period.reopen') };
+    // مراجعة: عرض فقط
+    Perm.setRole('viewer');
+    out.viewerPerms = Perm.list().length;
+    try { Journal.create({desc:'محاولة', lines:[{account:'110101',debit:10},{account:'4101',credit:10}]}); out.create='لم يُمنع'; }
+    catch(e){ out.create = e.message; }
+    try { COA.add({code:'9999',name:'حساب',type:'asset'}); out.coa='لم يُمنع'; }
+    catch(e){ out.coa = e.message; }
+    // مُدخِلة قيود: تنشئ ولا تُرحّل
+    Perm.setRole('bookkeeper');
+    const je = Journal.create({desc:'مسودة', lines:[{account:'110101',debit:10},{account:'4101',credit:10}]});
+    out.draftStatus = je.status;
+    try { Journal.post(je.id); out.post='لم يُمنع'; }
+    catch(e){ out.post = e.message; }
+    // محاسِبة: تُرحّل ولا تُعيد فتح فترة مقفلة
+    Perm.setRole('accountant');
+    out.postedStatus = Journal.post(je.id).status;
+    const p = Periods.open('2026-09-01','2026-09-30','سبتمبر');
+    Periods.close(p.id,'إقفال');
+    try { Periods.reopen(p.id,'سبب'); out.reopen='لم يُمنع'; }
+    catch(e){ out.reopen = e.message; }
+    Perm.setRole('owner');
+    out.ownerReopen = Periods.reopen(p.id,'تصحيح').status;
+    return out;
+  });
+  expect(r.asOwner).toBe(true);
+  expect(r.viewerPerms).toBe(3);
+  expect(r.create).toContain('لا تملكين صلاحية');
+  expect(r.coa).toContain('لا تملكين صلاحية');
+  expect(r.draftStatus).toBe('draft');
+  expect(r.post).toContain('لا تملكين صلاحية');
+  expect(r.postedStatus).toBe('posted');
+  expect(r.reopen).toContain('لا تملكين صلاحية');   // المحاسِبة لا تعيد الفتح
+  expect(r.ownerReopen).toBe('open');               // المالكة تستطيع
+});
+
+test('محاولة بلا صلاحية تُسجَّل في سجل التدقيق', async ({ page }) => {
+  const r = await acc(page, () => {
+    const { Perm, Journal, Audit } = LumaAcc;
+    Perm.setRole('viewer');
+    try { Journal.create({desc:'x', lines:[{account:'110101',debit:1},{account:'4101',credit:1}]}); } catch(e){}
+    Perm.setRole('owner');
+    const denied = Audit.all({entity:'permission'});
+    return { count: denied.length, action: denied[0] && denied[0].action, role: denied[0] && denied[0].after.role };
+  });
+  expect(r.count).toBeGreaterThan(0);
+  expect(r.action).toBe('denied');
+  expect(r.role).toBe('viewer');
 });

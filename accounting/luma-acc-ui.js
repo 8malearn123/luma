@@ -108,7 +108,10 @@
   /* ─────────── التبويبات ─────────── */
   const tabs=[['overview','نظرة عامة'],['journal','اليومية'],['ledger','الأستاذ'],
               ['trial','ميزان المراجعة'],['is','قائمة الدخل'],['bs','المركز المالي'],
-              ['vat','الضريبة'],['coa','دليل الحسابات'],['audit','سجل التدقيق']];
+              ['cash','الصناديق والبنوك'],['parties','العملاء والموردون'],
+              ['recon','التسوية البنكية'],['assets','الأصول الثابتة'],
+              ['recurring','الدورية'],['vat','الضريبة'],['coa','دليل الحسابات'],
+              ['perm','الصلاحيات'],['audit','سجل التدقيق']];
 
   function money(v,cls){return `<span class="num" dir="ltr" style="font-family:var(--luma-font-display);${cls||''}">${F(v)}</span>`;}
 
@@ -130,6 +133,7 @@
         <div><div style="font-weight:600;font-size:19px;color:var(--white)">المحاسبة</div>
         <div style="font-size:13px;color:var(--gold-pale);margin-top:2px">دورة محاسبية مزدوجة القيد — كل رقم مشتق من دفتر الأستاذ</div></div>
         <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="ACCUI.openingBalances()">الأرصدة الافتتاحية</button>
           <button class="btn btn-ghost" onclick="ACCUI.go('coa')">دليل الحسابات</button>
           <button class="btn btn-gold" onclick="ACCUI.newEntry()">+ قيد يومية</button>
         </div>
@@ -262,6 +266,8 @@
         سجل يُلحق فقط: لا يُعدَّل ولا يُحذف. كل إنشاء وترحيل وعكس وإقفال مسجّل بفاعله ووقته وسببه.</div>
         ${tableCard('سجل التدقيق',['الوقت','الإجراء','الكيان','المستخدم','السبب'],rows)}`;
     }
+    /* التبويبات التكميلية تعيش في luma-acc-ui2.js */
+    if(ACCUI.renderTab){const extra=ACCUI.renderTab(t);if(extra!=null)return head+extra;}
     return head;
   };
 })();

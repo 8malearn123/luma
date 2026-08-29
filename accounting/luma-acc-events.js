@@ -10,7 +10,7 @@
 
   /* الأدوار المحاسبية → أرقام الحسابات. قابلة للتحرير من الواجهة. */
   const MAP_DEFAULT={
-    cash:'1101', bank:'1102', card_clearing:'1103',
+    cash:'110101', bank:'110201', card_clearing:'1103',
     ar:'1110', inventory:'1120', vat_input:'1130', prepaid:'1140',
     ap:'2101', vat_output:'2110', vat_payable:'2120',
     payroll_payable:'2130', tips_payable:'2135', accrued:'2140', deferred_revenue:'2150',
