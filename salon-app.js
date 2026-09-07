@@ -353,12 +353,33 @@ SCREENS.inventory=()=>{
 };
 
 
-/* ── فاتورة ZATCA (المرحلة الأولى): TLV بالحقول الخمسة → Base64 → QR ── */
+/* ═══ ضريبة القيمة المضافة ═══
+   الأسعار المعروضة للمستهلك في السعودية شاملة للضريبة، وهكذا تُعرض في
+   صفحة الحجز والمتجر. لذا تُستخرج الضريبة من السعر لا تُضاف إليه —
+   قبل هذا كانت العميلة تحجز بـ450 وتُطالَب بـ517.50 عند الدفع. */
+const VAT_RATE=0.15;
+const vatBreakdown=gross=>{
+  const g=Math.round((+gross||0)*100)/100;
+  const net=Math.round(g/(1+VAT_RATE)*100)/100;
+  return {gross:g, net, vat:Math.round((g-net)*100)/100};
+};
+/* الرقم الضريبي السعودي: 15 رقماً يبدأ وينتهي بالرقم 3 */
+const isValidVatNo=v=>/^3\d{13}3$/.test(String(v||'').replace(/\s/g,''));
+
+/* ── فاتورة ZATCA (المرحلة الأولى): TLV بالحقول الخمسة → Base64 → QR ──
+   لا يُولَّد الرمز بلا رقم ضريبي صحيح: رمزٌ يحمل رقماً وهمياً على فاتورة
+   مكتوب عليها «متوافق مع فاتورة» أسوأ من غياب الرمز.
+   والحقل 4 هو إجمالي التوريد شاملاً الضريبة — البقشيش ليس توريداً
+   خاضعاً للضريبة فيبقى خارجه، وإلا اختلّ الشرط: الإجمالي = الصافي + الضريبة. */
 function zatcaQR(seller,vatno,p){
+  if(!isValidVatNo(vatno))return '';
   try{
     const enc=new TextEncoder();
     const tlv=(tag,str)=>{const b=enc.encode(str);const out=new Uint8Array(2+b.length);out[0]=tag;out[1]=b.length;out.set(b,2);return out;};
-    const parts=[tlv(1,seller),tlv(2,vatno),tlv(3,p.date+'T12:00:00Z'),tlv(4,p.total.toFixed(2)),tlv(5,p.vat.toFixed(2))];
+    const gross=(typeof p.gross==='number')?p.gross:(p.amount+p.vat);
+    /* ختم الوقت الفعلي للإصدار بصيغة ISO8601 — كان مثبّتاً على T12:00:00Z */
+    const stamp=p.at?new Date(p.at).toISOString().replace(/\.\d{3}Z$/,'Z'):new Date().toISOString().replace(/\.\d{3}Z$/,'Z');
+    const parts=[tlv(1,seller),tlv(2,String(vatno).replace(/\s/g,'')),tlv(3,stamp),tlv(4,gross.toFixed(2)),tlv(5,p.vat.toFixed(2))];
     const all=new Uint8Array(parts.reduce((t,x)=>t+x.length,0));
     let o=0;parts.forEach(x=>{all.set(x,o);o+=x.length;});
     const b64=btoa(String.fromCharCode(...all));
@@ -553,28 +574,31 @@ const SALON={
   },
   payFlow(id){
     const a=APPTS.find(x=>String(x.id)===String(id));if(!a)return;
-    const price=svcPrice(a.service);
+    const price=svcPrice(a.service);      /* السعر المعروض — شامل الضريبة */
+    const vb=vatBreakdown(price);
     const METHODS=[['mada','مدى'],['apple','Apple Pay'],['card','بطاقة ائتمانية'],['tabby','تابي · تقسيط'],['tamara','تمارا · تقسيط'],['cash','نقداً']];
     LUX.modal('إتمام الدفع',`
-      <div class="lux-lead">${a.client} · ${a.service} · <b style="color:var(--gold-light,#ccab64)">${price} ر.س</b></div>
+      <div class="lux-lead">${a.client} · ${a.service} · <b style="color:var(--gold-light,#ccab64)">${price} ر.س</b> <span style="font-size:11px;opacity:.7">شامل الضريبة</span></div>
       <div class="lux-f"><label>طريقة الدفع</label>
         <div class="lux-chips" id="payM">${METHODS.map(([v,l],i)=>`<button type="button" class="lux-chip ${i===0?'on':''}" data-v="${l}">${l}</button>`).join('')}</div></div>
       <div class="lux-f"><label>بقشيش إلكتروني للموظفة (اختياري)</label><input name="tip" dir="ltr" style="text-align:right" placeholder="0"/></div>
-      <div class="lux-row"><span class="k">قيمة الخدمة</span><span class="v" dir="ltr">${price.toFixed(2)} SAR</span></div>
-      <div class="lux-row"><span class="k">ضريبة القيمة المضافة 15٪</span><span class="v" dir="ltr">${(price*0.15).toFixed(2)} SAR</span></div>
-      <div class="lux-row"><span class="k" style="color:var(--gold-light,#ccab64);font-weight:700">الإجمالي</span><span class="v" id="payT" style="color:var(--gold-light,#ccab64);font-weight:700" dir="ltr">${(price*1.15).toFixed(2)} SAR</span></div>
+      <div class="lux-row"><span class="k">قيمة الخدمة قبل الضريبة</span><span class="v" dir="ltr">${vb.net.toFixed(2)} SAR</span></div>
+      <div class="lux-row"><span class="k">ضريبة القيمة المضافة 15٪</span><span class="v" dir="ltr">${vb.vat.toFixed(2)} SAR</span></div>
+      <div class="lux-row"><span class="k" style="color:var(--gold-light,#ccab64);font-weight:700">الإجمالي شامل الضريبة</span><span class="v" id="payT" style="color:var(--gold-light,#ccab64);font-weight:700" dir="ltr">${vb.gross.toFixed(2)} SAR</span></div>
       <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:12px">تأكيد الدفع</button>`,{onMount(ov,close){
       ov.querySelectorAll('#payM .lux-chip').forEach(c=>c.onclick=()=>{ov.querySelectorAll('#payM .lux-chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');});
       const tipEl=ov.querySelector('[name=tip]');
-      tipEl.oninput=()=>{const t=parseFloat(tipEl.value)||0;ov.querySelector('#payT').textContent=(price*1.15+t).toFixed(2)+' SAR';};
+      tipEl.oninput=()=>{const t=parseFloat(tipEl.value)||0;ov.querySelector('#payT').textContent=(vb.gross+t).toFixed(2)+' SAR'+(t?' (منها بقشيش '+t.toFixed(2)+')':'');};
       ov.querySelector('[data-ok]').onclick=()=>{
         const method=ov.querySelector('#payM .lux-chip.on').dataset.v;
         const tip=Math.max(0,parseFloat(tipEl.value)||0);
         const btn=ov.querySelector('[data-ok]');btn.disabled=true;btn.innerHTML='<span class="lux-spin" style="width:18px;height:18px;border-width:2px;margin:0 auto;display:block"></span>';
         setTimeout(()=>{
           a.st='confirmed';saveAppts();
-          const total=+(price*1.15+tip).toFixed(2);
-          markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:LumaDate.iso()});
+          /* gross = الصافي + الضريبة (وعاء التوريد) · total = ما دفعته العميلة فعلاً */
+          const total=+(vb.gross+tip).toFixed(2);
+          markPaid(a.id,{no:nextInvNo(),method,tip,amount:vb.net,vat:vb.vat,gross:vb.gross,total,
+            date:LumaDate.iso(),at:new Date().toISOString()});
           const pts=typeof loyAward==='function'?loyAward(a.client,total):0;
           const stk=typeof stockConsume==='function'?stockConsume(a.service):{alerts:[]};
           /* طلب تقييم ما بعد الزيارة — يفتح في review.html ويُنشر موثقاً في المتجر */
@@ -595,6 +619,9 @@ const SALON={
     /* هوية الفاتورة تُقرأ من «صفحتي والرابط»: الاسم، الشعار، العنوان، الرقم الضريبي، ولون الثيم */
     const c=pageCfg();
     const ac=pageThemeOf(c).ac;   /* يشمل الثيم المخصص من محرر المظهر */
+    /* الفواتير المحفوظة قبل توحيد الضريبة لا تحمل gross — تُشتقّ منها */
+    const gross=(typeof p.gross==='number')?p.gross:+(p.amount+p.vat).toFixed(2);
+    const vatOk=isValidVatNo(c.vatno);
     return `
     <div id="lumaInv" style="background:#fdfbf7;color:#2e241b;border-radius:14px;padding:28px 26px;font-family:'IBM Plex Sans Arabic','Cairo',sans-serif">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid ${ac};padding-bottom:14px">
@@ -605,7 +632,7 @@ const SALON={
             <div style="font-size:10.5px;color:#8d8172;margin-top:2px">${c.address||''}${c.phone?` · <bdo dir="ltr">${c.phone}</bdo>`:''}</div>
             <div style="font-family:'Bodoni Moda',serif;font-size:10px;letter-spacing:.24em;color:${ac};margin-top:3px">LUMA BEAUTY SYSTEMS</div></div>
         </div>
-        <div style="text-align:left;font-size:11.5px;color:#54473a"><div style="font-weight:700;font-size:13px;color:#2e241b">فاتورة ضريبية مبسطة</div>
+        <div style="text-align:left;font-size:11.5px;color:#54473a"><div style="font-weight:700;font-size:13px;color:#2e241b">${vatOk?'فاتورة ضريبية مبسطة':'إيصال بيع'}</div>
           <div dir="ltr">${p.no}</div><div dir="ltr">${p.date}</div>
           ${c.vatno?`<div style="font-size:10px;color:#8d8172;margin-top:2px">الرقم الضريبي: <bdo dir="ltr">${c.vatno}</bdo></div>`:''}</div>
       </div>
@@ -616,12 +643,17 @@ const SALON={
         <tr style="color:${ac};font-size:11.5px"><td style="padding:9px 0">الخدمة</td><td style="text-align:left">المبلغ</td></tr>
         <tr style="border-top:1px solid #efe8db"><td style="padding:9px 0">${a.service}</td><td style="text-align:left" dir="ltr">${p.amount.toFixed(2)} SAR</td></tr>
         <tr style="border-top:1px solid #efe8db;color:#54473a;font-size:12px"><td style="padding:8px 0">ضريبة القيمة المضافة (15٪)</td><td style="text-align:left" dir="ltr">${p.vat.toFixed(2)} SAR</td></tr>
-        ${p.tip?`<tr style="color:#54473a;font-size:12px"><td style="padding:8px 0">بقشيش الموظفة</td><td style="text-align:left" dir="ltr">${p.tip.toFixed(2)} SAR</td></tr>`:''}
-        <tr style="border-top:2px solid ${ac};font-weight:700;font-size:15px"><td style="padding:11px 0">الإجمالي المدفوع · ${p.method}</td><td style="text-align:left;color:${ac}" dir="ltr">${p.total.toFixed(2)} SAR</td></tr>
+        <tr style="border-top:1px solid #efe8db;font-weight:600"><td style="padding:9px 0">إجمالي التوريد شامل الضريبة</td><td style="text-align:left" dir="ltr">${gross.toFixed(2)} SAR</td></tr>
+        ${p.tip?`<tr style="color:#54473a;font-size:12px"><td style="padding:8px 0">بقشيش الموظفة <span style="font-size:10px;color:#8d8172">— غير خاضع للضريبة</span></td><td style="text-align:left" dir="ltr">${p.tip.toFixed(2)} SAR</td></tr>`:''}
+        <tr style="border-top:2px solid ${ac};font-weight:700;font-size:15px"><td style="padding:11px 0">المدفوع · ${p.method}</td><td style="text-align:left;color:${ac}" dir="ltr">${p.total.toFixed(2)} SAR</td></tr>
       </table>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:16px;border-top:1px dashed #e4daca;padding-top:12px">
-        <div style="font-size:10.5px;color:#8d8172;line-height:1.9">رمز الفاتورة الإلكترونية<br><span style="color:#b3a794">متوافق مع «فاتورة» — المرحلة الأولى (ZATCA)</span></div>
-        ${zatcaQR(c.title||'LUMA',c.vatno||'000000000000000',p)}
+        ${vatOk
+          ?`<div style="font-size:10.5px;color:#8d8172;line-height:1.9">رمز الفاتورة الإلكترونية<br><span style="color:#b3a794">متوافق مع «فاتورة» — المرحلة الأولى (ZATCA)</span></div>
+             ${zatcaQR(c.title||'LUMA',c.vatno,{...p,gross})}`
+          :`<div style="font-size:10.5px;color:#a8794f;line-height:1.9;background:#fdf4e7;border:1px solid #ecd9bd;border-radius:8px;padding:9px 12px">
+              أضيفي الرقم الضريبي في «متجري الإلكتروني ← الهوية» ليصدر رمز «فاتورة» (ZATCA).<br>
+              <span style="color:#b3a794">هذه فاتورة مبسطة بلا رمز ضريبي حتى ذلك الحين.</span></div>`}
       </div>
       <div style="text-align:center;font-size:11px;color:#8d8172;margin-top:12px">شكراً لكِ 🌸 نسعد بزيارتك دائماً${c.slug?` · luma.beauty/${c.slug}`:''}</div>
     </div>`;

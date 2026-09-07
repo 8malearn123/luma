@@ -634,6 +634,7 @@ window.openCart=()=>{
     <div style="font-size:17px;font-weight:700">إتمام الطلب <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M6 7h12l1 13a1 1 0 01-1 1H6a1 1 0 01-1-1z"/><path d="M9 7a3 3 0 016 0"/></svg></div>
     ${Object.entries(cart).map(([n,q])=>{const p=SHOP.find(x=>x.n===n);return `<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--ln);font-size:13px"><span>${n} × ${q}</span><b style="color:var(--ac)">${p.p*q} ر.س</b></div>`;}).join('')}
     <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:14.5px"><b>الإجمالي</b><b style="color:var(--ac)">${cartTotal()} ر.س</b></div>
+    <div style="font-size:11px;opacity:.6;margin-top:-6px;margin-bottom:6px">الأسعار شاملة ضريبة القيمة المضافة 15٪</div>
     <input id="odName" placeholder="اسمك الكامل" style="width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;color:inherit;font-family:inherit;font-size:13px;outline:none;margin-bottom:9px"/>
     <input id="odPhone" dir="ltr" placeholder="05xxxxxxxx" style="width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;color:inherit;font-family:inherit;font-size:13px;outline:none;margin-bottom:12px;text-align:right"/>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">${['mada','Apple Pay','تابي · تقسيط','تمارا · تقسيط'].map((m,i)=>`<label style="display:flex;align-items:center;gap:6px;border:1px solid var(--ln);border-radius:20px;padding:8px 14px;font-size:12px;cursor:pointer"><input type="radio" name="odPay" value="${m}" ${i===0?'checked':''} style="accent-color:var(--ac)"/>${m}</label>`).join('')}</div>
@@ -732,6 +733,7 @@ function render(){
         <div class="trow2"><span class="k">المدة الإجمالية</span><b>${selDur()} دقيقة</b></div>
         ${coupon?`<div class="trow2" style="color:#6fa86a"><span class="k">كوبون <bdo dir="ltr">${coupon.code}</bdo></span><b>− ${discount()} ر.س</b></div>`:''}
         <div class="trow2 total"><span>الإجمالي</span><b>${selTotal()-discount()} ر.س</b></div>
+        <div class="trow2" style="font-size:11px;opacity:.6"><span>شامل ضريبة القيمة المضافة 15٪</span><span></span></div>
       </div></div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <input id="cpn" placeholder="كود خصم؟ (اختياري)" dir="ltr" value="${coupon?coupon.code:''}"

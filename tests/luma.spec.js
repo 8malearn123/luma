@@ -84,7 +84,29 @@ test('لوحة الصالون: حجز جديد بتوفر حي', async ({ page }
   await expect(page.locator('.appt', { hasText: 'عميلة الاختبار' })).toBeVisible();
 });
 
-test('رحلة الدفع تُصدر فاتورة بهوية الصالون ورمز ZATCA', async ({ page }) => {
+/* رمز ZATCA لا يصدر إلا برقم ضريبي صحيح: رمزٌ يحمل رقماً وهمياً على مستند
+   مكتوب عليه «متوافق مع فاتورة» يوهم بامتثال غير قائم. فبلا رقم = إيصال بيع. */
+test('رحلة الدفع بلا رقم ضريبي: إيصال بيع بلا رمز ZATCA', async ({ page }) => {
+  await page.goto('/salon.html#board');
+  await page.waitForTimeout(800);
+  await page.locator('.appt', { hasText: 'نوف العتيبي' }).first().click();
+  await page.click('[data-pay]');
+  await page.click('.lux-modal [data-ok]');
+  await page.waitForTimeout(1900);
+  await expect(page.locator('#lumaInv')).toContainText('إيصال بيع');
+  await expect(page.locator('#lumaInv')).toContainText(/INV-\d+/);
+  await expect(page.locator('#lumaInv img[alt="ZATCA QR"]')).toHaveCount(0);
+  await expect(page.locator('#lumaInv')).toContainText('أضيفي الرقم الضريبي');
+});
+
+test('رحلة الدفع برقم ضريبي صحيح: فاتورة ضريبية مبسطة برمز ZATCA', async ({ page }) => {
+  await page.addInitScript(() => {
+    try {
+      const c = JSON.parse(localStorage.getItem('luma_page_cfg') || '{}');
+      c.vatno = '310123456700003';
+      localStorage.setItem('luma_page_cfg', JSON.stringify(c));
+    } catch (e) {}
+  });
   await page.goto('/salon.html#board');
   await page.waitForTimeout(800);
   await page.locator('.appt', { hasText: 'نوف العتيبي' }).first().click();
@@ -93,7 +115,8 @@ test('رحلة الدفع تُصدر فاتورة بهوية الصالون ور
   await page.waitForTimeout(1900);
   await expect(page.locator('#lumaInv')).toContainText('فاتورة ضريبية مبسطة');
   await expect(page.locator('#lumaInv')).toContainText(/INV-\d+/);
-  await expect(page.locator('#lumaInv img[alt="ZATCA QR"]')).toBeVisible();   // رمز الفوترة الإلكترونية
+  await expect(page.locator('#lumaInv img[alt="ZATCA QR"]')).toBeVisible();
+  await expect(page.locator('#lumaInv')).toContainText('310123456700003');
 });
 
 test('شاشة التقارير بأرقام حية', async ({ page }) => {

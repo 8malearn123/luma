@@ -130,6 +130,20 @@ const PAGE={
     if(!silent)LUX.toast('حُفظت التغييرات وانعكست على المعاينة ✓','ok');},
   copy(){const c=pageCfg();navigator.clipboard.writeText(location.origin+location.pathname.replace(/[^/]*$/,'')+'booking.html?s='+c.slug).then(()=>{
     const b=document.getElementById('cpBtn');if(b){b.textContent='✓ نُسخ!';setTimeout(()=>b.textContent='نسخ الرابط',1600);}});},
+  /* الرقم الضريبي السعودي: 15 رقماً يبدأ وينتهي بـ3. الرمز الضريبي على
+     الفاتورة لا يصدر إلا برقم صحيح — رمزٌ برقم خاطئ يوهم بامتثال غير قائم. */
+  vatField(el){
+    const v=String(el.value||'').replace(/\D/g,'').slice(0,15);
+    el.value=v;
+    const ok=/^3\d{13}3$/.test(v);
+    el.style.borderColor=!v?'':(ok?'#6fa86a':'#c2705f');
+    let hint=el.parentElement.querySelector('.vat-hint');
+    if(!hint){hint=document.createElement('div');hint.className='vat-hint';
+      hint.style.cssText='font-size:11px;margin-top:5px';el.parentElement.appendChild(hint);}
+    hint.textContent=!v?'':(ok?'رقم صحيح — سيصدر رمز «فاتورة» على فواتيرك ✓':'الرقم غير مكتمل ('+v.length+'/15) — لن يصدر رمز «فاتورة»');
+    hint.style.color=ok?'#6fa86a':'#c2705f';
+    PAGE.field('vatno',el);
+  },
   field(k,el){const v=k==='slug'?slugClean(el.value):el.value;if(k==='slug')el.value=v;PAGE.save({[k]:v},true);},
   /* ── محرر الثيم المخصص ── */
   hex(v){v=String(v||'').trim().replace(/^#?/,'#');return /^#[0-9a-fA-F]{6}$/.test(v)?v.toLowerCase():null;},
@@ -575,7 +589,7 @@ SCREENS.page=()=>{
           <div class="lux-f"><label>اسم الصالون</label><input value="${c.title}" oninput="PAGE.field('title',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none"/></div>
           <div class="lux-f"><label>رقم التواصل</label><input value="${c.phone}" oninput="PAGE.field('phone',this)" dir="ltr" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:right"/></div>
           <div class="lux-f"><label>العنوان</label><input value="${c.address||''}" oninput="PAGE.field('address',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none"/></div>
-          <div class="lux-f"><label>الرقم الضريبي <span style="font-size:10px;color:var(--muted)">— يظهر في الفاتورة</span></label><input value="${c.vatno||''}" oninput="PAGE.field('vatno',this)" dir="ltr" placeholder="310123456700003" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:right"/></div>
+          <div class="lux-f"><label>الرقم الضريبي <span style="font-size:10px;color:var(--muted)">— 15 رقماً يبدأ وينتهي بـ3، ومنه يصدر رمز «فاتورة»</span></label><input value="${c.vatno||''}" oninput="PAGE.vatField(this)" inputmode="numeric" maxlength="15" dir="ltr" placeholder="310123456700003" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;text-align:right"/></div>
         </div>
         <div class="lux-f"><label>نبذة مختصرة</label><textarea rows="2" oninput="PAGE.field('bio',this)" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none;resize:vertical">${c.bio}</textarea></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
