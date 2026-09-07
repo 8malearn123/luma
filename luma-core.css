@@ -39,3 +39,102 @@
 .sec-label .ln{flex:1;height:1px;background:var(--line);}
 .sec-label .more{font-size:12px;color:var(--gold-pale);cursor:pointer;font-weight:400;}
 .sec-label .more:hover{color:var(--gold-light);}
+
+/* ===== تخطيط الجوال للوحات التحكم =====
+   الشريط الجانبي كان مثبّتاً على 262px بلا نقطة كسر، فينضغط المحتوى
+   الرئيسي إلى 128px على شاشة 390px ويفيض المستند أفقياً. المالكة تدير
+   صالونها من جوالها، فتحت 900px يصير الشريط درجاً ينزلق من حافة البدء
+   (اليمين في RTL) ويفتحه زر في الشريط العلوي.
+   السيادة: `body` يرفع الخصوصية فوق أنماط الصفحة المضمّنة. */
+
+.luma-burger{display:none;}
+
+@media (max-width:900px){
+  body .app{grid-template-columns:1fr;}
+
+  body .sidebar{
+    /* inset-inline-start في RTL هو الحافة اليمنى — حيث يقف الشريط أصلاً */
+    position:fixed; inset-block:0; inset-inline-start:0; z-index:70;
+    width:min(86vw,300px); height:100dvh;
+    transform:translateX(100%);            /* خارج الشاشة عند الحافة اليمنى */
+    /* visibility تُخرج الدرج المغلق من منطقة التمرير ومن ترتيب التنقّل
+       بالكيبورد معاً — بدونها يمتد عرض المستند 300px ويستقبل التركيز وهو مخفي */
+    visibility:hidden;
+    transition:transform .26s ease, visibility 0s linear .26s;
+    box-shadow:none;
+  }
+  html[dir="ltr"] body .sidebar{transform:translateX(-100%);}
+  body.luma-nav-open .sidebar{
+    transform:translateX(0); visibility:visible;
+    transition:transform .26s ease, visibility 0s;
+    box-shadow:0 0 60px rgba(0,0,0,.6);
+  }
+
+  /* حجاب يغلق الدرج باللمس خارجه */
+  body .luma-scrim{
+    position:fixed; inset:0; z-index:69; background:rgba(8,6,4,.62);
+    backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .26s ease;
+  }
+  body.luma-nav-open .luma-scrim{opacity:1; pointer-events:auto;}
+
+  body .luma-burger{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:44px; height:44px; flex-shrink:0;          /* 44px حدّ أدنى لهدف اللمس */
+    background:var(--surface3); border:1px solid var(--line); border-radius:11px;
+    color:var(--gold-light); cursor:pointer; padding:0;
+  }
+  body .luma-burger:focus-visible{outline:2px solid var(--gold-light); outline-offset:2px;}
+
+  body .topbar{padding:12px 15px; gap:12px; flex-wrap:nowrap;}
+  body .topbar .pg{min-width:0;}
+  body .topbar .pg h1{font-size:16.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  body .topbar .right{gap:8px;}
+  body .screen{padding:18px 15px; max-width:100%;}
+
+  /* الجداول والشبكات العريضة تمرَّر داخل حاويتها لا تدفع الصفحة */
+  body .screen table{min-width:520px;}
+  body .tw,body .ivtab,body .table-wrap{overflow-x:auto;}
+  /* شبكات المحتوى المضمّنة تصير عموداً واحداً. عناصر الشبكة تأخذ
+     min-width:auto افتراضياً فينتفخ المسار على أطول محتوى غير قابل
+     للكسر ويفيض المستند — min-width:0 يسمح لها بالانكماش.
+     شبكة لوحة الحجوزات معرَّفة بأصناف لا بنمط مضمّن، فلا يمسّها هذا. */
+  body .screen [style*="display:grid"]{grid-template-columns:1fr !important;}
+  body .screen [style*="display:grid"] > *{min-width:0;}
+
+  /* أشرطة التبويب المجزّأة (b-seg · p-seg · f-seg · cl-seg · lux-seg · bk-tabs)
+     صفٌّ من أربعة أزرار يقارب 400px — تمرَّر داخل نفسها بدل دفع الصفحة */
+  body .screen [class$="-seg"],
+  body .screen [class*="-seg "],
+  body .screen [class$="-tabs"],
+  body .screen [class*="-tabs "]{
+    overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  body .screen [class$="-seg"]::-webkit-scrollbar,
+  body .screen [class$="-tabs"]::-webkit-scrollbar{display:none;}
+  body .screen [class$="-seg"] > *,
+  body .screen [class*="-seg "] > *,
+  body .screen [class$="-tabs"] > *,
+  body .screen [class*="-tabs "] > *{flex:0 0 auto;}
+
+  /* جداول البيانات العريضة تمرَّر أفقياً بدل أن تدفع المستند */
+  body .screen table{display:block; overflow-x:auto; white-space:nowrap; max-width:100%;}
+
+  /* صفوف المحتوى (bk-row · ov-row · an-row …): الفجوة 15px بين سبعة عناصر
+     تلتهم 90px وحدها على شاشة 390px — تضييقها مع السماح بالالتفاف */
+  body .screen [class$="-row"],
+  body .screen [class*="-row "],
+  body .screen [class$="-row2"]{flex-wrap:wrap; gap:9px;}
+
+  /* صفوف الإجراءات المضمّنة تلتفّ بدل أن تفيض. الالتفاف لا يغيّر شيئاً
+     حين تتّسع العناصر أصلاً، فأثره محصور في الحالة التي كانت تفيض. */
+  body .screen [style*="display:flex"]{flex-wrap:wrap;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  body .sidebar,body .luma-scrim{transition:none;}
+}
+
+@media (max-width:560px){
+  body .topbar .me .nm,body .topbar .search{display:none;}
+  body .topbar .pg .crumb{display:none;}
+}

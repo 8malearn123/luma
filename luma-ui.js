@@ -339,3 +339,58 @@
 
   window.LUX={toast,modal,confirm:confirmBox,menu,formModal,payouts:payoutFlow,commissions:commissionEditor};
 })();
+
+/* ===== درج التنقّل على الجوال =====
+   يعمل على كل لوحة فيها .sidebar + .topbar (الصالون والخبيرة والأدمن).
+   الأنماط في luma-core.css؛ هنا السلوك فقط: زر فتح، حجاب، إغلاق عند
+   اختيار عنصر أو بالضغط على Escape، وإعادة التركيز للزر بعد الإغلاق. */
+(function(){
+  if(window.__LUMA_NAV__)return; window.__LUMA_NAV__=true;
+
+  function init(){
+    const sidebar=document.querySelector('.sidebar');
+    const topbar=document.querySelector('.topbar');
+    if(!sidebar||!topbar||topbar.querySelector('.luma-burger'))return;
+
+    const burger=document.createElement('button');
+    burger.type='button';
+    burger.className='luma-burger';
+    burger.setAttribute('aria-label','فتح قائمة التنقّل');
+    burger.setAttribute('aria-expanded','false');
+    burger.setAttribute('aria-controls', sidebar.id||(sidebar.id='luma-sidebar'));
+    burger.innerHTML='<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+    topbar.insertBefore(burger,topbar.firstChild);
+
+    const scrim=document.createElement('div');
+    scrim.className='luma-scrim';
+    scrim.setAttribute('aria-hidden','true');
+    document.body.appendChild(scrim);
+
+    const open=()=>{document.body.classList.add('luma-nav-open');burger.setAttribute('aria-expanded','true');};
+    const close=()=>{
+      if(!document.body.classList.contains('luma-nav-open'))return;
+      document.body.classList.remove('luma-nav-open');
+      burger.setAttribute('aria-expanded','false');
+      burger.focus();
+    };
+    window.LumaNav={open,close,toggle(){document.body.classList.contains('luma-nav-open')?close():open();}};
+
+    burger.addEventListener('click',()=>window.LumaNav.toggle());
+    scrim.addEventListener('click',close);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+    /* اختيار عنصر من القائمة يغلق الدرج — عدا القوائم القابلة للطي */
+    sidebar.addEventListener('click',e=>{
+      const item=e.target.closest('.nav-item');
+      if(item&&item.dataset.id!=='page')setTimeout(close,60);
+    });
+    /* العودة لسطح المكتب تُنهي حالة الدرج */
+    if(window.matchMedia){
+      const mq=window.matchMedia('(min-width:901px)');
+      const onChange=e=>{if(e.matches)document.body.classList.remove('luma-nav-open');};
+      mq.addEventListener?mq.addEventListener('change',onChange):mq.addListener(onChange);
+    }
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();

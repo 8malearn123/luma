@@ -79,6 +79,10 @@
   .sub-head{display:flex;align-items:baseline;gap:16px;margin:60px 0 26px;}
   .sub-head .n{font-family:'El Messiri',serif;font-weight:600;font-size:20px;color:var(--gold-pale);white-space:nowrap;}
   .sub-head .lat{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);direction:ltr;white-space:nowrap;}
+  /* التسمية اللاتينية بتباعد أحرفها كانت تتجاوز حافة الشاشة على الجوال */
+  @media (max-width:560px){
+    .sec-head .ttl .lat,.sub-head .lat{white-space:normal;overflow-wrap:anywhere;letter-spacing:0.12em;}
+  }
   .sub-head .ln{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold));opacity:0.4;}
 
   /* VISION */
