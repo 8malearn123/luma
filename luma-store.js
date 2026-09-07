@@ -30,21 +30,51 @@
     try{const r=localStorage.getItem(k);return r===null?fallback:JSON.parse(r);}
     catch(e){return fallback;}
   }
+  /* امتلاء التخزين كان يمرّ صامتاً: الصورة تظهر على الشاشة كأنها حُفظت
+     ثم تختفي بعد التحديث. الآن يعود set قيمة نجاح، ويُبلَّغ المستخدم مرة
+     واحدة برسالة صريحة بدل console.warn لا يراه أحد. */
+  let quotaNotified=false;
+  function usageMB(){
+    let n=0;try{for(const k in localStorage){if(Object.prototype.hasOwnProperty.call(localStorage,k))n+=(localStorage.getItem(k)||'').length+k.length;}}catch(e){}
+    return Math.round(n/1048576*100)/100;
+  }
+  function notifyQuota(){
+    if(quotaNotified)return;quotaNotified=true;
+    const msg='امتلأت مساحة التخزين في المتصفح ('+usageMB()+'MB). لم يُحفظ آخر تغيير — احذفي بعض الصور القديمة أو صغّري مقاسها.';
+    try{
+      if(window.LUX&&typeof LUX.toast==='function'){LUX.toast('⚠ '+msg,'warn');return;}
+      if(typeof window.toast==='function'){window.toast('⚠ '+msg);return;}
+    }catch(e){}
+    try{alert(msg);}catch(e){}
+  }
   function set(k,val){
+    let ok=true;
     try{localStorage.setItem(k,JSON.stringify(val));}
-    catch(e){console.warn('LumaStore: storage full or blocked for',k);}
+    catch(e){
+      ok=false;
+      console.warn('LumaStore: storage full or blocked for',k,e);
+      /* أخطاء الحصة فقط تُبلَّغ — لا وضع التصفح الخاص مثلاً */
+      const quota=e&&(e.name==='QuotaExceededError'||e.name==='NS_ERROR_DOM_QUOTA_REACHED'||e.code===22||e.code===1014);
+      if(quota)notifyQuota();
+    }
     emit(k,val);
+    return ok;
   }
 
   window.LumaStore={
-    VERSION,get,set,
+    VERSION,get,set,usageMB,
     update(k,fn,fallback){const v=fn(get(k,fallback));set(k,v);return v;},
     remove(k){try{localStorage.removeItem(k);}catch(e){}emit(k,undefined);},
     subscribe(k,cb){(subs[k]=subs[k]||[]).push(cb);return()=>{subs[k]=(subs[k]||[]).filter(x=>x!==cb);};},
     /* للقيم النصية غير-JSON (مثل الثيم ورقم تسلسل الفواتير) */
     raw:{
       get(k,f){try{const r=localStorage.getItem(k);return r===null?f:r;}catch(e){return f;}},
-      set(k,v){try{localStorage.setItem(k,String(v));}catch(e){}emit(k,v);},
+      set(k,v){
+        let ok=true;
+        try{localStorage.setItem(k,String(v));}
+        catch(e){ok=false;const quota=e&&(e.name==='QuotaExceededError'||e.name==='NS_ERROR_DOM_QUOTA_REACHED'||e.code===22||e.code===1014);if(quota)notifyQuota();}
+        emit(k,v);return ok;
+      },
     },
   };
 

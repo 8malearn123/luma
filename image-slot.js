@@ -32,8 +32,15 @@
           const cv=document.createElement('canvas');cv.width=im.width*sc;cv.height=im.height*sc;
           cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
           const url=cv.toDataURL('image/jpeg',0.78);
-          if(this.id)try{localStorage.setItem(KEY(this.id),url)}catch(e){}
+          /* الحفظ عبر LumaStore حتى يظهر تنبيه امتلاء المساحة بدل ابتلاعه:
+             كانت الصورة تُعرض كأنها حُفظت ثم تختفي بعد التحديث */
+          let saved=true;
+          if(this.id){
+            if(window.LumaStore&&LumaStore.raw)saved=LumaStore.raw.set(KEY(this.id),url)!==false;
+            else{try{localStorage.setItem(KEY(this.id),url);}catch(e){saved=false;}}
+          }
           this.show(url);
+          if(!saved)console.warn('image-slot: تعذّر حفظ الصورة — المساحة ممتلئة');
         };im.src=rd.result;};
         rd.readAsDataURL(f);
       };

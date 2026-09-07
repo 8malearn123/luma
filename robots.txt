@@ -1,0 +1,15 @@
+# LUMA — قواعد الفهرسة
+# الوثائق الداخلية (الملف التعريفي للمستثمرين ووثيقة اعتماد الباقات)
+# لا تُفهرَس؛ صفحة الأسعار العامة تبقى مفهرَسة.
+User-agent: *
+Allow: /
+Disallow: /profile.html
+Disallow: /pricing.html?doc=partner
+Disallow: /LUMA%20-%20%D8%A7%D9%84%D9%85%D9%84%D9%81%20%D8%A7%D9%84%D8%AA%D8%B9%D8%B1%D9%8A%D9%81%D9%8A%20%D8%A7%D9%84%D8%B1%D8%B3%D9%85%D9%8A%202026.html
+Disallow: /admin.html
+Disallow: /salon.html
+Disallow: /expert.html
+Disallow: /client.html
+Disallow: /staff-portal.html
+
+Sitemap: https://luma.beauty/sitemap.xml

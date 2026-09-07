@@ -249,3 +249,95 @@ test('الجوال: الصفحات العامة بلا تجاوز أفقي', asy
   }
   expect(bad).toEqual([]);
 });
+
+/* ═════════ أ-5 · الحماية والانتشار ═════════ */
+
+test('وثيقة اعتماد الشريك لا تظهر في صفحة الأسعار العامة', async ({ page }) => {
+  await page.goto('/pricing.html');
+  await page.waitForTimeout(900);
+  await expect(page.locator('#partner-approval')).toBeHidden();
+  await expect(page.locator('#public-cta')).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('التوقيع', { useInnerText: true });
+  await expect(page.locator('body')).not.toContainText('ملاحظة الشريك التشغيلي', { useInnerText: true });
+  // ولها دعوة حقيقية بدل طريق مسدود
+  await expect(page.locator('#public-cta a[href="login.html"]')).toBeVisible();
+});
+
+test('وثيقة الشريك تظهر بـ ?doc=partner وتُمنع من الفهرسة', async ({ page }) => {
+  await page.goto('/pricing.html?doc=partner');
+  await page.waitForTimeout(900);
+  await expect(page.locator('#partner-approval')).toBeVisible();
+  await expect(page.locator('body')).toContainText('التوقيع', { useInnerText: true });
+  const robots = await page.evaluate(() => (document.querySelector('meta[name=robots]') || {}).content || '');
+  expect(robots).toContain('noindex');
+});
+
+test('robots.txt يمنع فهرسة الوثائق الداخلية ولوحات التحكم', async ({ page }) => {
+  const res = await page.request.get('/robots.txt');
+  expect(res.status()).toBe(200);
+  const body = await res.text();
+  for (const p of ['/profile.html', '/admin.html', '/salon.html', '/expert.html', '/staff-portal.html']) {
+    expect(body).toContain('Disallow: ' + p);
+  }
+  expect(body).toContain('Sitemap:');
+});
+
+const PUBLIC_SEO = ['index.html', 'store.html', 'market.html', 'salons.html',
+                    'booking.html', 'pricing.html', 'expert-landing.html'];
+for (const f of PUBLIC_SEO) {
+  test(`بطاقة مشاركة كاملة في ${f}`, async ({ page }) => {
+    await page.goto('/' + f);
+    await page.waitForTimeout(500);
+    const m = await page.evaluate(() => ({
+      desc: (document.querySelector('meta[name=description]') || {}).content || '',
+      title: (document.querySelector('meta[property="og:title"]') || {}).content || '',
+      img: (document.querySelector('meta[property="og:image"]') || {}).content || '',
+      card: (document.querySelector('meta[name="twitter:card"]') || {}).content || '',
+      canon: (document.querySelector('link[rel=canonical]') || {}).href || '',
+    }));
+    expect(m.desc.length).toBeGreaterThan(40);
+    expect(m.title).toContain('LUMA');
+    expect(m.img).toContain('og-image.png');
+    expect(m.card).toBe('summary_large_image');
+    expect(m.canon).toContain(f);
+  });
+}
+
+test('صورة المشاركة موجودة وبمقاس بطاقة صحيح', async ({ page }) => {
+  await page.goto('/index.html');
+  const res = await page.request.get('/og-image.png');
+  expect(res.status()).toBe(200);
+  const size = await page.evaluate(() => new Promise(r => {
+    const i = new Image();
+    i.onload = () => r({ w: i.naturalWidth, h: i.naturalHeight });
+    i.onerror = () => r({ w: 0, h: 0 });
+    i.src = '/og-image.png';
+  }));
+  expect(size).toEqual({ w: 1200, h: 630 });
+});
+
+test('اللوحات الخاصة خارج الفهرسة', async ({ page }) => {
+  for (const f of ['salon.html', 'expert.html', 'admin.html', 'client.html', 'staff-portal.html', 'profile.html']) {
+    await page.goto('/' + f);
+    await page.waitForTimeout(300);
+    const robots = await page.evaluate(() => (document.querySelector('meta[name=robots]') || {}).content || '');
+    expect(robots, f).toContain('noindex');
+  }
+});
+
+test('امتلاء التخزين يُبلَّغ صراحةً ولا يمرّ صامتاً', async ({ page }) => {
+  await page.goto('/salon.html');
+  await page.waitForTimeout(1200);
+  const r = await page.evaluate(() => {
+    const seen = [];
+    const orig = window.LUX && LUX.toast;
+    if (orig) LUX.toast = (m, t) => { seen.push(String(m)); return orig(m, t); };
+    const chunk = 'd'.repeat(240 * 1024);
+    let ok = true, saved = 0;
+    for (let i = 0; i < 60 && ok; i++) { ok = LumaStore.set('luma_qtest_' + i, chunk); if (ok) saved++; }
+    return { saved, lastReturnedFalse: !ok, notified: seen.some(m => m.includes('امتلأت مساحة التخزين')) };
+  });
+  expect(r.saved).toBeGreaterThan(0);
+  expect(r.lastReturnedFalse).toBe(true);   // set تعود false بدل ابتلاع الخطأ
+  expect(r.notified).toBe(true);            // ورسالة صريحة للمستخدمة
+});

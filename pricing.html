@@ -7,7 +7,25 @@
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>LUMA — وثيقة الباقات والأسعار</title>
+<!-- بطاقة المشاركة والوصف — تظهر عند مشاركة الرابط على واتساب وإنستغرام -->
+<meta name="description" content="باقات لوما للخبيرات والصوالين: سَناء ووَهَج وفَريد — أدوات حجز ومتجر وتقارير وموارد بشرية." />
+<link rel="canonical" href="https://luma.beauty/pricing.html" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LUMA" />
+<meta property="og:locale" content="ar_SA" />
+<meta property="og:title" content="LUMA — الباقات والأسعار" />
+<meta property="og:description" content="باقات لوما للخبيرات والصوالين: سَناء ووَهَج وفَريد — أدوات حجز ومتجر وتقارير وموارد بشرية." />
+<meta property="og:url" content="https://luma.beauty/pricing.html" />
+<meta property="og:image" content="https://luma.beauty/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="LUMA — الباقات والأسعار" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="LUMA — الباقات والأسعار" />
+<meta name="twitter:description" content="باقات لوما للخبيرات والصوالين: سَناء ووَهَج وفَريد — أدوات حجز ومتجر وتقارير وموارد بشرية." />
+<meta name="twitter:image" content="https://luma.beauty/og-image.png" />
+
+<title>LUMA — الباقات والأسعار</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500&family=El+Messiri:wght@400;500;600;700&family=Cairo:wght@200;300;400;500;600&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
@@ -454,7 +472,14 @@
   <div class="inner">
     <div class="kick">— READY TO LAUNCH —</div>
     <div class="big">جاهزون للإطلاق</div>
-    <div class="sub">نطلب اعتمادكم النهائي على هيكل الباقات لنبدأ تطوير صفحة التسعير على المنصة فوراً.</div>
+    <!-- نسخة الشريك: طلب اعتماد. النسخة العامة: دعوة للبدء. -->
+    <div class="sub" id="partner-sub" hidden>نطلب اعتمادكم النهائي على هيكل الباقات لنبدأ تطوير صفحة التسعير على المنصة فوراً.</div>
+    <div class="sub" id="public-cta">
+      اختاري الباقة التي تناسب عملك وابدئي بلوما اليوم.
+      <div style="margin-top:22px">
+        <a href="login.html" style="display:inline-flex;align-items:center;gap:9px;min-height:48px;padding:0 26px;border-radius:30px;background:linear-gradient(120deg,#dbbd81,#9c8047);color:#0c0a09;font-weight:700;font-size:14.5px;text-decoration:none">ابدئي الآن ←</a>
+      </div>
+    </div>
     <div class="closing-stats">
       <div class="st"><span class="num gold-fill">30</span><span class="lbl">مشتركة</span><span class="cap">هدف الشهر الأول</span></div>
       <div class="st"><span class="num gold-fill">3</span><span class="lbl">باقات متكاملة</span><span class="cap">SANA · WAHAJ · FAREED</span></div>
@@ -463,8 +488,11 @@
   </div>
 </section>
 
-<!-- APPROVAL -->
-<div class="wrap">
+<!-- APPROVAL — قسم داخلي: وثيقة اعتماد الشريك التشغيلي.
+     يظهر فقط بـ ?doc=partner، لأن هذه الصفحة هي أيضاً صفحة الأسعار
+     العامة التي يصلها زر «ابدئي مجاناً 14 يوماً» من الصفحة الرئيسية،
+     ولا يليق أن تستقبل عميلة محتملة خانةَ توقيع واعتماد. -->
+<div class="wrap" id="partner-approval" hidden>
   <section class="section" style="border:none;padding-top:clamp(60px,9vh,100px)" data-screen-label="09 Approval">
     <div class="sec-head">
       <span class="idx">§ 09</span>
@@ -726,5 +754,25 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
 <script src="luma-theme.js"></script>
 <script src="luma-i18n.js"></script>
+
+<script>
+/* وثيقة الاعتماد للشريك فقط: ?doc=partner — وما دونه صفحة أسعار عامة.
+   العنوان ووصف الصفحة يتبدّلان معها حتى لا تُفهرَس الوثيقة الداخلية. */
+(function(){
+  var partner=/(?:^|[?&])doc=partner(?:&|$)/.test(location.search);
+  var sec=document.getElementById('partner-approval');
+  if(sec)sec.hidden=!partner;
+  var cta=document.getElementById('public-cta');
+  if(cta)cta.hidden=partner;
+  var psub=document.getElementById('partner-sub');
+  if(psub)psub.hidden=!partner;
+  if(partner){
+    document.title='LUMA — وثيقة الباقات والأسعار (اعتماد الشريك)';
+    var m=document.querySelector('meta[name="robots"]');
+    if(!m){m=document.createElement('meta');m.name='robots';document.head.appendChild(m);}
+    m.content='noindex,nofollow';
+  }
+})();
+</script>
 </body>
 </html>
