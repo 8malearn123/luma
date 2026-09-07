@@ -74,3 +74,51 @@
     },
   };
 })();
+
+/* ===== LumaDate — تواريخ محلية موحّدة =====
+   المشكلة التي يحلّها: toISOString() يعطي تاريخ UTC، فحجزٌ يُسجَّل الساعة 1:30
+   فجراً بتوقيت الرياض كان يُخزَّن لليوم السابق. وtoLocaleDateString('ar-SA')
+   يعرض التقويم الهجري افتراضياً، فترى العميلة «٢٤ ربيع الأول» بينما تعرض
+   لوحة الصالون والفاتورة «2026-09-06». هذه الدوال تجعل التاريخ المخزَّن
+   والمعروض شيئاً واحداً بتوقيت الجهاز وبالتقويم الميلادي. */
+(function(){
+  if(window.LumaDate)return;
+
+  const pad=n=>String(n).padStart(2,'0');
+  /* YYYY-MM-DD بالتوقيت المحلي — البديل الآمن عن toISOString().slice(0,10) */
+  const iso=d=>{const x=d||new Date();return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());};
+  /* YYYY-MM بالتوقيت المحلي — للرواتب والتقارير الشهرية */
+  const month=d=>{const x=d||new Date();return x.getFullYear()+'-'+pad(x.getMonth()+1);};
+  /* يوم مزاح بعدد أيام عن اليوم — لتوليد بيانات لا تنتهي صلاحيتها */
+  const plus=(n,from)=>{const x=from?new Date(from):new Date();x.setDate(x.getDate()+n);return x;};
+  const isoPlus=(n,from)=>iso(plus(n,from));
+  /* تحويل YYYY-MM-DD إلى تاريخ محلي بلا انزلاق منطقة زمنية
+     (new Date('2026-09-06') يُفسَّر UTC فيصير اليوم السابق شرق غرينتش) */
+  const parse=s=>{
+    if(s instanceof Date)return s;
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||''));
+    return m?new Date(+m[1],+m[2]-1,+m[3]):new Date(s);
+  };
+  const daysBetween=(a,b)=>Math.round((parse(b).setHours(0,0,0,0)-parse(a).setHours(0,0,0,0))/86400000);
+  /* حالة الموعد مشتقّة من تاريخه لا من حقل مكتوب يدوياً */
+  const isPast=s=>daysBetween(new Date(),s)<0;
+  const isToday=s=>daysBetween(new Date(),s)===0;
+
+  /* العرض بالميلادي دائماً — 'ar-SA' وحدها تعطي الهجري */
+  const LOCALE='ar-SA-u-ca-gregory';
+  const fmt=(s,opts)=>{try{return parse(s).toLocaleDateString(LOCALE,opts||{day:'numeric',month:'long'});}
+    catch(e){return iso(parse(s));}};
+  const weekday=s=>fmt(s,{weekday:'long'});
+  /* تسمية ودّية: اليوم / غداً / بعد غد / اسم اليوم */
+  const label=s=>{
+    const d=daysBetween(new Date(),s);
+    if(d===0)return 'اليوم';
+    if(d===1)return 'غداً';
+    if(d===2)return 'بعد غد';
+    return weekday(s);
+  };
+  /* التقويم الهجري كمعلومة مساعدة لا كبديل — للعرض بجانب الميلادي عند الحاجة */
+  const hijri=s=>{try{return parse(s).toLocaleDateString('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long'});}catch(e){return '';}};
+
+  window.LumaDate={LOCALE,iso,month,plus,isoPlus,parse,daysBetween,isPast,isToday,fmt,weekday,label,hijri};
+})();

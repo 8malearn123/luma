@@ -83,13 +83,20 @@
   .reroute b{color:var(--ac)}
   .btn{width:100%;border:none;border-radius:calc(var(--rad,16px) - 2px);padding:14px;background:var(--btn,var(--ac));color:var(--bg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px}
   .btn:disabled{opacity:.35} .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--tx)}
-  .days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-  .day{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:calc(var(--rad,16px) - 1px);padding:11px;text-align:center;color:var(--tx);font-family:inherit;cursor:pointer}
+  /* شريط تنقّل أسابيع نافذة الحجز الثلاثينية */
+  .daynav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+  .daynav span{font-size:12px;opacity:.7}
+  .daynav button{background:none;border:1px solid rgba(128,128,128,.3);border-radius:9px;color:var(--tx);
+    font-family:inherit;font-size:12px;min-height:44px;padding:0 14px;cursor:pointer}
+  .daynav button:disabled{opacity:.3;cursor:default}
+  .days{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:8px;margin-bottom:14px}
+  .day{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:calc(var(--rad,16px) - 1px);padding:11px 6px;min-height:56px;text-align:center;color:var(--tx);font-family:inherit;cursor:pointer}
   .day .lb{font-size:12px;font-weight:700} .day .dt{font-size:10px;opacity:.55;margin-top:2px}
   .day.sel{background:var(--ac);color:var(--bg)} .day:disabled{opacity:.32}
   .day .lv{font-size:9px;color:#f0a3b0}
-  .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-  .slot{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:10px 0;color:var(--tx);font-family:inherit;font-size:12px;cursor:pointer;direction:ltr}
+  .slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:8px}
+  /* 44px حد أدنى لهدف اللمس — كانت الخانات 34px يصعب إصابتها على الجوال */
+  .slot{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:11px;min-height:44px;padding:0 6px;color:var(--tx);font-family:inherit;font-size:12.5px;cursor:pointer;direction:ltr}
   .slot.sel{background:var(--ac);color:var(--bg);font-weight:700} .slot:disabled{opacity:.3;text-decoration:line-through}
   .ticket{background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:calc(var(--rad,16px) + 6px);overflow:hidden}
   .ticket .th{background:color-mix(in srgb,var(--ac) 12%,transparent);padding:16px}
@@ -260,20 +267,51 @@ window.applyCoupon=()=>{
   if(c){coupon=c;cpnMsg='';}else{coupon=null;cpnMsg=code?'الكود غير صحيح أو منتهي':'';}
   render();
 };
-const days=Array.from({length:3},(_,i)=>{const d=new Date();d.setDate(d.getDate()+i);
-  return {iso:d.toISOString().slice(0,10),wd:d.getDay(),
-    lb:i===0?'اليوم':d.toLocaleDateString('ar-SA',{weekday:'long'}),
-    dt:d.toLocaleDateString('ar-SA',{day:'numeric',month:'short'})};});
+/* نافذة حجز 30 يوماً — العروس والمناسبات تُحجز قبل أسابيع لا قبل يومين.
+   التسميات ميلادية صراحةً: 'ar-SA' وحدها تعطي التقويم الهجري بينما
+   لوحة الصالون والفاتورة تعرضان الميلادي، فترى العميلة تاريخاً والصالون آخر. */
+const BOOK_WINDOW=30, DAYS_PER_PAGE=7;
+const days=Array.from({length:BOOK_WINDOW},(_,i)=>{
+  const d=LumaDate.plus(i);
+  return {iso:LumaDate.iso(d),wd:d.getDay(),lb:LumaDate.label(d),dt:LumaDate.fmt(d,{day:'numeric',month:'short'})};});
+let dayPage=0;   /* أي أسبوع معروض من النافذة */
 
-function slotsFor(sid,day){
+/* ═══ محرك التوفر ═══
+   الخانة الواحدة كانت ساعة كاملة والحجز يشغل خانة واحدة مهما طالت الخدمة،
+   فكان «مكياج عروس» بثلاث ساعات يحجز 5:00 ويترك 6:00 متاحة لعميلة أخرى.
+   الآن: خطوة 30 دقيقة، والخانة تُحجب إن تداخلت مع أي انشغال فعلي. */
+const SLOT_STEP=30;
+const toMin=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(String(t||''));return m?(+m[1])*60+(+m[2]):0;};
+const toHHMM=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+/* الحجوزات القديمة خُزّنت بلا مدة — تُقدَّر من كتالوج الخدمات */
+const bookedDur=b=>b.dur||(SERVICES.find(s=>s.n===b.service)||{}).d||60;
+const overlaps=(aS,aD,bS,bD)=>aS<bS+bD&&bS<aS+aD;
+
+function busyOf(sid,iso){
+  const busy=BOOKED.filter(b=>b.staff===sid&&b.date===iso).map(b=>({s:toMin(b.time),d:bookedDur(b)}));
+  /* إسنادات هذه الجلسة لم تُحفظ بعد لكنها تشغل وقت الخبيرة فعلياً */
+  Object.keys(assigns).forEach(id=>{
+    const a=assigns[id];if(!a||a.staff!==sid)return;
+    const sv=SERVICES.find(x=>x.id===id);
+    busy.push({s:toMin(a.time),d:(sv&&sv.d)||60});
+  });
+  return busy;
+}
+
+function slotsFor(sid,day,durMin){
   if(onLeave(sid,day.iso))return[];
   const sh=shiftOf(sid,day.wd);if(sh.off)return[];
-  const h0=parseInt(sh.start),h1=parseInt(sh.end);
+  const dur=Math.max(SLOT_STEP,durMin||60);
+  const open=toMin(sh.start),close=toMin(sh.end);
+  if(close-open<dur)return[];                      /* الخدمة أطول من الدوام كله */
+  const busy=busyOf(sid,day.iso);
+  /* لا تُعرض ساعات مضت من يوم اليوم */
+  const now=new Date();
+  const cutoff=LumaDate.isToday(day.iso)?now.getHours()*60+now.getMinutes():-1;
   const out=[];
-  for(let h=h0;h<h1;h++){
-    const hh=String(h).padStart(2,'0')+':00';
-    const taken=BOOKED.some(b=>b.staff===sid&&b.date===day.iso&&b.time===hh);
-    out.push({t:hh,taken});
+  for(let m=open;m+dur<=close;m+=SLOT_STEP){
+    if(m<=cutoff)continue;
+    out.push({t:toHHMM(m),taken:busy.some(b=>overlaps(m,dur,b.s,b.d))});
   }
   return out;
 }
@@ -638,8 +676,16 @@ function render(){
     s=layoutOf().filter(x=>x.on).map(x=>(SECS[x.k]||(()=>''))()).join('')+mapCard()+policyBox()+footerSec();
   }
   if(step===2){
-    s=back('اختاري تاريخ الزيارة',1)+`<div class="days">`+days.map((d,i)=>{
-      const off=dayAllOff(d);
+    const pages=Math.ceil(days.length/DAYS_PER_PAGE);
+    const from=dayPage*DAYS_PER_PAGE, slice=days.slice(from,from+DAYS_PER_PAGE);
+    s=back('اختاري تاريخ الزيارة',1)
+      +`<div class="daynav">
+        <button type="button" ${dayPage<=0?'disabled':''} onclick="dayPageBy(-1)" aria-label="الأسبوع السابق">‹ السابق</button>
+        <span>${esc(slice[0].dt)} — ${esc(slice[slice.length-1].dt)}</span>
+        <button type="button" ${dayPage>=pages-1?'disabled':''} onclick="dayPageBy(1)" aria-label="الأسبوع التالي">التالي ›</button>
+      </div>`
+      +`<div class="days">`+slice.map((d,j)=>{
+      const i=from+j, off=dayAllOff(d);
       return `<button class="day ${date===d.iso?'sel':''}" ${off?'disabled':''} onclick="pickDate(${i})">
         <div class="lb">${d.lb}</div><div class="dt">${d.dt}</div>${off?'<div class="lv">مغلق</div>':''}</button>`;}).join('')+`</div>
       <button class="btn" ${date?'':'disabled'} onclick="startAssign()">متابعة — اختيار الخبيرة والوقت لكل خدمة</button>`;
@@ -664,8 +710,10 @@ function render(){
           <span class="av">${x.n.charAt(0)}</span><span class="nm">${x.n}</span><div class="rl">${x.role}</div>
           ${lv?'<div class="lv">غير متاحة اليوم</div>':''}</button>`;}).join('')+`</div>`;
       if(curStaff){
-        const sl=slotsFor(curStaff,day).map(x=>({...x,taken:x.taken||Object.values(assigns).some(a=>a.staff===curStaff&&a.time===x.t)}));
-        s+=sl.length?`<div class="cat" style="margin-top:12px">الأوقات المتاحة</div><div class="slots">${sl.map(x=>`<button class="slot" ${x.taken?'disabled':''} onclick="pickTime('${x.t}')">${x.t}</button>`).join('')}</div>`
+        const sl=slotsFor(curStaff,day,cur.d);
+        const free=sl.filter(x=>!x.taken).length;
+        s+=sl.length?`<div class="cat" style="margin-top:12px">الأوقات المتاحة <span style="font-weight:400;opacity:.6;font-size:11px">— تكفي ${cur.d} دقيقة كاملة</span></div><div class="slots">${sl.map(x=>`<button class="slot" ${x.taken?'disabled':''} onclick="pickTime('${x.t}')">${x.t}</button>`).join('')}</div>`
+          +(free?'':`<div style="text-align:center;opacity:.55;font-size:12.5px;padding:12px">كل الأوقات محجوزة — جرّبي خبيرة أخرى أو يوماً آخر</div>`)
           :`<div style="text-align:center;opacity:.55;font-size:13px;padding:18px">لا أوقات متاحة لها هذا اليوم — جرّبي خبيرة أخرى</div>`;
       }else{
         s+=`<div style="text-align:center;opacity:.5;font-size:12px;padding:12px">اختاري الخبيرة لعرض أوقاتها المتاحة</div>`;
@@ -719,6 +767,8 @@ window.pickSvc=id=>{
 };
 window.pickStaff=id=>{curStaff=id;const y=window.scrollY;render();window.scrollTo({top:y});};
 window.pickDate=i=>{date=days[i].iso;assigns={};curIdx=0;curStaff=null;render();};
+window.dayPageBy=d=>{const pages=Math.ceil(days.length/DAYS_PER_PAGE);
+  dayPage=Math.min(pages-1,Math.max(0,dayPage+d));const y=window.scrollY;render();window.scrollTo({top:y});};
 window.pickTime=t=>{
   const cur=selSvcs()[curIdx];if(!cur||!curStaff)return;
   assigns[cur.id]={staff:curStaff,time:t};
@@ -730,11 +780,12 @@ window.pickTime=t=>{
 };
 window.confirmBooking=()=>{
   const items=selSvcs().map(x=>({n:x.n,p:x.p,d:x.d,staff:assigns[x.id].staff,time:assigns[x.id].time}));
-  items.forEach(it=>{BOOKED.push({staff:it.staff,staffName:(STAFF.find(z=>z.id===it.staff)||{}).n,client:'حجز أونلاين',service:it.n,price:it.p,coupon:coupon?coupon.code:null,date,time:it.time,at:new Date().toISOString()});});
+  /* dur تُخزَّن مع كل حجز — بدونها لا يمكن حساب تعارض المواعيد لاحقاً */
+  items.forEach(it=>{BOOKED.push({staff:it.staff,staffName:(STAFF.find(z=>z.id===it.staff)||{}).n,client:'حجز أونلاين',service:it.n,price:it.p,dur:it.d,coupon:coupon?coupon.code:null,date,time:it.time,at:new Date().toISOString()});});
   LumaStore.set('luma_public_bookings',BOOKED);
   try{LumaEvents.push('booking','حجز أونلاين جديد لدى '+CFG.title+': '+items.map(i=>i.n).join(' + ')+' — '+date+' ('+(selTotal()-discount())+' ر.س)','salon.html#board');}catch(e){}
   /* حجوزات اليوم تظهر مباشرة على لوحة الصالون — موعد لكل خدمة بخبيرتها ووقتها */
-  if(date===days[0].iso){
+  if(date===LumaDate.iso()){
     try{
       LumaStore.update('luma_salon_appts',a=>{
         items.forEach((it,ix)=>a.push({id:Date.now()+ix,staff:it.staff,start:(parseInt(it.time)-10)*2,dur:Math.max(1,Math.round(it.d/30)),client:'حجز أونلاين — '+it.n.split(' ')[0],service:it.n,st:'pending',custom:true}));

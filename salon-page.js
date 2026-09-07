@@ -63,13 +63,22 @@ const PAGE_PRODUCTS_DEFAULT=[
   {n:'ماسك بشرة',c:'عناية',p:95,stock:40,desc:'ماسك منقٍّ أسبوعي'},
 ];
 const pageProducts=()=>{const l=LumaStore.get('luma_shop_products',null);return Array.isArray(l)&&l.length?l:PAGE_PRODUCTS_DEFAULT.map(x=>({...x}));};
+/* مواعيد العرض نسبةً لليوم لا بتواريخ ثابتة — وإلا ظهرت حجوزات الشهر الماضي «قادمة» */
 const PAGE_SEED_BOOKS=[
-  {id:'s1',client:'نوف العتيبي',svc:'مكياج عروس',staff:'أمل',date:'2026-08-12',time:'6:00 م',st:'up'},
-  {id:'s2',client:'لينا الحربي',svc:'هيدرافيشل',staff:'نورة',date:'2026-08-10',time:'4:30 م',st:'up'},
-  {id:'s3',client:'جود السبيعي',svc:'منيكير جل',staff:'ريم',date:'2026-08-05',time:'2:00 م',st:'done'},
-  {id:'s4',client:'رزان الشهري',svc:'تسريحة',staff:'سارة',date:'2026-08-03',time:'7:00 م',st:'done'},
-  {id:'s5',client:'مها الزهراني',svc:'تنظيف بشرة',staff:'نورة',date:'2026-08-02',time:'1:00 م',st:'cancel'},
-];
+  {id:'s1',client:'نوف العتيبي',svc:'مكياج عروس',staff:'أمل',d:+5,time:'6:00 م',st:'up'},
+  {id:'s2',client:'لينا الحربي',svc:'هيدرافيشل',staff:'نورة',d:+2,time:'4:30 م',st:'up'},
+  {id:'s3',client:'جود السبيعي',svc:'منيكير جل',staff:'ريم',d:-3,time:'2:00 م',st:'done'},
+  {id:'s4',client:'رزان الشهري',svc:'تسريحة',staff:'سارة',d:-8,time:'7:00 م',st:'done'},
+  {id:'s5',client:'مها الزهراني',svc:'تنظيف بشرة',staff:'نورة',d:-10,time:'1:00 م',st:'cancel'},
+].map(b=>({...b,date:LumaDate.isoPlus(b.d)}));
+
+/* حالة الحجز تُشتقّ من تاريخه: الملغى يبقى ملغى، وما مضى موعده مكتمل،
+   وما لم يمضِ قادم. وقرار المالكة الصريح (bookSt) يعلو على الاشتقاق. */
+function bookStatusOf(date,seed,override){
+  if(override)return override;
+  if(seed==='cancel')return 'cancel';
+  return LumaDate.isPast(date)?'done':'up';
+}
 const PAGE_TEAM_DEFAULT=[['أمل','مكياج'],['سارة','شعر'],['نورة','بشرة'],['ريم','أظافر']];
 const pageTeam=()=>{const extra=(LumaStore.get('luma_salon_staff',[])||[]).filter(t=>t&&t.n).map(t=>[t.n,t.role||'تجميل']);return [...PAGE_TEAM_DEFAULT,...extra];};
 const pageSvcList=()=>{const cats=['مكياج','مكياج','مكياج','شعر','شعر','شعر','بشرة','بشرة','بشرة','أظافر','أظافر','أظافر'];
@@ -239,8 +248,11 @@ const PAGE={
   bookFilter(f){PAGE_BOOKF=f;PAGE.showTab('books');},
   bookList(){
     const ov=LumaStore.get('luma_bookst',{})||{};
-    const live=(LumaStore.get('luma_public_bookings',[])||[]).map((b,i)=>({id:'p'+i,client:b.client||'حجز أونلاين',svc:b.service||'—',staff:b.staffName||b.staff||'—',date:String(b.at||'').slice(0,10)||'—',time:b.time||'',st:ov['p'+i]||'up'}));
-    return [...live,...PAGE_SEED_BOOKS.map(b=>({...b,st:ov[b.id]||b.st}))];},
+    const live=(LumaStore.get('luma_public_bookings',[])||[]).map((b,i)=>{
+      const date=b.date||String(b.at||'').slice(0,10)||'—';
+      return {id:'p'+i,client:b.client||'حجز أونلاين',svc:b.service||'—',staff:b.staffName||b.staff||'—',
+        date,time:b.time||'',st:bookStatusOf(date,'up',ov['p'+i])};});
+    return [...live,...PAGE_SEED_BOOKS.map(b=>({...b,st:bookStatusOf(b.date,b.st,ov[b.id])}))];},
   bookSt(id,st){const ov=LumaStore.get('luma_bookst',{})||{};ov[id]=st;LumaStore.set('luma_bookst',ov);PAGE.showTab('books');LUX.toast(st==='done'?'اكتمل الحجز ✓':'أُلغي الحجز','ok');},
   /* ── قسم الفريق: نبذة قابلة للتحرير ── */
   teamBio(n,el){const m=LumaStore.get('luma_team_meta',{})||{};m[n]={...(m[n]||{}),bio:el.value.trim()};LumaStore.set('luma_team_meta',m);LUX.toast('حُفظت النبذة ✓','ok');},

@@ -97,7 +97,7 @@ function myAppts(sid){
   return SEED_APPTS.filter(a=>a.staff===sid).concat(custom).filter(a=>a.st!=='cancelled').sort((a,b)=>a.start-b.start);
 }
 const payOf=sid=>({base:3500,pct:10,prodPct:15,tierAt:15000,tierPct:12,...(S.get('luma_hr_pay2',{})[sid]||{})});
-const advOf=sid=>{const m=new Date().toISOString().slice(0,7);return (S.get('luma_hr_advances',{})[m]||{})[sid]||0;};
+const advOf=sid=>{const m=LumaDate.month();return (S.get('luma_hr_advances',{})[m]||{})[sid]||0;};
 const attAll=()=>S.get('luma_hr_att',{amal:{},sara:{1:{late:45}},nora:{2:{absent:true}},reem:{3:{late:20}}});
 function ledger(sid){
   const p=payOf(sid);
@@ -206,7 +206,7 @@ tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(b){tab=b
 
 function homeView(me){
   const appts=myAppts(SID);
-  const today=new Date().toISOString().slice(0,10);
+  const today=LumaDate.iso();
   const onLeave=S.get('luma_hr_leaves',[]).some(l=>l.staff===SID&&l.status==='approved'&&l.from<=today&&l.to>=today);
   const items=appts.map(a=>`<div class="row">
     <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ac);min-width:52px" dir="ltr">${slotLabel(a.start)}</span>
@@ -316,7 +316,7 @@ window.newReq=()=>{
         if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#c0566a';el.focus();return;}
         values[t.fields[i].label]=el.value.trim();
       }
-      S.update('luma_requests',rs=>{rs.unshift({id:Date.now(),type:tid,staff:SID,values,step:0,status:'pending',at:new Date().toISOString().slice(0,10)});return rs;},[]);
+      S.update('luma_requests',rs=>{rs.unshift({id:Date.now(),type:tid,staff:SID,values,step:0,status:'pending',at:LumaDate.iso()});return rs;},[]);
     }
     try{const who=(allStaff().find(s=>s.id===SID)||{}).n||'موظفة';window.LumaEvents&&LumaEvents.push('hr','طلب جديد من الموظفة '+who+' ببوابة صالون لمسة — بانتظار الموافقات','salon.html#hr');}catch(e){}
     wrap.remove();toast('أُرسل طلبك — بانتظار الموافقات ✓');render();
@@ -328,7 +328,7 @@ function attView(me){
   const today=(att[SID]||{})[wd]||null;
   const sh=(S.get('luma_hr_shifts',{})[SID]||{})[wd]||((wd===5)?{off:true}:{off:false,start:'10:00',end:'20:00'});
   const rec=S.get('luma_portal_att_'+SID,{});
-  const t=new Date().toISOString().slice(0,10);
+  const t=LumaDate.iso();
   const dayRec=rec[t]||{};
   const now=()=>new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'});
   const week=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
@@ -356,12 +356,12 @@ window.clockIn=()=>{
   const late=Math.max(0,nowMin-startMin);
   /* يغذي نفس مفتاح أعلام التأخير في جدول دوام الصالون */
   S.update('luma_hr_att',att=>{att[SID]=att[SID]||{};if(late>0)att[SID][wd]={late};else delete att[SID][wd];return att;},attAll());
-  const t=new Date().toISOString().slice(0,10);
+  const t=LumaDate.iso();
   S.update('luma_portal_att_'+SID,r=>{r[t]={...(r[t]||{}),in:new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})};return r;},{});
   toast(late>0?`سُجّل حضورك — تأخير ${late} دقيقة`:'سُجّل حضورك في الوقت ✓');render();
 };
 window.clockOut=()=>{
-  const t=new Date().toISOString().slice(0,10);
+  const t=LumaDate.iso();
   S.update('luma_portal_att_'+SID,r=>{r[t]={...(r[t]||{}),out:new Date().toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})};return r;},{});
   toast('سُجّل انصرافك — يومك سعيد 🌸');render();
 };

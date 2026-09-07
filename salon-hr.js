@@ -33,14 +33,15 @@ const HR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعا�
 const HR_QUOTA=21; /* الرصيد السنوي للإجازات */
 const hrLoad=(k,f)=>LumaStore.get(k,f);
 const hrSave=(k,v)=>LumaStore.set(k,v);
-const hrMonth=()=>new Date().toISOString().slice(0,7);
+const hrMonth=()=>LumaDate.month();
 
 let HR_LEAVES=hrLoad(HR_LEAVE_KEY,null);
 if(!HR_LEAVES){
   HR_LEAVES=[
-    {id:1,staff:'sara',from:'2026-07-14',to:'2026-07-16',type:'سنوية',reason:'سفر عائلي',status:'pending'},
-    {id:2,staff:'reem',from:'2026-07-10',to:'2026-07-10',type:'طارئة',reason:'',status:'pending'},
-    {id:3,staff:'nora',from:'2026-06-22',to:'2026-06-24',type:'مرضية',reason:'',status:'approved'},
+    /* نسبةً لليوم — طلبات «بانتظار الاعتماد» يجب أن تكون في المستقبل دائماً */
+    {id:1,staff:'sara',from:LumaDate.isoPlus(7),to:LumaDate.isoPlus(9),type:'سنوية',reason:'سفر عائلي',status:'pending'},
+    {id:2,staff:'reem',from:LumaDate.isoPlus(3),to:LumaDate.isoPlus(3),type:'طارئة',reason:'',status:'pending'},
+    {id:3,staff:'nora',from:LumaDate.isoPlus(-14),to:LumaDate.isoPlus(-12),type:'مرضية',reason:'',status:'approved'},
   ];
   hrSave(HR_LEAVE_KEY,HR_LEAVES);
 }
@@ -61,7 +62,7 @@ const hrShiftOf=(sid,d)=>{const s=(hrShifts()[sid]||{})[d];return s||((d===5)?{o
 const hrStaffName=id=>{const s=STAFF.find(x=>x.id===id);return s?s.n:id;};
 const hrAttOf=(sid,d)=>((HR_ATT[sid]||{})[d])||null;
 function hrOnLeaveToday(sid){
-  const t=new Date().toISOString().slice(0,10);
+  const t=LumaDate.iso();
   return HR_LEAVES.some(l=>l.staff===sid&&l.status==='approved'&&l.from<=t&&l.to>=t);
 }
 /* رصيد الإجازات: الحصة السنوية − أيام السنوية المعتمدة هذه السنة */
@@ -73,7 +74,7 @@ function hrBalance(sid){
 }
 /* حجوزات متعارضة مع فترة الإجازة (نموذج اليوم الواحد في اللوحة) */
 function hrConflicts(l){
-  const t=new Date().toISOString().slice(0,10);
+  const t=LumaDate.iso();
   if(l.from>t||l.to<t)return [];
   return APPTS.filter(a=>a.staff===l.staff&&a.st!=='cancelled'&&a.st!=='blocked');
 }
@@ -189,7 +190,7 @@ const HR={
           if(t.fields[i].req&&!el.value.trim()){el.style.borderColor='#c0566a';el.focus();return;}
           values[t.fields[i].label]=el.value.trim();
         }
-        HR_REQS.unshift({id:Date.now(),type:tid,staff,values,step:0,status:'pending',at:new Date().toISOString().slice(0,10)});
+        HR_REQS.unshift({id:Date.now(),type:tid,staff,values,step:0,status:'pending',at:LumaDate.iso()});
         hrSave(REQS_KEY,HR_REQS);close();SALON.go('hr');
         LUX.toast('أُرسل الطلب — بانتظار «'+chain.steps[0]+'» ✓','ok');
       };

@@ -487,7 +487,7 @@ const STEPS = IS_SALON ? ['الخدمة','التاريخ','الموظفة وال
 const LAST=STEPS.length; // done step
 const DOW=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-function nextDays(n){const out=[];const t=new Date();for(let i=0;i<n;i++){const d=new Date(t);d.setDate(t.getDate()+i);out.push({key:d.toISOString().slice(0,10),dow:i===0?'اليوم':DOW[d.getDay()],dnum:d.getDate(),mon:MON[d.getMonth()]});}return out;}
+function nextDays(n){const out=[];const t=new Date();for(let i=0;i<n;i++){const d=new Date(t);d.setDate(t.getDate()+i);out.push({key:LumaDate.iso(d),dow:i===0?'اليوم':DOW[d.getDay()],dnum:d.getDate(),mon:MON[d.getMonth()]});}return out;}
 const DAYS=nextDays(7);
 
 const VIEW={

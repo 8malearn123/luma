@@ -574,11 +574,11 @@ const SALON={
         setTimeout(()=>{
           a.st='confirmed';saveAppts();
           const total=+(price*1.15+tip).toFixed(2);
-          markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:new Date().toISOString().slice(0,10)});
+          markPaid(a.id,{no:nextInvNo(),method,tip,amount:price,vat:+(price*0.15).toFixed(2),total,date:LumaDate.iso()});
           const pts=typeof loyAward==='function'?loyAward(a.client,total):0;
           const stk=typeof stockConsume==='function'?stockConsume(a.service):{alerts:[]};
           /* طلب تقييم ما بعد الزيارة — يفتح في review.html ويُنشر موثقاً في المتجر */
-          try{LumaStore.update('luma_review_reqs',l=>{l.push({id:'rv'+a.id+'_'+Date.now(),client:a.client,service:a.service,staff:(STAFF.find(x=>x.id===a.staff)||{n:''}).n,salon:'صالون لمسة',date:new Date().toISOString().slice(0,10),st:'sent'});return l;},[]);}catch(e){}
+          try{LumaStore.update('luma_review_reqs',l=>{l.push({id:'rv'+a.id+'_'+Date.now(),client:a.client,service:a.service,staff:(STAFF.find(x=>x.id===a.staff)||{n:''}).n,salon:'صالون لمسة',date:LumaDate.iso(),st:'sent'});return l;},[]);}catch(e){}
           setTimeout(()=>LUX.toast('📱 أُرسل للعميلة رابط تقييم الزيارة عبر واتساب (محاكاة)','ok'),2800);
           close();SALON.go('board');
           try{window.LumaEvents&&LumaEvents.push('pay','دفعة مستلمة بصالون لمسة: '+a.client+' · '+a.service+' — '+total.toLocaleString('en')+' ر.س ('+method+')','salon.html#invoices');}catch(e){}
@@ -810,7 +810,7 @@ const SALON={
       ov.querySelector('#spDocFile').onchange=e=>{
         const f=e.target.files&&e.target.files[0];if(!f)return;
         const add=img=>{
-          const docs2=spOf(id).docs;docs2.push({name:f.name,img,date:new Date().toISOString().slice(0,10)});
+          const docs2=spOf(id).docs;docs2.push({name:f.name,img,date:LumaDate.iso()});
           spSet(id,{docs:docs2});close();SALON.viewStaff(id);LUX.toast('رُفع المستند وحُفظ في ملف '+s.n+' ✓','ok');
         };
         if(f.type.startsWith('image/'))spReadImage(f,900,add);else add(null);

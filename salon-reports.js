@@ -3,7 +3,7 @@
 /* الحسابات مشتركة بين الشاشة والتصدير والملخص الأسبوعي */
 function reportData(){
   const live=APPTS.filter(a=>a.st!=='cancelled'&&a.st!=='blocked');
-  const month=new Date().toISOString().slice(0,7);
+  const month=LumaDate.month();
   const estRevenue=STAFF.reduce((t,s)=>t+hrLedger(s.id).svc,0);
   const paid=Object.values(paidAll());
   const collected=paid.reduce((t,p)=>t+(p.total||0),0);
