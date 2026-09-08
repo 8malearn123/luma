@@ -120,6 +120,72 @@ const slugClean=v=>v.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')
 let PAGE_TAB='general';
 let PAGE_BOOKF='up';
 const PAGE={
+  /* ── التوصيل والزيارات المنزلية ── */
+  homeToggle(path){
+    const H=LumaHome, c=H.cfg();
+    if(path==='enabled')H.save({enabled:!c.enabled});
+    else{
+      const [grp,key]=path.split('.');
+      H.save({[grp]:{[key]:!c[grp][key]}});
+    }
+    PAGE.showTab('home');
+  },
+  homeField(path,val){
+    const [grp,key]=path.split('.');
+    const num=['fee','freeAbove','minTotal','travelMin'].includes(key);
+    LumaHome.save({[grp]:{[key]:num?(parseFloat(val)||0):val}});
+  },
+  homeToggleList(key,name){
+    const H=LumaHome, cur=H.cfg().homeService[key]||[];
+    const next=cur.includes(name)?cur.filter(x=>x!==name):cur.concat([name]);
+    H.save({homeService:{[key]:next}});
+    PAGE.showTab('home');
+  },
+  homeAddDistrict(){
+    const el=document.getElementById('hdIn');const v=(el&&el.value||'').trim();
+    if(!v)return;
+    const H=LumaHome, cur=H.cfg().homeService.districts||[];
+    if(cur.includes(v)){LUX.toast('الحي مضاف مسبقاً','warn');return;}
+    H.save({homeService:{districts:cur.concat([v])}});
+    PAGE.showTab('home');LUX.toast('أُضيف الحي ✓','ok');
+  },
+  homeDelDistrict(i){
+    const H=LumaHome, cur=[...(H.cfg().homeService.districts||[])];
+    cur.splice(i,1);H.save({homeService:{districts:cur}});PAGE.showTab('home');
+  },
+  homeAddZone(){
+    const nm=document.getElementById('zoNm'), fe=document.getElementById('zoFee'), et=document.getElementById('zoEta');
+    const name=(nm&&nm.value||'').trim();
+    if(!name){if(nm){nm.style.borderColor='var(--red)';nm.focus();}return;}
+    const H=LumaHome, cur=[...(H.cfg().delivery.zones||[])];
+    cur.push({name,fee:parseFloat(fe&&fe.value)||0,eta:(et&&et.value||'').trim()});
+    H.save({delivery:{zones:cur}});PAGE.showTab('home');LUX.toast('أُضيف النطاق ✓','ok');
+  },
+  homeDelZone(i){
+    const H=LumaHome, cur=[...(H.cfg().delivery.zones||[])];
+    cur.splice(i,1);H.save({delivery:{zones:cur}});PAGE.showTab('home');
+  },
+  /* تقديم حالة طلب توصيل أو زيارة منزلية خطوةً واحدة */
+  homeAdvance(kind,i){
+    const H=LumaHome;
+    if(kind==='order'){
+      LumaStore.update('luma_salon_orders',l=>{
+        const idx=l.map((o,j)=>[o,j]).filter(([o])=>o.mode==='delivery')[i];
+        if(idx){const o=idx[0];o.status=H.nextStep(H.DELIVERY_STEPS,o.status||'new')||o.status;}
+        return l;},[]);
+    }else{
+      LumaStore.update('luma_public_bookings',l=>{
+        const idx=l.map((b,j)=>[b,j]).filter(([b])=>b.mode==='home')[i];
+        if(idx){const b=idx[0];b.status=H.nextStep(H.HOME_STEPS,b.status||'confirmed')||b.status;}
+        return l;},[]);
+    }
+    PAGE.showTab('home');LUX.toast('حُدِّثت الحالة ✓','ok');
+  },
+  homeUpgrade(){
+    LUX.confirm('باقة فَرِيد (799 ر.س / شهر) تفتح التوصيل والزيارات المنزلية وإدارة الطاقم والتقارير المقارنة. نفعّلها لحسابك الآن؟',
+      ()=>{LumaHome.setPlan('fareed');PAGE.showTab('home');LUX.toast('فُعّلت باقة فَرِيد ✓','ok');});
+  },
+
   showTab(t){PAGE_TAB=t;SALON.go('page');
     setTimeout(()=>{
       const sub=document.getElementById('pgSub');if(sub)sub.style.display='block';
@@ -805,6 +871,135 @@ SCREENS.page=()=>{
             </div>`;}).join('')}
           </div></div>
       </div>
+      </div>
+      <div style="${PAGE_TAB==='home'?'':'display:none'}">
+      ${(()=>{
+        const H=LumaHome, hc=H.cfg(), allowed=H.hasFeature('home');
+        const svcNames=SVC_CATALOG.map(x=>x[0]);
+        const staffNames=STAFF.map(x=>x.n);
+        if(!allowed)return `
+        <div class="card" style="margin-bottom:14px;text-align:center;padding:34px 22px">
+          <div style="font-size:34px;margin-bottom:12px">🚗</div>
+          <div style="font-weight:700;font-size:18px;color:var(--white)">التوصيل والزيارات المنزلية</div>
+          <div style="font-size:13.5px;color:var(--muted);margin-top:9px;line-height:2;max-width:52ch;margin-inline:auto">
+            وصّلي منتجاتك لباب العميلة، وأرسلي خبيراتك لمنزلها — بعنوان محفوظ ورسوم واضحة
+            وتتبّع لكل طلب، ووقت طريق يُحجز تلقائياً على جدول الخبيرة فلا يتعارض موعدها التالي.
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:9px;margin-top:18px;border:1px solid var(--gold-deep);border-radius:24px;padding:9px 20px;color:var(--gold-light);font-size:13px">
+            ✦ ضمن باقة فَرِيد — 799 ر.س / شهر
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:14px">باقتك الحالية: <b style="color:var(--gold-pale)">${H.plan().name}</b></div>
+          <div style="margin-top:16px"><button class="btn btn-gold" onclick="PAGE.homeUpgrade()">ترقية إلى فَرِيد</button></div>
+        </div>`;
+        const d=hc.delivery, h=hc.homeService;
+        const sw=(on,fn)=>`<button onclick="${fn}" style="width:46px;height:26px;border-radius:20px;border:1px solid ${on?'var(--gold-deep)':'var(--line)'};background:${on?'rgba(205,172,80,.22)':'var(--surface3)'};cursor:pointer;position:relative;flex-shrink:0"><span style="position:absolute;top:2px;${on?'left:3px':'right:3px'};width:18px;height:18px;border-radius:50%;background:${on?'var(--gold-light)':'var(--muted)'};transition:all .2s"></span></button>`;
+        const fld=(lb,val,fn,ph,type)=>`<div class="lux-f"><label>${lb}</label><input value="${val==null?'':val}" ${type?'type="'+type+'"':''} placeholder="${ph||''}" oninput="${fn}" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--white);font-family:inherit;font-size:13.5px;outline:none"/></div>`;
+        return `
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div><div style="font-weight:600;font-size:16px;color:var(--white)">التوصيل والزيارات المنزلية</div>
+              <div style="font-size:12.5px;color:var(--muted);margin-top:3px">مفتاح رئيسي — يُخفي الخيارين معاً من متجرك حين يُطفأ</div></div>
+            ${sw(hc.enabled,"PAGE.homeToggle('enabled')")}
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px;${hc.enabled?'':'opacity:.5;pointer-events:none'}">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:6px;flex-wrap:wrap">
+            <div class="sec-label" style="margin:0">📦 توصيل المنتجات <span class="ln"></span></div>
+            ${sw(d.on,"PAGE.homeToggle('delivery.on')")}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px">بضاعة تنتقل — يشغّل مندوباً لا وقت خبيرة</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            ${fld('رسوم التوصيل الافتراضية (ر.س)',d.fee,"PAGE.homeField('delivery.fee',this.value)",'25','number')}
+            ${fld('مجاني فوق (ر.س)',d.freeAbove,"PAGE.homeField('delivery.freeAbove',this.value)",'300','number')}
+          </div>
+          ${fld('مدة التوصيل المتوقعة',d.prepDays,"PAGE.homeField('delivery.prepDays',this.value)",'خلال يومين')}
+          <div class="sec-label" style="margin-top:16px">نطاقات التوصيل ورسومها <span class="ln"></span></div>
+          <div style="font-size:11.5px;color:var(--muted);margin-bottom:9px">بلا نطاقات: تُطبَّق الرسوم الافتراضية على الجميع</div>
+          ${(d.zones||[]).length?`<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+            ${d.zones.map((z,i)=>`<div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 12px;flex-wrap:wrap">
+              <b style="flex:1;font-size:13.5px;color:var(--white)">${z.name}</b>
+              <span class="num" style="color:var(--gold-pale)">${z.fee} ر.س</span>
+              <span style="font-size:11.5px;color:var(--muted)">${z.eta||''}</span>
+              <button onclick="PAGE.homeDelZone(${i})" title="حذف" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--red);cursor:pointer;font-size:12px">×</button>
+            </div>`).join('')}</div>`:''}
+          <div style="display:grid;grid-template-columns:1.6fr .8fr 1.1fr auto;gap:8px;align-items:end">
+            <input id="zoNm" placeholder="اسم النطاق — مثال: شمال جدة" style="background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;color:var(--white);font-family:inherit;font-size:13px"/>
+            <input id="zoFee" type="number" placeholder="الرسوم" style="background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;color:var(--white);font-family:inherit;font-size:13px"/>
+            <input id="zoEta" placeholder="المدة" style="background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;color:var(--white);font-family:inherit;font-size:13px"/>
+            <button class="btn btn-gold" onclick="PAGE.homeAddZone()">+ نطاق</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px;${hc.enabled?'':'opacity:.5;pointer-events:none'}">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:6px;flex-wrap:wrap">
+            <div class="sec-label" style="margin:0">💄 الخدمة في منزل العميلة <span class="ln"></span></div>
+            ${sw(h.on,"PAGE.homeToggle('homeService.on')")}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px">خبيرة تنتقل — يشغل وقتها هي، فيُحجز وقت الطريق على جدولها تلقائياً</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            ${fld('رسوم الانتقال (ر.س)',h.fee,"PAGE.homeField('homeService.fee',this.value)",'80','number')}
+            ${fld('الحد الأدنى للزيارة (ر.س)',h.minTotal,"PAGE.homeField('homeService.minTotal',this.value)",'250','number')}
+            ${fld('وقت الطريق بالدقائق (لكل اتجاه)',h.travelMin,"PAGE.homeField('homeService.travelMin',this.value)",'30','number')}
+            ${fld('نافذة الزيارات — من',h.from,"PAGE.homeField('homeService.from',this.value)",'10:00')}
+          </div>
+          ${fld('نافذة الزيارات — إلى',h.to,"PAGE.homeField('homeService.to',this.value)",'20:00')}
+          <div style="background:var(--surface3);border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-top:6px;font-size:12px;color:var(--gold-pale);line-height:1.9">
+            بوقت طريق ${h.travelMin||0} دقيقة، تحجز خدمةٌ مدتها 60 دقيقة <b>${60+(+h.travelMin||0)*2} دقيقة</b> من جدول الخبيرة — ذهاباً وعملاً وإياباً.
+          </div>
+
+          <div class="sec-label" style="margin-top:16px">الأحياء التي نخدمها <span class="ln"></span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            ${(h.districts||[]).map((x,i)=>`<span style="display:inline-flex;align-items:center;gap:7px;border:1px solid var(--gold-deep);border-radius:20px;padding:6px 13px;font-size:12.5px;color:var(--gold-light)">${x}
+              <button onclick="PAGE.homeDelDistrict(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:0">×</button></span>`).join('')
+              ||'<span style="font-size:12px;color:var(--muted)">لم تُحدَّد أحياء — لن تتمكن العميلة من اختيار حيّها</span>'}
+          </div>
+          <div style="display:flex;gap:9px">
+            <input id="hdIn" placeholder="حي جديد — مثال: الشاطئ" style="flex:1;background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;color:var(--white);font-family:inherit;font-size:13px"/>
+            <button class="btn btn-gold" onclick="PAGE.homeAddDistrict()">+ إضافة</button>
+          </div>
+
+          <div class="sec-label" style="margin-top:18px">الخدمات القابلة للتنفيذ منزلياً <span class="ln"></span></div>
+          <div style="font-size:11.5px;color:var(--muted);margin-bottom:9px">بلا اختيار: كل الخدمات متاحة منزلياً</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${svcNames.map(n=>{const on=(h.services||[]).includes(n);return `
+            <button onclick="PAGE.homeToggleList('services','${n.replace(/'/g,"\\'")}')" style="border:1px solid ${on?'var(--gold-light)':'var(--line)'};background:${on?'rgba(205,172,80,.16)':'var(--bg)'};color:${on?'var(--gold-light)':'var(--cream)'};border-radius:20px;padding:7px 14px;font-family:inherit;font-size:12.5px;cursor:pointer">${on?'✓ ':''}${n}</button>`;}).join('')}
+          </div>
+
+          <div class="sec-label" style="margin-top:18px">الخبيرات المتنقّلات <span class="ln"></span></div>
+          <div style="font-size:11.5px;color:var(--muted);margin-bottom:9px">بلا اختيار: كل الطاقم متاح للزيارات المنزلية</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${staffNames.map(n=>{const on=(h.staff||[]).includes(n);return `
+            <button onclick="PAGE.homeToggleList('staff','${n.replace(/'/g,"\\'")}')" style="border:1px solid ${on?'var(--gold-light)':'var(--line)'};background:${on?'rgba(205,172,80,.16)':'var(--bg)'};color:${on?'var(--gold-light)':'var(--cream)'};border-radius:20px;padding:7px 14px;font-family:inherit;font-size:12.5px;cursor:pointer">${on?'✓ ':''}${n}</button>`;}).join('')}
+          </div>
+        </div>
+
+        ${(()=>{
+          const orders=(LumaStore.get('luma_salon_orders',[])||[]).filter(o=>o.mode==='delivery');
+          const visits=(LumaStore.get('luma_public_bookings',[])||[]).filter(b=>b.mode==='home');
+          if(!orders.length&&!visits.length)return '';
+          const S=LumaHome;
+          return `<div class="card" style="margin-bottom:14px">
+            <div class="sec-label">الطلبات والزيارات الجارية <span class="ln"></span></div>
+            ${orders.map((o,i)=>{const st=o.status||'new';const nx=S.nextStep(S.DELIVERY_STEPS,st);return `
+            <div style="display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:8px;flex-wrap:wrap">
+              <span style="font-size:17px">📦</span>
+              <div style="flex:1;min-width:150px"><b style="font-size:13.5px;color:var(--white)">${o.client||'—'}</b>
+                <div style="font-size:11.5px;color:var(--muted);margin-top:2px">${o.ref||''} · ${S.fmtAddress(o.address)||'بلا عنوان'}</div></div>
+              <span class="badge ${st==='done'?'green':'gold'}">${S.stepLabel(S.DELIVERY_STEPS,st)}</span>
+              ${nx?`<button class="btn btn-ghost" onclick="PAGE.homeAdvance('order',${i})">${S.stepLabel(S.DELIVERY_STEPS,nx)} ←</button>`:''}
+            </div>`;}).join('')}
+            ${visits.map((b,i)=>{const st=b.status||'confirmed';const nx=S.nextStep(S.HOME_STEPS,st);return `
+            <div style="display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:8px;flex-wrap:wrap">
+              <span style="font-size:17px">💄</span>
+              <div style="flex:1;min-width:150px"><b style="font-size:13.5px;color:var(--white)">${b.client||'—'}</b>
+                <div style="font-size:11.5px;color:var(--muted);margin-top:2px">${b.service||''} · ${b.date||''} ${b.time||''} · ${S.fmtAddress(b.address)||'بلا عنوان'}</div></div>
+              <span class="badge ${st==='done'?'green':'gold'}">${S.stepLabel(S.HOME_STEPS,st)}</span>
+              ${nx?`<button class="btn btn-ghost" onclick="PAGE.homeAdvance('visit',${i})">${S.stepLabel(S.HOME_STEPS,nx)} ←</button>`:''}
+            </div>`;}).join('')}
+          </div>`;
+        })()}`;
+      })()}
       </div>
       <div style="${PAGE_TAB==='design'?'':'display:none'}">
       <div class="card" style="margin-bottom:14px">

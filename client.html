@@ -8,6 +8,7 @@
 <script src="luma-store.js"></script>
 <script src="luma-config.js"></script>
 <script src="luma-db.js"></script>
+<script src="luma-home.js"></script>
 <script src="luma-auth.js"></script>
 <script>
 /* حارس الجلسة — قبل أي سكربت آخر: بلا جلسة صالحة لا تُرسم اللوحة */
@@ -309,6 +310,52 @@ const SCREENS={
     <button class="seg-b" onclick="CLI.seg(this,'pa')">سابقة</button>
   </div>
   <style>.seg-b{flex:1;font-family:'Cairo';font-size:13px;color:var(--muted);background:none;border:none;padding:9px;border-radius:7px;cursor:pointer}.seg-b.on{background:linear-gradient(120deg,#dbbd81,#9c8047);color:#131217;font-weight:600}</style>
+  ${(()=>{
+    const H=window.LumaHome; if(!H)return '';
+    const visits=(LumaStore.get('luma_public_bookings',[])||[]).filter(b=>b.mode==='home');
+    const orders=(LumaStore.get('luma_salon_orders',[])||[]).filter(o=>o.mode==='delivery');
+    if(!visits.length&&!orders.length)return '';
+    /* شريط تتبّع: يوضّح أين وصل الطلب أو الزيارة بدل حالة نصية جامدة */
+    const track=(steps,cur)=>{
+      const i=Math.max(0,steps.findIndex(x=>x[0]===cur));
+      return `<div style="display:flex;align-items:center;gap:4px;margin-top:10px">
+        ${steps.map(([k,lb],j)=>`
+        <div style="flex:1;text-align:center">
+          <div style="height:3px;border-radius:3px;background:${j<=i?'var(--gold-light)':'var(--surface3)'}"></div>
+          <div style="font-size:9.5px;margin-top:5px;color:${j<=i?'var(--gold-light)':'var(--muted-deep)'};line-height:1.4">${lb}</div>
+        </div>`).join('')}
+      </div>`;
+    };
+    return `
+    <div class="seclab"><span class="t">زياراتي المنزلية وطلباتي</span></div>
+    ${visits.map(b=>`
+      <div class="card" style="margin-bottom:11px">
+        <div style="display:flex;align-items:center;gap:11px">
+          <span style="font-size:20px">🏠</span>
+          <div style="flex:1;min-width:0">
+            <b style="font-size:14px;color:var(--white)">${b.service||'زيارة منزلية'}</b>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">مع ${b.staffName||'—'} · ${b.date||''} <bdo dir="ltr">${b.time||''}</bdo></div>
+            <div style="font-size:11.5px;color:var(--gold-pale);margin-top:3px">📍 ${H.fmtAddress(b.address)||'—'}</div>
+          </div>
+          <b class="num" style="color:var(--gold-light)">${(b.price||0)+(b.homeFee||0)} ر.س</b>
+        </div>
+        ${track(H.HOME_STEPS,b.status||'confirmed')}
+      </div>`).join('')}
+    ${orders.map(o=>`
+      <div class="card" style="margin-bottom:11px">
+        <div style="display:flex;align-items:center;gap:11px">
+          <span style="font-size:20px">📦</span>
+          <div style="flex:1;min-width:0">
+            <b style="font-size:14px;color:var(--white)">طلب منتجات</b>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px"><bdo dir="ltr">${o.ref||''}</bdo> · ${Object.keys(o.items||{}).length} صنف</div>
+            <div style="font-size:11.5px;color:var(--gold-pale);margin-top:3px">🚗 ${H.fmtAddress(o.address)||'—'}</div>
+          </div>
+          <b class="num" style="color:var(--gold-light)">${o.total||0} ر.س</b>
+        </div>
+        ${track(H.DELIVERY_STEPS,o.status||'new')}
+      </div>`).join('')}
+    <div class="seclab"><span class="t">مواعيدي بالصالون</span></div>`;
+  })()}
   <div id="bk-up">
     ${UPCOMING.map(b=>`<div class="card" style="margin-bottom:11px"><div style="display:flex;align-items:center;gap:12px">${av(b.pr,46,18)}<div style="flex:1"><div style="font-size:15px;color:var(--white);font-weight:600">${b.pr}</div><div style="font-size:12.5px;color:var(--gold-pale)">${b.s}</div></div><span class="badge ${b.stc}">${b.st}</span></div><div style="display:flex;align-items:center;gap:7px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line-soft);color:var(--cream);font-size:13px">${icon('cal',15)} ${b.date}</div><div style="display:flex;gap:9px;margin-top:12px"><a href="${waLink('مرحبًا '+b.pr+'، بخصوص موعدي ('+b.s+') '+b.date+'.')}" target="_blank" rel="noopener" class="ghbtn" style="padding:11px;display:flex;align-items:center;justify-content:center;gap:7px;color:#25D366;border-color:rgba(37,211,102,0.35);text-decoration:none">${icon('whatsapp',15)} واتساب</a><button class="ghbtn" style="padding:11px">تعديل</button><button class="ghbtn" style="padding:11px;color:var(--rose);border-color:rgba(217,138,147,0.3)">إلغاء</button></div></div>`).join('')}
   </div>
@@ -333,6 +380,25 @@ const SCREENS={
     <div style="height:7px;background:var(--surface3);border-radius:10px;overflow:hidden"><span style="display:block;height:100%;width:62%;background:linear-gradient(90deg,#9c8047,#dbbd81);border-radius:10px"></span></div>
     <div style="font-size:11.5px;color:var(--muted);margin-top:8px">٢٦٠ نقطة للوصول لمكافأة جلسة مجانية</div>
   </div>
+
+  ${(()=>{
+    const H=window.LumaHome; if(!H)return '';
+    const list=H.addresses();
+    return `
+    <div class="seclab"><span class="t">عناويني</span></div>
+    <div class="card" style="margin-bottom:4px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:${list.length?'11px':'0'}">
+        تُستخدم في التوصيل وفي زيارات الخبيرة لمنزلك — تُحفظ مرة وتُختار بضغطة</div>
+      ${list.map(a=>`
+      <div style="display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:8px">
+        <span style="font-size:16px">📍</span>
+        <div style="flex:1;min-width:0"><b style="font-size:13.5px;color:var(--white)">${a.label||a.district||'عنوان'}</b>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:2px">${H.fmtAddress(a)}</div></div>
+        <button onclick="CLI.delAddr('${a.id}')" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--rose);cursor:pointer">×</button>
+      </div>`).join('')}
+      <button class="ghbtn" style="width:100%;margin-top:${list.length?'4px':'12px'}" onclick="CLI.addAddr()">+ إضافة عنوان</button>
+    </div>`;
+  })()}
 
   <div class="seclab"><span class="t">الحساب</span></div>
   <div class="card" style="padding:6px 16px">
@@ -385,6 +451,33 @@ const CLI={
     v.innerHTML=SCREENS[t]();
     v.scrollTop=0;
     document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  },
+  /* ── عناويني ── */
+  addAddr(){
+    const H=LumaHome;
+    const dists=H.districts();
+    LUX.modal('إضافة عنوان',`
+      <div class="lux-f"><label>الحي</label>
+        ${dists.length
+          ?`<select name="district" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 13px;color:var(--white);font-family:inherit;font-size:13.5px">
+              ${dists.map(d=>`<option>${d}</option>`).join('')}</select>`
+          :`<input name="district" placeholder="اسم الحي"/>`}</div>
+      <div class="lux-f"><label>الشارع / المجمّع</label><input name="street" placeholder="شارع الأمير سلطان"/></div>
+      <div class="lux-f"><label>تفاصيل تسهّل الوصول</label><input name="details" placeholder="فيلا 12 — بجانب الصيدلية"/></div>
+      <button class="lux-btn lux-gold" data-ok style="width:100%;margin-top:8px">حفظ العنوان</button>`,
+      {onMount(ov,close){
+        ov.querySelector('[data-ok]').onclick=()=>{
+          const v=n=>{const el=ov.querySelector('[name='+n+']');return el?(el.value||'').trim():'';};
+          if(!v('district')||!v('street')){LUX.toast('الحي والشارع مطلوبان','warn');return;}
+          LumaHome.addAddress({label:v('district'),district:v('district'),street:v('street'),details:v('details')});
+          close();CLI.go('account');LUX.toast('حُفظ العنوان ✓','ok');
+        };
+      }});
+  },
+  delAddr(id){
+    LUX.confirm('حذف هذا العنوان من دفترك؟',()=>{
+      LumaHome.removeAddress(id);CLI.go('account');LUX.toast('حُذف العنوان','ok');
+    },true);
   },
   seg(el,which){
     el.parentElement.querySelectorAll('.seg-b').forEach(b=>b.classList.remove('on'));el.classList.add('on');

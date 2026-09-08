@@ -8,6 +8,7 @@
 <script src="luma-store.js"></script>
 <script src="luma-config.js"></script>
 <script src="luma-db.js"></script>
+<script src="luma-home.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <!-- بطاقة المشاركة والوصف — تظهر عند مشاركة الرابط على واتساب وإنستغرام -->
 <meta name="description" content="صفحة حجز فاخرة: اختاري خدماتك وخبيرتك ووقتك، وادفعي بأمان عبر مدى أو Apple Pay." />
@@ -104,6 +105,29 @@
   .btn{width:100%;border:none;border-radius:calc(var(--rad,16px) - 2px);padding:14px;background:var(--btn,var(--ac));color:var(--bg);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px}
   .btn:disabled{opacity:.35} .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--tx)}
   /* شريط تنقّل أسابيع نافذة الحجز الثلاثينية */
+  /* اختيار مكان الخدمة */
+  .venue-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+  .venue{background:var(--card);border:1.5px solid rgba(128,128,128,.25);border-radius:calc(var(--rad,16px) - 1px);
+    padding:16px 12px;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    color:var(--tx);font-family:inherit;cursor:pointer;text-align:center}
+  .venue .ic{font-size:24px} .venue b{font-size:14px}
+  .venue .d{font-size:11px;opacity:.6;line-height:1.6}
+  .venue.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,var(--card))}
+  .venue:disabled{opacity:.4;cursor:default}
+  .ship-pick{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:8px 0 10px}
+  .ship-in{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;
+    color:inherit;font-family:inherit;font-size:13.5px;min-height:46px;margin-bottom:9px}
+  .venue-note{font-size:12px;opacity:.72;line-height:1.9;background:var(--card);border:1px solid rgba(128,128,128,.2);
+    border-radius:11px;padding:11px 13px;margin-top:10px}
+  .venue-note.warn{color:#d9a05b;border-color:rgba(217,160,91,.4)}
+  .addr-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .addr{background:var(--card);border:1.5px solid rgba(128,128,128,.22);border-radius:12px;padding:11px 14px;
+    text-align:right;color:var(--tx);font-family:inherit;cursor:pointer;min-height:52px}
+  .addr b{display:block;font-size:13.5px} .addr span{font-size:11.5px;opacity:.6}
+  .addr.on{border-color:var(--ac)}
+  .addr-form{display:flex;flex-direction:column;gap:9px}
+  .addr-form select,.addr-form input{background:var(--card);border:1px solid rgba(128,128,128,.25);border-radius:10px;
+    padding:12px 14px;color:var(--tx);font-family:inherit;font-size:13.5px;min-height:46px}
   .daynav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
   .daynav span{font-size:12px;opacity:.7}
   .daynav button{background:none;border:1px solid rgba(128,128,128,.3);border-radius:9px;color:var(--tx);
@@ -268,6 +292,10 @@ const BOOKED=load('luma_public_bookings',[]);
 
 /* ═══ حالة المعالج — يمكن اختيار أكثر من خدمة في الحجز الواحد ═══ */
 let step=1,svcs=[],staff=null,date='',time='';
+/* مكان الخدمة: بالصالون أم في منزل العميلة — يغيّر المدة والرسوم والخبيرات المتاحة */
+let venue='salon', homeAddr=null;
+/* السلة: استلام من الصالون أم توصيل — ولكلٍّ رسومه وعنوانه */
+let shipMode='pickup', shipAddr=null, shipZone='';
 /* إسناد لكل خدمة: {svcId: {staff, time}} + مؤشر الخدمة الجاري إسنادها */
 let assigns={},curIdx=0,curStaff=null;
 const assignedList=()=>selSvcs().map(x=>({svc:x,a:assigns[x.id]})).filter(r=>r.a);
@@ -480,6 +508,12 @@ const SHOP=((load('luma_shop_products',null)||SHOP_DEFAULT).filter(p=>p&&p.n&&!p
 const shopImgs=()=>load('luma_salon_prod_img')||{};
 let cart={};
 const cartCount=()=>Object.values(cart).reduce((t,q)=>t+q,0);
+const shipFee=()=>{
+  const H=window.LumaHome;
+  if(!H||!H.deliveryOn()||shipMode!=='deliver')return 0;
+  return H.deliveryFee(cartTotal(),shipZone).fee;
+};
+const cartGrand=()=>cartTotal()+shipFee();
 const cartTotal=()=>Object.entries(cart).reduce((t,[n,q])=>{const p=SHOP.find(x=>x.n===n);return t+(p?p.p*q:0);},0);
 function bannersStrip(){
   const bs=(CFG.banners||[]).filter(x=>x&&x.on);
@@ -646,6 +680,8 @@ function shopFab(){
   f.style.display=c?'inline-flex':'none';
   if(c)f.innerHTML='<span class="n">'+c+'</span> السلة · '+cartTotal()+' ر.س';
 }
+window.pickShip=m=>{shipMode=m;openCart();};
+window.pickZone=z=>{shipZone=z;openCart();};
 window.openCart=()=>{
   if(!cartCount())return;
   const old=document.querySelector('.shs-bg');if(old)old.remove();
@@ -653,7 +689,29 @@ window.openCart=()=>{
   bg.innerHTML=`<div class="shs">
     <div style="font-size:17px;font-weight:700">إتمام الطلب <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M6 7h12l1 13a1 1 0 01-1 1H6a1 1 0 01-1-1z"/><path d="M9 7a3 3 0 016 0"/></svg></div>
     ${Object.entries(cart).map(([n,q])=>{const p=SHOP.find(x=>x.n===n);return `<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--ln);font-size:13px"><span>${n} × ${q}</span><b style="color:var(--ac)">${p.p*q} ر.س</b></div>`;}).join('')}
-    <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:14.5px"><b>الإجمالي</b><b style="color:var(--ac)">${cartTotal()} ر.س</b></div>
+    ${(()=>{
+      const H=window.LumaHome;
+      if(!H||!H.deliveryOn())return '';
+      const sub=cartTotal(), df=H.deliveryFee(sub,shipZone);
+      return `
+      <div class="ship-pick">
+        <button class="venue ${shipMode==='pickup'?'on':''}" onclick="pickShip('pickup')">
+          <span class="ic">🏛</span><b>استلام من الصالون</b><span class="d">بلا رسوم</span></button>
+        <button class="venue ${shipMode==='deliver'?'on':''}" onclick="pickShip('deliver')">
+          <span class="ic">🚗</span><b>توصيل لمنزلي</b>
+          <span class="d">${df.free?'مجاني':df.fee+' ر.س'}${df.eta?' · '+esc(df.eta):''}</span></button>
+      </div>
+      ${shipMode==='deliver'?`
+        ${H.zones().length?`<select id="shZone" onchange="pickZone(this.value)" class="ship-in">
+          <option value="">اختاري نطاق التوصيل…</option>
+          ${H.zones().map(z=>`<option ${shipZone===z.name?'selected':''} value="${esc(z.name)}">${esc(z.name)} — ${z.fee} ر.س${z.eta?' · '+esc(z.eta):''}</option>`).join('')}
+        </select>`:''}
+        <input id="shAddr" class="ship-in" placeholder="الحي والشارع ورقم المنزل" value="${shipAddr?esc(shipAddr):''}" oninput="shipAddr=this.value"/>
+        ${!df.free&&df.fee?`<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;opacity:.8"><span>رسوم التوصيل</span><b>+ ${df.fee} ر.س</b></div>`:''}
+        ${df.free?`<div style="font-size:12px;color:#6fa86a;padding:4px 0">${esc(df.reason)}</div>`:''}
+      `:''}`;
+    })()}
+    <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:14.5px"><b>الإجمالي</b><b style="color:var(--ac)">${cartGrand()} ر.س</b></div>
     <div style="font-size:11px;opacity:.6;margin-top:-6px;margin-bottom:6px">الأسعار شاملة ضريبة القيمة المضافة 15٪</div>
     <input id="odName" placeholder="اسمك الكامل" style="width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;color:inherit;font-family:inherit;font-size:13px;outline:none;margin-bottom:9px"/>
     <input id="odPhone" dir="ltr" placeholder="05xxxxxxxx" style="width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;color:inherit;font-family:inherit;font-size:13px;outline:none;margin-bottom:12px;text-align:right"/>
@@ -670,8 +728,19 @@ window.confirmOrder=()=>{
   if(!/^0?5\d{8}$/.test(ph.value.replace(/[\s-]/g,''))){ph.style.borderColor='#c0566a';ph.focus();return;}
   const pay=(document.querySelector('[name=odPay]:checked')||{}).value||'mada';
   const ref='ORD-'+Math.floor(100000+Math.random()*900000);
-  const total=cartTotal();
-  try{LumaStore.update('luma_salon_orders',l=>{l.unshift({ref,client:nm.value.trim(),phone:ph.value.trim(),items:{...cart},total,pay,at:new Date().toISOString()});return l;},[]);}catch(e){}
+  const H=window.LumaHome;
+  const deliver=H&&H.deliveryOn()&&shipMode==='deliver';
+  if(deliver&&!(shipAddr||'').trim()){
+    const el=document.getElementById('shAddr');
+    if(el){el.style.borderColor='#c0566a';el.focus();}
+    return;
+  }
+  const total=cartGrand();
+  try{LumaStore.update('luma_salon_orders',l=>{l.unshift({ref,client:nm.value.trim(),phone:ph.value.trim(),items:{...cart},
+    total,pay,mode:deliver?'delivery':'pickup',
+    address:deliver?{district:shipZone||'',street:shipAddr,details:''}:null,
+    shipFee:deliver?shipFee():0, status:deliver?'new':undefined,
+    at:new Date().toISOString()});return l;},[]);}catch(e){}
   try{LumaEvents.push('order','طلب متجر جديد ('+ref+') لدى '+CFG.title+': '+nm.value.trim()+' — '+total+' ر.س ('+pay+')','salon.html#services');}catch(e){}
   const sh=document.querySelector('.shs');
   if(sh)sh.innerHTML=`<div style="text-align:center;padding:22px 6px">
@@ -697,9 +766,48 @@ function render(){
     s=layoutOf().filter(x=>x.on).map(x=>(SECS[x.k]||(()=>''))()).join('')+mapCard()+policyBox()+footerSec();
   }
   if(step===2){
+    /* اختيار المكان يسبق التاريخ: الزيارة المنزلية تغيّر مدة الموعد
+       (يُضاف وقت الطريق) والخبيرات المتاحات، فلا يصحّ اختيار الوقت قبله */
+    const H=window.LumaHome;
+    const homeOK=H&&H.homeServiceOn();
+    const svcAtHome=selSvcs().every(x=>H&&H.canServeAtHome(x.n));
+    if(homeOK){
+      const hf=H.homeFee(selTotal());
+      s=back('أين تحبين الخدمة؟',1)+`
+      <div class="venue-pick">
+        <button class="venue ${venue==='salon'?'on':''}" onclick="pickVenue('salon')">
+          <span class="ic">🏛</span><b>في الصالون</b><span class="d">${esc(CFG.title||'')}</span></button>
+        <button class="venue ${venue==='home'?'on':''}" ${svcAtHome?'':'disabled'} onclick="pickVenue('home')">
+          <span class="ic">🏠</span><b>في منزلي</b>
+          <span class="d">${svcAtHome?('+ '+H.cfg().homeService.fee+' ر.س رسوم انتقال'):'غير متاحة لهذه الخدمة'}</span></button>
+      </div>
+      ${venue==='home'?`
+        ${!hf.ok?`<div class="venue-note warn">${esc(hf.reason)} — أضيفي خدمة أخرى أو اختاري «في الصالون».</div>`:''}
+        <div class="cat" style="margin-top:14px">عنوانك</div>
+        ${(H.addresses().length?`<div class="addr-list">${H.addresses().map(a=>`
+          <button class="addr ${homeAddr&&homeAddr.id===a.id?'on':''}" onclick="pickAddr('${a.id}')">
+            <b>${esc(a.label||a.district||'عنوان')}</b><span>${esc(H.fmtAddress(a))}</span></button>`).join('')}</div>`:'')}
+        <div class="addr-form">
+          <select id="adDist" style="width:100%">
+            <option value="">اختاري الحي…</option>
+            ${H.districts().map(d=>`<option ${homeAddr&&homeAddr.district===d?'selected':''}>${esc(d)}</option>`).join('')}
+          </select>
+          <input id="adStreet" placeholder="الشارع / اسم المجمّع" value="${homeAddr?esc(homeAddr.street||''):''}"/>
+          <input id="adDetails" placeholder="رقم المنزل ووصف يسهّل الوصول" value="${homeAddr?esc(homeAddr.details||''):''}"/>
+          <button class="btn ghost" onclick="saveAddr()">حفظ العنوان</button>
+        </div>
+        ${H.cfg().homeService.note?`<div class="venue-note">${esc(H.cfg().homeService.note)}</div>`:''}
+        <div class="venue-note">نافذة الزيارات المنزلية: <bdo dir="ltr">${esc(H.cfg().homeService.from)} — ${esc(H.cfg().homeService.to)}</bdo> · تُحجز ${H.travelMin()} دقيقة طريق قبل الموعد وبعده على جدول الخبيرة.</div>
+      `:''}
+      <button class="btn" ${venue==='home'&&(!homeAddr||!hf.ok)?'disabled':''} onclick="go(21)">متابعة لاختيار التاريخ</button>`;
+    }else{ s=stepDate(); }
+  }
+  if(step===21){ s=stepDate(); }
+  function stepDate(){
+    let s='';
     const pages=Math.ceil(days.length/DAYS_PER_PAGE);
     const from=dayPage*DAYS_PER_PAGE, slice=days.slice(from,from+DAYS_PER_PAGE);
-    s=back('اختاري تاريخ الزيارة',1)
+    s=back('اختاري تاريخ الزيارة',(window.LumaHome&&LumaHome.homeServiceOn())?2:1)
       +`<div class="daynav">
         <button type="button" ${dayPage<=0?'disabled':''} onclick="dayPageBy(-1)" aria-label="الأسبوع السابق">‹ السابق</button>
         <span>${esc(slice[0].dt)} — ${esc(slice[slice.length-1].dt)}</span>
@@ -710,6 +818,7 @@ function render(){
       return `<button class="day ${date===d.iso?'sel':''}" ${off?'disabled':''} onclick="pickDate(${i})">
         <div class="lb">${d.lb}</div><div class="dt">${d.dt}</div>${off?'<div class="lv">مغلق</div>':''}</button>`;}).join('')+`</div>
       <button class="btn" ${date?'':'disabled'} onclick="startAssign()">متابعة — اختيار الخبيرة والوقت لكل خدمة</button>`;
+    return s;
   }
   if(step===3){
     const list=selSvcs();const cur=list[curIdx];
@@ -725,15 +834,21 @@ function render(){
         </div>`;}).join('');
     if(cur){
       const day=days.find(d=>d.iso===date);
-      s+=`<div class="cat" style="margin-top:14px">من تنفّذ «${esc(cur.n)}»؟</div><div class="grid2">`+STAFF.map(x=>{
+      /* الزيارة المنزلية: الخبيرات المتنقّلات فقط — من وسمتهنّ المالكة */
+      const mobile=(window.LumaHome&&venue==='home')?LumaHome.homeStaff():[];
+      const pool=(venue==='home'&&mobile.length)?STAFF.filter(x=>mobile.includes(x.n)):STAFF;
+      s+=`<div class="cat" style="margin-top:14px">من تنفّذ «${esc(cur.n)}»؟${venue==='home'?' <span style="font-size:11px;opacity:.6">— الخبيرات المتنقّلات</span>':''}</div><div class="grid2">`+pool.map(x=>{
         const lv=onLeave(x.id,date)||shiftOf(x.id,day.wd).off;
         return `<button class="stf ${lv?'leave':''} ${curStaff===x.id?'sel':''}" ${lv?'disabled':''} onclick="pickStaff('${x.id}')">
           <span class="av">${x.n.charAt(0)}</span><span class="nm">${x.n}</span><div class="rl">${x.role}</div>
           ${lv?'<div class="lv">غير متاحة اليوم</div>':''}</button>`;}).join('')+`</div>`;
       if(curStaff){
-        const sl=slotsFor(curStaff,day,cur.d);
+        /* الزيارة المنزلية تشغل وقت الخبيرة ذهاباً وإياباً — يُحجز مع الموعد
+           وإلا صار موعدها التالي مستحيلاً */
+        const bookedMin=(venue==='home'&&window.LumaHome)?LumaHome.totalDurationAtHome(cur.d):cur.d;
+        const sl=slotsFor(curStaff,day,bookedMin);
         const free=sl.filter(x=>!x.taken).length;
-        s+=sl.length?`<div class="cat" style="margin-top:12px">الأوقات المتاحة <span style="font-weight:400;opacity:.6;font-size:11px">— تكفي ${cur.d} دقيقة كاملة</span></div><div class="slots">${sl.map(x=>`<button class="slot" ${x.taken?'disabled':''} onclick="pickTime('${x.t}')">${x.t}</button>`).join('')}</div>`
+        s+=sl.length?`<div class="cat" style="margin-top:12px">الأوقات المتاحة <span style="font-weight:400;opacity:.6;font-size:11px">— تكفي ${bookedMin} دقيقة كاملة${venue==='home'?' (منها '+LumaHome.travelMin()*2+' طريق)':''}</span></div><div class="slots">${sl.map(x=>`<button class="slot" ${x.taken?'disabled':''} onclick="pickTime('${x.t}')">${x.t}</button>`).join('')}</div>`
           +(free?'':`<div style="text-align:center;opacity:.55;font-size:12.5px;padding:12px">كل الأوقات محجوزة — جرّبي خبيرة أخرى أو يوماً آخر</div>`)
           :`<div style="text-align:center;opacity:.55;font-size:13px;padding:18px">لا أوقات متاحة لها هذا اليوم — جرّبي خبيرة أخرى</div>`;
       }else{
@@ -752,7 +867,9 @@ function render(){
           return `<div class="trow2"><span class="k">${esc(x.n)}${st?`<div style="font-size:10px;opacity:.55">${esc(st.n)} · <bdo dir="ltr">${a.time}</bdo></div>`:''}</span><b>${x.p} ر.س</b></div>`;}).join('')}
         <div class="trow2"><span class="k">المدة الإجمالية</span><b>${selDur()} دقيقة</b></div>
         ${coupon?`<div class="trow2" style="color:#6fa86a"><span class="k">كوبون <bdo dir="ltr">${coupon.code}</bdo></span><b>− ${discount()} ر.س</b></div>`:''}
-        <div class="trow2 total"><span>الإجمالي</span><b>${selTotal()-discount()} ر.س</b></div>
+        ${venue==='home'?`<div class="trow2"><span class="k">المكان</span><b>🏠 في منزلك · ${esc((homeAddr&&LumaHome.fmtAddress(homeAddr))||'')}</b></div>
+        <div class="trow2"><span class="k">رسوم انتقال الخبيرة</span><b>+ ${LumaHome.homeFee(selTotal()).fee} ر.س</b></div>`:''}
+        <div class="trow2 total"><span>الإجمالي</span><b>${selTotal()-discount()+(venue==='home'?LumaHome.homeFee(selTotal()).fee:0)} ر.س</b></div>
         <div class="trow2" style="font-size:11px;opacity:.6"><span>شامل ضريبة القيمة المضافة 15٪</span><span></span></div>
       </div></div>
       <div style="display:flex;gap:8px;margin-top:12px">
@@ -788,6 +905,18 @@ window.pickSvc=id=>{
   const y=window.scrollY;render();window.scrollTo({top:y});
 };
 window.pickStaff=id=>{curStaff=id;const y=window.scrollY;render();window.scrollTo({top:y});};
+window.pickVenue=v=>{venue=v;assigns={};curIdx=0;curStaff=null;render();};
+window.pickAddr=id=>{
+  const a=(LumaHome.addresses()||[]).find(x=>x.id===id);
+  if(a){homeAddr=a;render();}
+};
+window.saveAddr=()=>{
+  const d=document.getElementById('adDist'), st=document.getElementById('adStreet'), dt=document.getElementById('adDetails');
+  if(!d.value){d.style.borderColor='#c0566a';d.focus();return;}
+  if(!st.value.trim()){st.style.borderColor='#c0566a';st.focus();return;}
+  homeAddr=LumaHome.addAddress({label:d.value,district:d.value,street:st.value.trim(),details:dt.value.trim()});
+  render();
+};
 window.pickDate=i=>{date=days[i].iso;assigns={};curIdx=0;curStaff=null;render();};
 window.dayPageBy=d=>{const pages=Math.ceil(days.length/DAYS_PER_PAGE);
   dayPage=Math.min(pages-1,Math.max(0,dayPage+d));const y=window.scrollY;render();window.scrollTo({top:y});};
@@ -802,8 +931,16 @@ window.pickTime=t=>{
 };
 window.confirmBooking=()=>{
   const items=selSvcs().map(x=>({n:x.n,p:x.p,d:x.d,staff:assigns[x.id].staff,time:assigns[x.id].time}));
-  /* dur تُخزَّن مع كل حجز — بدونها لا يمكن حساب تعارض المواعيد لاحقاً */
-  items.forEach(it=>{BOOKED.push({staff:it.staff,staffName:(STAFF.find(z=>z.id===it.staff)||{}).n,client:'حجز أونلاين',service:it.n,price:it.p,dur:it.d,coupon:coupon?coupon.code:null,date,time:it.time,at:new Date().toISOString()});});
+  /* dur تُخزَّن مع كل حجز — بدونها لا يمكن حساب تعارض المواعيد لاحقاً.
+     وفي الزيارة المنزلية تُخزَّن المدة شاملةً وقت الطريق، فيُحجز فعلاً. */
+  const atHome=venue==='home';
+  const trav=atHome&&window.LumaHome?LumaHome.travelMin():0;
+  items.forEach(it=>{BOOKED.push({staff:it.staff,staffName:(STAFF.find(z=>z.id===it.staff)||{}).n,client:'حجز أونلاين',service:it.n,price:it.p,
+    dur:atHome?it.d+trav*2:it.d, serviceMin:it.d, travelMin:trav,
+    mode:atHome?'home':'salon', address:atHome?homeAddr:null,
+    homeFee:atHome&&window.LumaHome?LumaHome.homeFee(selTotal()).fee:0,
+    status:atHome?'confirmed':undefined,
+    coupon:coupon?coupon.code:null,date,time:it.time,at:new Date().toISOString()});});
   LumaStore.set('luma_public_bookings',BOOKED);
   try{LumaEvents.push('booking','حجز أونلاين جديد لدى '+CFG.title+': '+items.map(i=>i.n).join(' + ')+' — '+date+' ('+(selTotal()-discount())+' ر.س)','salon.html#board');}catch(e){}
   /* حجوزات اليوم تظهر مباشرة على لوحة الصالون — موعد لكل خدمة بخبيرتها ووقتها */
