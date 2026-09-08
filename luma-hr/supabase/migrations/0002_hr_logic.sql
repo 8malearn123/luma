@@ -24,8 +24,18 @@ create or replace function staff_is_available(
 language plpgsql stable security definer set search_path = public as $$
 declare
   v_sched staff_schedules%rowtype;
-  v_day   smallint := extract(dow from p_start)::smallint; -- 0=Sun … 6=Sat
+  -- Shifts, breaks and leave dates are wall-clock values in the SALON's
+  -- timezone, but p_start/p_end arrive as timestamptz and the session
+  -- timezone on Supabase is UTC. Casting them straight to ::time compared
+  -- Riyadh 23:30 as 20:30 and let a booking through 1.5h after closing —
+  -- while get_available_booking_slots (which does convert) never offered
+  -- that slot. Convert here too so the guard and the slot generator agree.
+  v_tz    text      := coalesce(current_setting('app.salon_tz', true), 'Asia/Riyadh');
+  v_ls    timestamp := p_start at time zone v_tz;   -- salon wall-clock start
+  v_le    timestamp := p_end   at time zone v_tz;   -- salon wall-clock end
+  v_day   smallint;
 begin
+  v_day := extract(dow from v_ls)::smallint;   -- 0=Sun … 6=Sat, salon-local
   -- (a) active profile
   if not exists (select 1 from staff_profiles
                  where id = p_staff and status = 'active') then
@@ -33,7 +43,7 @@ begin
   end if;
 
   -- multi-day bookings are not supported by the slot model
-  if p_start::date <> (p_end - interval '1 second')::date then
+  if v_ls::date <> (v_le - interval '1 second')::date then
     return false;
   end if;
 
@@ -46,14 +56,14 @@ begin
     return false;
   end if;
 
-  if p_start::time < v_sched.shift_start
-     or (p_end - interval '1 second')::time >= v_sched.shift_end then
+  if v_ls::time < v_sched.shift_start
+     or (v_le - interval '1 second')::time >= v_sched.shift_end then
     return false;
   end if;
 
   -- (c) break intersection
   if v_sched.break_start is not null
-     and (p_start::time, p_end::time) overlaps (v_sched.break_start, v_sched.break_end) then
+     and (v_ls::time, v_le::time) overlaps (v_sched.break_start, v_sched.break_end) then
     return false;
   end if;
 
@@ -64,7 +74,7 @@ begin
     select 1 from staff_leaves l
     where l.staff_id = p_staff
       and l.status   = 'approved'
-      and daterange(l.start_date, l.end_date, '[]') @> p_start::date
+      and daterange(l.start_date, l.end_date, '[]') @> v_ls::date
   ) then
     return false;
   end if;
