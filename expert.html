@@ -6,6 +6,11 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script src="luma-auth.js"></script>
+<script>
+/* حارس الجلسة — قبل أي سكربت آخر: بلا جلسة صالحة لا تُرسم اللوحة */
+LumaAuth.require('expert');
+</script>
 <link rel="stylesheet" href="luma-core.css"/>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <!-- صفحة خاصة/داخلية — خارج فهرسة محركات البحث -->
@@ -148,7 +153,7 @@
         <div class="ti"><div class="t1">باقتك الحالية</div><div class="t2">وَهَج</div></div>
         <div class="up" onclick="LUMA.go('advanced')">ترقية ↑</div>
       </div>
-      <a href="login.html" title="تسجيل الخروج" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;color:var(--gold-pale);font-size:13px;border:1px solid var(--line);border-radius:10px;padding:10px;text-decoration:none" onmouseover="this.style.borderColor='var(--gold-deep)';this.style.color='var(--gold-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--gold-pale)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
+      <a href="login.html" title="تسجيل الخروج" onclick="LumaAuth.signOut(false)" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;color:var(--gold-pale);font-size:13px;border:1px solid var(--line);border-radius:10px;padding:10px;text-decoration:none" onmouseover="this.style.borderColor='var(--gold-deep)';this.style.color='var(--gold-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--gold-pale)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
     </div>
   </aside>
 
@@ -171,8 +176,7 @@
 </div>
 
 <script>
-/* فتح لوحة الخبيرة = جلسة مالكة — يفعّل صلاحيات التعديل بالصفحات العامة */
-try{localStorage.setItem('luma_role','expert');}catch(e){}
+/* الجلسة لا تُمنح بفتح الصفحة — الحارس في الرأس يتحقق منها (LumaAuth) */
 /* ── ICONS ── */
 const IC = {
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',

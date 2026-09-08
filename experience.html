@@ -6,6 +6,7 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script src="luma-auth.js"></script>
 <script src="luma-verify.js"></script>
 <script src="luma-teams.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -820,7 +821,8 @@ const PRODUCT_ART={
 const productArt=id=>PRODUCT_ART[id]||'';
 
 /* خاصية إضافة صورة لكل منتج — إدارة المنتجات بواسطة الصالون فقط، الخبيرة والزائرات يشاهدن فقط */
-const LUMA_OWNER=(()=>{try{return localStorage.getItem('luma_role')==='salon';}catch(e){return false;}})();
+/* صلاحية التحرير من الجلسة الموحّدة — لا من مفتاح تكتبه اللوحة لنفسها */
+const LUMA_OWNER=(()=>{try{return LumaAuth.is('salon');}catch(e){return false;}})();
 const PIMG_KEY='luma_prod_img';
 const prodImgs=()=>{try{return JSON.parse(localStorage.getItem(PIMG_KEY))||{};}catch(e){return{};}};
 function prodImgSet(id,src){

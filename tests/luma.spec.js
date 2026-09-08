@@ -14,6 +14,25 @@ test.beforeEach(async ({ context }) => {
   await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.abort());
 });
 
+/* اللوحات صارت خلف حارس جلسة (LumaAuth): لا تُرسم بلا جلسة صالحة.
+   الاختبارات تدخل كما تدخل المستخدمة — بجلسة تُزرع قبل تحميل الصفحة،
+   ومقصورة على مسارات اللوحات حتى تبقى اختبارات «الزائرة» على الصفحات
+   العامة بلا جلسة، فتظل تقيس ما تراه زائرة فعلاً. */
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    const ROLE = { '/salon.html': 'salon', '/expert.html': 'expert', '/admin.html': 'admin',
+                   '/client.html': 'client', '/staff-portal.html': 'staff' };
+    const role = ROLE[location.pathname];
+    if (!role) return;
+    try {
+      localStorage.setItem('luma_session', JSON.stringify(
+        { role, name: 'اختبار', at: Date.now(), exp: Date.now() + 12 * 3600 * 1000 }));
+      localStorage.setItem('luma_role', role);
+    } catch (e) {}
+  });
+});
+
+
 // معالج الحجز العام: بعض الأيام عطلة (الجمعة) — نختار أول يوم فيه مواعيد متاحة
 // التدفق الجديد: يوم مشترك للزيارة ثم إسناد (خبيرة + وقت) لكل خدمة حتى تظهر التذكرة
 async function wizardAssign(page) {

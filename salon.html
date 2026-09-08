@@ -6,6 +6,11 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script src="luma-auth.js"></script>
+<script>
+/* حارس الجلسة — قبل أي سكربت آخر: بلا جلسة صالحة لا تُرسم اللوحة */
+LumaAuth.require('salon');
+</script>
 <script>
 /* عزل بيانات الفروع: البيانات التشغيلية لكل فرع تُخزَّن بمفاتيح مُلحقة بمعرّفه،
    فالحجوزات والمدفوعات والموارد البشرية لا تختلط بين الفروع. الفرع الرئيسي بلا لاحقة. */
@@ -110,7 +115,7 @@
     </div>
     <nav class="sb-nav" id="sb-nav"></nav>
     <div style="margin-top:auto;padding:14px;border-top:1px solid var(--line-soft)">
-      <a href="login.html" title="تسجيل الخروج" style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--gold-pale);font-size:13px;border:1px solid var(--line);border-radius:10px;padding:10px;text-decoration:none" onmouseover="this.style.borderColor='var(--gold-deep)';this.style.color='var(--gold-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--gold-pale)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
+      <a href="login.html" title="تسجيل الخروج" onclick="LumaAuth.signOut(false)" style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--gold-pale);font-size:13px;border:1px solid var(--line);border-radius:10px;padding:10px;text-decoration:none" onmouseover="this.style.borderColor='var(--gold-deep)';this.style.color='var(--gold-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--gold-pale)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
     </div>
   </aside>
   <div class="main">

@@ -12,6 +12,25 @@ test.beforeEach(async ({ page }) => {
   await page.route(/^https?:\/\/(?!127\.0\.0\.1|localhost)/, r => r.abort());
 });
 
+/* اللوحات صارت خلف حارس جلسة (LumaAuth): لا تُرسم بلا جلسة صالحة.
+   الاختبارات تدخل كما تدخل المستخدمة — بجلسة تُزرع قبل تحميل الصفحة،
+   ومقصورة على مسارات اللوحات حتى تبقى اختبارات «الزائرة» على الصفحات
+   العامة بلا جلسة، فتظل تقيس ما تراه زائرة فعلاً. */
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    const ROLE = { '/salon.html': 'salon', '/expert.html': 'expert', '/admin.html': 'admin',
+                   '/client.html': 'client', '/staff-portal.html': 'staff' };
+    const role = ROLE[location.pathname];
+    if (!role) return;
+    try {
+      localStorage.setItem('luma_session', JSON.stringify(
+        { role, name: 'اختبار', at: Date.now(), exp: Date.now() + 12 * 3600 * 1000 }));
+      localStorage.setItem('luma_role', role);
+    } catch (e) {}
+  });
+});
+
+
 /* ═════════ أ-3 · التواريخ والتقويم ═════════ */
 
 test('LumaDate: تاريخ محلي لا UTC — حجز ما بعد منتصف الليل لا ينزلق ليوم سابق', async ({ page }) => {
@@ -50,7 +69,7 @@ test('تعارض المواعيد: خدمة طويلة تحجب كامل مدت�
   await page.goto('/booking.html');
   await page.waitForTimeout(800);
   const r = await page.evaluate(() => {
-    const day = days[3];
+    const day = days.find(d => !shiftOf('amal', d.wd).off && !onLeave('amal', d.iso) && !LumaDate.isToday(d.iso));
     BOOKED.push({ staff: 'amal', service: 'مكياج عروس', dur: 180, date: day.iso, time: '17:00' });
     const s = slotsFor('amal', day, 30);
     const at = t => (s.find(x => x.t === t) || {}).taken;
@@ -66,7 +85,7 @@ test('الخدمة الأطول من المتبقي لا تُعرض خانةً �
   await page.goto('/booking.html');
   await page.waitForTimeout(800);
   const r = await page.evaluate(() => {
-    const day = days[3];
+    const day = days.find(d => !shiftOf('amal', d.wd).off && !onLeave('amal', d.iso) && !LumaDate.isToday(d.iso));
     const sh = shiftOf('amal', day.wd);
     const long = slotsFor('amal', day, 180);
     return { close: sh.end, last: long.length ? long[long.length - 1].t : null, step: long.length > 1 ? toMin(long[1].t) - toMin(long[0].t) : null };

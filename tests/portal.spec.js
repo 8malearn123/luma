@@ -5,6 +5,21 @@ test.beforeEach(async ({ context }) => {
   await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.abort());
 });
 
+/* لوحة الصالون خلف حارس جلسة — تُزرع جلسة لمسارات اللوحات فقط */
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    const ROLE = { '/salon.html': 'salon', '/expert.html': 'expert', '/admin.html': 'admin',
+                   '/client.html': 'client', '/staff-portal.html': 'staff' };
+    const role = ROLE[location.pathname];
+    if (!role) return;
+    try {
+      localStorage.setItem('luma_session', JSON.stringify(
+        { role, name: 'اختبار', at: Date.now(), exp: Date.now() + 12 * 3600 * 1000 }));
+      localStorage.setItem('luma_role', role);
+    } catch (e) {}
+  });
+});
+
 async function login(page, name = 'ريم') {
   await page.goto('/staff-portal.html');
   await page.waitForTimeout(400);

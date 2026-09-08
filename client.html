@@ -6,6 +6,11 @@
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0C0B0E"/>
 <script src="luma-store.js"></script>
+<script src="luma-auth.js"></script>
+<script>
+/* حارس الجلسة — قبل أي سكربت آخر: بلا جلسة صالحة لا تُرسم اللوحة */
+LumaAuth.require('client');
+</script>
 <link rel="stylesheet" href="luma-core.css"/>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <!-- صفحة خاصة/داخلية — خارج فهرسة محركات البحث -->
@@ -76,7 +81,7 @@
   <div class="acts">
     <a class="reset" href="index.html" style="text-decoration:none">→ العودة للرئيسية</a>
     <button class="reset" onclick="localStorage.removeItem('luma_cli_tab');CLI.go('home')">↺ إعادة البدء</button>
-<a class="reset" href="login.html" style="text-decoration:none;display:inline-flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
+<a class="reset" href="login.html" onclick="LumaAuth.signOut(false)" style="text-decoration:none;display:inline-flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg> تسجيل الخروج</a>
   </div>
 </div>
 <div class="phone">
