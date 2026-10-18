@@ -1,7 +1,7 @@
 // إعداد سويت لوما — يشغّل خادماً ثابتاً محلياً ويختبر عليه
 const { defineConfig } = require('@playwright/test');
 module.exports = defineConfig({
-  testDir: 'tests',
+  testDir: '.',
   timeout: 45000,
   retries: 1,
   use: {
@@ -10,7 +10,7 @@ module.exports = defineConfig({
     launchOptions: process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {},
   },
   webServer: {
-    command: 'python3 -m http.server 8899',
+    command: 'python3 -m http.server 8899 --directory ../../public',
     port: 8899,
     reuseExistingServer: true,
   },
