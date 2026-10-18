@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": false,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "git": {
+    "deploymentEnabled": {
+      "claude/luma-saas-platform": false
+    }
+  }
 }
