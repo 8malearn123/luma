@@ -247,7 +247,7 @@ export interface BookingRow {
 }
 
 async function lockBooking(tx: Tx, id: string): Promise<BookingRow> {
-  const [b] = await tx<BookingRow[]>`select * from bookings where id = ${id} for update`;
+  const [b] = await tx<BookingRow[]>`select * from bookings where id = ${id} and (app.tenant_id() is null or tenant_id = app.tenant_id()) for update`;
   if (!b) throw notFound('booking');
   return b;
 }
@@ -451,7 +451,7 @@ export async function reschedule(tx: Tx, actor: Actor, bookingId: string, input:
 // Reads (scoped by actor)
 // ─────────────────────────────────────────────────────────────
 export async function getBookingFor(tx: Tx, actor: Actor, id: string) {
-  const [b] = await tx<BookingRow[]>`select * from bookings where id = ${id}`;
+  const [b] = await tx<BookingRow[]>`select * from bookings where id = ${id} and (app.tenant_id() is null or tenant_id = app.tenant_id())`;
   if (!b) throw notFound('booking');
   const who = await whoIs(tx, actor, b);
   const financial = actor.kind === 'staff' && actor.ctx.caps.has('bookings.view_financial');

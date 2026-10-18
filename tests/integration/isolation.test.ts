@@ -97,3 +97,14 @@ describe('customer self-read never crosses tenant scope', () => {
     expect(own.map((r) => r.tenantId)).toEqual([b.tenantId]);
   });
 });
+
+describe('member self-read never crosses tenant scope', () => {
+  it('a member of tenant B cannot resolve tenant A, and sees no B memberships inside A scope', async () => {
+    const a = await makeTenant({ name: 'Salon Alpha' });
+    const b = await makeTenant({ name: 'Salon Beta' });
+    await expect(resolveTenantContext(b.owner, a.slug, 'r', null)).rejects.toMatchObject({ code: 'not_found' });
+    const rows = await withTenant({ tenantId: a.tenantId, userId: b.owner.userId }, (tx) => tx`select tenant_id from tenant_memberships`);
+    expect(rows.every((r) => r.tenantId === a.tenantId)).toBe(true);
+    expect(rows.some((r) => r.tenantId === b.tenantId)).toBe(false);
+  });
+});
