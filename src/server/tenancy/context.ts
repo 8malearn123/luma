@@ -73,7 +73,7 @@ export async function resolveTenantContext(
     const [row] = await tx<
       { id: string; role: TenantRole; grantedCaps: string[]; revokedCaps: string[]; staffProfileId: string | null; branchIds: string[] | null }[]
     >`select id, role, granted_caps, revoked_caps, staff_profile_id, branch_ids
-      from tenant_memberships where user_id = ${user.userId} and status = 'active'`;
+      from tenant_memberships where tenant_id = ${tenant.id} and user_id = ${user.userId} and status = 'active'`;
     return row;
   });
 
@@ -94,13 +94,14 @@ export async function resolveTenantContext(
   }
 
   // LUMA support: only with an active, time-limited grant that carries a reason.
-  const [grant] = await sql()<{ id: string; accessLevel: 'read' | 'write'; reason: string; expiresAt: Date }[]>`
+  // support_access_grants is tenant-RLS protected: look it up inside this tenant's scope
+  const [grant] = await withTenant({ tenantId: tenant.id, userId: user.userId }, (t) => t<{ id: string; accessLevel: 'read' | 'write'; reason: string; expiresAt: Date }[]>`
     select g.id, g.access_level, g.reason, g.expires_at
     from support_access_grants g
     join platform_staff p on p.user_id = g.platform_user_id and p.status = 'active'
     where g.platform_user_id = ${user.userId} and g.tenant_id = ${tenant.id}
       and g.revoked_at is null and g.starts_at <= now() and g.expires_at > now()
-    order by g.expires_at desc limit 1`;
+    order by g.expires_at desc limit 1`);
   if (grant) {
     return {
       tenant,

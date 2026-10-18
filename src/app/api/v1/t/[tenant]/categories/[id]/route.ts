@@ -1,0 +1,13 @@
+import { z } from 'zod';
+import { api, uuid } from '@/server/http/handler';
+import { notFound } from '@/server/errors';
+import { tx } from '@/server/tenancy/context';
+import { updateCategory } from '@/server/services/catalog';
+
+/** Rename / hide / archive. Hidden or archived categories disappear publicly; items and history are kept. */
+export const PATCH = api.tenant<{ id: string }>('catalog.manage', async (c) => {
+  if (!uuid.safeParse(c.params.id).success) throw notFound();
+  const b = await c.json(z.object({ name: z.string().trim().min(1).max(80).optional(), nameEn: z.string().trim().max(80).nullable().optional(), status: z.enum(['active', 'hidden', 'archived']).optional() }));
+  await tx(c.t, (db) => updateCategory(db, c.t, c.params.id, b));
+  return { ok: true };
+});

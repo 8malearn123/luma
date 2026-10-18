@@ -3,7 +3,7 @@ import type { Tx } from '../db';
 import { AppError, forbidden, notFound } from '../errors';
 import { audit } from '../audit';
 import { entitlements, requireBelowLimit } from '../tenancy/plan';
-import type { TenantContext } from '../tenancy/context';
+import { requireCap, type TenantContext } from '../tenancy/context';
 import { notifyTenantRoles } from './notifications';
 import type { blockedTimeInput, leaveInput, overrideInput, selfProfileInput, staffInput, weeklyHoursInput } from '@/lib/validation/team';
 
@@ -35,6 +35,7 @@ async function writeAssignments(tx: Tx, ctx: TenantContext, staffId: string, inp
 }
 
 export async function createStaff(tx: Tx, ctx: TenantContext, input: z.infer<typeof staffInput>) {
+  requireCap(ctx, 'staff.manage');
   const ent = await entitlements(tx, ctx.tenant.id);
   const [{ n }] = await tx<{ n: number }[]>`select count(*)::int as n from staff_profiles where status = 'active'`;
   requireBelowLimit(ent, 'staff.max', n);
@@ -50,6 +51,7 @@ export async function createStaff(tx: Tx, ctx: TenantContext, input: z.infer<typ
 }
 
 export async function updateStaff(tx: Tx, ctx: TenantContext, id: string, input: z.infer<typeof staffInput>, expectedVersion: number) {
+  requireCap(ctx, 'staff.manage');
   const [cur] = await tx<{ version: number }[]>`select version from staff_profiles where id = ${id} for update`;
   if (!cur) throw notFound('staff');
   if (cur.version !== expectedVersion) throw new AppError('version_conflict', 'errors.version_conflict');
@@ -87,6 +89,7 @@ export async function futureAssignments(tx: Tx, staffId: string, from: Date = ne
  * silently cancelled: management gets a notification listing them.
  */
 export async function setStaffStatus(tx: Tx, ctx: TenantContext, id: string, status: 'active' | 'inactive' | 'archived') {
+  requireCap(ctx, 'staff.manage');
   const r = await tx`update staff_profiles set status = ${status}, version = version + 1, updated_at = now() where id = ${id} returning id`;
   if (!r.length) throw notFound('staff');
   let affected: { bookingId: string; number: string; startsAt: Date; serviceName: string; status: string }[] = [];
@@ -128,6 +131,7 @@ function assertNoOverlap(ranges: { start: string; end: string }[]) {
 }
 
 export async function setWeeklyHours(tx: Tx, ctx: TenantContext, input: z.infer<typeof weeklyHoursInput>) {
+  requireCap(ctx, 'schedule.manage');
   for (const d of input.days) assertNoOverlap(d.ranges);
   await tx`delete from working_hours where branch_id = ${input.branchId} and (staff_id is not distinct from ${input.staffId}::uuid)`;
   for (const d of input.days) {
@@ -149,6 +153,7 @@ export async function setWeeklyHours(tx: Tx, ctx: TenantContext, input: z.infer<
 }
 
 export async function addOverride(tx: Tx, ctx: TenantContext, input: z.infer<typeof overrideInput>) {
+  requireCap(ctx, 'schedule.manage');
   if (input.kind === 'custom' && (!input.start || !input.end || input.end <= input.start)) throw new AppError('validation', 'errors.time_range_invalid');
   const [o] = await tx<{ id: string }[]>`
     insert into shift_overrides (tenant_id, branch_id, staff_id, on_date, kind, start_time, end_time, note, created_by)
@@ -166,12 +171,14 @@ export async function listOverrides(tx: Tx, branchId: string, from: string, to: 
 }
 
 export async function removeOverride(tx: Tx, ctx: TenantContext, id: string) {
+  requireCap(ctx, 'schedule.manage');
   const r = await tx`delete from shift_overrides where id = ${id} returning id`;
   if (!r.length) throw notFound('override');
   await audit(tx, { ...act(ctx), action: 'schedule.override_removed', targetType: 'override', targetId: id });
 }
 
 export async function addBlockedTime(tx: Tx, ctx: TenantContext, input: z.infer<typeof blockedTimeInput>) {
+  requireCap(ctx, 'schedule.manage');
   if (new Date(input.endsAt) <= new Date(input.startsAt)) throw new AppError('validation', 'errors.time_range_invalid');
   const [b] = await tx<{ id: string }[]>`
     insert into blocked_times (tenant_id, staff_id, during, reason, created_by)
@@ -259,4 +266,108 @@ export async function clock(tx: Tx, ctx: TenantContext, kind: 'clock_in' | 'cloc
 
 export async function attendanceFor(tx: Tx, staffId: string, from: Date, to: Date) {
   return tx`select id, kind, at, source, note from attendance_events where staff_id = ${staffId} and at between ${from} and ${to} order by at`;
+}
+
+export async function listBlocked(tx: Tx, staffId: string | null, from: Date, to: Date) {
+  return tx`select b.id, b.staff_id, s.display_name as staff_name, lower(b.during) as starts_at, upper(b.during) as ends_at, b.reason
+            from blocked_times b left join staff_profiles s on s.id = b.staff_id
+            where (${staffId}::uuid is null or b.staff_id = ${staffId}::uuid) and b.during && tstzrange(${from}, ${to}) order by lower(b.during)`;
+}
+
+export async function removeBlocked(tx: Tx, ctx: TenantContext, id: string) {
+  requireCap(ctx, 'schedule.manage');
+  const r = await tx`delete from blocked_times where id = ${id} returning staff_id`;
+  if (!r.length) throw notFound('blocked');
+  await audit(tx, { ...act(ctx), action: 'schedule.unblocked', targetType: 'blocked_time', targetId: id });
+}
+
+/** Manager correction: appends a corrective event (attendance is append-only). */
+export async function correctAttendance(tx: Tx, ctx: TenantContext, input: { staffId: string; kind: 'clock_in' | 'clock_out'; at: string; note: string; correctsId?: string | null }) {
+  if (!ctx.caps.has('hr.manage')) throw forbidden();
+  if (!input.note.trim()) throw new AppError('validation', 'errors.reason_required');
+  if (new Date(input.at) > new Date()) throw new AppError('validation', 'errors.time_in_future');
+  const [e] = await tx<{ id: string }[]>`
+    insert into attendance_events (tenant_id, staff_id, kind, at, source, recorded_by, note, corrects_id)
+    values (${ctx.tenant.id}, ${input.staffId}, ${input.kind}, ${input.at}, 'manager', ${ctx.user.userId}, ${input.note}, ${input.correctsId ?? null})
+    returning id`;
+  await audit(tx, { ...act(ctx), action: 'attendance.corrected', targetType: 'staff', targetId: input.staffId, reason: input.note });
+  return e;
+}
+
+export async function listAttendance(tx: Tx, opts: { staffId?: string | null; from: Date; to: Date }) {
+  return tx`select a.id, a.staff_id, s.display_name as staff_name, a.kind, a.at, a.source, a.note, a.corrects_id
+            from attendance_events a join staff_profiles s on s.id = a.staff_id
+            where (${opts.staffId ?? null}::uuid is null or a.staff_id = ${opts.staffId ?? null}::uuid) and a.at between ${opts.from} and ${opts.to}
+            order by a.at desc limit 500`;
+}
+
+// ── staff requests (schedule change, advance, equipment…) ──
+export async function createStaffRequest(tx: Tx, ctx: TenantContext, input: { kind: 'schedule_change' | 'advance' | 'equipment' | 'other'; details: string }) {
+  if (!ctx.staffProfileId || !ctx.caps.has('hr.self')) throw forbidden();
+  const [r] = await tx<{ id: string }[]>`insert into staff_requests (tenant_id, staff_id, kind, details) values (${ctx.tenant.id}, ${ctx.staffProfileId}, ${input.kind}, ${input.details}) returning id`;
+  await notifyTenantRoles(tx, ctx.tenant.id, ['owner', 'manager'], { type: 'staff.request', title: 'team.notice_request', targetPath: `/app/${ctx.tenant.slug}/team?tab=requests`, dedupeKey: `sreq:${r.id}` });
+  await audit(tx, { ...act(ctx), action: 'staff_request.created', targetType: 'staff_request', targetId: r.id });
+  return r;
+}
+
+export async function listStaffRequests(tx: Tx, staffId?: string | null) {
+  return tx`select r.id, r.staff_id, s.display_name as staff_name, r.kind, r.details, r.status, r.review_note, r.created_at, r.reviewed_at
+            from staff_requests r join staff_profiles s on s.id = r.staff_id
+            where (${staffId ?? null}::uuid is null or r.staff_id = ${staffId ?? null}::uuid) order by r.created_at desc limit 200`;
+}
+
+export async function decideStaffRequest(tx: Tx, ctx: TenantContext, id: string, decision: 'approved' | 'rejected' | 'cancelled', note?: string) {
+  const [r] = await tx<{ staffId: string; status: string }[]>`select staff_id, status from staff_requests where id = ${id} for update`;
+  if (!r) throw notFound('staff_request');
+  if (r.status !== 'pending') throw new AppError('invalid_transition', 'errors.invalid_transition');
+  if (decision === 'cancelled' ? r.staffId !== ctx.staffProfileId : !ctx.caps.has('hr.manage')) throw forbidden();
+  await tx`update staff_requests set status = ${decision}, reviewed_by = ${ctx.user.userId}, reviewed_at = now(), review_note = ${note ?? null} where id = ${id}`;
+  const [u] = await tx<{ userId: string | null }[]>`select user_id from staff_profiles where id = ${r.staffId}`;
+  if (u?.userId && decision !== 'cancelled') {
+    const { notifyUser } = await import('./notifications');
+    await notifyUser(tx, u.userId, ctx.tenant.id, { type: `staff_request.${decision}`, title: `team.notice_request_${decision}`, targetPath: '/staff', dedupeKey: `sreq-d:${id}` });
+  }
+  await audit(tx, { ...act(ctx), action: `staff_request.${decision}`, targetType: 'staff_request', targetId: id, reason: note });
+}
+
+// ── commission rules (snapshotted on each earned entry) ──
+export async function listCommissionRules(tx: Tx) {
+  return tx`select c.id, c.staff_id, s.display_name as staff_name, c.service_id, v.name as service_name, c.kind, c.rate_bps, c.fixed_minor,
+              to_char(c.effective_from,'YYYY-MM-DD') as effective_from, to_char(c.effective_to,'YYYY-MM-DD') as effective_to
+            from commission_rules c left join staff_profiles s on s.id = c.staff_id left join services v on v.id = c.service_id
+            order by c.effective_from desc, c.created_at desc`;
+}
+
+export async function createCommissionRule(tx: Tx, ctx: TenantContext, input: { staffId?: string | null; serviceId?: string | null; kind: 'percentage' | 'fixed'; rateBps?: number | null; fixedMinor?: number | null; effectiveFrom: string }) {
+  if (!ctx.caps.has('finance.view') && !ctx.caps.has('staff.manage')) throw forbidden();
+  if (input.kind === 'percentage' && (input.rateBps == null || input.rateBps < 0 || input.rateBps > 10000)) throw new AppError('validation', 'errors.validation');
+  if (input.kind === 'fixed' && (input.fixedMinor == null || input.fixedMinor < 0)) throw new AppError('validation', 'errors.validation');
+  // close the currently open rule for the same scope instead of editing history
+  await tx`update commission_rules set effective_to = (${input.effectiveFrom}::date - 1)
+           where staff_id is not distinct from ${input.staffId ?? null}::uuid and service_id is not distinct from ${input.serviceId ?? null}::uuid
+             and effective_to is null and effective_from < ${input.effectiveFrom}::date`;
+  const [r] = await tx<{ id: string }[]>`
+    insert into commission_rules (tenant_id, staff_id, service_id, kind, rate_bps, fixed_minor, effective_from, created_by)
+    values (${ctx.tenant.id}, ${input.staffId ?? null}, ${input.serviceId ?? null}, ${input.kind}, ${input.kind === 'percentage' ? input.rateBps! : null},
+            ${input.kind === 'fixed' ? input.fixedMinor! : null}, ${input.effectiveFrom}, ${ctx.user.userId}) returning id`;
+  await audit(tx, { ...act(ctx), action: 'commission_rule.created', targetType: 'commission_rule', targetId: r.id, metadata: { kind: input.kind } });
+  return r;
+}
+
+export async function endCommissionRule(tx: Tx, ctx: TenantContext, id: string, effectiveTo: string) {
+  if (!ctx.caps.has('finance.view') && !ctx.caps.has('staff.manage')) throw forbidden();
+  const r = await tx`update commission_rules set effective_to = ${effectiveTo} where id = ${id} and effective_from <= ${effectiveTo}::date returning id`;
+  if (!r.length) throw notFound('commission_rule');
+  await audit(tx, { ...act(ctx), action: 'commission_rule.ended', targetType: 'commission_rule', targetId: id });
+}
+
+/** Own schedule (specialist portal): weekly hours, overrides and approved leave in a window. */
+export async function ownSchedule(tx: Tx, staffId: string, from: string, to: string) {
+  const hours = await tx`select w.weekday, to_char(w.start_time,'HH24:MI') as start, to_char(w.end_time,'HH24:MI') as end, b.name as branch_name
+                         from working_hours w join branches b on b.id = w.branch_id where w.staff_id = ${staffId} order by w.weekday, w.start_time`;
+  const breaks = await tx`select weekday, to_char(on_date,'YYYY-MM-DD') as on_date, to_char(start_time,'HH24:MI') as start, to_char(end_time,'HH24:MI') as end, label from breaks where staff_id = ${staffId}`;
+  const overrides = await tx`select to_char(on_date,'YYYY-MM-DD') as on_date, kind, to_char(start_time,'HH24:MI') as start, to_char(end_time,'HH24:MI') as end, note
+                             from shift_overrides where staff_id = ${staffId} and on_date between ${from} and ${to} order by on_date`;
+  const leave = await tx`select id, starts_at, ends_at, type, status from leave_requests where staff_id = ${staffId} and ends_at >= ${from}::date order by starts_at`;
+  return { hours, breaks, overrides, leave };
 }

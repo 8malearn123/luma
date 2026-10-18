@@ -2,7 +2,7 @@ import type { Tx } from '../db';
 import { AppError, notFound } from '../errors';
 import { audit } from '../audit';
 import { entitlements, requireBelowLimit } from '../tenancy/plan';
-import type { TenantContext } from '../tenancy/context';
+import { requireCap, type TenantContext } from '../tenancy/context';
 import type { ServiceInput } from '@/lib/validation/catalog';
 import { categoryInput, packageInput } from '@/lib/validation/catalog';
 import type { z } from 'zod';
@@ -125,6 +125,7 @@ async function writeChildren(tx: Tx, ctx: TenantContext, serviceId: string, inpu
 }
 
 export async function createService(tx: Tx, ctx: TenantContext, input: ServiceInput) {
+  requireCap(ctx, 'catalog.manage');
   const ent = await entitlements(tx, ctx.tenant.id);
   const [{ n }] = await tx<{ n: number }[]>`select count(*)::int as n from services where status <> 'archived'`;
   requireBelowLimit(ent, 'services.max', n);
@@ -149,6 +150,7 @@ export async function createService(tx: Tx, ctx: TenantContext, input: ServiceIn
  * Existing bookings are never repriced: they hold snapshots.
  */
 export async function updateService(tx: Tx, ctx: TenantContext, id: string, input: ServiceInput, expectedVersion: number) {
+  requireCap(ctx, 'catalog.manage');
   const [cur] = await tx<{ priceMinor: number; version: number; status: string }[]>`select price_minor, version, status from services where id = ${id} for update`;
   if (!cur) throw notFound('service');
   if (cur.version !== expectedVersion) throw new AppError('version_conflict', 'errors.version_conflict', { currentVersion: cur.version });
@@ -182,6 +184,7 @@ export async function updateService(tx: Tx, ctx: TenantContext, id: string, inpu
 }
 
 export async function decidePriceChange(tx: Tx, ctx: TenantContext, changeId: string, approve: boolean) {
+  requireCap(ctx, 'catalog.price.approve');
   const [c] = await tx<{ serviceId: string; proposedPriceMinor: number }[]>`
     update service_price_changes set status = ${approve ? 'approved' : 'rejected'}, decided_by = ${ctx.user.userId}, decided_at = now()
     where id = ${changeId} and status = 'pending' returning service_id, proposed_price_minor`;
@@ -191,6 +194,7 @@ export async function decidePriceChange(tx: Tx, ctx: TenantContext, changeId: st
 }
 
 export async function setServiceStatus(tx: Tx, ctx: TenantContext, id: string, status: 'active' | 'inactive' | 'archived') {
+  requireCap(ctx, 'catalog.manage');
   const r = await tx`update services set status = ${status}, version = version + 1, updated_at = now() where id = ${id} returning id`;
   if (!r.length) throw notFound('service');
   await audit(tx, { ...act(ctx), action: `service.${status}`, targetType: 'service', targetId: id });
@@ -210,6 +214,7 @@ export async function listCategories(tx: Tx, kind: 'service' | 'product', includ
 }
 
 export async function createCategory(tx: Tx, ctx: TenantContext, input: z.infer<typeof categoryInput>) {
+  requireCap(ctx, 'catalog.manage');
   const [c] = await tx<{ id: string }[]>`
     insert into categories (tenant_id, kind, name, name_en, sort)
     values (${ctx.tenant.id}, ${input.kind}, ${input.name}, ${input.nameEn ?? null},
@@ -221,6 +226,7 @@ export async function createCategory(tx: Tx, ctx: TenantContext, input: z.infer<
 
 /** Hiding a category hides its items publicly without deleting them or their history. */
 export async function updateCategory(tx: Tx, ctx: TenantContext, id: string, patch: { name?: string; nameEn?: string | null; status?: 'active' | 'hidden' | 'archived' }) {
+  requireCap(ctx, 'catalog.manage');
   const r = await tx`update categories set name = coalesce(${patch.name ?? null}, name), name_en = ${patch.nameEn === undefined ? tx`name_en` : patch.nameEn},
                      status = coalesce(${patch.status ?? null}, status), updated_at = now() where id = ${id} returning id`;
   if (!r.length) throw notFound('category');
@@ -241,6 +247,7 @@ export async function listPackages(tx: Tx) {
 }
 
 export async function upsertPackage(tx: Tx, ctx: TenantContext, input: z.infer<typeof packageInput>, id?: string) {
+  requireCap(ctx, 'catalog.manage');
   let pid = id;
   if (pid) {
     const r = await tx`update packages set name = ${input.name}, name_en = ${input.nameEn ?? null}, description = ${input.description ?? null},
@@ -261,6 +268,7 @@ export async function upsertPackage(tx: Tx, ctx: TenantContext, input: z.infer<t
 }
 
 export async function setPackageStatus(tx: Tx, ctx: TenantContext, id: string, status: 'active' | 'hidden' | 'archived') {
+  requireCap(ctx, 'catalog.manage');
   const r = await tx`update packages set status = ${status} where id = ${id} returning id`;
   if (!r.length) throw notFound('package');
   await audit(tx, { ...act(ctx), action: `package.${status}`, targetType: 'package', targetId: id });
@@ -290,4 +298,35 @@ export async function resolvePricing(tx: Tx, serviceId: string, variantId: strin
     if (r.durationMin != null) dur = r.durationMin;
   }
   return { priceMinor: price, durationMin: dur };
+}
+
+// ── resources (rooms, chairs, devices) ──
+export async function listResources(tx: Tx) {
+  const types = await tx`select t.id, t.name, (select count(*)::int from resources r where r.resource_type_id = t.id and r.status = 'active') as count from resource_types t order by t.name`;
+  const resources = await tx`select r.id, r.name, r.status, r.branch_id, r.resource_type_id, b.name as branch_name
+                             from resources r join branches b on b.id = r.branch_id order by r.status, r.name`;
+  return { types, resources };
+}
+
+export async function createResourceType(tx: Tx, ctx: TenantContext, name: string) {
+  requireCap(ctx, 'catalog.manage');
+  const [r] = await tx<{ id: string }[]>`insert into resource_types (tenant_id, name) values (${ctx.tenant.id}, ${name}) returning id`;
+  await audit(tx, { ...act(ctx), action: 'resource_type.created', targetType: 'resource_type', targetId: r.id });
+  return r;
+}
+
+export async function createResource(tx: Tx, ctx: TenantContext, input: { name: string; branchId: string; resourceTypeId: string }) {
+  requireCap(ctx, 'catalog.manage');
+  const [r] = await tx<{ id: string }[]>`insert into resources (tenant_id, branch_id, resource_type_id, name)
+    values (${ctx.tenant.id}, ${input.branchId}, ${input.resourceTypeId}, ${input.name}) returning id`;
+  await audit(tx, { ...act(ctx), action: 'resource.created', targetType: 'resource', targetId: r.id });
+  return r;
+}
+
+/** Archiving a resource keeps historical allocations; it simply stops being allocated. */
+export async function updateResource(tx: Tx, ctx: TenantContext, id: string, patch: { name?: string; status?: 'active' | 'archived' }) {
+  requireCap(ctx, 'catalog.manage');
+  const r = await tx`update resources set name = coalesce(${patch.name ?? null}, name), status = coalesce(${patch.status ?? null}, status) where id = ${id} returning id`;
+  if (!r.length) throw notFound('resource');
+  await audit(tx, { ...act(ctx), action: 'resource.updated', targetType: 'resource', targetId: id, metadata: patch });
 }
