@@ -1,0 +1,19 @@
+/* Booking/cart helpers layered on the storefront contract (uses only --sf-* tokens). */
+.sf-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.sf-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 16px; }
+.sf-check { display: flex; align-items: center; gap: 8px; margin: 6px 0; cursor: pointer; }
+.sf-check input { width: 18px; height: 18px; accent-color: var(--sf-primary); }
+.sf-link { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
+.sf-days { display: flex; gap: 6px; overflow-x: auto; flex: 1; padding: 4px 0; }
+.sf-days .sf-slot { min-width: 92px; }
+.sf-h3 { font-family: var(--sf-font-heading); font-size: 1.05rem; margin: 0 0 8px; }
+.sf-steps { display: flex; gap: 8px; list-style: none; padding: 0; margin: 0 0 16px; flex-wrap: wrap; }
+.sf-steps li { padding: 4px 12px; border-radius: 999px; border: 1px solid var(--sf-border); color: var(--sf-muted); font-size: 0.9em; }
+.sf-steps li[aria-current='step'] { border-color: var(--sf-primary); color: var(--sf-text); font-weight: 600; }
+.sf-steps li[data-done] { color: var(--sf-text); }
+.sf-card[data-selected] { outline: 2px solid var(--sf-primary); }
+.sf-alert[data-tone='error'] { border-color: #b0604e; }
+.sf-qty { width: 72px; }
+.sf-table { width: 100%; border-collapse: collapse; }
+.sf-table td, .sf-table th { padding: 8px; border-bottom: 1px solid var(--sf-border); text-align: start; }
+.ltr-num { direction: ltr; unicode-bidi: isolate; }

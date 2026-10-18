@@ -83,3 +83,17 @@ describe('capabilities', () => {
     expect(ctx.caps.has('finance.view')).toBe(false);
   });
 });
+
+describe('customer self-read never crosses tenant scope', () => {
+  it('inside tenant A scope, the customer’s booking-relationship row at tenant B is invisible', async () => {
+    const { ensureTenantCustomer } = await import('@/server/booking/service');
+    const a = await makeTenant({ name: 'Salon One' });
+    const b = await makeTenant({ name: 'Salon Two' });
+    const cust = await makeUser({ name: 'Shared Customer' });
+    await withTenant({ tenantId: b.tenantId, userId: cust.userId }, (tx) => ensureTenantCustomer(tx, b.tenantId, { userId: cust.userId, displayName: 'C' }));
+    const seenInA = await withTenant({ tenantId: a.tenantId, userId: cust.userId }, (tx) => tx`select tenant_id from tenant_customers`);
+    expect(seenInA).toHaveLength(0);
+    const own = await withUser(cust.userId, (tx) => tx`select tenant_id from tenant_customers`);
+    expect(own.map((r) => r.tenantId)).toEqual([b.tenantId]);
+  });
+});

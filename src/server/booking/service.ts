@@ -49,7 +49,8 @@ export async function nextNumber(tx: Tx, tenantId: string, name: string, prefix:
  */
 export async function ensureTenantCustomer(tx: Tx, tenantId: string, c: { userId?: string | null; displayName: string; phone?: string | null; email?: string | null; source?: string }) {
   if (c.userId) {
-    const [ex] = await tx<{ id: string }[]>`select id from tenant_customers where user_id = ${c.userId}`;
+    // explicit tenant filter: customer_self_read RLS also exposes her rows at other businesses
+    const [ex] = await tx<{ id: string }[]>`select id from tenant_customers where tenant_id = ${tenantId} and user_id = ${c.userId}`;
     if (ex) return ex.id;
   }
   const [r] = await tx<{ id: string }[]>`
@@ -131,7 +132,8 @@ export async function createHold(
   if (!option) throw new AppError('payment_required', 'errors.terms_not_allowed', { allowed: terms.options.map((o) => o.kind), fallback: terms.fallback });
 
   const policy = await loadPolicy(tx);
-  const holdMs = policy.holdMinutes * MIN;
+  // manual approval waits for the business (up to 48h); other terms use the short policy hold
+  const holdMs = input.termsKind === 'manual_approval' ? 48 * 60 * MIN : policy.holdMinutes * MIN;
   const holdExpiresAt = new Date(Date.now() + holdMs);
   const number = await nextNumber(tx, tenantId, 'booking', 'BKG');
   const snapshot = {
