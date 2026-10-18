@@ -171,11 +171,15 @@ export async function processProviderEvent(providerName: string, rawBody: string
   }
   const providerPaymentId = hint.data?.id;
   if (!providerPaymentId || typeof providerPaymentId !== 'string') return 'rejected';
+  // hosted invoices (Moyasar): the event carries the charge id and the invoice id we stored at checkout
+  const invoiceRef = (hint.data as { invoice_id?: unknown } | undefined)?.invoice_id;
+  const candidates = [providerPaymentId, ...(typeof invoiceRef === 'string' ? [invoiceRef] : [])];
   const pay = await withSystem('webhook: locate payment by provider id', async (tx) => {
-    const [p] = await tx<{ id: string; tenantId: string; accountId: string; webhookSecret: string | null; secret: string | null }[]>`
-      select p.id, p.tenant_id, a.id as account_id, a.webhook_secret_ciphertext as webhook_secret, a.secret_ciphertext as secret
+    const [p] = await tx<{ id: string; tenantId: string; accountId: string; webhookSecret: string | null; secret: string | null; providerPaymentId: string }[]>`
+      select p.id, p.tenant_id, a.id as account_id, a.webhook_secret_ciphertext as webhook_secret, a.secret_ciphertext as secret, p.provider_payment_id
       from payments p join payment_accounts a on a.id = p.payment_account_id
-      where p.provider = ${providerName} and p.provider_payment_id = ${providerPaymentId}`;
+      where p.provider = ${providerName} and (p.provider_payment_id = any(${candidates}) or p.provider_charge_id = ${providerPaymentId})
+      limit 1`;
     return p;
   });
   if (!pay || !pay.webhookSecret) {
@@ -192,7 +196,15 @@ export async function processProviderEvent(providerName: string, rawBody: string
   if (!ev.authoritative) {
     // unsigned body: the provider API is the source of truth
     const fetched = await provider.fetchPayment(providerPaymentId, decryptSecret(pay.secret!));
+    // the fetched charge must belong to the checkout we created (not just any charge on the account)
+    if (fetched.providerPaymentId !== pay.providerPaymentId && fetched.invoiceId !== pay.providerPaymentId) {
+      await recordEvent(providerName, `mismatch-${randomUUID()}`, ev.type, pay.tenantId, false, rawBody, 'rejected');
+      return 'rejected';
+    }
     ev = { ...ev, status: fetched.status, amountMinor: fetched.amountMinor, currency: fetched.currency, authoritative: true };
+    if (fetched.providerPaymentId !== pay.providerPaymentId) {
+      await withSystem('webhook: record charge id', (tx) => tx`update payments set provider_charge_id = ${fetched.providerPaymentId} where id = ${pay.id} and provider_charge_id is null`);
+    }
   }
   const fresh = await recordEvent(providerName, ev.eventId, ev.type, pay.tenantId, true, rawBody, null);
   if (!fresh) return 'duplicate';
@@ -489,7 +501,7 @@ registerJob('refund.execute', async (job, tx) => {
   const refundId = String(job.payload.refundId);
   const [r] = await tx<{ id: string; status: string; amountMinor: number; paymentId: string; idempotencyKey: string }[]>`select * from refunds where id = ${refundId} for update`;
   if (!r || r.status === 'succeeded' || r.status === 'cancelled') return { skipped: true };
-  const [p] = await tx<{ providerPaymentId: string; provider: string; paymentAccountId: string }[]>`select provider_payment_id, provider, payment_account_id from payments where id = ${r.paymentId}`;
+  const [p] = await tx<{ providerPaymentId: string; provider: string; paymentAccountId: string }[]>`select coalesce(provider_charge_id, provider_payment_id) as provider_payment_id, provider, payment_account_id from payments where id = ${r.paymentId}`;
   const [a] = await tx<{ secretCiphertext: string }[]>`select secret_ciphertext from payment_accounts where id = ${p.paymentAccountId}`;
   await tx`update refunds set status = 'processing', updated_at = now() where id = ${refundId}`;
   // provider refund is idempotent by our refund id (no blind duplicate refunds on retry)

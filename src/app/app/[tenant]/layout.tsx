@@ -1,4 +1,5 @@
 import { AppShell } from '@/components/shell/AppShell';
+import { NotificationsBell } from '@/components/shell/NotificationsBell';
 import { pageT, requireTenant } from '@/server/http/page';
 import { tx, listMyTenants } from '@/server/tenancy/context';
 import { entitlements } from '@/server/tenancy/plan';
@@ -19,6 +20,7 @@ export default async function TenantLayout({ children, params }: { children: Rea
       nav={buildNav(ctx, ent, t, locale)}
       userName={ctx.user.displayName}
       homeHref={`/app/${ctx.tenant.slug}`}
+      topbar={<NotificationsBell tenant={ctx.tenant.slug} tz={ctx.tenant.timezone} allHref="/account/notifications" />}
       switcher={mine.map((m) => ({ href: `/app/${m.slug}`, label: m.name, current: m.slug === ctx.tenant.slug }))}
       badges={
         <>

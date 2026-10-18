@@ -4,13 +4,14 @@ import { tx } from '@/server/tenancy/context';
 import { connectSandbox, disconnectProvider } from '@/server/payments/service';
 import { env, isProduction } from '@/server/env';
 import { PROVIDER_METHODS } from '@/server/payments/providers';
+import { paymentConnections } from '@/server/payments/connect';
 
 /** Payment provider status — honest: sandbox (test, no money), Moyasar adapter untested/not connected. */
 export const GET = api.tenant(['payments.configure', 'finance.view'], async (c) =>
   tx(c.t, async (db) => {
-    const accounts = await db`select id, provider, mode, status, methods_enabled, settlement_owner, verified_at, created_at from payment_accounts order by created_at desc`;
+    const conn = await paymentConnections(db);
     return {
-      accounts,
+      ...conn,
       providers: [
         { key: 'sandbox', available: !isProduction() && env().PAYMENTS_SANDBOX_ENABLED, status: 'test_only', methods: PROVIDER_METHODS.sandbox },
         { key: 'moyasar', available: env().MOYASAR_ENABLED, status: 'untested_adapter', methods: PROVIDER_METHODS.moyasar },

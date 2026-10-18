@@ -24,6 +24,11 @@
 | AI features show "not configured" | `AI_PROVIDER/OPENAI_API_KEY/OPENAI_MODEL` unset or quota exhausted | Manual tools keep working; configure keys; check `ai_runs.error_code`. |
 | Storefront change not visible | Saved only to draft | Publish from the builder; versions list shows the live version. |
 
+## Realtime notifications
+- Each app instance holds one `LISTEN luma_notifications` connection (in addition to the pool). Streams end after 5 minutes and reconnect; heartbeat every 25 s.
+- Behind a proxy, disable response buffering for `/api/v1/me/notifications/stream` (the route sends `X-Accel-Buffering: no`).
+- If streaming is unavailable, browsers fall back to polling every 60 s automatically — no action needed.
+
 ## Rollback
 - **Storefront**: Builder → Versions → restore an earlier version into the draft → publish.
   Design only; bookings/inventory are never rolled back.

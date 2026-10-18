@@ -17,7 +17,7 @@ import type { Tx } from '../db';
  */
 export type Account =
   | 'cash' | 'card_clearing' | 'provider_clearing' | 'customer_deposits' | 'gift_card_liability' | 'membership_liability'
-  | 'service_revenue' | 'product_revenue' | 'discounts' | 'refunds' | 'processing_fees' | 'expenses'
+  | 'service_revenue' | 'product_revenue' | 'delivery_revenue' | 'discounts' | 'refunds' | 'processing_fees' | 'expenses'
   | 'commission_expense' | 'commission_payable' | 'cogs' | 'inventory' | 'tax_payable' | 'accounts_payable';
 
 export interface Line {

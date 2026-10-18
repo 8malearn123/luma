@@ -4,9 +4,9 @@
 | Suite | Command | What it runs against | Latest result (2026-10-18) |
 |---|---|---|---|
 | Type-check | `npm run typecheck` | whole project | **0 errors** |
-| Integration | `npm test` | real PostgreSQL 16; DB rebuilt from migrations each run; app role is non-owner so RLS is live | **172 passed / 0 failed** (20 files) |
+| Integration | `npm test` | real PostgreSQL 16; DB rebuilt from migrations each run; app role is non-owner so RLS is live | **188 passed / 0 failed** (21 files) |
 | Production build | `npm run build` | Next.js 15.5 | **success** (~100 routes) |
-| End-to-end | `npm run test:e2e` | Chromium via Playwright, production build in `review` deployment, freshly migrated + seeded `luma_e2e`, desktop (1280×860) **and** mobile (390×844, touch) | **20 passed / 0 failed** |
+| End-to-end | `npm run test:e2e` | Chromium via Playwright, production build in `review` deployment, freshly migrated + seeded `luma_e2e`, desktop (1280×860) **and** mobile (390×844, touch) | **26 passed / 0 failed** (4 desktop-only steps skipped on mobile) |
 | Legacy static site | `npm run test:legacy` | preserved marketing/prototype pages in `public/` | **62 passed / 0 failed** |
 | Page scan | manual Playwright scan of ~50 pages as 5 roles | client errors / hydration | **0 client errors** (after fixing the Hijri/Gregorian mismatch, see below) |
 
@@ -100,11 +100,24 @@ Legend: ✅ automated (file › test) · 🟡 partially automated / manual · �
 | Slow loading and network failures | 🟡 | explicit loading/error states and input preservation implemented (`apiFetch` network error, `useSubmit` keeps input); not simulated in E2E |
 | Uploads, reauthentication, refresh, back navigation, form preservation | 🟡 | upload pipeline + step-up covered in integration tests; booking selections survive the sign-in redirect (E2E sign-in with `next`); refresh/back not automated |
 
+### Delivery, returns, invoices, provider connections (phase 10)
+| Requirement | Status | Where |
+|---|---|---|
+| Delivery zone quoting (district beats city, free-over, minimum), address privacy (RLS), server fee vs. manipulated fee, address snapshot | ✅ | `commerce-delivery.test.ts` › delivery |
+| Cash on delivery switch, staged delivery, payment before "delivered", stock deducted once, revenue split product/delivery, timeline + notifications | ✅ | same; E2E `commerce.e2e.ts` |
+| Returns: non-returnable, quantity incl. open requests, stranger refused, reject needs note, restock exactly once, refund cap, credit note, window closed | ✅ | `commerce-delivery.test.ts` › returns; E2E |
+| Tax invoice: TLV round-trip (Arabic), VAT validation, line VAT allocation, QR, credit-note cap, ICV/hash chain + tamper detection, cross-tenant 404 | ✅ | › tax invoices; E2E renders the Arabic document + QR |
+| Moyasar connection: key validation, secrets encrypted and never returned, honest unreachable/failed test, activation gated; webhook located by invoice id, foreign charge rejected | ✅ | › Moyasar connection (fetch stubbed — not a live call) |
+| Templates: unknown placeholders, platform-owned codes (service + DB CHECK), per-business isolation; simulated test send + log isolation | ✅ | › messaging; E2E |
+| Realtime: LISTEN/NOTIFY reaches only that user's subscriber; bell shows "live" in the browser | ✅ | › realtime; E2E bell |
+
 ### Not performed (and why)
 - **Live AI calls** — no API key in this environment; the adapter is tested against the documented request shape with
   a test double. Status shows "not configured" / "configured, untested" honestly.
 - **Live payment provider** — no Moyasar keys and no network access to it; sandbox only.
 - **Real email/SMS/WhatsApp delivery** — no provider connected; deliveries are recorded as `simulated`.
+- **ZATCA Fatoora** — not integrated; QR/TLV checked for format only, not validated by ZATCA tools.
+- **SSE under load / on serverless** — not measured.
 - **Visual regression / screen-reader audits** — not automated; spot-checked visually via screenshots.
 - **Backup restore drill** — no production environment exists yet (RUNBOOK.md).
 - **Load / soak tests** — not run.

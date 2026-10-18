@@ -33,6 +33,8 @@ export interface ProviderPayment {
   currency: string;
   accountRef?: string | null;
   method?: string | null;
+  /** hosted-invoice reference the charge belongs to (Moyasar `invoice_id`) */
+  invoiceId?: string | null;
 }
 
 export interface VerifiedEvent {
@@ -137,7 +139,7 @@ export const moyasar: PaymentProvider = {
   },
   async fetchPayment(id, secret) {
     const p = await moyasarFetch(`/payments/${encodeURIComponent(id)}`, secret);
-    return { providerPaymentId: String(p.id), status: mapMoyasarStatus(String(p.status)), amountMinor: Number(p.amount), currency: String(p.currency), method: (p.source as { type?: string } | undefined)?.type ?? null };
+    return { providerPaymentId: String(p.id), status: mapMoyasarStatus(String(p.status)), amountMinor: Number(p.amount), currency: String(p.currency), method: (p.source as { type?: string } | undefined)?.type ?? null, invoiceId: p.invoice_id ? String(p.invoice_id) : null };
   },
   async refund(id, amountMinor, secret) {
     const r = await moyasarFetch(`/payments/${encodeURIComponent(id)}/refund`, secret, { method: 'POST', body: JSON.stringify({ amount: amountMinor }) });

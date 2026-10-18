@@ -201,6 +201,19 @@ async function main() {
     const serum = await prod('سيروم الترطيب', 'Hydrating serum', 12000, 5500, 12);
     await prod('شامبو بالأرغان', 'Argan shampoo', 7500, null, 2);
     await prod('طقم طلاء أظافر', 'Nail polish set', 9500, 4000, 1);
+    // sealed care products are returnable; the opened-use nail set is not (products default to not returnable)
+    await tx`update products set returnable = true where tenant_id = ${c.tenantId} and name in ('سيروم الترطيب', 'شامبو بالأرغان')`;
+    // delivery & returns (synthetic): two zones, cash on delivery, 7-day returns
+    await tx`insert into delivery_zones (tenant_id, branch_id, name, cities, districts, fee_minor, free_over_minor, min_order_minor, eta_min_hours, eta_max_hours, sort_order) values
+      (${c.tenantId}, ${c.branchId}, 'الرياض', ${['الرياض', 'Riyadh']}, '{}', 2500, 30000, 5000, 24, 48, 0),
+      (${c.tenantId}, ${c.branchId}, 'شمال الرياض', ${['الرياض', 'Riyadh']}, ${['الملقا', 'النرجس', 'الياسمين']}, 1500, 20000, 0, 6, 24, 1)`;
+    await tx`insert into commerce_settings (tenant_id, pickup_enabled, delivery_enabled, cash_on_delivery, delivery_instructions, returns_enabled, return_window_days, return_policy_text, refund_delivery_fee, updated_by)
+      values (${c.tenantId}, true, true, true, 'التوصيل من الأحد إلى الخميس بين 4 و10 مساءً. (تعليمات تجريبية)', true, 7,
+              'يمكن إرجاع المنتجات غير المفتوحة خلال 7 أيام من الاستلام. منتجات العناية المفتوحة لا تُرجع إلا إذا كانت تالفة. (سياسة تجريبية)', false, ${noura.userId})`;
+    // VAT identity for the demo business (synthetic numbers, valid format only)
+    await tx`update finance_settings set tax_registered = true, tax_rate_bps = 1500, prices_include_tax = true, tax_label = 'ضريبة القيمة المضافة',
+             seller_vat_number = '300000000000003', cr_number = '1010000000', address_street = 'طريق الأمير محمد بن سعد', address_building_no = '1234',
+             address_district = 'الملقا', address_city = 'الرياض', address_postal_code = '13521' where tenant_id = ${c.tenantId}`;
     const [dye] = await tx<{ id: string }[]>`insert into inventory_items (tenant_id, branch_id, usage, name, unit, on_hand, low_stock_threshold, unit_cost_minor) values (${c.tenantId}, ${c.branchId}, 'material', 'صبغة شعر (أنبوب)', 'ml', 1200, 300, 15) returning id`;
     await tx`insert into stock_movements (tenant_id, inventory_item_id, kind, on_hand_delta, reason, ref_type) values (${c.tenantId}, ${dye.id}, 'receipt', 1200, 'seed opening stock', 'manual')`;
     await tx`insert into service_material_recipes (tenant_id, service_id, inventory_item_id, quantity, unit, approved_by, approved_at) values (${c.tenantId}, ${color}, ${dye.id}, 60, 'ml', ${noura.userId}, now())`;

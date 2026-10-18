@@ -160,15 +160,22 @@ export async function myOrderDetail(userId: string, orderId: string) {
   const [r] = await withUser(userId, (tx) => tx<{ tenantId: string }[]>`select tenant_id from orders where id = ${orderId} and customer_user_id = ${userId}`);
   if (!r) throw notFound('order');
   return withTenant({ tenantId: r.tenantId, userId }, async (tx) => {
-    const [o] = await tx`select id, number, status, refund_status, fulfillment_method, subtotal_minor, discount_minor, tax_minor, total_minor,
-                           paid_minor, refunded_minor, currency, payment_terms, hold_expires_at, created_at, cancel_reason, branch_id
+    const [o] = await tx`select id, number, status, refund_status, fulfillment_method, subtotal_minor, discount_minor, tax_minor, total_minor, delivery_fee_minor,
+                           delivery_address, terms_snapshot->'delivery' as delivery_terms, paid_minor, refunded_minor, currency, payment_terms, hold_expires_at, created_at, cancel_reason, branch_id
                          from orders where id = ${orderId} and customer_user_id = ${userId}`;
     if (!o) throw notFound('order');
-    const items = await tx`select name, variant_name, unit_price_minor, quantity, line_total_minor from order_items where order_id = ${orderId}`;
+    const items = await tx`select i.id, i.name, i.variant_name, i.unit_price_minor, i.quantity, i.line_total_minor, i.returned_qty, p.returnable,
+                             coalesce((select sum(r.quantity) from returns r where r.order_item_id = i.id and r.status in ('requested','approved','received')), 0)::int as open_return_qty
+                           from order_items i join products p on p.id = i.product_id where i.order_id = ${orderId} order by i.id`;
+    const [fulfillment] = await tx`select method, status, courier_name, tracking_ref, tracking_url, dispatched_at, delivered_at, collected_at from fulfillments where order_id = ${orderId}`;
+    const { deliveryTimeline } = await import('../commerce/delivery');
+    const { orderReturns, returnWindow } = await import('../commerce/returns');
+    const { invoicesFor } = await import('../finance/invoices');
+    const extra = { fulfillment: fulfillment ?? null, timeline: await deliveryTimeline(tx, orderId), returns: await orderReturns(tx, orderId), returnWindow: await returnWindow(tx, orderId), invoices: await invoicesFor(tx, { orderId }) };
     const payments = await tx`select id, kind, method, amount_minor, status, refunded_minor, checkout_url, created_at from payments where order_id = ${orderId} order by created_at`;
     const [t] = await tx`select name, slug, timezone from tenants where id = ${r.tenantId}`;
     const [br] = await tx`select name, address from branches where id = ${o.branchId}`;
-    return { order: o, items, payments, tenant: t, branch: br ?? null };
+    return { order: o, items, payments, tenant: t, branch: br ?? null, ...extra };
   });
 }
 

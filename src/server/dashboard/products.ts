@@ -128,6 +128,10 @@ export async function getOrder(tx: Tx, id: string) {
   if (!o) throw notFound('order');
   const items = await tx`select id, name, variant_name, unit_price_minor, quantity, line_total_minor, returned_qty from order_items where order_id = ${id}`;
   const payments = await tx`select id, kind, method, amount_minor, status, refunded_minor, provider, collection_ref, created_at from payments where order_id = ${id} order by created_at`;
-  const [f] = await tx`select method, status, ready_at, collected_at from fulfillments where order_id = ${id}`;
-  return { order: o, items, payments, fulfillment: f ?? null };
+  const [f] = await tx`select method, status, ready_at, collected_at, courier_name, tracking_ref, tracking_url, dispatched_at, delivered_at, attempts from fulfillments where order_id = ${id}`;
+  const { deliveryTimeline } = await import('../commerce/delivery');
+  const { orderReturns } = await import('../commerce/returns');
+  const { invoicesFor } = await import('../finance/invoices');
+  const [zone] = o.deliveryZoneId ? await tx`select name from delivery_zones where id = ${o.deliveryZoneId as string}` : [];
+  return { order: o, items, payments, fulfillment: f ?? null, timeline: await deliveryTimeline(tx, id), returns: await orderReturns(tx, id), invoices: await invoicesFor(tx, { orderId: id }), zone: zone ?? null };
 }

@@ -26,6 +26,7 @@ export const APPEND_ONLY_TABLES = [
   'page_versions',
   'plan_versions',
   'campaign_events',
+  'fulfillment_events',
 ];
 
 export async function migrate(url: string, appRole: string, log = console.log) {

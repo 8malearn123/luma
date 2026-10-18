@@ -285,15 +285,19 @@ function Commissions({ tenant, period, tz }: { tenant: string; period: string; t
 function Invoices({ tenant, tz }: { tenant: string; tz: string }) {
   const t = useT();
   const locale = useLocale();
-  const d = useApi<{ items: { id: string; number: string; totalMinor: number; taxMinor: number; status: string; issuedAt: string; buyerSnapshot: { name: string; reference: string } }[] }>(`/api/v1/t/${tenant}/finance/invoices`);
+  const d = useApi<{ items: { id: string; number: string; kind: string; totalMinor: number; taxMinor: number; status: string; issuedAt: string; hasQr: boolean; buyerSnapshot: { name: string; reference: string } }[] }>(`/api/v1/t/${tenant}/finance/invoices`);
+  const chain = useApi<{ ok: boolean; checked: number; brokenAt: string | null }>(`/api/v1/t/${tenant}/finance/invoices/chain`);
   return (
     <DataState loading={d.loading && !d.data} error={d.error} onRetry={d.reload}>
-      <p className="small muted">{t('fi.not_zatca')}</p>
+      <div className="alert info small">{t('inv.list_note')}</div>
+      {chain.data && (
+        <p className="small">{chain.data.ok ? <span className="badge green">{t('inv.chain_ok', { n: chain.data.checked })}</span> : <span className="badge red">{t('inv.chain_broken', { number: chain.data.brokenAt ?? '' })}</span>}</p>
+      )}
       {!d.data?.items.length ? <div className="card"><EmptyState icon="invoice" title={t('common.empty')} /></div> : (
         <div className="table-wrap"><table className="table">
           <thead><tr><th>#</th><th>{t('common.date')}</th><th>{t('bk.customer')}</th><th>{t('bk.total')}</th><th /></tr></thead>
-          <tbody>{d.data.items.map((i) => <tr key={i.id}><td className="mono">{i.number}</td><td className="small">{formatDateTime(i.issuedAt, { tz, locale })}</td><td>{i.buyerSnapshot?.name} <span className="mono small">{i.buyerSnapshot?.reference}</span></td><td>{formatMoney(i.totalMinor, 'SAR', locale)}</td>
-            <td><a className="btn btn-sm" href={`/api/v1/t/${tenant}/finance/invoices/${i.id}/pdf`} target="_blank" rel="noopener noreferrer">{t('fi.pdf')}</a></td></tr>)}</tbody>
+          <tbody>{d.data.items.map((i) => <tr key={i.id}><td><a className="mono" href={`/app/${tenant}/finance/invoices/${i.id}`}>{i.number}</a>{i.kind === 'credit_note' && <span className="badge amber" style={{ marginInlineStart: 4 }}>{t('inv.credit_short')}</span>}{i.hasQr && <span className="badge" style={{ marginInlineStart: 4 }}>QR</span>}</td><td className="small">{formatDateTime(i.issuedAt, { tz, locale })}</td><td>{i.buyerSnapshot?.name} <span className="mono small">{i.buyerSnapshot?.reference}</span></td><td>{formatMoney(i.totalMinor, 'SAR', locale)}</td>
+            <td><a className="btn btn-sm" href={`/app/${tenant}/finance/invoices/${i.id}`}>{t('inv.open')}</a></td></tr>)}</tbody>
         </table></div>
       )}
     </DataState>

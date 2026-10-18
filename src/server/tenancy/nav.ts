@@ -32,6 +32,8 @@ const DEFS: Def[] = [
   { path: '/memberships', key: 'nav.memberships', icon: 'ticket', group: 'growth', anyOf: ['loyalty.manage'], feature: 'memberships.enabled' },
   { path: '/finance', key: 'nav.finance', icon: 'wallet', group: 'admin', anyOf: ['finance.view', 'payments.configure'] },
   { path: '/incidents', key: 'nav.incidents', icon: 'shield', group: 'admin', anyOf: ['incidents.submit', 'incidents.review'] },
+  { path: '/messages', key: 'nav.messages', icon: 'mega', group: 'admin', anyOf: ['tenant.settings.manage'] },
+  { path: '/integrations', key: 'nav.integrations', icon: 'link', group: 'admin', anyOf: ['tenant.settings.manage', 'payments.configure'] },
   { path: '/settings', key: 'nav.settings', icon: 'gear', group: 'admin', anyOf: ['tenant.settings.manage', 'team.manage', 'subscription.view', 'payments.configure'] },
   { path: '/audit', key: 'nav.audit', icon: 'clipboard', group: 'admin', anyOf: ['audit.view'] },
 ];

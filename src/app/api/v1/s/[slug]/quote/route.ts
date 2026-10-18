@@ -2,6 +2,7 @@ import { api } from '@/server/http/handler';
 import { publicTenant, runPublic } from '@/server/booking/customer';
 import { activeAccount } from '@/server/payments/service';
 import { cartView } from '@/server/booking/cart';
+import { commerceSettings, listAddresses } from '@/server/commerce/delivery';
 
 /** Checkout quote: server-priced cart + which payment paths exist. */
 export const GET = api.user<{ slug: string }>(async (c) => {
@@ -12,6 +13,13 @@ export const GET = api.user<{ slug: string }>(async (c) => {
     const view = await cartView(tx, cart?.id ?? null, branch.id);
     const acct = await activeAccount(tx, t.id);
     const [pol] = await tx<{ allowOnSite: boolean; policyText: string | null }[]>`select allow_on_site, policy_text from booking_policies limit 1`;
-    return { ...view, branch, payOnline: !!acct, payAtPickup: !!pol?.allowOnSite, fulfillment: ['pickup'], policyText: pol?.policyText ?? null };
+    const cs = await commerceSettings(tx);
+    const fulfillment = [...(cs.pickupEnabled ? ['pickup'] : []), ...(cs.deliveryEnabled ? ['delivery'] : [])];
+    return {
+      ...view, branch, payOnline: !!acct, payAtPickup: cs.pickupEnabled && !!pol?.allowOnSite, cashOnDelivery: cs.deliveryEnabled && cs.cashOnDelivery,
+      fulfillment, deliveryInstructions: cs.deliveryInstructions, addresses: cs.deliveryEnabled ? await listAddresses(tx, c.user.userId) : [],
+      returns: cs.returnsEnabled ? { windowDays: cs.returnWindowDays, policyText: cs.returnPolicyText } : null,
+      policyText: pol?.policyText ?? null,
+    };
   });
 });

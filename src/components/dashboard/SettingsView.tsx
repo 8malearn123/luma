@@ -7,13 +7,17 @@ import { EmptyState, ErrorAlert, Field, useSubmit, useUnsavedGuard } from '../ui
 import { useToast } from '../ui/Toast';
 import { Icon } from '../Icon';
 import { DataState, MoneyInput, PageHead, statusBadge, Tabs, useApi, useUrlTab } from './hooks';
+import { CommerceSettings } from './SettingsCommerce';
+import { PaymentsSettings } from './SettingsPayments';
 
 interface Settings {
   business: { name: string; legalName: string | null; taxNumber: string | null; timezone: string; defaultLocale: 'ar' | 'en'; city: string | null; slug: string };
   branches: { id: string; name: string; city: string | null; address: string | null; phone: string | null; isPrimary: boolean; status: string }[];
   policy: Record<string, unknown> & { version: number };
-  finance: { pricesIncludeTax: boolean; taxRateBps: number; taxLabel: string; taxRegistered: boolean; legalAddress: string | null; invoiceFooter: string | null };
+  finance: { pricesIncludeTax: boolean; taxRateBps: number; taxLabel: string; taxRegistered: boolean; legalAddress: string | null; invoiceFooter: string | null } & Record<(typeof VAT_FIELDS)[number], string | null>;
 }
+
+const VAT_FIELDS = ['sellerVatNumber', 'crNumber', 'addressBuildingNo', 'addressStreet', 'addressDistrict', 'addressCity', 'addressPostalCode', 'addressAdditionalNo'] as const;
 
 const TZS = ['Asia/Riyadh', 'Asia/Dubai', 'Asia/Kuwait', 'Asia/Qatar', 'Asia/Bahrain', 'Africa/Cairo', 'Europe/London', 'UTC'];
 
@@ -27,6 +31,7 @@ export function SettingsView({ tenant, caps, delegable, tz }: { tenant: string; 
     can('tenant.settings.manage') && { key: 'branches', label: t('st.branches') },
     can('tenant.settings.manage') && { key: 'policy', label: t('st.policy') },
     can('tenant.settings.manage') && { key: 'finance', label: t('st.finance') },
+    can('tenant.settings.manage') && { key: 'commerce', label: t('st.commerce') },
     can('team.manage') && { key: 'team', label: t('st.team') },
     (can('payments.configure') || can('finance.view')) && { key: 'payments', label: t('st.payments') },
     (can('subscription.view') || can('subscription.manage')) && { key: 'subscription', label: t('st.subscription') },
@@ -45,7 +50,8 @@ export function SettingsView({ tenant, caps, delegable, tz }: { tenant: string; 
         </DataState>
       ) : null}
       {active === 'team' && <Team tenant={tenant} delegable={delegable} tz={tz} isOwnerish={can('ownership.transfer')} />}
-      {active === 'payments' && <PaymentsProvider tenant={tenant} canConfigure={can('payments.configure')} />}
+      {active === 'commerce' && <CommerceSettings tenant={tenant} />}
+      {active === 'payments' && <PaymentsSettings tenant={tenant} canConfigure={can('payments.configure')} tz={tz} />}
       {active === 'subscription' && <Subscription tenant={tenant} tz={tz} />}
     </>
   );
@@ -185,11 +191,13 @@ function Policy({ tenant, data, onSaved }: { tenant: string; data: Settings['pol
 function FinanceSettings({ tenant, data, onSaved }: { tenant: string; data: Settings['finance']; onSaved: () => void }) {
   const t = useT();
   const toast = useToast();
-  const f = useForm({ pricesIncludeTax: data.pricesIncludeTax, taxRatePct: data.taxRateBps / 100, taxLabel: data.taxLabel, taxRegistered: data.taxRegistered, legalAddress: data.legalAddress ?? '', invoiceFooter: data.invoiceFooter ?? '' });
+  const vat = Object.fromEntries(VAT_FIELDS.map((k) => [k, data[k] ?? ''])) as Record<(typeof VAT_FIELDS)[number], string>;
+  const f = useForm({ pricesIncludeTax: data.pricesIncludeTax, taxRatePct: data.taxRateBps / 100, taxLabel: data.taxLabel, taxRegistered: data.taxRegistered, legalAddress: data.legalAddress ?? '', invoiceFooter: data.invoiceFooter ?? '', ...vat });
   const s = useSubmit<unknown, unknown>(`/api/v1/t/${tenant}/settings/finance`, 'PUT');
+  const vatOut = Object.fromEntries(VAT_FIELDS.map((k) => [k, f.v[k].trim() || null]));
   return (
-    <form className="card" onSubmit={async (e) => { e.preventDefault(); if (await s.submit({ pricesIncludeTax: f.v.pricesIncludeTax, taxRateBps: Math.round(f.v.taxRatePct * 100), taxLabel: f.v.taxLabel, taxRegistered: f.v.taxRegistered, legalAddress: f.v.legalAddress || null, invoiceFooter: f.v.invoiceFooter || null })) { f.clean(); toast(t('common.saved'), 'ok'); onSaved(); } }}>
-      <div className="alert info small">{t('st.tax_doc')} {t('fi.not_zatca')}</div>
+    <form className="card" onSubmit={async (e) => { e.preventDefault(); if (await s.submit({ pricesIncludeTax: f.v.pricesIncludeTax, taxRateBps: Math.round(f.v.taxRatePct * 100), taxLabel: f.v.taxLabel, taxRegistered: f.v.taxRegistered, legalAddress: f.v.legalAddress || null, invoiceFooter: f.v.invoiceFooter || null, ...vatOut })) { f.clean(); toast(t('common.saved'), 'ok'); onSaved(); } }}>
+      <div className="alert info small">{t('st.tax_doc')} {t('inv.settings_honest')}</div>
       <ErrorAlert error={s.error} />
       <div className="stack" style={{ gap: 6, marginBottom: 12 }}>
         <label className="check"><input type="checkbox" checked={f.v.taxRegistered} onChange={(e) => f.set({ taxRegistered: e.target.checked })} /> {t('st.tax_registered')}</label>
@@ -199,7 +207,16 @@ function FinanceSettings({ tenant, data, onSaved }: { tenant: string; data: Sett
         <Field label={t('st.tax_rate')} required>{(p) => <input {...p} type="number" min={0} max={100} step={0.01} className="input" value={f.v.taxRatePct} onChange={(e) => f.set({ taxRatePct: Number(e.target.value) })} />}</Field>
         <Field label={t('st.tax_label')} required>{(p) => <input {...p} className="input" value={f.v.taxLabel} onChange={(e) => f.set({ taxLabel: e.target.value })} />}</Field>
       </div>
-      <Field label={t('st.legal_address')}>{(p) => <textarea {...p} className="input" value={f.v.legalAddress} onChange={(e) => f.set({ legalAddress: e.target.value })} />}</Field>
+      <h3 style={{ marginTop: 8 }}>{t('inv.seller_identity')}</h3>
+      <p className="small muted">{t('inv.seller_identity_hint')}</p>
+      <div className="grid cols-2">
+        {VAT_FIELDS.map((k) => (
+          <Field key={k} label={t(`inv.f.${k}`)} required={k === 'sellerVatNumber' && f.v.taxRegistered} hint={t(`inv.h.${k}`) === `inv.h.${k}` ? undefined : t(`inv.h.${k}`)} error={s.fieldErrors[k]}>
+            {(p) => <input {...p} className={`input${/Number|No|Code/.test(k) ? ' input-ltr mono' : ''}`} inputMode={/Number|No|Code/.test(k) ? 'numeric' : undefined} value={f.v[k]} onChange={(e) => f.set({ [k]: e.target.value } as Partial<typeof f.v>)} />}
+          </Field>
+        ))}
+      </div>
+      <Field label={t('st.legal_address')} hint={t('inv.legal_address_hint')}>{(p) => <textarea {...p} className="input" value={f.v.legalAddress} onChange={(e) => f.set({ legalAddress: e.target.value })} />}</Field>
       <Field label={t('st.invoice_footer')}>{(p) => <input {...p} className="input" value={f.v.invoiceFooter} onChange={(e) => f.set({ invoiceFooter: e.target.value })} />}</Field>
       <div className="form-actions"><button type="submit" className="btn btn-gold" disabled={s.busy || !f.dirty}>{t('common.save')}</button></div>
     </form>
@@ -292,35 +309,6 @@ function Team({ tenant, delegable, tz, isOwnerish }: { tenant: string; delegable
         )}
       </div>
     </div>
-  );
-}
-
-function PaymentsProvider({ tenant, canConfigure }: { tenant: string; canConfigure: boolean }) {
-  const t = useT();
-  const toast = useToast();
-  const d = useApi<{ accounts: { id: string; provider: string; mode: string; status: string; methodsEnabled: string[]; createdAt: string }[]; providers: { key: string; available: boolean; status: string; methods: string[] }[] }>(`/api/v1/t/${tenant}/payments`);
-  const connect = useSubmit<unknown, unknown>(`/api/v1/t/${tenant}/payments`);
-  const disconnect = useSubmit<unknown, unknown>(`/api/v1/t/${tenant}/payments`, 'DELETE');
-  const active = d.data?.accounts.find((a) => a.status === 'active');
-  const sandbox = d.data?.providers.find((p) => p.key === 'sandbox');
-  return (
-    <DataState loading={d.loading && !d.data} error={d.error} onRetry={d.reload}>
-      <div className="card stack">
-        <ErrorAlert error={connect.error ?? disconnect.error} />
-        {active ? (
-          <div className="row between">
-            <span>{active.provider === 'sandbox' ? t('st.sandbox') : active.provider} <span className="badge green">{active.status}</span><div className="small muted">{t('st.methods')}: {active.methodsEnabled.join(', ') || '—'}</div></span>
-            {canConfigure && <button type="button" className="btn btn-danger btn-sm" disabled={disconnect.busy} onClick={async () => { if (await disconnect.submit()) { toast(t('common.saved'), 'ok'); void d.reload(); } }}>{t('st.disconnect')}</button>}
-          </div>
-        ) : (
-          <div className="alert warn">{t('st.no_provider')}</div>
-        )}
-        {canConfigure && !active && sandbox?.available && (
-          <button type="button" className="btn btn-ghost btn-sm" disabled={connect.busy} onClick={async () => { if (await connect.submit({ provider: 'sandbox' })) { toast(t('common.saved'), 'ok'); void d.reload(); } }}>{t('st.connect_sandbox')}</button>
-        )}
-        <div className="alert info small">{t('st.moyasar')}</div>
-      </div>
-    </DataState>
   );
 }
 

@@ -24,6 +24,8 @@ export interface ShellProps {
   badges?: ReactNode;
   children: ReactNode;
   homeHref: string;
+  /** extra controls in the top bar (e.g. the notifications bell) */
+  topbar?: ReactNode;
 }
 
 export function PrefsToggles() {
@@ -69,7 +71,7 @@ export function SignOut() {
   );
 }
 
-export function AppShell({ title, subtitle, nav, userName, switcher, badges, children, homeHref }: ShellProps) {
+export function AppShell({ title, subtitle, nav, userName, switcher, badges, children, homeHref, topbar }: ShellProps) {
   const t = useT();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -125,6 +127,7 @@ export function AppShell({ title, subtitle, nav, userName, switcher, badges, chi
             <Icon name="menu" />
           </button>
           <div style={{ flex: 1 }} />
+          {topbar}
           <PrefsToggles />
         </header>
         <main id="main" className="content" tabIndex={-1}>

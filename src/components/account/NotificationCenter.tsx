@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { ApiError, apiFetch } from '@/lib/client/api';
+import { useNotificationSignal } from '@/lib/client/realtime';
 import { formatDateTime } from '@/lib/format';
 import { useLocale, useT } from '../I18n';
 import { EmptyState, ErrorAlert } from '../ui/forms';
@@ -17,7 +18,7 @@ interface N {
   createdAt: string;
 }
 
-/** Persisted notifications; polls every 30s (no browser storage as a source of truth). */
+/** Persisted notifications; refreshed on the realtime signal (SSE, 60 s polling fallback). */
 export function NotificationCenter() {
   const t = useT();
   const locale = useLocale();
@@ -40,11 +41,10 @@ export function NotificationCenter() {
       setErr(e as ApiError);
     }
   }, []);
+  const sig = useNotificationSignal();
   useEffect(() => {
     void load();
-    const id = setInterval(load, 30000);
-    return () => clearInterval(id);
-  }, [load]);
+  }, [load, sig.version]);
   const more = async () => {
     if (!items?.length) return;
     const r = await apiFetch<{ items: N[]; hasMore: boolean }>(`/api/v1/me/notifications?limit=20&before=${encodeURIComponent(items[items.length - 1].createdAt)}`);
@@ -59,9 +59,11 @@ export function NotificationCenter() {
     await apiFetch('/api/v1/me/notifications', { method: 'POST', body: { ids: [id] } }).catch(() => {});
   };
   if (!items) return err ? <ErrorAlert error={err} /> : <div className="skeleton" style={{ height: 120 }} />;
-  if (!items.length) return <EmptyState icon="bell" title={t('account.no_notifications')} />;
+  const modeBadge = <span className={`badge ${sig.mode === 'live' ? 'green' : ''}`} title={t(`rt.mode_hint.${sig.mode}`)}>{t(`rt.mode.${sig.mode}`)}</span>;
+  if (!items.length) return <div className="stack"><div>{modeBadge}</div><EmptyState icon="bell" title={t('account.no_notifications')} /></div>;
   return (
     <div className="stack">
+      <div>{modeBadge}</div>
       {err && <ErrorAlert error={err} />}
       {unread > 0 && (
         <div className="row between">

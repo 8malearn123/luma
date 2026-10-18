@@ -98,7 +98,19 @@ Append-only double-entry (`financial_entries`, balanced per txn by a deferred tr
 
 A collected deposit is therefore **not** completed-service revenue until the service is delivered.
 
-## 8. Not done / blockers
+## 8. Connecting a business's Moyasar account (pages ready, not live-verified)
+1. Settings → Payments: the owner enters the publishable key, secret key and a webhook secret token (re-authentication required). Mode comes from the key prefixes; mixed test/live pairs are refused. Secrets are encrypted (AES-256-GCM) and never returned — the UI shows `sk_test_…abcd` only.
+2. The page shows the webhook URL (`{APP_BASE_URL}/api/v1/webhooks/payments/moyasar`) to paste in Moyasar with the same token.
+3. "Test connection" performs one read-only authenticated call (`GET /payments?page=1`). With `MOYASAR_ENABLED=0` or no network it is recorded as `unreachable` — never as success.
+4. "Activate" needs a successful test in the last 24 h, `MOYASAR_ENABLED=1`, and for **live** keys also `LUMA_DEPLOYMENT=production` and `MOYASAR_LIVE_ALLOWED=1`.
+5. Webhooks: the hosted checkout is a Moyasar *invoice*; events carry the *charge* id plus `invoice_id`. The event is located by either id, the token is checked, the charge is re-fetched and must reference our invoice, and its id is saved as `provider_charge_id` (refunds use it).
+
+## 9. Delivery and returns money
+- Order total = subtotal − discount + delivery fee (coupons never discount the fee). On delivery the held amount is recognized as `product_revenue` + `delivery_revenue`.
+- Cash on delivery: order stays `pending_payment` while preparing/dispatching (stock held without expiry); "delivered" is refused until the courier's cash is recorded with a reference.
+- Return refunds: suggested amount = returned lines − their share of the order discount (+ delivery fee if the policy refunds it and everything is returned), capped by what was paid and not refunded. Issued through normal refunds (provider/manual/gift card) with step-up; a credit note is issued against the order's invoice.
+
+## 10. Not done / blockers
 - No live provider integration has been tested; Moyasar requires keys, network access and a sandbox account.
 - Subscription billing (flow A) has data structures but no provider.
-- Tax/e-invoicing (ZATCA) compliance is not claimed.
+- Tax/e-invoicing (ZATCA) compliance is not claimed: invoices carry the simplified-invoice fields and Phase-1 TLV QR only.

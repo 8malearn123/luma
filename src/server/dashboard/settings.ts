@@ -48,14 +48,30 @@ export const policyInput = z.object({
   expectedVersion: z.number().int(),
 }).refine((p) => p.depositMode !== 'percent' || p.depositValue <= 10000, { message: 'errors.deposit_percent_max', path: ['depositValue'] });
 
-export const financeSettingsInput = z.object({
-  pricesIncludeTax: z.boolean(),
-  taxRateBps: z.number().int().min(0).max(10000),
-  taxLabel: z.string().trim().min(1).max(20),
-  taxRegistered: z.boolean(),
-  legalAddress: z.string().max(400).nullable().optional(),
-  invoiceFooter: z.string().max(400).nullable().optional(),
-});
+const optText = (max: number, re?: RegExp, msg?: string) => {
+  const base = re ? z.string().trim().regex(re, msg) : z.string().trim().max(max);
+  return z.union([z.literal('').transform(() => null), base.max(max)]).nullable().optional();
+};
+export const financeSettingsInput = z
+  .object({
+    pricesIncludeTax: z.boolean(),
+    taxRateBps: z.number().int().min(0).max(10000),
+    taxLabel: z.string().trim().min(1).max(20),
+    taxRegistered: z.boolean(),
+    legalAddress: z.string().max(400).nullable().optional(),
+    invoiceFooter: z.string().max(400).nullable().optional(),
+    // seller identity printed on tax invoices (ZATCA simplified invoice fields)
+    sellerVatNumber: optText(15, /^3[0-9]{13}3$/, 'errors.vat_number_invalid'),
+    crNumber: optText(10, /^[0-9]{10}$/, 'errors.cr_number_invalid'),
+    addressStreet: optText(120),
+    addressBuildingNo: optText(4, /^[0-9]{4}$/, 'errors.building_no_invalid'),
+    addressDistrict: optText(80),
+    addressCity: optText(80),
+    addressPostalCode: optText(5, /^[0-9]{5}$/, 'errors.postal_invalid'),
+    addressAdditionalNo: optText(4, /^[0-9]{4}$/, 'errors.building_no_invalid'),
+  })
+  .refine((v) => !v.taxRegistered || !!v.sellerVatNumber, { path: ['sellerVatNumber'], message: 'errors.vat_number_required' })
+  .refine((v) => !v.taxRegistered || v.taxRateBps > 0, { path: ['taxRateBps'], message: 'errors.tax_rate_required' });
 
 export async function getSettings(tx: Tx) {
   const [business] = await tx`select name, legal_name, tax_number, timezone, default_locale, city, slug, business_type, status from tenants`;
@@ -115,7 +131,10 @@ export async function updatePolicy(tx: Tx, ctx: TenantContext, p: z.infer<typeof
 
 export async function updateFinanceSettings(tx: Tx, ctx: TenantContext, p: z.infer<typeof financeSettingsInput>) {
   await tx`update finance_settings set prices_include_tax = ${p.pricesIncludeTax}, tax_rate_bps = ${p.taxRateBps}, tax_label = ${p.taxLabel},
-           tax_registered = ${p.taxRegistered}, legal_address = ${p.legalAddress ?? null}, invoice_footer = ${p.invoiceFooter ?? null}, updated_at = now()`;
+           tax_registered = ${p.taxRegistered}, legal_address = ${p.legalAddress ?? null}, invoice_footer = ${p.invoiceFooter ?? null},
+           seller_vat_number = ${p.sellerVatNumber ?? null}, cr_number = ${p.crNumber ?? null}, address_street = ${p.addressStreet ?? null},
+           address_building_no = ${p.addressBuildingNo ?? null}, address_district = ${p.addressDistrict ?? null}, address_city = ${p.addressCity ?? null},
+           address_postal_code = ${p.addressPostalCode ?? null}, address_additional_no = ${p.addressAdditionalNo ?? null}, updated_at = now()`;
   await audit(tx, { ...act(ctx), action: 'finance_settings.updated', metadata: { taxRateBps: p.taxRateBps, registered: p.taxRegistered } });
 }
 

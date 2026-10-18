@@ -2,7 +2,7 @@
 
 Generated from the migrated schema by `scripts/gen-data-model.ts`. Do not edit by hand.
 
-Tables: 137. RLS-enabled: 113.
+Tables: 143. RLS-enabled: 119.
 
 ## ai_runs · RLS (forced)
 
@@ -653,6 +653,33 @@ Constraints:
 - `categories_pkey`: PRIMARY KEY (id)
 - `categories_tenant_id_id_key`: UNIQUE (tenant_id, id)
 
+## commerce_settings · RLS (forced)
+
+| column | type | null | default |
+|---|---|---|---|
+| tenant_id | uuid |  |  |
+| pickup_enabled | boolean |  | true |
+| delivery_enabled | boolean |  | false |
+| cash_on_delivery | boolean |  | false |
+| delivery_instructions | text | yes |  |
+| returns_enabled | boolean |  | false |
+| return_window_days | integer |  | 7 |
+| return_policy_text | text | yes |  |
+| return_shipping_paid_by | text |  | 'customer'::text |
+| refund_delivery_fee | boolean |  | false |
+| updated_by | uuid | yes |  |
+| updated_at | timestamp with time zone |  | now() |
+
+Constraints:
+- `commerce_settings_check`: CHECK ((pickup_enabled OR delivery_enabled))
+- `commerce_settings_delivery_instructions_check`: CHECK ((length(delivery_instructions) <= 1000))
+- `commerce_settings_return_policy_text_check`: CHECK ((length(return_policy_text) <= 4000))
+- `commerce_settings_return_shipping_paid_by_check`: CHECK ((return_shipping_paid_by = ANY (ARRAY['customer'::text, 'business'::text])))
+- `commerce_settings_return_window_days_check`: CHECK (((return_window_days >= 0) AND (return_window_days <= 90)))
+- `commerce_settings_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+- `commerce_settings_updated_by_fkey`: FOREIGN KEY (updated_by) REFERENCES users(id)
+- `commerce_settings_pkey`: PRIMARY KEY (tenant_id)
+
 ## commission_entries · RLS (forced)
 
 | column | type | null | default |
@@ -735,6 +762,39 @@ Constraints:
 - `coupons_pkey`: PRIMARY KEY (id)
 - `coupons_tenant_id_code_key`: UNIQUE (tenant_id, code)
 - `coupons_tenant_id_id_key`: UNIQUE (tenant_id, id)
+
+## customer_addresses · RLS (forced)
+
+| column | type | null | default |
+|---|---|---|---|
+| id | uuid |  | gen_random_uuid() |
+| user_id | uuid |  |  |
+| label | text | yes |  |
+| recipient_name | text |  |  |
+| phone | text |  |  |
+| city | text |  |  |
+| district | text | yes |  |
+| street | text |  |  |
+| building_no | text | yes |  |
+| postal_code | text | yes |  |
+| notes | text | yes |  |
+| is_default | boolean |  | false |
+| created_at | timestamp with time zone |  | now() |
+| updated_at | timestamp with time zone |  | now() |
+
+Constraints:
+- `customer_addresses_building_no_check`: CHECK ((length(building_no) <= 20))
+- `customer_addresses_city_check`: CHECK (((length(TRIM(BOTH FROM city)) >= 1) AND (length(TRIM(BOTH FROM city)) <= 80)))
+- `customer_addresses_district_check`: CHECK ((length(district) <= 80))
+- `customer_addresses_label_check`: CHECK ((length(label) <= 40))
+- `customer_addresses_notes_check`: CHECK ((length(notes) <= 300))
+- `customer_addresses_phone_check`: CHECK ((phone ~ '^\+[1-9][0-9]{7,14}$'::text))
+- `customer_addresses_postal_code_check`: CHECK (((postal_code IS NULL) OR (postal_code ~ '^[0-9]{5}$'::text)))
+- `customer_addresses_recipient_name_check`: CHECK (((length(TRIM(BOTH FROM recipient_name)) >= 1) AND (length(TRIM(BOTH FROM recipient_name)) <= 120)))
+- `customer_addresses_street_check`: CHECK (((length(TRIM(BOTH FROM street)) >= 1) AND (length(TRIM(BOTH FROM street)) <= 200)))
+- `customer_addresses_user_id_fkey`: FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+- `customer_addresses_pkey`: PRIMARY KEY (id)
+- UNIQUE INDEX customer_addresses_one_default ON public.customer_addresses USING btree (user_id) WHERE is_default
 
 ## customer_consents · RLS (forced)
 
@@ -859,6 +919,40 @@ Constraints:
 - `daily_metrics_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
 - `daily_metrics_pkey`: PRIMARY KEY (tenant_id, day, metric, dimension)
 
+## delivery_zones · RLS (forced)
+
+| column | type | null | default |
+|---|---|---|---|
+| id | uuid |  | gen_random_uuid() |
+| tenant_id | uuid |  |  |
+| branch_id | uuid |  |  |
+| name | text |  |  |
+| cities | ARRAY |  | '{}'::text[] |
+| districts | ARRAY |  | '{}'::text[] |
+| fee_minor | bigint |  |  |
+| free_over_minor | bigint | yes |  |
+| min_order_minor | bigint |  | 0 |
+| eta_min_hours | integer |  | 24 |
+| eta_max_hours | integer |  | 72 |
+| is_active | boolean |  | true |
+| sort_order | integer |  | 0 |
+| created_at | timestamp with time zone |  | now() |
+| updated_at | timestamp with time zone |  | now() |
+
+Constraints:
+- `delivery_zones_check`: CHECK ((eta_max_hours >= eta_min_hours))
+- `delivery_zones_cities_check`: CHECK (((cardinality(cities) >= 1) AND (cardinality(cities) <= 30)))
+- `delivery_zones_eta_max_hours_check`: CHECK (((eta_max_hours >= 1) AND (eta_max_hours <= 720)))
+- `delivery_zones_eta_min_hours_check`: CHECK (((eta_min_hours >= 1) AND (eta_min_hours <= 720)))
+- `delivery_zones_fee_minor_check`: CHECK ((fee_minor >= 0))
+- `delivery_zones_free_over_minor_check`: CHECK (((free_over_minor IS NULL) OR (free_over_minor > 0)))
+- `delivery_zones_min_order_minor_check`: CHECK ((min_order_minor >= 0))
+- `delivery_zones_name_check`: CHECK (((length(TRIM(BOTH FROM name)) >= 1) AND (length(TRIM(BOTH FROM name)) <= 80)))
+- `delivery_zones_tenant_id_branch_id_fkey`: FOREIGN KEY (tenant_id, branch_id) REFERENCES branches(tenant_id, id)
+- `delivery_zones_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+- `delivery_zones_pkey`: PRIMARY KEY (id)
+- `delivery_zones_tenant_id_id_key`: UNIQUE (tenant_id, id)
+
 ## dev_outbox_messages
 
 | column | type | null | default |
@@ -949,9 +1043,27 @@ Constraints:
 | legal_address | text | yes |  |
 | invoice_footer | text | yes |  |
 | updated_at | timestamp with time zone |  | now() |
+| seller_vat_number | text | yes |  |
+| cr_number | text | yes |  |
+| address_street | text | yes |  |
+| address_building_no | text | yes |  |
+| address_district | text | yes |  |
+| address_city | text | yes |  |
+| address_postal_code | text | yes |  |
+| address_additional_no | text | yes |  |
+| einvoicing_status | text |  | 'not_connected'::text |
 
 Constraints:
+- `finance_settings_address_additional_no_check`: CHECK (((address_additional_no IS NULL) OR (address_additional_no ~ '^[0-9]{4}$'::text)))
+- `finance_settings_address_building_no_check`: CHECK (((address_building_no IS NULL) OR (address_building_no ~ '^[0-9]{4}$'::text)))
+- `finance_settings_address_city_check`: CHECK ((length(address_city) <= 80))
+- `finance_settings_address_district_check`: CHECK ((length(address_district) <= 80))
+- `finance_settings_address_postal_code_check`: CHECK (((address_postal_code IS NULL) OR (address_postal_code ~ '^[0-9]{5}$'::text)))
+- `finance_settings_address_street_check`: CHECK ((length(address_street) <= 120))
+- `finance_settings_cr_number_check`: CHECK (((cr_number IS NULL) OR (cr_number ~ '^[0-9]{10}$'::text)))
+- `finance_settings_einvoicing_status_check`: CHECK ((einvoicing_status = 'not_connected'::text))
 - `finance_settings_rounding_check`: CHECK ((rounding = ANY (ARRAY['half_up'::text, 'half_even'::text])))
+- `finance_settings_seller_vat_number_check`: CHECK (((seller_vat_number IS NULL) OR (seller_vat_number ~ '^3[0-9]{13}3$'::text)))
 - `finance_settings_tax_rate_bps_check`: CHECK (((tax_rate_bps >= 0) AND (tax_rate_bps <= 10000)))
 - `finance_settings_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
 - `finance_settings_pkey`: PRIMARY KEY (tenant_id)
@@ -983,6 +1095,24 @@ Constraints:
 - `financial_entries_pkey`: PRIMARY KEY (id)
 - UNIQUE INDEX financial_entries_once ON public.financial_entries USING btree (tenant_id, ref_type, ref_id, account, ((debit_minor > 0))) WHERE (ref_type = ANY (ARRAY['payment'::text, 'refund'::text, 'service_completed'::t
 
+## fulfillment_events · RLS (forced)
+
+| column | type | null | default |
+|---|---|---|---|
+| id | uuid |  | gen_random_uuid() |
+| tenant_id | uuid |  |  |
+| order_id | uuid |  |  |
+| status | text |  |  |
+| note | text | yes |  |
+| actor_user_id | uuid | yes |  |
+| created_at | timestamp with time zone |  | now() |
+
+Constraints:
+- `fulfillment_events_note_check`: CHECK ((length(note) <= 500))
+- `fulfillment_events_actor_user_id_fkey`: FOREIGN KEY (actor_user_id) REFERENCES users(id)
+- `fulfillment_events_tenant_id_order_id_fkey`: FOREIGN KEY (tenant_id, order_id) REFERENCES orders(tenant_id, id)
+- `fulfillment_events_pkey`: PRIMARY KEY (id)
+
 ## fulfillments · RLS (forced)
 
 | column | type | null | default |
@@ -995,10 +1125,19 @@ Constraints:
 | ready_at | timestamp with time zone | yes |  |
 | collected_at | timestamp with time zone | yes |  |
 | collected_by | uuid | yes |  |
+| courier_name | text | yes |  |
+| tracking_ref | text | yes |  |
+| tracking_url | text | yes |  |
+| dispatched_at | timestamp with time zone | yes |  |
+| delivered_at | timestamp with time zone | yes |  |
+| attempts | integer |  | 0 |
 
 Constraints:
+- `fulfillments_courier_name_check`: CHECK ((length(courier_name) <= 80))
 - `fulfillments_method_check`: CHECK ((method = ANY (ARRAY['pickup'::text, 'delivery'::text])))
-- `fulfillments_status_check`: CHECK ((status = ANY (ARRAY['pending'::text, 'ready'::text, 'collected'::text, 'cancelled'::text])))
+- `fulfillments_status_check`: CHECK ((status = ANY (ARRAY['pending'::text, 'ready'::text, 'out_for_delivery'::text, 'failed_attempt'::text, 'collected'::text, 'delivered'::text, 'cancelled'::text])))
+- `fulfillments_tracking_ref_check`: CHECK ((length(tracking_ref) <= 80))
+- `fulfillments_tracking_url_check`: CHECK (((tracking_url IS NULL) OR ((length(tracking_url) <= 500) AND (tracking_url ~ '^https://[^[:space:]]+$'::text))))
 - `fulfillments_collected_by_fkey`: FOREIGN KEY (collected_by) REFERENCES users(id)
 - `fulfillments_tenant_id_order_id_fkey`: FOREIGN KEY (tenant_id, order_id) REFERENCES orders(tenant_id, id)
 - `fulfillments_pkey`: PRIMARY KEY (id)
@@ -1278,11 +1417,24 @@ Constraints:
 | credit_for_id | uuid | yes |  |
 | issued_at | timestamp with time zone |  | now() |
 | issued_by | uuid | yes |  |
+| invoice_type | text |  | 'simplified'::text |
+| icv | integer | yes |  |
+| previous_hash | text | yes |  |
+| content_hash | text | yes |  |
+| qr_tlv | text | yes |  |
+| credit_reason | text | yes |  |
+| return_id | uuid | yes |  |
+| einvoicing_status | text |  | 'not_submitted'::text |
 
 Constraints:
+- `invoices_credit_reason_check`: CHECK ((length(credit_reason) <= 300))
+- `invoices_einvoicing_status_check`: CHECK ((einvoicing_status = 'not_submitted'::text))
+- `invoices_invoice_type_check`: CHECK ((invoice_type = ANY (ARRAY['simplified'::text, 'standard'::text])))
 - `invoices_kind_check`: CHECK ((kind = ANY (ARRAY['invoice'::text, 'receipt'::text, 'credit_note'::text])))
 - `invoices_status_check`: CHECK ((status = ANY (ARRAY['issued'::text, 'void'::text])))
+- `invoices_credit_fk`: FOREIGN KEY (tenant_id, credit_for_id) REFERENCES invoices(tenant_id, id)
 - `invoices_issued_by_fkey`: FOREIGN KEY (issued_by) REFERENCES users(id)
+- `invoices_return_fk`: FOREIGN KEY (tenant_id, return_id) REFERENCES returns(tenant_id, id)
 - `invoices_tenant_id_booking_id_fkey`: FOREIGN KEY (tenant_id, booking_id) REFERENCES bookings(tenant_id, id)
 - `invoices_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 - `invoices_tenant_id_order_id_fkey`: FOREIGN KEY (tenant_id, order_id) REFERENCES orders(tenant_id, id)
@@ -1290,6 +1442,7 @@ Constraints:
 - `invoices_pkey`: PRIMARY KEY (id)
 - `invoices_tenant_id_id_key`: UNIQUE (tenant_id, id)
 - `invoices_tenant_id_number_key`: UNIQUE (tenant_id, number)
+- UNIQUE INDEX invoices_icv ON public.invoices USING btree (tenant_id, icv) WHERE (icv IS NOT NULL)
 
 ## job_runs
 
@@ -1543,6 +1696,57 @@ Constraints:
 - `memberships_pkey`: PRIMARY KEY (id)
 - `memberships_tenant_id_id_key`: UNIQUE (tenant_id, id)
 
+## message_templates · RLS (forced)
+
+| column | type | null | default |
+|---|---|---|---|
+| id | uuid |  | gen_random_uuid() |
+| tenant_id | uuid | yes |  |
+| key | text |  |  |
+| channel | text |  |  |
+| locale | text |  |  |
+| subject | text | yes |  |
+| body | text |  |  |
+| is_active | boolean |  | true |
+| version | integer |  | 1 |
+| updated_by | uuid | yes |  |
+| updated_at | timestamp with time zone |  | now() |
+
+Constraints:
+- `message_templates_body_check`: CHECK (((length(TRIM(BOTH FROM body)) >= 1) AND (length(TRIM(BOTH FROM body)) <= 2000)))
+- `message_templates_channel_check`: CHECK ((channel = ANY (ARRAY['email'::text, 'sms'::text, 'whatsapp'::text])))
+- `message_templates_check`: CHECK (((tenant_id IS NULL) OR (key <> 'verification_code'::text)))
+- `message_templates_key_check`: CHECK ((key = ANY (ARRAY['booking_confirmed'::text, 'booking_reminder'::text, 'booking_cancelled'::text, 'booking_rescheduled'::text, 'order_confirmed'::text, 'order_ready'::text, 'order_out_for_delivery'::text, 'order_d
+- `message_templates_locale_check`: CHECK ((locale = ANY (ARRAY['ar'::text, 'en'::text])))
+- `message_templates_subject_check`: CHECK ((length(subject) <= 150))
+- `message_templates_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+- `message_templates_updated_by_fkey`: FOREIGN KEY (updated_by) REFERENCES users(id)
+- `message_templates_pkey`: PRIMARY KEY (id)
+- UNIQUE INDEX message_templates_key ON public.message_templates USING btree (COALESCE(tenant_id, '00000000-0000-0000-0000-000000000000'::uuid), key, channel, locale)
+
+## messaging_settings · RLS (forced)
+
+| column | type | null | default |
+|---|---|---|---|
+| tenant_id | uuid |  |  |
+| sender_name | text | yes |  |
+| reply_to_email | USER-DEFINED | yes |  |
+| email_enabled | boolean |  | false |
+| sms_enabled | boolean |  | false |
+| whatsapp_enabled | boolean |  | false |
+| reminder_hours | ARRAY |  | '{24}'::integer[] |
+| quiet_start | time without time zone | yes |  |
+| quiet_end | time without time zone | yes |  |
+| updated_by | uuid | yes |  |
+| updated_at | timestamp with time zone |  | now() |
+
+Constraints:
+- `messaging_settings_reminder_hours_check`: CHECK (((cardinality(reminder_hours) <= 3) AND (0 < ALL (reminder_hours)) AND (169 > ALL (reminder_hours))))
+- `messaging_settings_sender_name_check`: CHECK ((length(sender_name) <= 40))
+- `messaging_settings_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+- `messaging_settings_updated_by_fkey`: FOREIGN KEY (updated_by) REFERENCES users(id)
+- `messaging_settings_pkey`: PRIMARY KEY (tenant_id)
+
 ## metric_snapshots · RLS (forced)
 
 | column | type | null | default |
@@ -1580,9 +1784,12 @@ Constraints:
 | error | text | yes |  |
 | created_at | timestamp with time zone |  | now() |
 | updated_at | timestamp with time zone |  | now() |
+| preview | text | yes |  |
+| is_test | boolean |  | false |
 
 Constraints:
 - `notification_deliveries_channel_check`: CHECK ((channel = ANY (ARRAY['email'::text, 'sms'::text, 'whatsapp'::text, 'push'::text, 'in_app'::text])))
+- `notification_deliveries_preview_check`: CHECK ((length(preview) <= 2000))
 - `notification_deliveries_status_check`: CHECK ((status = ANY (ARRAY['simulated'::text, 'queued'::text, 'sent'::text, 'delivered'::text, 'failed'::text, 'suppressed'::text])))
 - `notification_deliveries_recipient_user_id_fkey`: FOREIGN KEY (recipient_user_id) REFERENCES users(id)
 - `notification_deliveries_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
@@ -1696,12 +1903,15 @@ Constraints:
 | version | integer |  | 1 |
 | created_at | timestamp with time zone |  | now() |
 | updated_at | timestamp with time zone |  | now() |
+| delivery_fee_minor | bigint |  | 0 |
+| delivery_zone_id | uuid | yes |  |
+| delivery_address | jsonb | yes |  |
 
 Constraints:
-- `orders_check`: CHECK ((total_minor = ((subtotal_minor - discount_minor) + tax_minor)))
+- `orders_delivery_address`: CHECK (((fulfillment_method = 'pickup'::text) OR (delivery_address IS NOT NULL)))
+- `orders_delivery_fee_minor_check`: CHECK ((delivery_fee_minor >= 0))
 - `orders_discount_minor_check`: CHECK ((discount_minor >= 0))
 - `orders_fulfillment_method_check`: CHECK ((fulfillment_method = ANY (ARRAY['pickup'::text, 'delivery'::text])))
-- `orders_fulfillment_method_check1`: CHECK ((fulfillment_method = 'pickup'::text))
 - `orders_paid_minor_check`: CHECK ((paid_minor >= 0))
 - `orders_payment_terms_check`: CHECK ((payment_terms = ANY (ARRAY['full'::text, 'on_site'::text, 'manual_approval'::text])))
 - `orders_refund_status_check`: CHECK ((refund_status = ANY (ARRAY['none'::text, 'pending'::text, 'partial'::text, 'full'::text])))
@@ -1709,9 +1919,11 @@ Constraints:
 - `orders_status_check`: CHECK ((status = ANY (ARRAY['draft'::text, 'pending_payment'::text, 'paid'::text, 'preparing'::text, 'ready'::text, 'collected'::text, 'cancelled'::text])))
 - `orders_subtotal_minor_check`: CHECK ((subtotal_minor >= 0))
 - `orders_tax_minor_check`: CHECK ((tax_minor >= 0))
+- `orders_total_check`: CHECK ((total_minor = (((subtotal_minor - discount_minor) + tax_minor) + delivery_fee_minor)))
 - `orders_total_minor_check`: CHECK ((total_minor >= 0))
 - `orders_created_by_fkey`: FOREIGN KEY (created_by) REFERENCES users(id)
 - `orders_customer_user_id_fkey`: FOREIGN KEY (customer_user_id) REFERENCES users(id)
+- `orders_delivery_zone_fk`: FOREIGN KEY (tenant_id, delivery_zone_id) REFERENCES delivery_zones(tenant_id, id)
 - `orders_tenant_id_booking_id_fkey`: FOREIGN KEY (tenant_id, booking_id) REFERENCES bookings(tenant_id, id)
 - `orders_tenant_id_branch_id_fkey`: FOREIGN KEY (tenant_id, branch_id) REFERENCES branches(tenant_id, id)
 - `orders_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id)
@@ -1814,15 +2026,25 @@ Constraints:
 | verified_at | timestamp with time zone | yes |  |
 | created_at | timestamp with time zone |  | now() |
 | updated_at | timestamp with time zone |  | now() |
+| last_test_at | timestamp with time zone | yes |  |
+| last_test_result | text | yes |  |
+| last_test_detail | text | yes |  |
+| key_hint | text | yes |  |
+| configured_by | uuid | yes |  |
 
 Constraints:
+- `payment_accounts_key_hint_check`: CHECK ((length(key_hint) <= 24))
+- `payment_accounts_last_test_detail_check`: CHECK ((length(last_test_detail) <= 300))
+- `payment_accounts_last_test_result_check`: CHECK ((last_test_result = ANY (ARRAY['ok'::text, 'failed'::text, 'unreachable'::text])))
 - `payment_accounts_mode_check`: CHECK ((mode = ANY (ARRAY['test'::text, 'live'::text])))
 - `payment_accounts_provider_check`: CHECK ((provider = ANY (ARRAY['sandbox'::text, 'moyasar'::text, 'manual'::text])))
 - `payment_accounts_settlement_owner_check`: CHECK ((settlement_owner = ANY (ARRAY['tenant'::text, 'platform'::text])))
 - `payment_accounts_status_check`: CHECK ((status = ANY (ARRAY['disconnected'::text, 'pending_verification'::text, 'active'::text, 'disabled'::text])))
+- `payment_accounts_configured_by_fkey`: FOREIGN KEY (configured_by) REFERENCES users(id)
 - `payment_accounts_tenant_id_fkey`: FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
 - `payment_accounts_pkey`: PRIMARY KEY (id)
 - `payment_accounts_tenant_id_id_key`: UNIQUE (tenant_id, id)
+- UNIQUE INDEX payment_accounts_one_pending ON public.payment_accounts USING btree (tenant_id, provider) WHERE ((status = 'pending_verification'::text) AND (tenant_id IS NOT NULL))
 - UNIQUE INDEX payment_accounts_one_active ON public.payment_accounts USING btree (COALESCE(tenant_id, '00000000-0000-0000-0000-000000000000'::uuid)) WHERE (status = 'active'::text)
 
 ## payment_attempts · RLS (forced)
@@ -1870,6 +2092,7 @@ Constraints:
 | succeeded_at | timestamp with time zone | yes |  |
 | created_at | timestamp with time zone |  | now() |
 | updated_at | timestamp with time zone |  | now() |
+| provider_charge_id | text | yes |  |
 
 Constraints:
 - `payments_amount_minor_check`: CHECK ((amount_minor > 0))
@@ -1889,6 +2112,7 @@ Constraints:
 - `payments_tenant_id_id_key`: UNIQUE (tenant_id, id)
 - `payments_tenant_id_idempotency_key_key`: UNIQUE (tenant_id, idempotency_key)
 - UNIQUE INDEX payments_provider_ref ON public.payments USING btree (provider, provider_payment_id) WHERE (provider_payment_id IS NOT NULL)
+- UNIQUE INDEX payments_provider_charge ON public.payments USING btree (provider, provider_charge_id) WHERE (provider_charge_id IS NOT NULL)
 
 ## payouts · RLS (forced)
 
@@ -2401,15 +2625,32 @@ Constraints:
 | refund_id | uuid | yes |  |
 | decided_by | uuid | yes |  |
 | created_at | timestamp with time zone |  | now() |
+| request_number | text | yes |  |
+| customer_user_id | uuid | yes |  |
+| requested_by | uuid | yes |  |
+| reason_code | text |  | 'other'::text |
+| decision_note | text | yes |  |
+| refund_amount_minor | bigint | yes |  |
+| decided_at | timestamp with time zone | yes |  |
+| received_at | timestamp with time zone | yes |  |
+| completed_at | timestamp with time zone | yes |  |
+| updated_at | timestamp with time zone |  | now() |
 
 Constraints:
+- `returns_decision_note_check`: CHECK ((length(decision_note) <= 500))
 - `returns_quantity_check`: CHECK ((quantity > 0))
-- `returns_status_check`: CHECK ((status = ANY (ARRAY['requested'::text, 'approved'::text, 'rejected'::text, 'completed'::text])))
+- `returns_reason_code_check`: CHECK ((reason_code = ANY (ARRAY['damaged'::text, 'wrong_item'::text, 'not_as_described'::text, 'changed_mind'::text, 'allergy'::text, 'other'::text])))
+- `returns_reason_len`: CHECK (((length(reason) >= 1) AND (length(reason) <= 500)))
+- `returns_refund_amount_minor_check`: CHECK (((refund_amount_minor IS NULL) OR (refund_amount_minor >= 0)))
+- `returns_status_check`: CHECK ((status = ANY (ARRAY['requested'::text, 'approved'::text, 'rejected'::text, 'received'::text, 'completed'::text, 'cancelled'::text])))
+- `returns_customer_user_id_fkey`: FOREIGN KEY (customer_user_id) REFERENCES users(id)
 - `returns_decided_by_fkey`: FOREIGN KEY (decided_by) REFERENCES users(id)
 - `returns_refund_fk`: FOREIGN KEY (tenant_id, refund_id) REFERENCES refunds(tenant_id, id)
+- `returns_requested_by_fkey`: FOREIGN KEY (requested_by) REFERENCES users(id)
 - `returns_tenant_id_order_id_fkey`: FOREIGN KEY (tenant_id, order_id) REFERENCES orders(tenant_id, id)
 - `returns_tenant_id_order_item_id_fkey`: FOREIGN KEY (tenant_id, order_item_id) REFERENCES order_items(tenant_id, id)
 - `returns_pkey`: PRIMARY KEY (id)
+- `returns_tenant_id_key`: UNIQUE (tenant_id, id)
 
 ## reviews · RLS (forced)
 

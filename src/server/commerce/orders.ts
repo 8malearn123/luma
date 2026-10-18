@@ -147,17 +147,43 @@ export const checkoutInput = z.object({
   payAtPickup: z.boolean().default(false),
   bookingId: z.string().uuid().nullable().optional(),
   couponCode: z.string().trim().min(2).max(40).optional(),
+  fulfillment: z.enum(['pickup', 'delivery']).default('pickup'),
+  addressId: z.string().uuid().optional(),
+  /** the delivery fee the customer saw; a different server fee is surfaced for approval */
+  acceptedDeliveryFeeMinor: z.number().int().min(0).optional(),
 });
 
 /**
  * Creates an order from the cart: re-prices on the server, refuses if the
  * customer has not seen the current price, and reserves stock atomically.
  */
-export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId: string; tenantCustomerId: string; analyticsSession?: string | null }, cartId: string, input: z.infer<typeof checkoutInput>) {
+export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId: string; tenantCustomerId: string; analyticsSession?: string | null }, cartId: string, rawInput: z.input<typeof checkoutInput>) {
+  const input = checkoutInput.parse(rawInput);
   const ent = await entitlements(tx, tenantId);
   requireLive(ent);
   requireFeature(ent, 'products.enabled');
-  const q = await priceCart(tx, cartId, input.branchId);
+  const { commerceSettings, quoteDelivery, addressSnapshot, listAddresses } = await import('./delivery');
+  const cs = await commerceSettings(tx);
+  const delivery = input.fulfillment === 'delivery';
+  if (delivery && !cs.deliveryEnabled) throw new AppError('validation', 'errors.delivery_unavailable');
+  if (!delivery && !cs.pickupEnabled) throw new AppError('validation', 'errors.pickup_unavailable');
+  let address: ReturnType<typeof addressSnapshot> | null = null;
+  if (delivery) {
+    // the customer's own address book (RLS: owner only)
+    const a = (await listAddresses(tx, customer.userId)).find((x) => x.id === input.addressId);
+    if (!a) throw new AppError('validation', 'errors.address_required', { field: 'addressId' });
+    address = addressSnapshot(a);
+  }
+  let branchId = input.branchId;
+  let zone: Awaited<ReturnType<typeof quoteDelivery>> | null = null;
+  if (delivery) {
+    // first pass on the requested branch to know the subtotal; the zone then decides the shipping branch
+    const pre = await priceCart(tx, cartId, input.branchId);
+    zone = await quoteDelivery(tx, address!, pre.subtotalMinor);
+    if (!zone.ok) throw new AppError('validation', `errors.delivery_${zone.reason}`, { minOrderMinor: zone.minOrderMinor ?? null });
+    branchId = zone.branchId;
+  }
+  const q = await priceCart(tx, cartId, branchId);
   if (!q.lines.length) throw new AppError('validation', 'errors.cart_empty');
   if (!q.ok) throw new AppError('conflict', 'errors.cart_has_problems', { lines: q.lines.filter((l) => l.problem).map((l) => ({ productId: l.productId, problem: l.problem, available: l.available })) });
   if (q.subtotalMinor !== input.acceptedSubtotalMinor) throw new AppError('conflict', 'errors.price_changed', { subtotalMinor: q.subtotalMinor });
@@ -165,7 +191,8 @@ export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId:
   const [pol] = await tx<{ allowOnSite: boolean }[]>`select allow_on_site from booking_policies limit 1`;
   let terms: 'full' | 'on_site';
   if (input.payAtPickup) {
-    if (!pol?.allowOnSite) throw new AppError('payment_required', 'errors.terms_not_allowed');
+    // pickup: the booking policy's on-site option; delivery: cash on delivery must be switched on
+    if (delivery ? !cs.cashOnDelivery : !pol?.allowOnSite) throw new AppError('payment_required', 'errors.terms_not_allowed');
     terms = 'on_site';
   } else {
     if (!acct) throw new AppError('unavailable', 'errors.payments_unavailable', { payAtPickupAllowed: !!pol?.allowOnSite });
@@ -180,22 +207,34 @@ export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId:
     const { validateCoupon } = await import('../services/coupons');
     discount = Math.min(q.subtotalMinor, (await validateCoupon(tx, tenantId, input.couponCode, { totalMinor: q.subtotalMinor, tenantCustomerId: customer.tenantCustomerId })).discountMinor);
   }
-  const total = q.subtotalMinor - discount;
+  // free-delivery thresholds apply to the amount after discount
+  let fee = 0;
+  if (delivery) {
+    const z2 = await quoteDelivery(tx, address!, q.subtotalMinor - discount);
+    if (!z2.ok) throw new AppError('validation', `errors.delivery_${z2.reason}`, { minOrderMinor: z2.minOrderMinor ?? null });
+    zone = z2;
+    fee = z2.feeMinor;
+    if (input.acceptedDeliveryFeeMinor !== fee) throw new AppError('conflict', 'errors.delivery_fee_changed', { deliveryFeeMinor: fee });
+  }
+  const total = q.subtotalMinor - discount + fee;
   const number = await nextNumber(tx, tenantId, 'order', 'ORD');
   const expires = new Date(Date.now() + (terms === 'full' ? ORDER_HOLD_MIN * 60000 : PAY_AT_PICKUP_HOLD_HOURS * 3600000));
   const [o] = await tx<{ id: string }[]>`
     insert into orders (tenant_id, branch_id, number, tenant_customer_id, customer_user_id, status, booking_id, subtotal_minor, discount_minor, total_minor,
-                        payment_terms, terms_snapshot, hold_expires_at, created_by)
-    values (${tenantId}, ${input.branchId}, ${number}, ${customer.tenantCustomerId}, ${customer.userId}, 'pending_payment', ${input.bookingId ?? null},
-            ${q.subtotalMinor}, ${discount}, ${total}, ${terms}, ${tx.json({ terms, holdMinutes: terms === 'full' ? ORDER_HOLD_MIN : PAY_AT_PICKUP_HOLD_HOURS * 60, analyticsSession: customer.analyticsSession && /^[a-f0-9-]{36}$/.test(customer.analyticsSession) ? customer.analyticsSession : null } as never)},
-            ${expires}, ${customer.userId})
+                        payment_terms, terms_snapshot, hold_expires_at, created_by, fulfillment_method, delivery_fee_minor, delivery_zone_id, delivery_address)
+    values (${tenantId}, ${branchId}, ${number}, ${customer.tenantCustomerId}, ${customer.userId}, 'pending_payment', ${input.bookingId ?? null},
+            ${q.subtotalMinor}, ${discount}, ${total}, ${terms}, ${tx.json({ terms, holdMinutes: terms === 'full' ? ORDER_HOLD_MIN : PAY_AT_PICKUP_HOLD_HOURS * 60, analyticsSession: customer.analyticsSession && /^[a-f0-9-]{36}$/.test(customer.analyticsSession) ? customer.analyticsSession : null,
+              ...(zone?.ok ? { delivery: { zone: zone.zoneName, etaMinHours: zone.etaMinHours, etaMaxHours: zone.etaMaxHours } } : {}),
+              returns: cs.returnsEnabled ? { windowDays: cs.returnWindowDays, shippingPaidBy: cs.returnShippingPaidBy, refundDeliveryFee: cs.refundDeliveryFee } : null } as never)},
+            ${expires}, ${customer.userId}, ${input.fulfillment}, ${fee}, ${zone?.ok ? zone.zoneId : null}, ${address ? tx.json(address as never) : null})
     returning id`;
   for (const l of q.lines) {
     await tx`insert into order_items (tenant_id, order_id, product_id, variant_id, inventory_item_id, name, variant_name, unit_price_minor, unit_cost_minor, quantity, line_total_minor)
              values (${tenantId}, ${o.id}, ${l.productId}, ${l.variantId}, ${l.inventoryItemId}, ${l.name}, ${l.variantName}, ${l.unitPriceMinor}, ${l.unitCostMinor}, ${l.quantity}, ${l.lineTotalMinor})`;
   }
   await reserve(tx, tenantId, o.id, q.lines.map((l) => ({ inventoryItemId: l.inventoryItemId!, quantity: l.quantity })), expires);
-  await tx`insert into fulfillments (tenant_id, order_id, method) values (${tenantId}, ${o.id}, 'pickup')`;
+  await tx`insert into fulfillments (tenant_id, order_id, method) values (${tenantId}, ${o.id}, ${input.fulfillment})`;
+  await tx`insert into fulfillment_events (tenant_id, order_id, status, actor_user_id) values (${tenantId}, ${o.id}, 'placed', ${customer.userId})`;
   if (input.couponCode && discount > 0) {
     const { redeemCoupon } = await import('../services/coupons');
     await redeemCoupon(tx, tenantId, input.couponCode, { totalMinor: q.subtotalMinor, tenantCustomerId: customer.tenantCustomerId, orderId: o.id });
@@ -207,7 +246,7 @@ export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId:
     await tx`update orders set status = 'paid', hold_expires_at = null where id = ${o.id}`;
     await tx`update stock_reservations set expires_at = 'infinity' where order_id = ${o.id} and status = 'active'`;
   }
-  return { orderId: o.id, number, subtotalMinor: q.subtotalMinor, discountMinor: discount, totalMinor: total, terms, holdExpiresAt: expires };
+  return { orderId: o.id, number, subtotalMinor: q.subtotalMinor, discountMinor: discount, deliveryFeeMinor: fee, totalMinor: total, terms, fulfillment: input.fulfillment, holdExpiresAt: expires };
 }
 
 /** Release reserved stock exactly once (failed/expired payment, cancellation). */
@@ -256,12 +295,21 @@ const ORDER_FLOW: Record<string, string[]> = {
   ready: ['collected', 'cancelled'],
 };
 
-export async function transitionOrder(tx: Tx, ctx: TenantContext, orderId: string, to: 'paid' | 'preparing' | 'ready' | 'collected' | 'cancelled', reason?: string) {
+export async function transitionOrder(tx: Tx, ctx: TenantContext, orderId: string, to: 'paid' | 'preparing' | 'ready' | 'collected' | 'cancelled', reason?: string, opts: { viaDelivery?: boolean } = {}) {
   if (!ctx.caps.has('orders.manage')) throw forbidden();
-  const [o] = await tx<{ id: string; tenantId: string; status: string; paidMinor: number; totalMinor: number; paymentTerms: string; customerUserId: string | null; number: string }[]>`
+  const [o] = await tx<{ id: string; tenantId: string; status: string; paidMinor: number; totalMinor: number; paymentTerms: string; customerUserId: string | null; number: string; fulfillmentMethod: string; deliveryFeeMinor: number }[]>`
     select * from orders where id = ${orderId} for update`;
   if (!o) throw notFound('order');
-  if (!(ORDER_FLOW[o.status] ?? []).includes(to)) throw new AppError('invalid_transition', 'errors.invalid_transition', { from: o.status, to });
+  // cash on delivery: the business may prepare and dispatch before the courier collects
+  const cod = o.paymentTerms === 'on_site' && o.fulfillmentMethod === 'delivery';
+  const flow = cod && o.status === 'pending_payment' ? ['cancelled', 'paid', 'preparing', 'ready'] : (ORDER_FLOW[o.status] ?? []);
+  if (!flow.includes(to)) throw new AppError('invalid_transition', 'errors.invalid_transition', { from: o.status, to });
+  if (to === 'collected' && o.fulfillmentMethod === 'delivery' && !opts.viaDelivery) throw new AppError('invalid_transition', 'errors.use_delivery_flow');
+  if (cod && o.status === 'pending_payment' && to !== 'cancelled' && to !== 'paid') {
+    // committed by the business: the stock stays reserved until delivered or cancelled
+    await tx`update orders set hold_expires_at = null where id = ${orderId}`;
+    await tx`update stock_reservations set expires_at = 'infinity' where order_id = ${orderId} and status = 'active'`;
+  }
   if (to === 'paid' && o.paidMinor < o.totalMinor) throw new AppError('payment_required', 'errors.payment_required');
   if (to === 'collected' && o.paidMinor < o.totalMinor) throw new AppError('payment_required', 'errors.collect_payment_first');
   if (to === 'cancelled' && !reason?.trim()) throw new AppError('validation', 'errors.reason_required');
@@ -278,7 +326,9 @@ export async function transitionOrder(tx: Tx, ctx: TenantContext, orderId: strin
     }
     await tx`update fulfillments set status = 'collected', collected_at = now(), collected_by = ${ctx.user.userId} where order_id = ${orderId}`;
     const held = Math.max(0, o.paidMinor);
-    await post(tx, { tenantId: o.tenantId, refType: 'order_collected', refId: orderId, memo: 'product revenue recognized', actorUserId: ctx.user.userId, lines: [{ account: 'customer_deposits', debit: held }, { account: 'product_revenue', credit: held }] });
+    const feePart = Math.min(held, o.deliveryFeeMinor ?? 0);
+    await post(tx, { tenantId: o.tenantId, refType: 'order_collected', refId: orderId, memo: 'product revenue recognized', actorUserId: ctx.user.userId,
+      lines: [{ account: 'customer_deposits', debit: held }, { account: 'product_revenue', credit: held - feePart }, ...(feePart ? [{ account: 'delivery_revenue' as const, credit: feePart }] : [])] });
     const [cogs] = await tx<{ total: number; unknown: number }[]>`
       select coalesce(sum(unit_cost_minor * quantity), 0)::bigint as total, count(*) filter (where unit_cost_minor is null)::int as unknown from order_items where order_id = ${orderId}`;
     if (Number(cogs.total) > 0) {
@@ -297,8 +347,12 @@ export async function transitionOrder(tx: Tx, ctx: TenantContext, orderId: strin
     }
   }
   await tx`update orders set status = ${to}, version = version + 1, cancelled_at = ${to === 'cancelled' ? new Date() : null}, cancel_reason = ${to === 'cancelled' ? (reason ?? null) : null} where id = ${orderId}`;
+  // the delivery flow writes its own (more specific) timeline event
+  if (o.status !== to && !opts.viaDelivery) {
+    await tx`insert into fulfillment_events (tenant_id, order_id, status, note, actor_user_id) values (${o.tenantId}, ${orderId}, ${to}, ${to === 'cancelled' ? (reason ?? null) : null}, ${ctx.user.userId})`;
+  }
   if (o.customerUserId && (to === 'ready' || to === 'cancelled')) {
-    await notifyUser(tx, o.customerUserId, o.tenantId, { type: `order.${to}`, title: `order.notice_${to}`, body: o.number, targetPath: `/account/orders/${orderId}`, dedupeKey: `ord-${to}:${orderId}` });
+    await notifyUser(tx, o.customerUserId, o.tenantId, { type: `order.${to}`, title: to === 'ready' && o.fulfillmentMethod === 'delivery' ? 'order.notice_ready_delivery' : `order.notice_${to}`, body: o.number, targetPath: `/account/orders/${orderId}`, dedupeKey: `ord-${to}:${orderId}` });
   }
   await audit(tx, { actorUserId: ctx.user.userId, actorKind: ctx.actorKind, tenantId: o.tenantId, action: `order.${to}`, targetType: 'order', targetId: orderId, requestId: ctx.requestId, reason });
   return { status: to };

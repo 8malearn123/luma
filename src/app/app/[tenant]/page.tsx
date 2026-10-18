@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Icon } from '@/components/Icon';
-import { NotificationsBell } from '@/components/dashboard/NotificationsBell';
 import { pageT, requireTenant } from '@/server/http/page';
 import { tx } from '@/server/tenancy/context';
 import { overview } from '@/server/dashboard/overview';
@@ -39,7 +38,6 @@ export default async function Overview({ params }: { params: Promise<{ tenant: s
           <div className="small muted">{formatDateTime(new Date(), { tz, locale, dateStyle: 'full', dateOnly: true })} · {tzLabel(tz, locale)}</div>
         </div>
         <div className="row">
-          <NotificationsBell tenant={ctx.tenant.slug} tz={tz} />
           {ctx.caps.has('bookings.manage') && (
             <Link href={`${base}/bookings?new=1`} className="btn btn-gold">
               <Icon name="plus" size={16} /> {t('bk.new')}

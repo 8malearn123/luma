@@ -43,6 +43,8 @@ const schema = z
     PAYMENTS_SANDBOX_ENABLED: flag,
     MOYASAR_ENABLED: flag,
     MOYASAR_API_BASE: z.string().url().default('https://api.moyasar.com/v1'),
+    // live (real-money) Moyasar keys may be activated only on production AND with this explicit platform switch
+    MOYASAR_LIVE_ALLOWED: flag,
     // Trend radar
     TRENDS_FETCH_ENABLED: flag,
   })

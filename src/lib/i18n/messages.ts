@@ -10,6 +10,7 @@ import { platform } from './m/platform';
 import { policy } from './m/policy';
 import { marketing } from './m/marketing';
 import { growth } from './m/growth';
+import { commerce } from './m/commerce';
 
 /** All message modules, merged. Each module file owns its own keys (prefix them by module). */
 export const messages: Record<string, [string, string]> = {
@@ -25,4 +26,5 @@ export const messages: Record<string, [string, string]> = {
   ...policy,
   ...marketing,
   ...growth,
+  ...commerce,
 };

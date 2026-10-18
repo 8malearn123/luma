@@ -46,7 +46,10 @@ Do not put `NODE_ENV` in `.env.local` — Next.js manages it. Use `LUMA_DEPLOYME
 | `/app/<business>/builder` | Drag-and-drop storefront builder (keyboard/touch alternatives, autosave, versions, publish) |
 | `/staff` | Mobile staff portal: own schedule and bookings, clock in/out, leave |
 | `/s/<slug>` | Published storefront (salon's own identity); `/s/<slug>/booking`, `/cart`, `/checkout` |
-| `/account` | Central customer account: bookings & orders across businesses, consents, appeals, waitlist |
+| `/account` | Central customer account: bookings & orders (delivery tracking, returns, invoices), addresses, consents, appeals, waitlist |
+| `/app/<business>/orders/deliveries`, `/orders/returns` | Delivery board and returns queue |
+| `/app/<business>/finance/invoices/<id>` | Printable Arabic tax invoice / credit note (QR; not ZATCA-connected) |
+| `/app/<business>/messages`, `/integrations` | Templates & delivery log (simulated), honest status of payments/AI/messaging/e-invoicing/realtime |
 | `/platform` | LUMA administration (platform staff only) |
 | `/discover` | Directory of published businesses |
 | `/dev/outbox` | DEV/REVIEW ONLY: messages that would have been sent (codes, notifications) |

@@ -1,3 +1,4 @@
+import { realtimeStats } from '../realtime';
 import { z } from 'zod';
 import { sql, withSystem, type Tx } from '../db';
 import { AppError, forbidden, notFound } from '../errors';
@@ -389,6 +390,8 @@ export async function integrationsStatus(p: PlatformContext) {
         detail: accounts.map((a) => `${a.provider}/${a.mode}: ${a.n}`).join(', ') || 'no active accounts',
       },
       { key: 'moyasar', state: (e.MOYASAR_ENABLED ? 'disconnected' : 'disconnected') as IntegrationState, detail: e.MOYASAR_ENABLED ? 'enabled but not live-verified' : 'adapter present, untested, disabled' },
+      { key: 'einvoicing', state: 'disconnected' as IntegrationState, detail: 'ZATCA Fatoora (Phase 2) not integrated: TLV QR + hash chain only, no stamp/clearance' },
+      { key: 'realtime', state: (realtimeStats().listening ? 'live' : 'disconnected') as IntegrationState, detail: `SSE + LISTEN/NOTIFY; ${realtimeStats().streams} open streams on this instance; clients fall back to 60 s polling` },
       { key: 'trends', state: (e.TRENDS_FETCH_ENABLED ? 'disconnected' : 'disconnected') as IntegrationState, detail: e.TRENDS_FETCH_ENABLED ? 'fetch enabled; see sources' : 'no external sources connected' },
     ],
     jobs,
