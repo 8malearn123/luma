@@ -27,6 +27,10 @@ export async function onBookingCompleted(tx: Tx, bookingId: string, actorUserId:
   const items = await tx<{ id: string; staffId: string; serviceId: string; priceMinor: number; addonsMinor: number }[]>`
     select id, staff_id, service_id, price_minor, addons_minor from booking_items where booking_id = ${bookingId} and status = 'active'`;
 
+  // 1b) prepaid membership sessions are consumed on delivery
+  const { consumeEntitlement } = await import('../services/memberships');
+  for (const it of items) await consumeEntitlement(tx, it.id);
+
   // 2) commissions
   for (const it of items) {
     const [rule] = await tx<{ id: string; kind: 'percentage' | 'fixed'; rateBps: number | null; fixedMinor: number | null; staffId: string | null; serviceId: string | null }[]>`

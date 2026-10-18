@@ -33,6 +33,9 @@ export const holdInput = z.object({
   items: z.array(chosenItemSchema).min(1).max(5),
   termsKind: z.enum(['full', 'deposit', 'on_site', 'manual_approval']),
   customerNote: z.string().max(1000).optional(),
+  couponCode: z.string().trim().min(2).max(40).optional(),
+  /** use eligible prepaid membership sessions for covered services */
+  useMembership: z.boolean().optional(),
 });
 
 export async function nextNumber(tx: Tx, tenantId: string, name: string, prefix: string): Promise<string> {
@@ -78,8 +81,29 @@ async function expireBookings(tx: Tx, ids: string[]) {
     where id = any(${ids}::uuid[]) and status in ('held','pending_payment') and hold_expires_at <= now()
     returning id, tenant_id, status`;
   for (const r of rows) {
+    await releaseBenefits(tx, r.id);
     await tx`update booking_allocations set active = false, released_at = now(), release_reason = 'hold_expired' where booking_id = ${r.id} and active`;
     await tx`insert into booking_events (tenant_id, booking_id, from_status, to_status, kind, source) values (${r.tenantId}, ${r.id}, 'held', 'expired', 'transition', 'system')`;
+  }
+}
+
+/**
+ * Give back what a booking reserved when it did not happen through the customer's
+ * fault-free path: prepaid sessions are released and coupon uses returned.
+ * (No-shows consume the membership session per policy; see completion/no-show.)
+ */
+async function releaseBenefits(tx: Tx, bookingId: string, opts: { coupon?: boolean } = { coupon: true }) {
+  const items = await tx<{ id: string }[]>`select id from booking_items where booking_id = ${bookingId}`;
+  if (items.length) {
+    const { releaseEntitlement } = await import('../services/memberships');
+    for (const it of items) await releaseEntitlement(tx, it.id);
+  }
+  if (opts.coupon) {
+    const reds = await tx<{ id: string }[]>`select id from reward_redemptions where booking_id = ${bookingId} and coupon_id is not null and status = 'applied'`;
+    if (reds.length) {
+      const { reverseRedemption } = await import('../services/coupons');
+      for (const r of reds) await reverseRedemption(tx, r.id);
+    }
   }
 }
 
@@ -110,7 +134,7 @@ export interface HoldResult {
 export async function createHold(
   tx: Tx,
   actor: Actor,
-  input: z.infer<typeof holdInput> & { tenantCustomerId: string; customerUserId: string | null; source: 'online' | 'staff' | 'walk_in' | 'waitlist' },
+  input: z.infer<typeof holdInput> & { tenantCustomerId: string; customerUserId: string | null; source: 'online' | 'staff' | 'walk_in' | 'waitlist'; analyticsSession?: string | null },
 ): Promise<HoldResult> {
   const tenantId = tenantOf(actor);
   const mode = actor.kind === 'customer' ? 'public' : 'internal';
@@ -124,7 +148,28 @@ export async function createHold(
   if (resourceIds.length) await sweepExpiredFor(tx, [], resourceIds);
 
   const subtotal = planned.reduce((n, p) => n + p.priceMinor, 0);
-  const total = subtotal; // coupons/discounts are applied by the checkout step before terms (see commerce/coupons)
+  // prepaid membership sessions cover whole items (counted per service, earliest-expiring first)
+  const covered = new Set<number>();
+  if (input.useMembership) {
+    const { eligibleEntitlement } = await import('../services/memberships');
+    const used = new Map<string, number>();
+    for (let i = 0; i < planned.length; i++) {
+      const e = await eligibleEntitlement(tx, input.tenantCustomerId, planned[i].item.serviceId, new Date(planned[i].startsAt));
+      const n = used.get(e?.id ?? '') ?? 0;
+      if (e && e.reserved + e.consumed + n < e.total) {
+        covered.add(i);
+        used.set(e.id, n + 1);
+      }
+    }
+  }
+  const membershipDiscount = planned.reduce((n, p, i) => n + (covered.has(i) ? p.priceMinor : 0), 0);
+  let couponDiscount = 0;
+  if (input.couponCode) {
+    const { validateCoupon } = await import('../services/coupons');
+    couponDiscount = (await validateCoupon(tx, tenantId, input.couponCode, { totalMinor: subtotal - membershipDiscount, tenantCustomerId: input.tenantCustomerId })).discountMinor;
+  }
+  const discount = Math.min(subtotal, membershipDiscount + couponDiscount);
+  const total = subtotal - discount;
   const terms = await computePaymentTerms(tx, tenantId, input.customerUserId, total);
   if (terms.blocked) throw new AppError('forbidden', terms.customerExplanationKey, { fallback: terms.fallback });
   const option = terms.options.find((o) => o.kind === input.termsKind);
@@ -148,19 +193,24 @@ export async function createHold(
       policyText: (policy.raw as { policyText: string | null }).policyText,
     },
     timezone: ec.timezone,
+    // first-party analytics session (raw cookie value; hashed when recorded) for conversion attribution
+    analyticsSession: input.analyticsSession && /^[a-f0-9-]{36}$/.test(input.analyticsSession) ? input.analyticsSession : null,
   };
   const [b] = await tx<{ id: string }[]>`
     insert into bookings (tenant_id, branch_id, number, tenant_customer_id, customer_user_id, status, financial_status, source,
-      starts_at, ends_at, subtotal_minor, total_minor, deposit_due_minor, payment_terms, terms_snapshot, hold_expires_at, customer_note, created_by)
+      starts_at, ends_at, subtotal_minor, discount_minor, total_minor, deposit_due_minor, payment_terms, terms_snapshot, hold_expires_at,
+      customer_note, coupon_code, created_by)
     values (${tenantId}, ${input.branchId}, ${number}, ${input.tenantCustomerId}, ${input.customerUserId}, 'held',
       ${total === 0 ? 'not_required' : 'unpaid'}, ${input.source}, ${new Date(planned[0].startsAt)}, ${new Date(planned[planned.length - 1].endsAt)},
-      ${subtotal}, ${total}, ${input.termsKind === 'deposit' ? option.dueNowMinor : input.termsKind === 'full' ? total : 0},
-      ${input.termsKind}, ${tx.json(snapshot as never)}, ${holdExpiresAt}, ${input.customerNote ?? null}, ${actorUserId(actor)})
+      ${subtotal}, ${discount}, ${total}, ${input.termsKind === 'deposit' ? option.dueNowMinor : input.termsKind === 'full' ? total : 0},
+      ${input.termsKind}, ${tx.json({ ...snapshot, discounts: { membershipMinor: membershipDiscount, couponMinor: couponDiscount } } as never)},
+      ${holdExpiresAt}, ${input.customerNote ?? null}, ${input.couponCode ?? null}, ${actorUserId(actor)})
     returning id`;
 
   // insert items, then allocations in a stable order (staff/resource id, time) to avoid deadlocks
   const allocs: { kind: 'staff' | 'resource'; id: string; itemId: string; s: number; e: number }[] = [];
   let seq = 0;
+  const itemIds: string[] = [];
   for (const p of planned) {
     const staffName = ec.staff.get(p.staffId)!.name;
     const [it] = await tx<{ id: string }[]>`
@@ -171,8 +221,20 @@ export async function createHold(
         ${p.item.addons.reduce((n, a) => n + a.priceMinor, 0)}, ${p.durationMin}, ${p.item.bufferBeforeMin}, ${p.item.bufferAfterMin},
         ${new Date(p.startsAt)}, ${new Date(p.endsAt)})
       returning id`;
+    itemIds.push(it.id);
     allocs.push({ kind: 'staff', id: p.staffId, itemId: it.id, s: p.occStart, e: p.occEnd });
     for (const r of p.resourceIds) allocs.push({ kind: 'resource', id: r, itemId: it.id, s: p.occStart, e: p.occEnd });
+  }
+  if (covered.size) {
+    const { reserveEntitlement } = await import('../services/memberships');
+    for (const i of covered) {
+      // a concurrent booking may have taken the last session: the whole hold rolls back
+      if (!(await reserveEntitlement(tx, itemIds[i]))) throw new AppError('conflict', 'errors.membership_session_taken');
+    }
+  }
+  if (input.couponCode && couponDiscount > 0) {
+    const { redeemCoupon } = await import('../services/coupons');
+    await redeemCoupon(tx, tenantId, input.couponCode, { totalMinor: subtotal - membershipDiscount, tenantCustomerId: input.tenantCustomerId, bookingId: b.id });
   }
   allocs.sort((a, b) => a.kind.localeCompare(b.kind) || a.id.localeCompare(b.id) || a.s - b.s);
   for (const a of allocs) {
@@ -318,6 +380,11 @@ export async function transition(tx: Tx, actor: Actor, bookingId: string, to: Bo
   if (['cancelled', 'no_show', 'expired'].includes(to)) {
     await tx`update booking_allocations set active = false, released_at = now(), release_reason = ${to} where booking_id = ${b.id} and active`;
   }
+  if (to === 'cancelled' || to === 'expired') await releaseBenefits(tx, b.id, { coupon: b.paidMinor === 0 });
+  if (to === 'no_show') {
+    const { consumeEntitlement } = await import('../services/memberships');
+    for (const it of await tx<{ id: string }[]>`select id from booking_items where booking_id = ${b.id} and status = 'active'`) await consumeEntitlement(tx, it.id);
+  }
   // completion keeps the allocation (history of occupied time); nothing to release.
 
   await tx`update bookings set status = ${to}, version = version + 1,
@@ -367,6 +434,8 @@ export function refundDue(b: Pick<BookingRow, 'paidMinor' | 'refundedMinor' | 't
 }
 
 async function onConfirmed(tx: Tx, b: BookingRow) {
+  const { recordConversion } = await import('../analytics/events');
+  await recordConversion(tx, b.tenantId, 'booking_confirmed', b.id, (b.termsSnapshot as { analyticsSession?: string | null }).analyticsSession ?? null);
   if (b.customerUserId) {
     await notifyUser(tx, b.customerUserId, b.tenantId, { type: 'booking.confirmed', title: 'booking.notice_confirmed', body: b.number, targetPath: `/account/bookings/${b.id}`, dedupeKey: `bk-confirmed:${b.id}` });
     await recordDelivery(tx, { tenantId: b.tenantId, channel: 'whatsapp', template: 'booking_confirmed', recipientUserId: b.customerUserId, dedupeKey: `bk-confirmed-wa:${b.id}` });

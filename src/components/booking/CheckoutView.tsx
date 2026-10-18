@@ -49,6 +49,8 @@ export function CheckoutView({ slug, timezone }: { slug: string; timezone: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  const [coupon, setCoupon] = useState('');
+
   async function place() {
     if (!q || busy) return;
     setBusy(true);
@@ -56,7 +58,7 @@ export function CheckoutView({ slug, timezone }: { slug: string; timezone: strin
     try {
       const r = await apiFetch<Placed>(`/api/v1/s/${slug}/checkout`, {
         method: 'POST',
-        body: { branchId: q.branch.id, acceptedSubtotalMinor: q.subtotalMinor, payAtPickup: mode === 'pickup' },
+        body: { branchId: q.branch.id, acceptedSubtotalMinor: q.subtotalMinor, payAtPickup: mode === 'pickup', couponCode: coupon.trim() || undefined },
         idempotencyKey: key.current,
       });
       if (r.payment?.checkoutUrl) {
@@ -133,6 +135,11 @@ export function CheckoutView({ slug, timezone }: { slug: string; timezone: strin
           <p style={{ whiteSpace: 'pre-line' }}>{q.policyText}</p>
         </details>
       )}
+      <div className="sf-field">
+        <label htmlFor="co-coupon">{t('booking.coupon')}</label>
+        <input id="co-coupon" className="sf-input" maxLength={40} autoComplete="off" value={coupon} onChange={(e) => setCoupon(e.target.value)} />
+        <span className="sf-muted">{t('checkout.coupon_hint')}</span>
+      </div>
       <label className="sf-check">
         <input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /> {t('checkout.approve_total', { total: m(q.subtotalMinor) })}
       </label>

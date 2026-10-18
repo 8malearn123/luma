@@ -13,7 +13,7 @@ export const POST = api.user<{ slug: string }>(
     const input = await c.json(holdInput);
     return runPublic(t, c.user.userId, async (tx) => {
       const tcId = await customerTenantRelationship(tx, t.id, c.user.userId, c.user.displayName);
-      const h = await createHold(tx, customerActor(c.user.userId, t.id), { ...input, tenantCustomerId: tcId, customerUserId: c.user.userId, source: 'online' });
+      const h = await createHold(tx, customerActor(c.user.userId, t.id), { ...input, tenantCustomerId: tcId, customerUserId: c.user.userId, source: 'online', analyticsSession: c.req.cookies.get('luma_sid')?.value ?? null });
       return {
         bookingId: h.bookingId,
         number: h.number,

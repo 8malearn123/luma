@@ -146,13 +146,14 @@ export const checkoutInput = z.object({
   acceptedSubtotalMinor: z.number().int().min(0),
   payAtPickup: z.boolean().default(false),
   bookingId: z.string().uuid().nullable().optional(),
+  couponCode: z.string().trim().min(2).max(40).optional(),
 });
 
 /**
  * Creates an order from the cart: re-prices on the server, refuses if the
  * customer has not seen the current price, and reserves stock atomically.
  */
-export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId: string; tenantCustomerId: string }, cartId: string, input: z.infer<typeof checkoutInput>) {
+export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId: string; tenantCustomerId: string; analyticsSession?: string | null }, cartId: string, input: z.infer<typeof checkoutInput>) {
   const ent = await entitlements(tx, tenantId);
   requireLive(ent);
   requireFeature(ent, 'products.enabled');
@@ -174,13 +175,19 @@ export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId:
     const [bk] = await tx`select 1 from bookings where id = ${input.bookingId} and customer_user_id = ${customer.userId} and status in ('held','pending_payment','confirmed')`;
     if (!bk) throw new AppError('validation', 'errors.invalid_reference');
   }
+  let discount = 0;
+  if (input.couponCode) {
+    const { validateCoupon } = await import('../services/coupons');
+    discount = Math.min(q.subtotalMinor, (await validateCoupon(tx, tenantId, input.couponCode, { totalMinor: q.subtotalMinor, tenantCustomerId: customer.tenantCustomerId })).discountMinor);
+  }
+  const total = q.subtotalMinor - discount;
   const number = await nextNumber(tx, tenantId, 'order', 'ORD');
   const expires = new Date(Date.now() + (terms === 'full' ? ORDER_HOLD_MIN * 60000 : PAY_AT_PICKUP_HOLD_HOURS * 3600000));
   const [o] = await tx<{ id: string }[]>`
-    insert into orders (tenant_id, branch_id, number, tenant_customer_id, customer_user_id, status, booking_id, subtotal_minor, total_minor,
+    insert into orders (tenant_id, branch_id, number, tenant_customer_id, customer_user_id, status, booking_id, subtotal_minor, discount_minor, total_minor,
                         payment_terms, terms_snapshot, hold_expires_at, created_by)
     values (${tenantId}, ${input.branchId}, ${number}, ${customer.tenantCustomerId}, ${customer.userId}, 'pending_payment', ${input.bookingId ?? null},
-            ${q.subtotalMinor}, ${q.subtotalMinor}, ${terms}, ${tx.json({ terms, holdMinutes: terms === 'full' ? ORDER_HOLD_MIN : PAY_AT_PICKUP_HOLD_HOURS * 60 } as never)},
+            ${q.subtotalMinor}, ${discount}, ${total}, ${terms}, ${tx.json({ terms, holdMinutes: terms === 'full' ? ORDER_HOLD_MIN : PAY_AT_PICKUP_HOLD_HOURS * 60, analyticsSession: customer.analyticsSession && /^[a-f0-9-]{36}$/.test(customer.analyticsSession) ? customer.analyticsSession : null } as never)},
             ${expires}, ${customer.userId})
     returning id`;
   for (const l of q.lines) {
@@ -189,9 +196,18 @@ export async function checkoutCart(tx: Tx, tenantId: string, customer: { userId:
   }
   await reserve(tx, tenantId, o.id, q.lines.map((l) => ({ inventoryItemId: l.inventoryItemId!, quantity: l.quantity })), expires);
   await tx`insert into fulfillments (tenant_id, order_id, method) values (${tenantId}, ${o.id}, 'pickup')`;
+  if (input.couponCode && discount > 0) {
+    const { redeemCoupon } = await import('../services/coupons');
+    await redeemCoupon(tx, tenantId, input.couponCode, { totalMinor: q.subtotalMinor, tenantCustomerId: customer.tenantCustomerId, orderId: o.id });
+  }
   await tx`update carts set status = 'converted' where id = ${cartId}`;
   await audit(tx, { actorUserId: customer.userId, actorKind: 'customer', tenantId, action: 'order.created', targetType: 'order', targetId: o.id, metadata: { number, total: q.subtotalMinor } });
-  return { orderId: o.id, number, totalMinor: q.subtotalMinor, terms, holdExpiresAt: expires };
+  if (total === 0) {
+    // fully discounted: nothing to pay; keep the stock reserved until pickup
+    await tx`update orders set status = 'paid', hold_expires_at = null where id = ${o.id}`;
+    await tx`update stock_reservations set expires_at = 'infinity' where order_id = ${o.id} and status = 'active'`;
+  }
+  return { orderId: o.id, number, subtotalMinor: q.subtotalMinor, discountMinor: discount, totalMinor: total, terms, holdExpiresAt: expires };
 }
 
 /** Release reserved stock exactly once (failed/expired payment, cancellation). */
@@ -272,6 +288,7 @@ export async function transitionOrder(tx: Tx, ctx: TenantContext, orderId: strin
   if (to === 'ready') await tx`update fulfillments set status = 'ready', ready_at = now() where order_id = ${orderId}`;
   if (to === 'cancelled') {
     await releaseOrderStock(tx, orderId, `cancelled: ${reason}`);
+    if (o.paidMinor === 0) await returnOrderCoupon(tx, orderId);
     await tx`update fulfillments set status = 'cancelled' where order_id = ${orderId}`;
     const pays = await tx<{ id: string; amountMinor: number; refundedMinor: number }[]>`select id, amount_minor, refunded_minor from payments where order_id = ${orderId} and status = 'succeeded'`;
     for (const p of pays) {
@@ -287,6 +304,13 @@ export async function transitionOrder(tx: Tx, ctx: TenantContext, orderId: strin
   return { status: to };
 }
 
+async function returnOrderCoupon(tx: Tx, orderId: string) {
+  const reds = await tx<{ id: string }[]>`select id from reward_redemptions where order_id = ${orderId} and coupon_id is not null and status = 'applied'`;
+  if (!reds.length) return;
+  const { reverseRedemption } = await import('../services/coupons');
+  for (const r of reds) await reverseRedemption(tx, r.id);
+}
+
 /** Job: expire unpaid orders and release their stock exactly once. */
 export async function expireUnpaidOrders(tx: Tx) {
   const rows = await tx<{ id: string }[]>`
@@ -294,6 +318,9 @@ export async function expireUnpaidOrders(tx: Tx) {
     where status = 'pending_payment' and hold_expires_at <= now()
       and not exists (select 1 from payments p where p.order_id = orders.id and p.status = 'succeeded')
     returning id`;
-  for (const r of rows) await releaseOrderStock(tx, r.id, 'payment_window_expired');
+  for (const r of rows) {
+    await releaseOrderStock(tx, r.id, 'payment_window_expired');
+    await returnOrderCoupon(tx, r.id);
+  }
   return { expired: rows.length };
 }

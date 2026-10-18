@@ -18,8 +18,8 @@ export const POST = api.user<{ slug: string }>(
       const [cart] = await tx<{ id: string }[]>`select id from carts where user_id = ${c.user.userId} and status = 'open' and expires_at > now() order by created_at desc limit 1`;
       if (!cart) throw new AppError('validation', 'errors.cart_empty');
       const tcId = await customerTenantRelationship(tx, t.id, c.user.userId, c.user.displayName);
-      const o = await checkoutCart(tx, t.id, { userId: c.user.userId, tenantCustomerId: tcId }, cart.id, input);
-      if (o.terms === 'full') {
+      const o = await checkoutCart(tx, t.id, { userId: c.user.userId, tenantCustomerId: tcId, analyticsSession: c.req.cookies.get('luma_sid')?.value ?? null }, cart.id, input);
+      if (o.terms === 'full' && o.totalMinor > 0) {
         const p = await startOrderPayment(tx, c.user.userId, o.orderId, key);
         return { ...o, payment: p };
       }

@@ -12,6 +12,7 @@ import { drainOutbox, enqueueScheduled, recoverStaleJobs, runDueJobs } from '../
 import { sweepExpiredHolds } from '../src/server/booking/service';
 import { expireUnpaidOrders } from '../src/server/commerce/orders';
 import { reconcilePayments } from '../src/server/payments/service';
+import { scheduleDueAnalyses } from '../src/server/marketing/analysis';
 
 const log = (msg: string, extra: Record<string, unknown> = {}) => console.log(JSON.stringify({ at: new Date().toISOString(), msg, ...extra }));
 
@@ -23,6 +24,7 @@ async function pass() {
     lastMaintenance = Date.now();
     await recoverStaleJobs();
     await enqueueScheduled();
+    await scheduleDueAnalyses(); // per-tenant weekly/monthly marketing analyses in each business timezone (idempotent per period)
     const holds = await withSystem('maintenance: hold expiry across tenants', (tx) => sweepExpiredHolds(tx));
     const orders = await withSystem('maintenance: unpaid order expiry', (tx) => expireUnpaidOrders(tx));
     const recon = await withSystem('maintenance: payment reconciliation', async (tx) => {

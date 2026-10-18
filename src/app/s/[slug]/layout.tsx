@@ -4,6 +4,8 @@ import { StoreFrame } from '@/components/storefront/Frame';
 import { publicCtx, storefrontPath } from '@/server/storefront/render';
 import { loadPublicStorefront } from '@/server/storefront/public';
 import { L } from '@/components/storefront/types';
+import { Suspense } from 'react';
+import { Beacon } from '@/components/storefront/Beacon';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -20,6 +22,9 @@ export default async function StorefrontLayout({ children, params }: { children:
   return (
     <StoreFrame ctx={ctx} currentPath={await storefrontPath(ctx.data.tenant.slug)}>
       {children}
+      <Suspense fallback={null}>
+        <Beacon slug={ctx.data.tenant.slug} />
+      </Suspense>
     </StoreFrame>
   );
 }

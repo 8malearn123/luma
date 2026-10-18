@@ -333,6 +333,9 @@ async function onOrderPaid(tx: Tx, orderId: string, paymentId: string): Promise<
   }
   if (paid >= total) {
     await tx`update orders set status = 'paid', hold_expires_at = null, version = version + 1 where id = ${orderId}`;
+    const [snap] = await tx<{ termsSnapshot: { analyticsSession?: string | null } }[]>`select terms_snapshot from orders where id = ${orderId}`;
+    const { recordConversion } = await import('../analytics/events');
+    await recordConversion(tx, o.tenantId, 'order_paid', orderId, snap?.termsSnapshot?.analyticsSession ?? null);
     await tx`update stock_reservations set expires_at = 'infinity' where order_id = ${orderId} and status = 'active'`;
     if (o.customerUserId) await notifyUser(tx, o.customerUserId, o.tenantId, { type: 'order.paid', title: 'order.notice_paid', body: o.number, targetPath: `/account/orders/${orderId}`, dedupeKey: `ord-paid:${orderId}` });
     await notifyTenantRoles(tx, o.tenantId, ['owner', 'manager', 'receptionist'], { type: 'order.new', title: 'order.notice_new', body: o.number, dedupeKey: `ord-new:${orderId}` });
@@ -409,6 +412,16 @@ export async function createRefund(tx: Tx, r: { paymentId: string; amountMinor: 
   if (p.bookingId) await recomputeBookingFinancial(tx, p.bookingId);
   if (p.orderId) await recomputeOrderFinancial(tx, p.orderId);
   if (p.provider !== 'manual') await enqueueJob(tx, { kind: 'refund.execute', tenantId: p.tenantId, key: `refund:${ref.id}`, payload: { refundId: ref.id }, maxAttempts: 5 });
+  // gift-card payments are refunded straight back to the card (exactly once per refund)
+  const [gm] = await tx<{ method: string | null; refId: string | null }[]>`select method, ref_id from payments where id = ${p.id}`;
+  if (gm?.method === 'gift_card' && gm.refId) {
+    const ins = await tx`insert into gift_card_entries (tenant_id, gift_card_id, kind, amount_minor, ref_type, ref_id, actor_user_id)
+                         values (${p.tenantId}, ${gm.refId}, 'refund', ${r.amountMinor}, 'refund', ${ref.id}, ${r.requestedBy}) on conflict do nothing returning id`;
+    if (ins.length) {
+      await tx`update gift_cards set balance_minor = least(initial_minor, balance_minor + ${r.amountMinor}), status = case when status = 'redeemed' then 'active' else status end where id = ${gm.refId}`;
+      await finalizeRefund(tx, ref.id, `giftcard:${gm.refId}`, r.requestedBy);
+    }
+  }
   await audit(tx, { actorUserId: r.requestedBy, actorKind: r.requestedBy ? 'user' : 'system', tenantId: p.tenantId, action: 'refund.requested', targetType: 'refund', targetId: ref.id, metadata: { amountMinor: r.amountMinor, reason: r.reason } });
   return ref;
 }
@@ -462,7 +475,7 @@ async function finalizeRefund(tx: Tx, refundId: string, providerRefundId: string
   const recognized = p.bookingId
     ? (await tx`select 1 from financial_entries where ref_type in ('service_completed','booking_fee_retained') and ref_id = ${p.bookingId} limit 1`).length > 0
     : (await tx`select 1 from orders where id = ${p.orderId} and status = 'collected'`).length > 0;
-  const cashAccount = p.provider === 'manual' ? (p.method === 'cash' ? 'cash' : 'card_clearing') : 'provider_clearing';
+  const cashAccount = p.method === 'gift_card' ? 'gift_card_liability' : p.provider === 'manual' ? (p.method === 'cash' ? 'cash' : 'card_clearing') : 'provider_clearing';
   await post(tx, { tenantId: r.tenantId, refType: 'refund', refId: refundId, memo: 'refund paid', actorUserId, lines: [{ account: recognized ? 'refunds' : 'customer_deposits', debit: r.amountMinor }, { account: cashAccount, credit: r.amountMinor }] });
   if (p.bookingId) {
     await recomputeBookingFinancial(tx, p.bookingId);

@@ -169,4 +169,12 @@ export const booking: Record<string, [string, string]> = {
   'errors.reschedule_price_changed': ['الموعد الجديد بسعر مختلف. أكّدي السعر الجديد للمتابعة.', 'The new time has a different price. Confirm it to continue.'],
   'errors.cancel_after_start': ['لا يمكن الإلغاء بعد بدء الموعد.', 'You cannot cancel after the appointment started.'],
   'errors.invalid_transition_customer': ['لا يمكن تنفيذ هذا الإجراء على الحجز الآن.', 'This action is not available for the booking now.'],
+  'booking.coupon': ['كود الخصم', 'Discount code'],
+  'booking.coupon_hint': ['يُطبق الخصم عند حجز الموعد ويظهر في الإجمالي التالي.', 'The discount is applied when the time is held and shown in the next total.'],
+  'booking.use_membership': ['استخدام جلسات عضويتي المدفوعة مسبقاً إن وُجدت', 'Use my prepaid membership sessions if available'],
+  'booking.gift_card': ['الدفع ببطاقة إهداء', 'Pay with a gift card'],
+  'booking.gift_card_apply': ['تطبيق البطاقة', 'Apply card'],
+  'booking.gift_card_applied': ['تم خصم {amount} من البطاقة.', '{amount} was taken from the card.'],
+  'errors.membership_session_taken': ['جلسة العضوية لم تعد متاحة. حاولي مجدداً.', 'That membership session is no longer available. Please retry.'],
+  'checkout.coupon_hint': ['يُخصم من الإجمالي المعتمد أعلاه عند إنشاء الطلب.', 'Deducted from the approved total above when the order is created.'],
 };

@@ -116,6 +116,8 @@ export function BookingFlow({ catalog, signedIn, preselect }: { catalog: Catalog
   const [termsKind, setTermsKind] = useState<Quote['options'][number]['kind'] | null>(null);
   const [ack, setAck] = useState(false);
   const [note, setNote] = useState('');
+  const [coupon, setCoupon] = useState('');
+  const [useMembership, setUseMembership] = useState(false);
   const [hold, setHold] = useState<Hold | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -255,8 +257,8 @@ export function BookingFlow({ catalog, signedIn, preselect }: { catalog: Catalog
     try {
       const h = await apiFetch<Hold>(`${base}/holds`, {
         method: 'POST',
-        body: { branchId, items: chosenItems(slot), termsKind, customerNote: note || undefined },
-        idempotencyKey: key(`hold:${slot.startsAt}:${termsKind}`),
+        body: { branchId, items: chosenItems(slot), termsKind, customerNote: note || undefined, couponCode: coupon.trim() || undefined, useMembership: useMembership || undefined },
+        idempotencyKey: key(`hold:${slot.startsAt}:${termsKind}:${coupon.trim()}:${useMembership}`),
       });
       setHold(h);
       try {
@@ -274,6 +276,21 @@ export function BookingFlow({ catalog, signedIn, preselect }: { catalog: Catalog
       }
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function applyGiftCard(code: string): Promise<number | null> {
+    if (!hold) return null;
+    setError(null);
+    try {
+      const r = await apiFetch<{ appliedMinor: number; dueNowMinor: number; status: string }>(`${base}/holds/${hold.bookingId}/gift-card`, { method: 'POST', body: { code }, idempotencyKey: key(`gc:${hold.bookingId}:${code}`) });
+      if (r.status === 'confirmed') {
+        router.push(`/s/${catalog.tenant.slug}/booking/done/${hold.bookingId}`);
+      } else setHold({ ...hold, dueNowMinor: r.dueNowMinor });
+      return r.appliedMinor;
+    } catch (e) {
+      setError(e as ApiError);
+      return null;
     }
   }
 
@@ -558,6 +575,14 @@ export function BookingFlow({ catalog, signedIn, preselect }: { catalog: Catalog
                     </details>
                   )}
                   <div className="sf-field">
+                    <label htmlFor="bk-coupon">{t('booking.coupon')}</label>
+                    <input id="bk-coupon" className="sf-input" maxLength={40} value={coupon} onChange={(e) => setCoupon(e.target.value)} autoComplete="off" />
+                    <span className="sf-muted">{t('booking.coupon_hint')}</span>
+                  </div>
+                  <label className="sf-check">
+                    <input type="checkbox" checked={useMembership} onChange={(e) => setUseMembership(e.target.checked)} /> {t('booking.use_membership')}
+                  </label>
+                  <div className="sf-field">
                     <label htmlFor="bk-note">{t('booking.note')}</label>
                     <textarea id="bk-note" className="sf-input" maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
                   </div>
@@ -576,7 +601,7 @@ export function BookingFlow({ catalog, signedIn, preselect }: { catalog: Catalog
               )}
             </>
           )}
-          {hold && <HoldPanel hold={hold} busy={busy} money={money} onPay={payOrConfirm} onRelease={releaseHold} onExpired={() => { setHold(null); setSlot(null); setNotice(t('booking.hold_expired')); setStep(3); }} />}
+          {hold && <HoldPanel hold={hold} busy={busy} money={money} onPay={payOrConfirm} onRelease={releaseHold} onExpired={() => { setHold(null); setSlot(null); setNotice(t('booking.hold_expired')); setStep(3); }} onGift={applyGiftCard} />}
         </section>
       )}
     </div>
@@ -613,7 +638,40 @@ function Itinerary({ slot, tz, nameOf, money }: { slot: Slot; tz: string; nameOf
   );
 }
 
-function HoldPanel({ hold, busy, money, onPay, onRelease, onExpired }: { hold: Hold; busy: boolean; money: (m: number) => string; onPay: () => void; onRelease: () => void; onExpired: () => void }) {
+function GiftCardBox({ onApply, money }: { onApply: (code: string) => Promise<number | null>; money: (m: number) => string }) {
+  const t = useT();
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  return (
+    <details className="sf-card">
+      <summary>{t('booking.gift_card')}</summary>
+      <div className="sf-field">
+        <label htmlFor="bk-gc">{t('booking.gift_card')}</label>
+        <input id="bk-gc" className="sf-input" dir="ltr" autoComplete="off" maxLength={40} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
+      </div>
+      {msg && <p role="status">{msg}</p>}
+      <button
+        type="button"
+        className="sf-btn-secondary"
+        disabled={busy || code.trim().length < 8}
+        onClick={async () => {
+          setBusy(true);
+          const applied = await onApply(code.trim());
+          setBusy(false);
+          if (applied !== null) {
+            setMsg(t('booking.gift_card_applied', { amount: money(applied) }));
+            setCode('');
+          }
+        }}
+      >
+        {t('booking.gift_card_apply')}
+      </button>
+    </details>
+  );
+}
+
+function HoldPanel({ hold, busy, money, onPay, onRelease, onExpired, onGift }: { hold: Hold; busy: boolean; money: (m: number) => string; onPay: () => void; onRelease: () => void; onExpired: () => void; onGift?: (code: string) => Promise<number | null> }) {
   const t = useT();
   const [left, setLeft] = useState(() => Math.max(0, +new Date(hold.holdExpiresAt) - Date.now()));
   useEffect(() => {
@@ -636,6 +694,7 @@ function HoldPanel({ hold, busy, money, onPay, onRelease, onExpired }: { hold: H
         {t('booking.number')}: <strong className="ltr-num">{hold.number}</strong>
       </p>
       <p aria-live="polite">{t('booking.held_until', { time: `${mm}:${ss}` })}</p>
+      {hold.dueNowMinor > 0 && onGift && <GiftCardBox onApply={onGift} money={money} />}
       <div className="sf-actions">
         <button type="button" className="sf-btn-secondary" disabled={busy} onClick={onRelease}>
           {t('booking.release')}
