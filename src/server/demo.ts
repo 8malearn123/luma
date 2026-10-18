@@ -1,7 +1,7 @@
 import { sql } from './db';
 import { env } from './env';
 
-export const demoLoginAllowed = () => env().LUMA_DEMO_MODE && env().NODE_ENV !== 'production';
+export const demoLoginAllowed = () => env().LUMA_DEMO_MODE && env().LUMA_DEPLOYMENT !== 'production';
 
 export async function listDemoAccounts() {
   if (!demoLoginAllowed()) return [];

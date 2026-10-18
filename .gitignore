@@ -9,3 +9,4 @@ storage/
 test-results/
 playwright-report/
 coverage/
+storage-e2e/

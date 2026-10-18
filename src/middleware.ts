@@ -26,7 +26,7 @@ const LEGACY_APP_PAGES: Record<string, string> = {
 
 export function middleware(req: NextRequest) {
   const path = decodeURIComponent(req.nextUrl.pathname);
-  const legacyEnabled = process.env.LUMA_LEGACY_PROTOTYPE === '1' && process.env.NODE_ENV !== 'production';
+  const legacyEnabled = process.env.LUMA_LEGACY_PROTOTYPE === '1' && (process.env.LUMA_DEPLOYMENT ?? (process.env.NODE_ENV === 'production' ? 'production' : 'development')) !== 'production';
   if (!legacyEnabled) {
     const legacyDashboard = path.startsWith('/LUMA - ') && /داشبورد|الأدمن/.test(path);
     const target = LEGACY_APP_PAGES[path] ?? (legacyDashboard ? '/app' : null);

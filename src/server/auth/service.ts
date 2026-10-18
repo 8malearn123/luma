@@ -303,4 +303,4 @@ export async function resetPassword(identifier: string, code: string, newPasswor
   await audit(sql(), { actorUserId: uid, actorKind: 'user', action: 'auth.password_reset', ip });
 }
 
-export const devOtpEnabled = () => env().NODE_ENV !== 'production' && env().LUMA_DEV_OTP;
+export const devOtpEnabled = () => env().LUMA_DEPLOYMENT !== 'production' && env().LUMA_DEV_OTP;

@@ -14,7 +14,7 @@ export default async function DevOutbox() {
   return (
     <main id="main" className="content" style={{ margin: '0 auto' }}>
       <div className="alert warn" role="note">
-        Development outbox — nothing here was sent to anyone. Disabled when NODE_ENV=production. / صندوق رسائل التطوير — لم يُرسل أي شيء فعلياً.
+        Development outbox — nothing here was sent to anyone. Disabled in the production deployment. / صندوق رسائل التطوير — لم يُرسل أي شيء فعلياً.
       </div>
       <h1>Dev outbox</h1>
       <div className="table-wrap">

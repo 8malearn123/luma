@@ -45,6 +45,8 @@ export async function migrate(url: string, appRole: string, log = console.log) {
       }
       log(`applying ${f}`);
       await db.begin(async (tx) => {
+        // migrations are trusted: data-seeding statements run in the system RLS scope
+        await tx`select set_config('app.system', 'on', true)`;
         await tx.unsafe(body);
         await tx`insert into schema_migrations (name, checksum) values (${f}, ${sum})`;
       });

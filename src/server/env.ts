@@ -10,6 +10,10 @@ const flag = z.enum(['0', '1']).default('0').transform((v) => v === '1');
 const schema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    // Deployment kind, independent of the build mode: a production BUILD can be a private
+    // 'review' deployment (sandbox payments, dev outbox, demo sign-in allowed) or real
+    // 'production' (all of that refused). Production builds default to 'production'.
+    LUMA_DEPLOYMENT: z.enum(['development', 'review', 'production']).optional(),
     APP_BASE_URL: z.string().url().default('http://localhost:3000'),
     DATABASE_URL: z.string().min(1),
     SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
@@ -42,8 +46,9 @@ const schema = z
     // Trend radar
     TRENDS_FETCH_ENABLED: flag,
   })
+  .transform((v) => ({ ...v, LUMA_DEPLOYMENT: v.LUMA_DEPLOYMENT ?? (v.NODE_ENV === 'production' ? 'production' : 'development') }))
   .superRefine((v, ctx) => {
-    if (v.NODE_ENV === 'production') {
+    if (v.LUMA_DEPLOYMENT === 'production') {
       for (const k of ['LUMA_DEV_OTP', 'LUMA_DEMO_MODE', 'LUMA_LEGACY_PROTOTYPE', 'PAYMENTS_SANDBOX_ENABLED'] as const) {
         if (v[k]) ctx.addIssue({ code: 'custom', path: [k], message: `${k} must be 0 in production` });
       }
@@ -68,4 +73,7 @@ export function env(): Env {
   return cached;
 }
 
-export const isProduction = () => env().NODE_ENV === 'production';
+/** True for the real production deployment (not for a private review deployment of a production build). */
+export const isProduction = () => env().LUMA_DEPLOYMENT === 'production';
+/** Secure cookies whenever the app is served over HTTPS. */
+export const secureCookies = () => env().APP_BASE_URL.startsWith('https://');

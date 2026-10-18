@@ -11,14 +11,16 @@
     "build": "next build",
     "start": "next start -p 3000",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "tsx scripts/migrate.ts",
-    "db:seed": "tsx scripts/seed.ts",
+    "db:migrate": "node --env-file-if-exists=.env.local --import tsx scripts/migrate.ts",
+    "db:seed": "node --env-file-if-exists=.env.local --import tsx scripts/seed.ts",
     "db:reset-test": "tsx scripts/reset-test-db.ts",
-    "worker": "tsx scripts/worker.ts",
+    "worker": "node --env-file-if-exists=.env.local --import tsx scripts/worker.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts",
-    "test:legacy": "playwright test -c tests/legacy-static/playwright.config.js"
+    "test:e2e": "node --import tsx tests/e2e/prepare.ts && playwright test -c tests/e2e/playwright.config.ts",
+    "test:legacy": "playwright test -c tests/legacy-static/playwright.config.js",
+    "db:reset-dev": "node --env-file-if-exists=.env.local --import tsx scripts/reset-dev-db.ts",
+    "docs:data-model": "node --env-file-if-exists=.env.local --import tsx scripts/gen-data-model.ts"
   },
   "dependencies": {
     "next": "15.5.27",

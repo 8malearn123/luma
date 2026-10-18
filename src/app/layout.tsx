@@ -20,7 +20,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await sessionUser();
   const locale = await pageLocale(user);
   const theme = (await cookies()).get('luma_theme')?.value === 'light' ? 'light' : 'dark';
-  const demo = env().LUMA_DEMO_MODE && env().NODE_ENV !== 'production';
+  const demo = env().LUMA_DEMO_MODE && env().LUMA_DEPLOYMENT !== 'production';
   return (
     <html lang={locale} dir={dirOf(locale)} data-theme={theme}>
       <head>

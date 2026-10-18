@@ -15,7 +15,7 @@ export default async function AuthPage({ params, searchParams }: { params: Promi
   const m = MODES[mode as keyof typeof MODES];
   if (!m) notFound();
   if (m !== 'recover' && (await sessionUser())) redirect(next && next.startsWith('/') && !next.startsWith('//') ? next : '/account');
-  const demo = env().LUMA_DEMO_MODE && env().NODE_ENV !== 'production';
+  const demo = env().LUMA_DEMO_MODE && env().LUMA_DEPLOYMENT !== 'production';
   const demoAccounts = demo && m === 'login' ? await listDemoAccounts() : [];
   return (
     <main id="main" className="auth-wrap">
