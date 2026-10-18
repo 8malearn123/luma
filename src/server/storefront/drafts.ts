@@ -27,7 +27,8 @@ export const RICH_TEXT_OPTIONS: sanitizeHtml.IOptions = {
     a: (tagName, attribs) => {
       const href = (attribs.href ?? '').trim();
       const ok = /^(https:\/\/|mailto:|tel:)/i.test(href);
-      return { tagName, attribs: ok ? { href, rel: 'noopener noreferrer nofollow', target: '_blank' } : {} };
+      const attribs2: Record<string, string> = ok ? { href, rel: 'noopener noreferrer nofollow', target: '_blank' } : {};
+      return { tagName, attribs: attribs2 };
     },
   },
 };

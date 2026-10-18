@@ -65,7 +65,7 @@ describe('rules, validation and AI enhancement', () => {
     for (let c = 0; c < 6; c++) {
       const cust = await makeCustomer(s, `Hist${c}`);
       await consent(s, cust.tenantCustomerId);
-      for (let k = 0; k < 5; k++) await visit(s, cust.tenantCustomerId, s.services.haircut, s.staff.hana, 200 - k * 30 - c);
+      for (let k = 0; k < 5; k++) await visit(s, cust.tenantCustomerId, s.services.haircut, s.staff.hana, 85 - k * 15 - c);
     }
   });
 
