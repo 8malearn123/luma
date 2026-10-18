@@ -115,7 +115,7 @@ const idList = z.array(uuid).max(LIMITS.listIds).default([]);
 // ── block registry (props schemas) ──
 export const BLOCK_PROPS = {
   hero: z.object({
-    title: i18nText(120),
+    title: i18nText(120).default({ ar: '' }),
     subtitle: i18nText(240).default({ ar: '' }),
     imageAssetId: assetRef,
     imageAlt: i18nText(160).default({ ar: '' }),
@@ -123,10 +123,10 @@ export const BLOCK_PROPS = {
     overlay: z.number().min(0).max(0.85).default(0.35),
     ctaLabel: i18nText(40).default({ ar: '' }),
   }),
-  image_ad: z.object({ imageAssetId: assetRef, alt: i18nText(160), caption: i18nText(160).default({ ar: '' }), aspect: z.enum(['21:9', '16:9', '3:1']).default('3:1') }),
-  image: z.object({ imageAssetId: assetRef, alt: i18nText(160), aspect: z.enum(['1:1', '4:3', '3:4', '16:9']).default('4:3') }),
-  text: z.object({ heading: i18nText(120).default({ ar: '' }), html: z.object({ ar: z.string().max(LIMITS.textLength).default(''), en: z.string().max(LIMITS.textLength).optional() }) }),
-  cta: z.object({ heading: i18nText(120).default({ ar: '' }), text: i18nText(300).default({ ar: '' }), label: i18nText(40) }),
+  image_ad: z.object({ imageAssetId: assetRef, alt: i18nText(160).default({ ar: '' }), caption: i18nText(160).default({ ar: '' }), aspect: z.enum(['21:9', '16:9', '3:1']).default('3:1') }),
+  image: z.object({ imageAssetId: assetRef, alt: i18nText(160).default({ ar: '' }), aspect: z.enum(['1:1', '4:3', '3:4', '16:9']).default('4:3') }),
+  text: z.object({ heading: i18nText(120).default({ ar: '' }), html: z.object({ ar: z.string().max(LIMITS.textLength).default(''), en: z.string().max(LIMITS.textLength).optional() }).default({ ar: '' }) }),
+  cta: z.object({ heading: i18nText(120).default({ ar: '' }), text: i18nText(300).default({ ar: '' }), label: i18nText(40).default({ ar: '' }) }),
   service_list: z.object({
     heading: i18nText(120).default({ ar: '' }),
     categoryId: uuid.nullable().default(null),
@@ -135,7 +135,8 @@ export const BLOCK_PROPS = {
     limit: z.number().int().min(1).max(50).default(12),
     showPrices: z.boolean().default(true),
   }),
-  service: z.object({ serviceId: uuid }),
+  // a freshly added block may not have its target chosen yet; it renders a fallback until it does
+  service: z.object({ serviceId: uuid.nullable().default(null) }),
   categories: z.object({ heading: i18nText(120).default({ ar: '' }), kind: z.enum(['service', 'product']).default('service'), categoryIds: idList }),
   product_grid: z.object({
     heading: i18nText(120).default({ ar: '' }),
@@ -144,9 +145,9 @@ export const BLOCK_PROPS = {
     display,
     limit: z.number().int().min(1).max(50).default(8),
   }),
-  product: z.object({ productId: uuid }),
+  product: z.object({ productId: uuid.nullable().default(null) }),
   team: z.object({ heading: i18nText(120).default({ ar: '' }), staffIds: idList, showBio: z.boolean().default(false) }),
-  staff: z.object({ staffId: uuid }),
+  staff: z.object({ staffId: uuid.nullable().default(null) }),
   gallery: z.object({
     heading: i18nText(120).default({ ar: '' }),
     items: z.array(z.object({ assetId: uuid, alt: i18nText(160) })).max(LIMITS.galleryItems).default([]),
@@ -162,7 +163,7 @@ export const BLOCK_PROPS = {
   social: z.object({ heading: i18nText(120).default({ ar: '' }) }),
   faq: z.object({ heading: i18nText(120).default({ ar: '' }), items: z.array(z.object({ q: i18nText(200), a: i18nText(1200) })).max(LIMITS.faqItems).default([]) }),
   policies: z.object({ heading: i18nText(120).default({ ar: '' }), showBookingPolicy: z.boolean().default(true), showReturns: z.boolean().default(false), returnsText: i18nText(2000).default({ ar: '' }), privacyText: i18nText(4000).default({ ar: '' }) }),
-  welcome: z.object({ message: i18nText(200), tone: z.enum(['accent', 'neutral']).default('accent') }),
+  welcome: z.object({ message: i18nText(200).default({ ar: '' }), tone: z.enum(['accent', 'neutral']).default('accent') }),
   columns: z.object({ columns: z.union([z.literal(2), z.literal(3)]).default(2) }),
   footer: z.object({ note: i18nText(200).default({ ar: '' }), showSocial: z.boolean().default(true) }),
 } as const;

@@ -62,7 +62,7 @@ describe('storefront drafts', () => {
 
   it('sanitizes rich text (scripts, handlers, unsafe links)', async () => {
     expect(sanitizeRichText('<p onclick="x()">Hi<script>alert(1)</script><a href="javascript:x">j</a><a href="https://ok.example">ok</a><img src=x onerror=1></p>')).toBe(
-      '<p>Hi<a>j</a><a href="https://ok.example" rel="noopener noreferrer nofollow" target="_blank">ok</a></p>',
+      '<p>Hij<a href="https://ok.example" rel="noopener noreferrer nofollow" target="_blank">ok</a></p>',
     );
     const ctx = await a.ctx();
     const d = await draft(a);

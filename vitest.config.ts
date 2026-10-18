@@ -3,6 +3,8 @@ import path from 'node:path';
 
 export default defineConfig({
   resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } },
+  // tsconfig keeps jsx: preserve for Next.js; tests that render components need the automatic runtime
+  oxc: { jsx: { runtime: 'automatic' } },
   test: {
     include: ['tests/unit/**/*.test.ts', 'tests/integration/**/*.test.ts'],
     globalSetup: ['tests/global-setup.ts'],

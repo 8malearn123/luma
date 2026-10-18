@@ -24,14 +24,21 @@ export const RICH_TEXT_OPTIONS: sanitizeHtml.IOptions = {
   allowProtocolRelative: false,
   disallowedTagsMode: 'discard',
   transformTags: {
-    a: (tagName, attribs) => ({ tagName, attribs: { href: attribs.href ?? '', rel: 'noopener noreferrer nofollow', target: '_blank' } }),
+    a: (tagName, attribs) => {
+      const href = (attribs.href ?? '').trim();
+      const ok = /^(https:\/\/|mailto:|tel:)/i.test(href);
+      return { tagName, attribs: ok ? { href, rel: 'noopener noreferrer nofollow', target: '_blank' } : {} };
+    },
   },
 };
 // rel/target are added by the transform above; allow them on output
 RICH_TEXT_OPTIONS.allowedAttributes = { a: ['href', 'rel', 'target'] };
 
 export function sanitizeRichText(html: string): string {
-  return sanitizeHtml(html ?? '', RICH_TEXT_OPTIONS).trim();
+  // anchors whose href was unsafe/missing degrade to their plain text
+  return sanitizeHtml(html ?? '', RICH_TEXT_OPTIONS)
+    .replace(/<a(?![^>]*\bhref=)[^>]*>([\s\S]*?)<\/a>/g, '$1')
+    .trim();
 }
 
 function walkBlocks(blocks: PageBlock[], fn: (b: PageBlock) => void) {

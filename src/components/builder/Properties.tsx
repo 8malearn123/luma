@@ -198,11 +198,11 @@ function FieldEditor({ f, props, set }: { f: FieldDef; props: Props; set: (k: st
     case 'image':
       return <ImageField label={L} value={v as string | null} onChange={(x) => set(f.key, x)} />;
     case 'service':
-      return <SelectOpt label={L} value={v as string} options={o.services} onChange={(x) => set(f.key, x)} allowNone={false} />;
+      return <SelectOpt label={L} value={v as string} options={o.services} onChange={(x) => set(f.key, x)} />;
     case 'services':
       return <MultiOpt label={L} value={(v as string[]) ?? []} options={o.services} onChange={(x) => set(f.key, x)} />;
     case 'product':
-      return <SelectOpt label={L} value={v as string} options={o.products} onChange={(x) => set(f.key, x)} allowNone={false} />;
+      return <SelectOpt label={L} value={v as string} options={o.products} onChange={(x) => set(f.key, x)} />;
     case 'products':
       return <MultiOpt label={L} value={(v as string[]) ?? []} options={o.products} onChange={(x) => set(f.key, x)} />;
     case 'category':
@@ -210,7 +210,7 @@ function FieldEditor({ f, props, set }: { f: FieldDef; props: Props; set: (k: st
     case 'categories':
       return <MultiOpt label={L} value={(v as string[]) ?? []} options={o.categories.filter((c) => c.kind === ((props.kind as string) ?? 'service'))} onChange={(x) => set(f.key, x)} />;
     case 'staff':
-      return <SelectOpt label={L} value={v as string} options={o.staff} onChange={(x) => set(f.key, x)} allowNone={false} />;
+      return <SelectOpt label={L} value={v as string} options={o.staff} onChange={(x) => set(f.key, x)} />;
     case 'staffs':
       return <MultiOpt label={L} value={(v as string[]) ?? []} options={o.staff} onChange={(x) => set(f.key, x)} />;
     case 'packages':
