@@ -1,5 +1,6 @@
 name: LUMA Tests
-# سويت الاختبارات تعمل قبل وصول أي تغيير إلى الرابط الأساسي
+# Runs before any change reaches main: type-check, integration tests against a
+# real PostgreSQL (RLS, constraints, concurrency), and the legacy static suite.
 on:
   push:
     branches: [main, 'claude/**']
@@ -7,19 +8,38 @@ on:
     branches: [main]
 
 jobs:
-  e2e:
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: postgres
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+        with: { node-version: 22 }
+      - name: Create roles and test database
+        run: |
+          psql -h 127.0.0.1 -U postgres -c "create role luma_owner login password 'luma_dev_owner' createdb;"
+          psql -h 127.0.0.1 -U postgres -c "create role luma_app login password 'luma_dev_app';"
+          psql -h 127.0.0.1 -U postgres -c "create database luma_test owner luma_owner;"
       - name: Install deps
-        run: npm install
+        run: npm ci
+      - name: Type-check
+        run: npx tsc --noEmit
+      - name: Integration tests
+        run: npm test
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Run test suite
-        run: npx playwright test
+      - name: Legacy static suite
+        run: npm run test:legacy
       - name: Upload report on failure
         if: failure()
         uses: actions/upload-artifact@v4
