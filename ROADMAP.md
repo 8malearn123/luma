@@ -1,5 +1,7 @@
 # 🗺️ خطة الاستمرارية والتطوير — منصة لوما (LUMA)
 
+> **Historical:** this roadmap describes the earlier static/localStorage prototype. The current platform is documented in README.md and IMPLEMENTATION_STATUS.md.
+
 > وثيقة حيّة: تُحدَّث مع إنجاز كل مهمة. آخر تحديث: 2026-07-08 (المراحل 0–2 مكتملة — التالي: Supabase بانتظار المفاتيح)
 >
 > **الحالة الراهنة:** موقع ثابت منشور على Vercel (`main` → الرابط الأساسي)، كل الميزات تعمل ببيانات المتصفح (localStorage)، وكود إنتاجي جاهز غير مربوط في `luma-hr/` (4 هجرات SQL + 11 نقطة API + 8 مكونات React).
