@@ -133,7 +133,7 @@ export async function listTrends(tx: Tx, now = new Date()) {
   type Obs = (typeof obs)[number];
   const clusters = new Map<string, Obs[]>();
   for (const o of obs) clusters.set(o.clusterKey, [...(clusters.get(o.clusterKey) ?? []), o]);
-  const assessments = await tx`select id, cluster_key, fit, rationale, application_idea, est_effort, est_cost, valid_until, status, plan_id, created_at from trend_assessments order by created_at desc limit 100`;
+  const assessments = await tx`select id, cluster_key, fit, rationale, application_idea, est_effort, est_cost, to_char(valid_until, 'YYYY-MM-DD') as valid_until, status, plan_id, created_at from trend_assessments order by created_at desc limit 100`;
   return {
     sourcesConnected: sources.some((s) => s.status === 'connected'),
     sources,
