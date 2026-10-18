@@ -169,12 +169,12 @@ describe('waitlist', () => {
     const [o1] = await s.run((tx) => tx<{ id: string; customerUserId: string }[]>`select id, customer_user_id from waitlist_offers where id = ${offers[0].offerId}`);
     expect(o1.customerUserId).toBe(w1.user.userId);
     // W1 declines → next scan offers it to W2
-    await s.run((tx) => declineOffer(tx, w1.user.userId, o1.id));
+    await s.run((tx) => declineOffer(tx, s.tenantId, w1.user.userId, o1.id));
     // W1 entry is active again but has more offers; W2 (earlier? no) — ranking: created_at first, so W1 again would be first.
     await s.run((tx) => tx`update waitlist_entries set status = 'cancelled' where customer_user_id = ${w1.user.userId}`);
     const offers2 = await s.run((tx) => issueOffers(tx));
     expect(offers2).toHaveLength(1);
-    const results = await Promise.allSettled([0, 1].map(() => s.run((tx) => acceptOffer(tx, w2.user.userId, offers2[0].offerId, 'on_site'))));
+    const results = await Promise.allSettled([0, 1].map(() => s.run((tx) => acceptOffer(tx, s.tenantId, w2.user.userId, offers2[0].offerId, 'on_site'))));
     const wins = results.filter((r) => r.status === 'fulfilled' && (r.value as { ok: boolean }).ok);
     expect(wins).toHaveLength(1);
   });

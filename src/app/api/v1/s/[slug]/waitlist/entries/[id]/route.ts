@@ -5,6 +5,6 @@ import { withStorefront } from '@/server/services/growth-public';
 
 export const DELETE = api.user<{ slug: string; id: string }>(async (c) => {
   if (!uuid.safeParse(c.params.id).success) throw notFound();
-  await withStorefront(c.params.slug, c.user.userId, (tx) => cancelEntry(tx, c.user.userId, c.params.id));
+  await withStorefront(c.params.slug, c.user.userId, (tx, tenantId) => cancelEntry(tx, tenantId, c.user.userId, c.params.id));
   return { ok: true };
 });

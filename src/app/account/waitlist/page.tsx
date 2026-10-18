@@ -18,7 +18,7 @@ export default async function MyWaitlistPage() {
   );
   const items: MyEntry[] = [];
   for (const { tenantId } of tenants) {
-    const rows = await withTenant({ tenantId, userId: user.userId }, (tx) => myEntries(tx, user.userId));
+    const rows = await withTenant({ tenantId, userId: user.userId }, (tx) => myEntries(tx, tenantId, user.userId));
     items.push(...(JSON.parse(JSON.stringify(rows)) as MyEntry[]));
   }
   return (

@@ -15,5 +15,5 @@ export const POST = api.user<{ slug: string }>(
 );
 
 export const GET = api.user<{ slug: string }>(async (c) =>
-  withStorefront(c.params.slug, c.user.userId, async (tx) => ({ items: await myEntries(tx, c.user.userId) })),
+  withStorefront(c.params.slug, c.user.userId, async (tx, tenantId) => ({ items: await myEntries(tx, tenantId, c.user.userId) })),
 );

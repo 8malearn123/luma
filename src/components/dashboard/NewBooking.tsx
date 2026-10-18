@@ -117,7 +117,7 @@ export function NewBookingDrawer({ tenant, tz, branches, services, staff, defaul
       tenantCustomerId: custId,
       termsKind: terms,
       customerNote: note || undefined,
-      items: slot.items.map((i, idx) => ({ serviceId: i.serviceId, staffId: i.staffId, startsAt: i.startsAt, addonIds: [], variantId: null, _k: idx })).map(({ _k, ...x }) => x),
+      items: slot.items.map((i) => ({ serviceId: i.serviceId, staffId: i.staffId, startsAt: i.startsAt, addonIds: [], variantId: null })),
       source: 'staff',
       confirmNow: true,
     });

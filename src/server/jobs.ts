@@ -118,3 +118,26 @@ export async function drainOutbox(max = 50): Promise<number> {
   }
   return n;
 }
+
+// ─────────────────────────────────────────────────────────────
+// Periodic schedules (platform-wide jobs). Tenant-specific schedules
+// (e.g. weekly marketing in the business timezone) enqueue their own
+// per-tenant jobs from a platform-wide tick job.
+// ─────────────────────────────────────────────────────────────
+export type Every = 'minute' | 'hour' | 'day';
+const schedules: { kind: string; every: Every }[] = [];
+export function registerSchedule(s: { kind: string; every: Every }) {
+  if (!schedules.some((x) => x.kind === s.kind)) schedules.push(s);
+}
+
+const periodKey = (every: Every, d = new Date()) => d.toISOString().slice(0, every === 'day' ? 10 : every === 'hour' ? 13 : 16);
+
+/** Enqueue each schedule at most once per period (idempotency key = kind:period). */
+export async function enqueueScheduled(now = new Date()) {
+  let n = 0;
+  for (const s of schedules) {
+    const r = await withSystem('schedule tick', (tx) => enqueueJob(tx, { kind: s.kind, tenantId: null, key: `sched:${s.kind}:${periodKey(s.every, now)}` }));
+    if (r.created) n++;
+  }
+  return n;
+}

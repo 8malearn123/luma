@@ -8,7 +8,7 @@
  */
 import '../src/server/jobs-registry';
 import { closeDb, withSystem } from '../src/server/db';
-import { drainOutbox, recoverStaleJobs, runDueJobs } from '../src/server/jobs';
+import { drainOutbox, enqueueScheduled, recoverStaleJobs, runDueJobs } from '../src/server/jobs';
 import { sweepExpiredHolds } from '../src/server/booking/service';
 import { expireUnpaidOrders } from '../src/server/commerce/orders';
 import { reconcilePayments } from '../src/server/payments/service';
@@ -22,6 +22,7 @@ async function pass() {
   if (Date.now() - lastMaintenance > 60_000) {
     lastMaintenance = Date.now();
     await recoverStaleJobs();
+    await enqueueScheduled();
     const holds = await withSystem('maintenance: hold expiry across tenants', (tx) => sweepExpiredHolds(tx));
     const orders = await withSystem('maintenance: unpaid order expiry', (tx) => expireUnpaidOrders(tx));
     const recon = await withSystem('maintenance: payment reconciliation', async (tx) => {

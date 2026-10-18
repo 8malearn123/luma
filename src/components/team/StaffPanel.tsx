@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocale, useT } from '../I18n';
 import { Icon } from '../Icon';
 import { Drawer, EmptyState, ErrorAlert, Field, useSubmit, useUnsavedGuard } from '../ui/forms';
@@ -82,7 +82,10 @@ function StaffEditor({ slug, id, refs, onClose, onSaved }: { slug: string; id: s
       setErr(e as ApiError);
     }
   };
-  useState(() => void load());
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const toggle = (k: 'branchIds' | 'serviceIds', v: string) => setForm({ ...form, [k]: form[k].includes(v) ? form[k].filter((x) => x !== v) : [...form[k], v] });
 
