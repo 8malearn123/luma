@@ -82,7 +82,7 @@ export function parseRequestRules(doc: StorefrontDocument, prompt: string): { op
   const text = normalizeText(prompt);
   const ops: PatchOp[] = [];
   const rejected: Rejected[] = [];
-  const clauses = text.split(/[,،.؛;]|\s+و(?=\S)|\s+and\s+|\s+ثم\s+|\s+then\s+/).map((c) => c.trim()).filter(Boolean);
+  const clauses = text.split(/[,،.؛;]|\s+و\s+|\s+و(?=ال)|\s+and\s+|\s+ثم\s+|\s+then\s+/).map((c) => c.trim()).filter(Boolean);
   for (const clause of clauses) {
     const bad = FORBIDDEN.find(([re]) => re.test(clause));
     if (bad) {
@@ -117,9 +117,9 @@ export function parseRequestRules(doc: StorefrontDocument, prompt: string): { op
       const a = findBlock(doc, after[1]);
       const b = findBlock(doc, after[2]);
       if (a && b && a.block.id !== b.block.id) {
-        const idx = a.page.blocks.findIndex((x) => x.id === b.block.id);
-        const next = a.page.blocks.filter((x) => x.id !== a.block.id)[a.page.blocks.filter((x) => x.id !== a.block.id).findIndex((x) => x.id === b.block.id) + 1];
-        ops.push({ op: 'move_block', pageId: a.page.id, blockId: a.block.id, beforeBlockId: next?.id ?? (idx >= 0 ? null : null) });
+        const rest = a.page.blocks.filter((x) => x.id !== a.block.id);
+        const next = rest[rest.findIndex((x) => x.id === b.block.id) + 1];
+        ops.push({ op: 'move_block', pageId: a.page.id, blockId: a.block.id, beforeBlockId: next?.id ?? null });
       } else rejected.push({ request: clause, reason: 'customize.reject_block_not_found' });
       continue;
     }

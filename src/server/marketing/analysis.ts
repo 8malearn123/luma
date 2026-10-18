@@ -141,3 +141,30 @@ export async function runJobInline(tenantId: string, jobId: string, userId: stri
     throw e;
   }
 }
+
+/**
+ * Regenerate an existing plan: appends a NEW version (never mutates prior
+ * versions). For approved/in-progress plans the version stays a proposal
+ * until adopted by someone with campaign.approve.
+ */
+export async function regeneratePlan(tx: Tx, ctx: import('../tenancy/context').TenantContext, planId: string) {
+  const { getPlan, addPlanVersion } = await import('./plans');
+  const { plan, current } = await getPlan(tx, planId);
+  const horizon = plan.horizon as Horizon;
+  const [t] = await tx<{ timezone: string }[]>`select timezone from tenants where id = ${ctx.tenant.id}`;
+  const today = utcToWall(new Date(), t.timezone).date;
+  const dataDays = horizon === 'weekly' ? 28 : 90;
+  const days = Math.round((Date.parse(plan.periodEnd) - Date.parse(plan.periodStart)) / 86400000) + 1;
+  const period = { from: plan.periodStart, to: plan.periodEnd, days };
+  const aiAvailable = !!getProvider();
+  const pipe = await generateAndSaveRecommendations(tx, { tenantId: ctx.tenant.id, userId: ctx.user.userId, horizon, fromDate: addDays(today, -dataDays), days: dataDays, planPeriod: period, useAi: aiAvailable });
+  const recRows = pipe.savedIds.length ? await tx<{ id: string; content: Parameters<typeof assemblePlan>[1][number] }[]>`select id, content from recommendations where id = any(${pipe.savedIds}::uuid[])` : [];
+  let content = assemblePlan(pipe.snapshot, recRows.map((r) => ({ ...r.content, id: r.id })), horizon, { planPeriod: period, parentGoal: current.content.parentGoal, isExample: !aiAvailable, insufficientData: pipe.generation.insufficientData, limitations: pipe.generation.limitations });
+  let runId: string | null = null;
+  if (aiAvailable && !pipe.generation.insufficientData) {
+    const r = await refinePlanWithAi(tx, ctx.tenant.id, ctx.user.userId, pipe.snapshot, content, horizon, period);
+    content = r.failure ? { ...r.plan, isExample: true, provenance: { ...r.plan.provenance, source_type: 'example' } } : r.plan;
+    runId = r.runId;
+  }
+  return addPlanVersion(tx, ctx, planId, content, 'regenerated', runId);
+}
