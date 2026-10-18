@@ -18,7 +18,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "node --import tsx tests/e2e/prepare.ts && playwright test -c tests/e2e/playwright.config.ts",
-    "test:legacy": "playwright test -c tests/legacy-static/playwright.config.js",
+    "test:legacy": "playwright test -c tests/legacy-static/playwright.config.cjs",
     "db:reset-dev": "node --env-file-if-exists=.env.local --import tsx scripts/reset-dev-db.ts",
     "docs:data-model": "node --env-file-if-exists=.env.local --import tsx scripts/gen-data-model.ts"
   },

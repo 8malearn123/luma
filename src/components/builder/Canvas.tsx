@@ -1,5 +1,6 @@
 'use client';
 
+import '@/app/s/storefront.css'; // the canvas renders real storefront blocks: same stylesheet as /s/[slug]
 import { useState, type DragEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { BLOCK_META, type BlockType, type PageBlock, type StorePage } from '@/lib/builder/schema';
 import { BlockView } from '../storefront/Blocks';

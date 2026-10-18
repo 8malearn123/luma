@@ -38,8 +38,18 @@ jobs:
         run: npm test
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Legacy static suite
+      - name: Legacy static suite (preserved marketing site)
         run: npm run test:legacy
+      - name: Create e2e database
+        run: psql -h 127.0.0.1 -U postgres -c "create database luma_e2e owner luma_owner;"
+      - name: Production build
+        run: npm run build
+        env:
+          DATABASE_URL: postgres://luma_app:luma_dev_app@127.0.0.1:5432/luma_e2e
+          SESSION_SECRET: ci-build-secret-0123456789abcdef0123456789abcdef
+          LUMA_ENCRYPTION_KEY: CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk=
+      - name: End-to-end journeys (desktop + mobile, review deployment)
+        run: npm run test:e2e
       - name: Upload report on failure
         if: failure()
         uses: actions/upload-artifact@v4

@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { defineConfig } from '@playwright/test';
 
 /**
@@ -10,6 +11,7 @@ const DB = 'luma_e2e';
 export const E2E_ENV = {
   // production build, private review deployment: sandbox payments + dev outbox + demo sign-in
   LUMA_DEPLOYMENT: 'review',
+  LUMA_LEGACY_PROTOTYPE: '0',
   LUMA_DEV_OTP: '1',
   LUMA_DEMO_MODE: '1',
   PAYMENTS_SANDBOX_ENABLED: '1',
@@ -34,7 +36,8 @@ export default defineConfig({
     locale: 'ar-SA',
     timezoneId: 'Asia/Riyadh',
     trace: 'retain-on-failure',
-    launchOptions: { executablePath: process.env.PW_CHROMIUM ?? '/opt/pw-browsers/chromium' },
+    // pre-installed Chromium in cloud sessions; Playwright's own download elsewhere (CI)
+    launchOptions: { executablePath: process.env.PW_CHROMIUM || (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined) },
   },
   projects: [
     { name: 'desktop', use: { viewport: { width: 1280, height: 860 } } },
