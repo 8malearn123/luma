@@ -7,7 +7,9 @@ export type Locale = 'ar' | 'en';
 
 export const DEFAULT_TZ = 'Asia/Riyadh';
 
-const intlLocale = (l: Locale) => (l === 'ar' ? 'ar-SA-u-nu-latn' : 'en-SA');
+// Explicit Gregorian calendar + Latin digits: browsers default ar-SA to the Hijri calendar while Node does not,
+// which would show different dates for the same instant (and break hydration).
+export const intlLocale = (l: Locale) => (l === 'ar' ? 'ar-SA-u-nu-latn-ca-gregory' : 'en-SA-u-ca-gregory');
 
 export function formatMoney(minor: number | null | undefined, currency = 'SAR', locale: Locale = 'ar'): string {
   if (minor === null || minor === undefined) return '—';

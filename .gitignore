@@ -10,3 +10,4 @@ test-results/
 playwright-report/
 coverage/
 storage-e2e/
+tests/e2e/tools/*.local.mjs

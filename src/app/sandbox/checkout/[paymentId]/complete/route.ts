@@ -22,5 +22,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pay
   const outcome = form.get('outcome') === 'fail' ? 'failed' : 'succeeded';
   const ev = await sandboxEmit(paymentId, outcome);
   await processProviderEvent('sandbox', ev.body, ev.headers);
-  return NextResponse.redirect(new URL(p.returnPath, req.url), 303);
+  // relative Location: stays on the browser's origin (CSP form-action 'self'; req.url may carry the bind host)
+  return new NextResponse(null, { status: 303, headers: { location: p.returnPath } });
 }

@@ -244,7 +244,7 @@ export function OnboardingWizard({ initial }: { initial: WizardInitial }) {
       <div className="row between">
         <h1 style={{ margin: 0 }}>{t('onb.title')}</h1>
         <span className="small muted" role="status" aria-live="polite">
-          {busy ? t('common.saving') : savedAt ? `${t('common.saved')} · ${savedAt.toLocaleTimeString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-SA', { hour: '2-digit', minute: '2-digit' })}` : t('onb.saved_resume')}
+          {busy ? t('common.saving') : savedAt ? `${t('common.saved')} · ${savedAt.toLocaleTimeString(locale === 'ar' ? 'ar-SA-u-nu-latn-ca-gregory' : 'en-SA-u-ca-gregory', { hour: '2-digit', minute: '2-digit' })}` : t('onb.saved_resume')}
         </span>
       </div>
       <nav className="steps" aria-label={t('ops.onb_steps')} style={{ marginTop: 12 }}>
