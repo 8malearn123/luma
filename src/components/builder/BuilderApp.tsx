@@ -79,24 +79,23 @@ export function BuilderApp(p: BuilderProps) {
   );
 
   const undo = useCallback(() => {
-    setPast((h) => {
-      if (!h.length) return h;
-      const prev = h[h.length - 1];
-      setFuture((f) => [doc, ...f].slice(0, HISTORY_MAX));
-      setDoc(prev);
-      coalesceRef.current = null;
-      return h.slice(0, -1);
-    });
-  }, [doc]);
+    if (!past.length) return;
+    const prev = past[past.length - 1];
+    setPast(past.slice(0, -1));
+    setFuture([doc, ...future].slice(0, HISTORY_MAX));
+    setDoc(prev);
+    coalesceRef.current = null;
+    if (saveState !== 'conflict') setSaveState('dirty');
+  }, [past, future, doc, saveState]);
   const redo = useCallback(() => {
-    setFuture((f) => {
-      if (!f.length) return f;
-      const nx = f[0];
-      setPast((h) => [...h, doc].slice(-HISTORY_MAX));
-      setDoc(nx);
-      return f.slice(1);
-    });
-  }, [doc]);
+    if (!future.length) return;
+    const nx = future[0];
+    setFuture(future.slice(1));
+    setPast([...past, doc].slice(-HISTORY_MAX));
+    setDoc(nx);
+    coalesceRef.current = null;
+    if (saveState !== 'conflict') setSaveState('dirty');
+  }, [past, future, doc, saveState]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

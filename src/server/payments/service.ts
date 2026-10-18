@@ -272,7 +272,12 @@ async function onBookingPaid(tx: Tx, bookingId: string, paymentId: string): Prom
   const { transition } = await import('../booking/service');
   const actor = { kind: 'system' as const, tenantId: b.tenantId, reason: 'payment succeeded' };
   if (b.status === 'held' || b.status === 'pending_payment') {
-    const active = await tx`select 1 from booking_allocations where booking_id = ${bookingId} and active limit 1`;
+    // group-session bookings hold a seat (the instructor is allocated once per session), not their own allocation
+    const active = await tx`
+      select 1 from booking_allocations where booking_id = ${bookingId} and active
+      union all
+      select 1 from group_session_bookings where booking_id = ${bookingId} and status = 'active'
+      limit 1`;
     if (active.length) {
       await tx`update bookings set hold_expires_at = now() + interval '1 minute' where id = ${bookingId}`;
       await transition(tx, actor, bookingId, 'confirmed');
@@ -459,7 +464,11 @@ async function finalizeRefund(tx: Tx, refundId: string, providerRefundId: string
     : (await tx`select 1 from orders where id = ${p.orderId} and status = 'collected'`).length > 0;
   const cashAccount = p.provider === 'manual' ? (p.method === 'cash' ? 'cash' : 'card_clearing') : 'provider_clearing';
   await post(tx, { tenantId: r.tenantId, refType: 'refund', refId: refundId, memo: 'refund paid', actorUserId, lines: [{ account: recognized ? 'refunds' : 'customer_deposits', debit: r.amountMinor }, { account: cashAccount, credit: r.amountMinor }] });
-  if (p.bookingId) await recomputeBookingFinancial(tx, p.bookingId);
+  if (p.bookingId) {
+    await recomputeBookingFinancial(tx, p.bookingId);
+    const { reverseForRefund } = await import('../services/loyalty');
+    await reverseForRefund(tx, p.bookingId);
+  }
   if (p.orderId) await recomputeOrderFinancial(tx, p.orderId);
 }
 

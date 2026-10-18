@@ -13,3 +13,5 @@ import './storefront';
 import './platform';
 
 for (const s of POLICY_SCHEDULES) registerSchedule(s);
+registerSchedule({ kind: 'growth.tick', every: 'minute' }); // discovers tenants with growth work → per-tenant jobs
+registerSchedule({ kind: 'campaign.dispatch', every: 'minute' }); // simulated sending only (no provider connected)
